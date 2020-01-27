@@ -1,7 +1,7 @@
 name: ConsulatCore
 version: ${version}
 author: Amisoz
-main: fr.amisoz.shazencore.ShazenCore
+main: fr.amisoz.consulatcore.ConsulatCore
 api-version: 1.14
 commands:
     rank:
