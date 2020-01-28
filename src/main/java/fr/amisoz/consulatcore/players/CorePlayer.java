@@ -27,6 +27,7 @@ public class CorePlayer {
 
     public Player lastPrivate;
 
+    public boolean seeInv;
 
     public String getSanctionTarget() {
         return sanctionTarget;

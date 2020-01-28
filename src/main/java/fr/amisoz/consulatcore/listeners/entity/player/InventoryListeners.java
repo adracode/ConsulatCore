@@ -19,6 +19,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
@@ -44,7 +45,7 @@ public class InventoryListeners implements Listener {
         Player player = event.getPlayer();
         CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
 
-        if(corePlayer.isModerate()){
+        if(corePlayer.isModerate() || corePlayer.seeInv){
             event.setCancelled(true);
         }
     }
@@ -54,7 +55,7 @@ public class InventoryListeners implements Listener {
         Player player = event.getPlayer();
         CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
 
-        if(corePlayer.isModerate()){
+        if(corePlayer.isModerate() || corePlayer.seeInv){
             event.setCancelled(true);
         }
     }
@@ -66,12 +67,22 @@ public class InventoryListeners implements Listener {
         Player player = (Player) event.getWhoClicked();
         CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
 
-        if(corePlayer.isModerate()){
+        if(corePlayer.isModerate() || corePlayer.seeInv){
             event.setCancelled(true);
         }
     }
 
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event){
+        if(!(event.getPlayer() instanceof Player)){
+            return;
+        }
 
+        Player player = (Player) event.getPlayer();
+        CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
+        corePlayer.seeInv = false;
+        
+    }
     @EventHandler
     public void onClick(InventoryClickEvent event){
         if(!(event.getWhoClicked() instanceof Player)) return;
@@ -88,6 +99,10 @@ public class InventoryListeners implements Listener {
         String inventoryName = inventoryView.getTitle();
 
 
+        if(moderator.seeInv) {
+            event.setCancelled(true);
+            return;
+        }
         String targetName = moderator.getSanctionTarget();
 
         if(inventoryName.contains("Sanction")){
