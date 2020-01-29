@@ -81,7 +81,7 @@ public class InventoryListeners implements Listener {
         Player player = (Player) event.getPlayer();
         CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
         corePlayer.seeInv = false;
-        
+
     }
     @EventHandler
     public void onClick(InventoryClickEvent event){
