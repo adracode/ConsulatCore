@@ -16,6 +16,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.*;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -110,14 +111,14 @@ public class InteractListener implements Listener {
             player.openInventory(inventory);
         }
 
-        if(itemMeta.getDisplayName().contains("Freeze")) {
+        if(itemMeta.getDisplayName().contains("Freeze") && event.getHand().equals(EquipmentSlot.HAND)) {
             CorePlayer coreTarget = CoreManagerPlayers.getCorePlayer(target);
             if(coreTarget.isFreezed){
-                target.sendMessage(ModerationUtils.ANNOUNCE_PREFIX + "Tu as été un-freeze.");
-                player.sendMessage(ModerationUtils.ANNOUNCE_PREFIX + "Joueur un-freeze");
+                target.sendMessage(ModerationUtils.ANNOUNCE_PREFIX + " Tu as été un-freeze.");
+                player.sendMessage(ModerationUtils.ANNOUNCE_PREFIX + " Joueur un-freeze");
             }else{
-                target.sendMessage(ModerationUtils.ANNOUNCE_PREFIX + "Tu as été freeze par un modérateur.");
-                player.sendMessage(ModerationUtils.ANNOUNCE_PREFIX + "Joueur freeze");
+                target.sendMessage(ModerationUtils.ANNOUNCE_PREFIX + " Tu as été freeze par un modérateur.");
+                player.sendMessage(ModerationUtils.ANNOUNCE_PREFIX + " Joueur freeze");
             }
             coreTarget.isFreezed = !coreTarget.isFreezed;
         }

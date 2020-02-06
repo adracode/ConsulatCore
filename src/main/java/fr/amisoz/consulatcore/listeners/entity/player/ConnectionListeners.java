@@ -4,8 +4,10 @@ import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.moderation.ModerationUtils;
 import fr.amisoz.consulatcore.players.CoreManagerPlayers;
 import fr.amisoz.consulatcore.players.CorePlayer;
+import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.player.PlayersManager;
 import fr.leconsulat.api.ranks.RankEnum;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -72,6 +74,15 @@ public class ConnectionListeners implements Listener {
         Player player = event.getPlayer();
         CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
         RankEnum playerRank = PlayersManager.getConsulatPlayer(player).getRank();
+
+        if(corePlayer.isFreezed){
+            Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
+                ConsulatPlayer consulatPlayer = PlayersManager.getConsulatPlayer(onlinePlayer);
+                if(consulatPlayer != null && consulatPlayer.getRank().getRankPower() >= RankEnum.MODO.getRankPower()){
+                    onlinePlayer.sendMessage(ModerationUtils.MODERATION_PREFIX + ChatColor.GOLD + player.getName() + ChatColor.RED + " s'est déconnecté en étant freeze.");
+                }
+            });
+        }
 
         if (corePlayer.isModerate()) {
             player.getInventory().clear();
