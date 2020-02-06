@@ -75,6 +75,7 @@ public class ConnectionListeners implements Listener {
 
         if (corePlayer.isModerate()) {
             player.getInventory().clear();
+            player.getInventory().setContents(corePlayer.stockedInventory);
         }
 
         if (playerRank.getRankPower() >= RankEnum.MODO.getRankPower()) {
@@ -82,6 +83,7 @@ public class ConnectionListeners implements Listener {
         }else{
             event.setQuitMessage(ChatColor.GRAY + "(" + ChatColor.RED + "-" + ChatColor.GRAY + ")" + playerRank.getRankColor() + " [" + playerRank.getRankName() + "] " + player.getName());
         }
+
     }
 
     private void saveConnection(Player player) throws SQLException {
