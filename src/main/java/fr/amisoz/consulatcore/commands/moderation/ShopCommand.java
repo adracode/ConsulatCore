@@ -52,6 +52,13 @@ public class ShopCommand implements CommandExecutor {
             }
         }
 
+        if(args[0].equalsIgnoreCase("announce")){
+            String playerName = args[1];
+            String number = args[2];
+            String article = args[3];
+            Bukkit.broadcastMessage("§7[§aBoutique§7] §a" + playerName + "§7 a acheté §a" + number + " " + article + "§7 !");
+        }
+
         if(args[0].equalsIgnoreCase("home")){
             try {
                 addHome(target.getName());
