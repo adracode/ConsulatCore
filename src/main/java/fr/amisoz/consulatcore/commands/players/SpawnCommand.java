@@ -12,6 +12,13 @@ public class SpawnCommand extends ConsulatCommand {
 
     @Override
     public void consulatCommand() {
-        getPlayer().teleport(ConsulatCore.spawnLocation);
+        if(getArgs().length == 1){
+            if(getArgs()[0].equalsIgnoreCase("set") && getConsulatPlayer().getRank().getRankPower() == RankEnum.ADMIN.getRankPower()){
+                ConsulatCore.spawnLocation = getPlayer().getLocation();
+                getPlayer().sendMessage("§aLocation définie.");
+            }
+        }else{
+            getPlayer().teleport(ConsulatCore.spawnLocation);
+        }
     }
 }

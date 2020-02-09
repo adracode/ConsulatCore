@@ -12,16 +12,17 @@ public class NewsCommand extends ConsulatCommand {
     @Override
     public void consulatCommand() {
         String newsMessage = "§7§l§m-------§r§7§l[ §r§6ConsulatNews §r§7§l§m]§m-------"
-                + "\n§r§cModifications du 19/01/2020"
+                + "\n§r§cModifications du 09/02/2020"
                 + "\n§r§7§l§m-------------------------------------------"
-                + "\n§r§7- §6Modifications de commandes pour la modération"
-                + "\n§r§7- §6Modifications d'outils pour le développement"
-                + "\n§r§7- §6Retrait des messages d'achievements"
-                + "\n§r§7- §6Pour activer l'IA aux mobs, on peut désormais faire clique droit dessus"
-                + "\n§r§7- §6Mise à jour PaperSpigot"
-                + "\n§r§c[Correction bug]§6 Les ravageurs pouvaient casser dans les claims"
-                + "\n§r§c[Correction bug]§6 Les itemframe vides pouvaient être cassés"
-                + "\n§r§c[Correction bug]§6 Les claims d\'une ligne avaient un prix erroné";
+                + "\n§r§7- §6Mise en place du site"
+                + "\n§r§7- §6/baltop : Donne accès aux 10 joueurs les plus riches"
+                + "\n§r§7- §6/claimlist : Donne la liste des claims (Et la liste des personnes access par claim)"
+                + "\n§r§c[Correction bug]§6 Lorsque l'on faisait /tpa, on avait un message rouge même en utilisant bien la commande"
+                + "\n§r§c[Correction bug]§6 Un mot manquait lorsque l'on retirait quelqu'un de son claim"
+                + "\n§r§c[Correction bug]§6 On ne peut plus retirer l'objet d'un item frame avec un trident"
+                + "\n§r§c[Correction bug]§6 Désormais, lors d'un rename, on n'a plus besoin d'attendre un redémarrage serveur pour avoir accès à ses claims/access"
+                + "\n§r§c- Note : Les bouquins enchantés et les maps sont temporairement désactivés dans les shops joueurs.";
+
         getPlayer().sendMessage(newsMessage);
     }
 }
