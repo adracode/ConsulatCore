@@ -2,6 +2,9 @@ package fr.amisoz.consulatcore.commands.moderation;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.leconsulat.api.ConsulatAPI;
+import fr.leconsulat.api.custom.CustomDatabase;
+import fr.leconsulat.api.player.ConsulatPlayer;
+import fr.leconsulat.api.player.PlayersManager;
 import fr.leconsulat.api.ranks.RankEnum;
 import fr.leconsulat.api.ranks.RankManager;
 import org.bukkit.Bukkit;
@@ -40,6 +43,8 @@ public class ShopCommand implements CommandExecutor {
             return false;
         }
 
+        ConsulatPlayer consulatPlayer = PlayersManager.getConsulatPlayer(target);
+
         if(args[0].equalsIgnoreCase("rank")){
             String rank = args[2];
             if(rank.equalsIgnoreCase("financeur") || rank.equalsIgnoreCase("mécène")){
@@ -65,6 +70,17 @@ public class ShopCommand implements CommandExecutor {
                 target.sendMessage("§7Suite à ton achat, tu as un home supplémentaire ! Afin de l'activer, déconnecte et reconnecte toi.");
             } catch (SQLException e) {
                 target.sendMessage("§cUne erreur s'est produite lors de l'achat de ton home, préviens un administrateur !");
+                e.printStackTrace();
+            }
+        }
+
+        if(args[0].equalsIgnoreCase("perso")){
+            try {
+                CustomDatabase.activePerso(target);
+                consulatPlayer.setHasPerso(true);
+                target.sendMessage("§7Suite à ton achat, tu as le grade personnalisé ! Fais /perso et laisse toi guider ;)");
+            } catch (SQLException e) {
+                target.sendMessage("§cUne erreur s'est produite lors de l'achat de grade personnalisé, préviens un administrateur !");
                 e.printStackTrace();
             }
         }
