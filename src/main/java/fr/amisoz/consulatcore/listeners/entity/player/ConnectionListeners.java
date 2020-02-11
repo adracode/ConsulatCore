@@ -52,10 +52,16 @@ public class ConnectionListeners implements Listener {
                 ModerationUtils.vanishedPlayers.forEach(moderator -> player.hidePlayer(consulatCore, moderator));
             }
 
+            ConsulatPlayer consulatPlayer =  PlayersManager.getConsulatPlayer(player);
+
             if(playerRank.getRankPower() >= RankEnum.MODO.getRankPower()){
                 event.setJoinMessage(null);
-            }else{
-                event.setJoinMessage(ChatColor.GRAY + "(" + ChatColor.GREEN + "+" + ChatColor.GRAY + ")" + playerRank.getRankColor() + " [" + playerRank.getRankName() + "] " + player.getName());
+            }else {
+                if(consulatPlayer.isPerso() && consulatPlayer.getPersoPrefix() != null && !consulatPlayer.getPersoPrefix().equalsIgnoreCase("")){
+                    event.setJoinMessage(ChatColor.GRAY + "(" + ChatColor.GREEN + "+" + ChatColor.GRAY + ") " + ChatColor.translateAlternateColorCodes('&', consulatPlayer.getPersoPrefix()) + player.getName());
+                } else {
+                    event.setJoinMessage(ChatColor.GRAY + "(" + ChatColor.GREEN + "+" + ChatColor.GRAY + ")" + playerRank.getRankColor() + " [" + playerRank.getRankName() + "] " + player.getName());
+                }
             }
 
             saveConnection(player);
@@ -89,10 +95,16 @@ public class ConnectionListeners implements Listener {
             player.getInventory().setContents(corePlayer.stockedInventory);
         }
 
+        ConsulatPlayer consulatPlayer =  PlayersManager.getConsulatPlayer(player);
+
         if (playerRank.getRankPower() >= RankEnum.MODO.getRankPower()) {
             event.setQuitMessage("");
         }else{
-            event.setQuitMessage(ChatColor.GRAY + "(" + ChatColor.RED + "-" + ChatColor.GRAY + ")" + playerRank.getRankColor() + " [" + playerRank.getRankName() + "] " + player.getName());
+            if(consulatPlayer.isPerso() && consulatPlayer.getPersoPrefix() != null && !consulatPlayer.getPersoPrefix().equalsIgnoreCase("")){
+                event.setQuitMessage(ChatColor.GRAY + "(" + ChatColor.RED + "-" + ChatColor.GRAY + ") " + ChatColor.translateAlternateColorCodes('&', consulatPlayer.getPersoPrefix()) + player.getName());
+            }else{
+                event.setQuitMessage(ChatColor.GRAY + "(" + ChatColor.RED + "-" + ChatColor.GRAY + ")" + playerRank.getRankColor() + " [" + playerRank.getRankName() + "] " + player.getName());
+            }
         }
 
     }

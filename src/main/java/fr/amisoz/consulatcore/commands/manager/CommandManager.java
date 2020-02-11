@@ -30,7 +30,8 @@ public class CommandManager {
         consulatCore.getCommand("news").setExecutor(new NewsCommand());
         consulatCore.getCommand("seen").setExecutor(new SeenCommand());
         consulatCore.getCommand("invsee").setExecutor(new InvseeCommand());
-        consulatCore.getCommand("shop").setExecutor(new ShopCommand(consulatCore));
+        consulatCore.getCommand("boutique").setExecutor(new ShopCommand(consulatCore));
+        consulatCore.getCommand("perso").setExecutor(new PersoCommand());
 
 
     }

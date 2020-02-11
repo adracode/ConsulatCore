@@ -9,11 +9,17 @@ import fr.amisoz.consulatcore.runnable.MonitoringRunnable;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.ranks.RankDatabase;
 import fr.leconsulat.api.ranks.RankManager;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.Connection;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ConsulatCore extends JavaPlugin {
 
@@ -28,6 +34,8 @@ public class ConsulatCore extends JavaPlugin {
     public static boolean chat_activated = true;
 
     public static ConsulatCore INSTANCE;
+
+    public static List<TextComponent> textPerso = new ArrayList<>();
 
     @Override
     public void onEnable() {
@@ -52,6 +60,22 @@ public class ConsulatCore extends JavaPlugin {
             world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
         });
 
+        for(ChatColor color : ChatColor.values()){
+            if(color == ChatColor.RED) continue;
+            if(color == ChatColor.MAGIC) break;
+
+            TextComponent textComponent;
+            if(color != ChatColor.WHITE) {
+                textComponent = new TextComponent(color + color.name() + "§r§7 - ");
+            }else{
+                textComponent = new TextComponent(color + color.name());
+            }
+
+            textComponent.setHoverEvent(new HoverEvent( HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§7§oChoisir cette couleur").create()));
+            textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/perso " + color.getChar()));
+
+            ConsulatCore.textPerso.add(textComponent);
+        }
         sendConsole("ShazenCore loaded in " + (System.currentTimeMillis() - startLoading) + " ms.");
     }
 

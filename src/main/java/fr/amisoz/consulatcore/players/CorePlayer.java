@@ -2,6 +2,7 @@ package fr.amisoz.consulatcore.players;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.moderation.MuteObject;
+import fr.amisoz.consulatcore.utils.CustomEnum;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -28,6 +29,9 @@ public class CorePlayer {
     public Player lastPrivate;
 
     public boolean seeInv;
+
+    public CustomEnum persoState = CustomEnum.START;
+    public String persoNick = "";
 
     public String getSanctionTarget() {
         return sanctionTarget;
