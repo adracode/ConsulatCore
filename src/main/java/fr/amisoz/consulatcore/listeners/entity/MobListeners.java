@@ -35,9 +35,9 @@ public class MobListeners implements Listener {
         EntityType entityType = event.getEntityType();
         if (entityType == EntityType.PHANTOM) event.setCancelled(true);
 
-        if(!mobsToEnable.contains(entityType)) {
+       /* if(!mobsToEnable.contains(entityType)) {
             event.getEntity().setAI(false);
-        }
+        }*/
     }
 
     @EventHandler

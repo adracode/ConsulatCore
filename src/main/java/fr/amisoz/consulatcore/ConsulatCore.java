@@ -41,7 +41,7 @@ public class ConsulatCore extends JavaPlugin {
     public void onEnable() {
         INSTANCE = this;
         long startLoading = System.currentTimeMillis();
-        spawnLocation = new Location(Bukkit.getWorlds().get(0), 144, 65, -361, -114, 0);
+        spawnLocation = new Location(Bukkit.getWorlds().get(0), 330, 65, -438, -145, 0);
 
 
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");

@@ -4,7 +4,6 @@ import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.listeners.entity.MobListeners;
 import fr.amisoz.consulatcore.listeners.entity.player.*;
 import fr.amisoz.consulatcore.listeners.world.SignListener;
-import fr.amisoz.consulatcore.listeners.world.WeatherListener;
 import org.bukkit.Bukkit;
 
 public class ListenersManager {
@@ -20,6 +19,5 @@ public class ListenersManager {
         Bukkit.getPluginManager().registerEvents(new ExperienceListener(), consulatCore);
         Bukkit.getPluginManager().registerEvents(new FoodListener(), consulatCore);
         Bukkit.getPluginManager().registerEvents(new SignListener(), consulatCore);
-        Bukkit.getPluginManager().registerEvents(new WeatherListener(), consulatCore);
     }
 }
