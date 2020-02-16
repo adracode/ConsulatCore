@@ -17,7 +17,7 @@ public class CommandManager {
         consulatCore.getCommand("tpmod").setExecutor(new TpmodCommand());
         consulatCore.getCommand("spawn").setExecutor(new SpawnCommand());
         consulatCore.getCommand("help").setExecutor(new HelpCommand());
-        consulatCore.getCommand("mp").setExecutor(new MpCommand());
+        consulatCore.getCommand("msg").setExecutor(new MpCommand());
         consulatCore.getCommand("advert").setExecutor(new AdvertCommand());
         consulatCore.getCommand("kick").setExecutor(new KickCommand());
         consulatCore.getCommand("sc").setExecutor(new StaffChatCommand());
@@ -32,7 +32,7 @@ public class CommandManager {
         consulatCore.getCommand("invsee").setExecutor(new InvseeCommand());
         consulatCore.getCommand("boutique").setExecutor(new ShopCommand(consulatCore));
         consulatCore.getCommand("perso").setExecutor(new PersoCommand());
-
-
+        consulatCore.getCommand("site").setExecutor(new SiteCommand());
+        consulatCore.getCommand("discord").setExecutor(new PersoCommand());
     }
 }

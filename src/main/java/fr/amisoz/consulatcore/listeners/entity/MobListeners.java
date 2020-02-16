@@ -34,10 +34,12 @@ public class MobListeners implements Listener {
     public void onSpawn(CreatureSpawnEvent event) {
         EntityType entityType = event.getEntityType();
         if (entityType == EntityType.PHANTOM) event.setCancelled(true);
+        CreatureSpawnEvent.SpawnReason spawnReason = event.getSpawnReason();
+        if(spawnReason.equals(CreatureSpawnEvent.SpawnReason.SPAWNER)) return;
 
-       /* if(!mobsToEnable.contains(entityType)) {
+        if(!mobsToEnable.contains(entityType)) {
             event.getEntity().setAI(false);
-        }*/
+        }
     }
 
     @EventHandler

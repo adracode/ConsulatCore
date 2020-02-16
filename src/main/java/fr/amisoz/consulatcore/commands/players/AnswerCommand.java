@@ -17,6 +17,6 @@ public class AnswerCommand extends ConsulatCommand {
             return;
         }
 
-        getPlayer().performCommand("mp " + getCorePlayer().lastPrivate.getName() + " " + StringUtils.join(getArgs(), " "));
+        getPlayer().performCommand("msg " + getCorePlayer().lastPrivate.getName() + " " + StringUtils.join(getArgs(), " "));
     }
 }

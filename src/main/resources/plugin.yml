@@ -13,7 +13,7 @@ commands:
     staff:
     tpmod:
     help:
-    mp:
+    msg:
     spawn:
     advert:
     kick:
@@ -29,3 +29,5 @@ commands:
     invsee:
     boutique:
     perso:
+    site:
+    discord:

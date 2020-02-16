@@ -99,7 +99,7 @@ public class ChatListeners implements Listener {
         String[] array = event.getMessage().split(" ");
         String command = array[0];
 
-        if(command.equalsIgnoreCase("/msg") || command.equalsIgnoreCase("/whisper") ||command.equalsIgnoreCase("/tell") || command.equalsIgnoreCase("/me") || command.contains("bukkit")){
+        if(command.equalsIgnoreCase("/w") || command.equalsIgnoreCase("/whisper") ||command.equalsIgnoreCase("/tell") || command.equalsIgnoreCase("/me") || command.contains("bukkit")){
             event.setCancelled(true);
             event.getPlayer().sendMessage("§cCommande désactivée.");
         }

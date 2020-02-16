@@ -21,7 +21,7 @@ import java.util.Calendar;
 public class MpCommand extends ConsulatCommand {
 
     public MpCommand() {
-        super("/mp <Joueur> <Message>", 2, RankEnum.JOUEUR);
+        super("/msg <Joueur> <Message>", 2, RankEnum.JOUEUR);
     }
 
     @Override
@@ -54,7 +54,7 @@ public class MpCommand extends ConsulatCommand {
         TextComponent answerComponent = new TextComponent("\n§a[Répondre]");
         answerComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                 new ComponentBuilder("§7§oRépondre à : §6" + getPlayer().getName()).create()));
-        answerComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/mp " + getPlayer().getName() + " "));
+        answerComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/msg " + getPlayer().getName() + " "));
         target.spigot().sendMessage(messageFormatComponent, answerComponent);
 
         targetCore.lastPrivate = getPlayer();
