@@ -12,16 +12,13 @@ public class NewsCommand extends ConsulatCommand {
     @Override
     public void consulatCommand() {
         String newsMessage = "§7§l§m-------§r§7§l[ §r§6ConsulatNews §r§7§l§m]§m-------"
-                + "\n§r§cModifications du 09/02/2020"
+                + "\n§r§cModifications du 01/03/2020"
                 + "\n§r§7§l§m-------------------------------------------"
-                + "\n§r§7- §6Mise en place du site"
-                + "\n§r§7- §6/baltop : Donne accès aux 10 joueurs les plus riches"
-                + "\n§r§7- §6/claimlist : Donne la liste des claims (Et la liste des personnes access par claim)"
-                + "\n§r§c[Correction bug]§6 Lorsque l'on faisait /tpa, on avait un message rouge même en utilisant bien la commande"
-                + "\n§r§c[Correction bug]§6 Un mot manquait lorsque l'on retirait quelqu'un de son claim"
-                + "\n§r§c[Correction bug]§6 On ne peut plus retirer l'objet d'un item frame avec un trident"
-                + "\n§r§c[Correction bug]§6 Désormais, lors d'un rename, on n'a plus besoin d'attendre un redémarrage serveur pour avoir accès à ses claims/access"
-                + "\n§r§c- Note : Les bouquins enchantés et les maps sont temporairement désactivés dans les shops joueurs.";
+                + "\n§r§7- §6Le /shop list est désormais fonctionnel à 100%"
+                + "\n§r§7- §6Retrait des admins du /baltop"
+                + "\n§r§7- §6Retrait de la possibilité de modifier le type d'un spawner"
+                + "\n§r§c[Correction bug]§6 Il arrivait que les shops ne soient pas décomptés & que la limite soit atteinte alors que ce n'était pas le cas"
+                + "\n§r§c- Note : Le plugin de duel arrive très vite, le plugin de ville.. vite :p.";
 
         getPlayer().sendMessage(newsMessage);
     }
