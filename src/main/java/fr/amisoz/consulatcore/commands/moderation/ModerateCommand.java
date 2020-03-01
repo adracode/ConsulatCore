@@ -33,7 +33,7 @@ public class ModerateCommand extends ConsulatCommand {
             ModerationUtils.vanishedPlayers.remove(getPlayer());
 
             for(PotionEffect effect  : getPlayer().getActivePotionEffects()){
-                if(effect.getType().equals(PotionEffectType.NIGHT_VISION) && effect.getType().equals(PotionEffectType.INVISIBILITY)){
+                if(effect.getType().equals(PotionEffectType.NIGHT_VISION) || effect.getType().equals(PotionEffectType.INVISIBILITY)){
                     getPlayer().removePotionEffect(effect.getType());
                 }
             }
