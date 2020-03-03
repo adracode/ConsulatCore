@@ -33,14 +33,12 @@ public class ModerateCommand extends ConsulatCommand {
             ModerationUtils.vanishedPlayers.remove(getPlayer());
 
             for(PotionEffect effect  : getPlayer().getActivePotionEffects()){
-                if(effect.getType().equals(PotionEffectType.NIGHT_VISION)){
+                if(effect.getType().equals(PotionEffectType.NIGHT_VISION) || effect.getType().equals(PotionEffectType.INVISIBILITY)){
                     getPlayer().removePotionEffect(effect.getType());
                 }
             }
 
-            Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
-                onlinePlayer.showPlayer(consulatCore, getPlayer());
-            });
+            Bukkit.getOnlinePlayers().forEach(onlinePlayers -> onlinePlayers.showPlayer(consulatCore, getPlayer()));
 
             getPlayer().getInventory().setContents(getCorePlayer().stockedInventory);
 
@@ -71,6 +69,7 @@ public class ModerateCommand extends ConsulatCommand {
             getPlayer().getInventory().setBoots(null);
 
             getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 2, false, false));
+            getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 2, false, false));
             // Tp aléatoire, vanish/devanish, see inv du joueur sur lequel on clique
             ItemStack randomTeleport = new ItemStack(Material.ENDER_EYE);
             ItemMeta randomMeta = randomTeleport.getItemMeta();

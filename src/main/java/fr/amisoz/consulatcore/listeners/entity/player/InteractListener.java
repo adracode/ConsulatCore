@@ -38,6 +38,10 @@ public class InteractListener implements Listener {
         CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
 
         if(event.getClickedBlock() != null) {
+            if(event.getClickedBlock().getType() == Material.SPAWNER){
+                event.setCancelled(true);
+            }
+
             if (event.getClickedBlock().getType() == Material.OAK_WALL_SIGN) {
                 Sign sign = (Sign) event.getClickedBlock().getState();
                 String[] lines = sign.getLines();
