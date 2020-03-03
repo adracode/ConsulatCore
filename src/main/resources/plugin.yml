@@ -2,6 +2,7 @@ name: ConsulatCore
 version: ${version}
 author: Amisoz
 main: fr.amisoz.consulatcore.ConsulatCore
+softdepend: [ConsulatAPI]
 api-version: 1.14
 commands:
     rank:
