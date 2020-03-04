@@ -20,6 +20,8 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -83,6 +85,10 @@ public class InteractListener implements Listener {
                     });
                     ModerationUtils.vanishedPlayers.remove(player);
                     player.sendMessage("§aTu es désormais visible.");
+                    for(PotionEffect effect  : player.getActivePotionEffects()){
+                        if(effect.getType().equals(PotionEffectType.INVISIBILITY))
+                            player.removePotionEffect(effect.getType());
+                    }
                 }else{
                     ModerationUtils.vanishedPlayers.add(player);
                     Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
@@ -93,6 +99,7 @@ public class InteractListener implements Listener {
                             }
                         }
                     });
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 2, false, false));
                     player.sendMessage("§cTu es désormais invisible.");
                 }
             }
