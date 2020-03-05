@@ -91,6 +91,9 @@ public class ChatListeners implements Listener {
             event.setFormat(playerRank.getRankColor() + "[" + playerRank.getRankName() + "] " + "%s" + ChatColor.GRAY + " : " + ChatColor.WHITE + "%s");
         }
 
+        if(playerRank.getRankPower() >= RankEnum.MODO.getRankPower()){
+            event.setMessage(ChatColor.translateAlternateColorCodes('&', event.getMessage()));
+        }
 
     }
 
