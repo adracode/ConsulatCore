@@ -7,6 +7,7 @@ import fr.leconsulat.api.player.PlayersManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -16,6 +17,10 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
+
+import java.util.Random;
 
 public class DuelListeners implements Listener {
 
@@ -64,7 +69,7 @@ public class DuelListeners implements Listener {
 
         if(corePlayer.isFighting){
             Bukkit.broadcastMessage("§7[§b§lDuel§r§7] §4" + player.getName() + " a perdu le duel !");
-
+            corePlayer.isFighting = false;
             Arena arena = corePlayer.arena;
 
             Player firstPlayer = arena.getFirstPlayer();
@@ -72,8 +77,10 @@ public class DuelListeners implements Listener {
 
             if(firstPlayer == player){
                 arena.setVictoryPlayer(secondPlayer);
+                arena.winLocation = arena.secondBefore;
             }else{
                 arena.setVictoryPlayer(firstPlayer);
+                arena.winLocation = arena.firstBefore;
             }
 
             corePlayer.isFighting = false;
@@ -84,12 +91,24 @@ public class DuelListeners implements Listener {
             arena.setFirstPlayer(null);
             arena.setSecondPlayer(null);
 
+            Random random = new Random();
+            int result = random.nextInt(10);
+            if(result == 2){
+                ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
+                SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
+                skullMeta.setPlayerProfile(player.getPlayerProfile());
+                skull.setItemMeta(skullMeta);
+                arena.getVictoryPlayer().getWorld().dropItemNaturally(arena.getVictoryPlayer().getLocation(), skull);
+            }
+
             PlayersManager.getConsulatPlayer(arena.getVictoryPlayer()).addMoney((double) (arena.bet*2));
             arena.getVictoryPlayer().sendMessage("§aTu as gagné " + arena.bet*2 + "€ !");
             Bukkit.getScheduler().runTaskLater(ConsulatCore.INSTANCE, () -> {
                 Bukkit.broadcastMessage("§7[§b§lDuel§r§7] §4L'arène est à nouveau disponible.");
                 arena.setArenaState(ArenaState.FREE);
                 arena.setBusy(false);
+                arena.getVictoryPlayer().teleport(arena.winLocation);
+                CoreManagerPlayers.getCorePlayer(arena.getVictoryPlayer()).isFighting = false;
             }, 20*60);
         }
     }

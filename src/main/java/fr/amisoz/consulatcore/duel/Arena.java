@@ -10,6 +10,11 @@ public class Arena {
     private Location firstSpawn;
     private Location secondSpawn;
     private Location spectateLocation;
+
+    public Location firstBefore;
+    public Location secondBefore;
+    public Location winLocation;
+
     private ArenaState arenaState;
     private Player firstPlayer;
     private Player secondPlayer;
