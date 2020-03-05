@@ -1,6 +1,7 @@
 package fr.amisoz.consulatcore.listeners.manager;
 
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.duel.DuelListeners;
 import fr.amisoz.consulatcore.listeners.entity.MobListeners;
 import fr.amisoz.consulatcore.listeners.entity.player.*;
 import fr.amisoz.consulatcore.listeners.world.SignListener;
@@ -20,5 +21,7 @@ public class ListenersManager {
         Bukkit.getPluginManager().registerEvents(new FoodListener(), consulatCore);
         Bukkit.getPluginManager().registerEvents(new SignListener(), consulatCore);
         Bukkit.getPluginManager().registerEvents(new ModeratorInteraction(), consulatCore);
+
+        Bukkit.getPluginManager().registerEvents(new DuelListeners(), consulatCore);
     }
 }

@@ -11,12 +11,12 @@ public class DuelManager {
     public static List<Arena> arenas = new ArrayList<>();
 
     public DuelManager(){
-        Arena firstArena = new Arena(new Location(Bukkit.getWorlds().get(0), 372, 72, -436), new Location(Bukkit.getWorlds().get(0), 350, 72, -436));
+        Arena firstArena = new Arena(new Location(Bukkit.getWorlds().get(0), 56, 70, -261), new Location(Bukkit.getWorlds().get(0), 57, 70, -270), new Location(Bukkit.getWorlds().get(0), 57, 80, -265));
         registerArena(firstArena);
     }
 
     private void registerArena(Arena arena){
         arenas.add(arena);
     }
-    
+
 }

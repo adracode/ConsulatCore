@@ -9,16 +9,18 @@ public class Arena {
     private boolean busy;
     private Location firstSpawn;
     private Location secondSpawn;
+    private Location spectateLocation;
     private ArenaState arenaState;
     private Player firstPlayer;
     private Player secondPlayer;
     private Player victoryPlayer;
     public int bet;
 
-    public Arena(Location firstSpawn, Location secondSpawn) {
+    public Arena(Location firstSpawn, Location secondSpawn, Location spectateLocation) {
         this.busy = false;
         this.firstSpawn = firstSpawn;
         this.secondSpawn = secondSpawn;
+        this.spectateLocation = spectateLocation;
         this.arenaState = ArenaState.FREE;
     }
 
@@ -68,5 +70,13 @@ public class Arena {
 
     public Location getSecondSpawn() {
         return secondSpawn;
+    }
+
+    public Location getSpectateLocation() {
+        return spectateLocation;
+    }
+
+    public void setSpectateLocation(Location spectateLocation) {
+        this.spectateLocation = spectateLocation;
     }
 }

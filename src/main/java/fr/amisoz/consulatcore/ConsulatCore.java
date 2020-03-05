@@ -2,6 +2,7 @@ package fr.amisoz.consulatcore;
 
 
 import fr.amisoz.consulatcore.commands.manager.CommandManager;
+import fr.amisoz.consulatcore.duel.DuelManager;
 import fr.amisoz.consulatcore.listeners.manager.ListenersManager;
 import fr.amisoz.consulatcore.moderation.ModerationDatabase;
 import fr.amisoz.consulatcore.runnable.AFKRunnable;
@@ -46,6 +47,7 @@ public class ConsulatCore extends JavaPlugin {
         long startLoading = System.currentTimeMillis();
         spawnLocation = new Location(Bukkit.getWorlds().get(0), 330, 65, -438, -145, 0);
 
+        new DuelManager();
 
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 
