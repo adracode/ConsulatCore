@@ -20,6 +20,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ConsulatCore extends JavaPlugin {
@@ -38,6 +39,7 @@ public class ConsulatCore extends JavaPlugin {
 
     public static List<TextComponent> textPerso = new ArrayList<>();
 
+    public static List<String> forbiddenPerso = Arrays.asList("Modo", "Moderateur", "Modérateur", "Admin", "Animateur", "Partenaire", "Youtubeur", "Streamer", "Ami");
     @Override
     public void onEnable() {
         INSTANCE = this;

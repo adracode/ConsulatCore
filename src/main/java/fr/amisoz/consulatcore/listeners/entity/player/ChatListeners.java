@@ -52,7 +52,7 @@ public class ChatListeners implements Listener {
                 return;
             }
 
-            if(message.contains("Modérateur") || message.contains("Admin")){
+            if(ConsulatCore.forbiddenPerso.contains(message)){
                 player.sendMessage("§cTu ne peux pas appeler ton grade comme cela ! Tape §ocancel §r§csi tu veux annuler.");
                 event.setCancelled(true);
                 return;
