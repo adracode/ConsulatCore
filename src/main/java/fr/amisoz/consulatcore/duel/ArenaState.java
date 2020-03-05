@@ -8,4 +8,5 @@ public enum ArenaState {
     IN_FIGHT(),
     AFTER_FIGHT();
 
+
 }

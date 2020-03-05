@@ -70,4 +70,9 @@ public abstract class ConsulatCommand implements CommandExecutor {
     public String[] getArgs() {
         return args;
     }
+
+    public void sendUsage(){
+        getPlayer().sendMessage(ChatColor.RED + usage);
+    }
+
 }

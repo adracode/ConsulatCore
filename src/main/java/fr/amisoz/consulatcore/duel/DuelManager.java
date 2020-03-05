@@ -18,4 +18,5 @@ public class DuelManager {
     private void registerArena(Arena arena){
         arenas.add(arena);
     }
+    
 }

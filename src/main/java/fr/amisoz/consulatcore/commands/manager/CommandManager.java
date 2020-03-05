@@ -33,6 +33,7 @@ public class CommandManager {
         consulatCore.getCommand("boutique").setExecutor(new ShopCommand(consulatCore));
         consulatCore.getCommand("perso").setExecutor(new PersoCommand());
         consulatCore.getCommand("site").setExecutor(new SiteCommand());
-        consulatCore.getCommand("discord").setExecutor(new PersoCommand());
+        consulatCore.getCommand("discord").setExecutor(new DiscordCommand());
+        consulatCore.getCommand("duel").setExecutor(new DuelCommand());
     }
 }

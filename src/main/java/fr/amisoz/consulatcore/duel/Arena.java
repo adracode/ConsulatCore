@@ -13,6 +13,7 @@ public class Arena {
     private Player firstPlayer;
     private Player secondPlayer;
     private Player victoryPlayer;
+    public int bet;
 
     public Arena(Location firstSpawn, Location secondSpawn) {
         this.busy = false;
