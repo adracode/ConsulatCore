@@ -50,6 +50,11 @@ public class DuelCommand extends ConsulatCommand {
 
             if(getArgs()[0].equalsIgnoreCase("accept")){
 
+                if(!arena.getArenaState().equals(ArenaState.DUEL_ASKED)){
+                    getPlayer().sendMessage(ChatColor.RED + "Un duel a déjà été accepté.");
+                    return;
+                }
+
                 Bukkit.broadcastMessage("§7[§b§lDuel§r§7] §4Un duel va avoir lieu ! La mise de chaque participant est de " +  arena.bet + "€ ! Pour y être téléporté afin de regarder le duel, /duel spectate");
                 arena.setArenaState(ArenaState.DUEL_ACCEPTED);
 
@@ -77,6 +82,11 @@ public class DuelCommand extends ConsulatCommand {
                 }, 20*30);
 
             }else if(getArgs()[0].equalsIgnoreCase("reject")){
+                if(!arena.getArenaState().equals(ArenaState.DUEL_ASKED)){
+                    getPlayer().sendMessage(ChatColor.RED + "Un duel a déjà été accepté.");
+                    return;
+                }
+
                 askDuel.sendMessage("§4" + getPlayer().getName() + "§c a refusé ton duel !");
                 getPlayer().sendMessage("§cTu as bien refusé le duel !");
 
