@@ -150,6 +150,11 @@ public class DuelCommand extends ConsulatCommand {
             getPlayer().sendMessage(ChatColor.GREEN + "Demande envoyée à " + ChatColor.DARK_GREEN + target.getName());
             CorePlayer coreTarget = CoreManagerPlayers.getCorePlayer(target);
 
+            if(coreTarget == null){
+                getPlayer().sendMessage(ChatColor.RED + "Erreur avec l'adversaire.");
+                return;
+            }
+
             arena.setFirstPlayer(getPlayer());
             arena.setSecondPlayer(target);
             arena.setArenaState(ArenaState.DUEL_ASKED);
