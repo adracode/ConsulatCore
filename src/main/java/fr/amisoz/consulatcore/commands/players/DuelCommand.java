@@ -72,6 +72,7 @@ public class DuelCommand extends ConsulatCommand {
 
                 getCorePlayer().isFighting = true;
                 CoreManagerPlayers.getCorePlayer(arena.getFirstPlayer()).isFighting = true;
+                DuelManager.askedDuels.remove(arena.getFirstPlayer());
 
                 Bukkit.getScheduler().runTaskLater(ConsulatCore.INSTANCE, () -> {
 
@@ -89,6 +90,8 @@ public class DuelCommand extends ConsulatCommand {
 
                 askDuel.sendMessage("§4" + getPlayer().getName() + "§c a refusé ton duel !");
                 getPlayer().sendMessage("§cTu as bien refusé le duel !");
+
+                DuelManager.askedDuels.remove(arena.getFirstPlayer());
 
                 arena.setFirstPlayer(null);
                 arena.setSecondPlayer(null);
@@ -134,9 +137,8 @@ public class DuelCommand extends ConsulatCommand {
 
             Arena arena = null;
             for(Arena arenaLoop : DuelManager.arenas){
-                if(!arenaLoop.isBusy()){
+                if(!arenaLoop.isBusy() && arena == null){
                     arena = arenaLoop;
-                    break;
                 }
             }
 
@@ -145,10 +147,20 @@ public class DuelCommand extends ConsulatCommand {
                 return;
             }
 
+            if(DuelManager.askedDuels.containsKey(getPlayer())){
+                getPlayer().sendMessage(ChatColor.RED + "Tu as déjà fait une demande, tu dois attendre qu'elle expire.");
+                return;
+            }
+
             arena.bet = bet;
 
             getPlayer().sendMessage(ChatColor.GREEN + "Demande envoyée à " + ChatColor.DARK_GREEN + target.getName());
             CorePlayer coreTarget = CoreManagerPlayers.getCorePlayer(target);
+
+            if(coreTarget == null){
+                getPlayer().sendMessage(ChatColor.RED + "Erreur avec l'adversaire.");
+                return;
+            }
 
             arena.setFirstPlayer(getPlayer());
             arena.setSecondPlayer(target);
@@ -157,13 +169,15 @@ public class DuelCommand extends ConsulatCommand {
             coreTarget.arena = arena;
             getCorePlayer().arena = arena;
 
+            DuelManager.askedDuels.put(getPlayer(), arena);
+
             target.sendMessage(ChatColor.RED + "Tu as reçu une demande de duel par " + ChatColor.DARK_RED + getPlayer().getName());
             target.sendMessage(ChatColor.RED + "La mise est de " + ChatColor.DARK_RED + bet + ChatColor.RED + "€");
             target.sendMessage(ChatColor.GREEN + "Fais /duel accept pour accepter et /duel reject pour refuser !");
             target.sendMessage(ChatColor.GRAY + "Sache que tout ton stuff sera perdu si tu meurs. Ta mise également ! En revanche, si tu gagnes, tu gagneras " + (bet*2) + "€, ainsi que le stuff de l'adversaire.");
 
             Bukkit.getScheduler().runTaskLater(ConsulatCore.INSTANCE, () -> {
-                Arena laterArena = getCorePlayer().arena;
+                Arena laterArena = DuelManager.askedDuels.get(getPlayer());
                 if(laterArena.getArenaState() == ArenaState.DUEL_ASKED) {
                     laterArena.setArenaState(ArenaState.FREE);
                     laterArena.setBusy(false);
