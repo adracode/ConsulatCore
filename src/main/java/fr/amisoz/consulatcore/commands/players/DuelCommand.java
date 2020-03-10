@@ -16,7 +16,7 @@ import org.bukkit.entity.Player;
 public class DuelCommand extends ConsulatCommand {
 
     public DuelCommand() {
-        super("/sduel spectate ou /duel <Joueur> <Mise> ou /duel accept/reject", 1, RankEnum.JOUEUR);
+        super("/duel spectate ou /duel <Joueur> <Mise> ou /duel accept/reject ou /duel annonce on/off", 1, RankEnum.JOUEUR);
     }
 
     @Override
@@ -55,7 +55,12 @@ public class DuelCommand extends ConsulatCommand {
                     return;
                 }
 
-                Bukkit.broadcastMessage("§7[§b§lDuel§r§7] §4Un duel va avoir lieu ! La mise de chaque participant est de " +  arena.bet + "€ ! Pour y être téléporté afin de regarder le duel, /duel spectate");
+                Bukkit.getOnlinePlayers().forEach(player -> {
+                    if(!DuelManager.removeAnnounces.contains(player)){
+                        player.sendMessage("§7[§b§lDuel§r§7] &c"  + arena.getFirstPlayer().getName() + " vs " + arena.getSecondPlayer().getName()  +" ! Mise de chaque participant : §6" +  arena.bet + "€ §c! Pour y être téléporté afin de regarder le duel, /duel spectate");
+                    }
+                });
+
                 arena.setArenaState(ArenaState.DUEL_ACCEPTED);
 
                 arena.firstBefore = arena.getFirstPlayer().getLocation();
@@ -64,23 +69,23 @@ public class DuelCommand extends ConsulatCommand {
                 arena.getFirstPlayer().teleport(arena.getFirstSpawn());
                 arena.getSecondPlayer().teleport(arena.getSecondSpawn());
 
-                arena.getFirstPlayer().sendMessage("§7Le combat commence dans 30 secondes.");
-                arena.getSecondPlayer().sendMessage("§7Le combat commence dans 30 secondes.");
+                arena.getFirstPlayer().sendMessage("§7Le combat commence dans 15 secondes.");
+                arena.getSecondPlayer().sendMessage("§7Le combat commence dans 15 secondes.");
 
                 PlayersManager.getConsulatPlayer(arena.getFirstPlayer()).removeMoney((double) arena.bet);
                 PlayersManager.getConsulatPlayer(arena.getSecondPlayer()).removeMoney((double) arena.bet);
 
                 getCorePlayer().isFighting = true;
                 CoreManagerPlayers.getCorePlayer(arena.getFirstPlayer()).isFighting = true;
-                DuelManager.askedDuels.remove(arena.getFirstPlayer());
+                DuelManager.askedDuels.remove(arena.getFirstPlayer().getUniqueId().toString());
 
                 Bukkit.getScheduler().runTaskLater(ConsulatCore.INSTANCE, () -> {
 
                     if(arena.getArenaState() == ArenaState.DUEL_ACCEPTED) {
                         arena.setArenaState(ArenaState.IN_FIGHT);
-                        Bukkit.broadcastMessage("§7[§b§lDuel§r§7] §4Que le duel commence !");
+                        Bukkit.broadcastMessage("§7[§b§lDuel§r§7] §cQue le duel commence !");
                     }
-                }, 20*30);
+                }, 20*15);
 
             }else if(getArgs()[0].equalsIgnoreCase("reject")){
                 if(!arena.getArenaState().equals(ArenaState.DUEL_ASKED)){
@@ -91,7 +96,7 @@ public class DuelCommand extends ConsulatCommand {
                 askDuel.sendMessage("§4" + getPlayer().getName() + "§c a refusé ton duel !");
                 getPlayer().sendMessage("§cTu as bien refusé le duel !");
 
-                DuelManager.askedDuels.remove(arena.getFirstPlayer());
+                DuelManager.askedDuels.remove(arena.getFirstPlayer().getUniqueId().toString());
 
                 arena.setFirstPlayer(null);
                 arena.setSecondPlayer(null);
@@ -100,6 +105,29 @@ public class DuelCommand extends ConsulatCommand {
 
             }else sendUsage();
         }else if(getArgs().length == 2){
+            if(getArgs()[0].equalsIgnoreCase("annonce")){
+                String result = getArgs()[1];
+                String uuid = getPlayer().getUniqueId().toString();
+                if(result.equalsIgnoreCase("on")){
+                    if(DuelManager.removeAnnounces.contains(uuid)){
+                        getPlayer().sendMessage("§aLes annonces des duels sont à nouveau activées.");
+                        DuelManager.removeAnnounces.remove(uuid);
+                    }else{
+                        getPlayer().sendMessage("§cLes annonces sont déjà activées !");
+                    }
+                }else if(result.equalsIgnoreCase("off")){
+                    if(DuelManager.removeAnnounces.contains(uuid)){
+                        getPlayer().sendMessage("§cLes annonces sont déjà désactivées !");
+                        DuelManager.removeAnnounces.remove(uuid);
+                    }else{
+                        getPlayer().sendMessage("§aLes annonces sont désormais désactivées. !");
+                        DuelManager.removeAnnounces.add(uuid);
+                    }
+                }else sendUsage();
+
+                return;
+            }
+
             Player target = Bukkit.getPlayer(getArgs()[0]);
             int bet;
 
@@ -147,7 +175,7 @@ public class DuelCommand extends ConsulatCommand {
                 return;
             }
 
-            if(DuelManager.askedDuels.containsKey(getPlayer())){
+            if(DuelManager.askedDuels.containsKey(getPlayer().getUniqueId().toString())){
                 getPlayer().sendMessage(ChatColor.RED + "Tu as déjà fait une demande, tu dois attendre qu'elle expire.");
                 return;
             }
@@ -162,6 +190,7 @@ public class DuelCommand extends ConsulatCommand {
                 return;
             }
 
+
             arena.setFirstPlayer(getPlayer());
             arena.setSecondPlayer(target);
             arena.setArenaState(ArenaState.DUEL_ASKED);
@@ -169,7 +198,7 @@ public class DuelCommand extends ConsulatCommand {
             coreTarget.arena = arena;
             getCorePlayer().arena = arena;
 
-            DuelManager.askedDuels.put(getPlayer(), arena);
+            DuelManager.askedDuels.put(getPlayer().getUniqueId().toString(), arena);
 
             target.sendMessage(ChatColor.RED + "Tu as reçu une demande de duel par " + ChatColor.DARK_RED + getPlayer().getName());
             target.sendMessage(ChatColor.RED + "La mise est de " + ChatColor.DARK_RED + bet + ChatColor.RED + "€");
@@ -177,12 +206,13 @@ public class DuelCommand extends ConsulatCommand {
             target.sendMessage(ChatColor.GRAY + "Sache que tout ton stuff sera perdu si tu meurs. Ta mise également ! En revanche, si tu gagnes, tu gagneras " + (bet*2) + "€, ainsi que le stuff de l'adversaire.");
 
             Bukkit.getScheduler().runTaskLater(ConsulatCore.INSTANCE, () -> {
-                Arena laterArena = DuelManager.askedDuels.get(getPlayer());
+                Arena laterArena = DuelManager.askedDuels.get(getPlayer().getUniqueId().toString());
                 if(laterArena.getArenaState() == ArenaState.DUEL_ASKED) {
                     laterArena.setArenaState(ArenaState.FREE);
                     laterArena.setBusy(false);
                     laterArena.setFirstPlayer(null);
                     laterArena.setSecondPlayer(null);
+                    DuelManager.askedDuels.remove(getPlayer().getUniqueId().toString());
                     getPlayer().sendMessage(ChatColor.GRAY + "La demande de duel n'a pas reçu de réponse.");
                 }
             }, 30*20);
