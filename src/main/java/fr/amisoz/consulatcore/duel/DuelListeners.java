@@ -8,14 +8,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -56,9 +55,9 @@ public class DuelListeners implements Listener {
         Player player = event.getPlayer();
         CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
 
-        if(corePlayer.isFighting){
+        if(corePlayer.isFighting && corePlayer.arena.getArenaState() != ArenaState.AFTER_FIGHT){
             player.setHealth(0D);
-            Bukkit.broadcastMessage("§7[§b§lDuel§r§7] §4" + player.getName() + " s'est déconnecté !");
+            Bukkit.broadcastMessage("§7[§b§lDuel§r§7] §c" + player.getName() + " s'est déconnecté !");
         }
     }
 
@@ -68,7 +67,7 @@ public class DuelListeners implements Listener {
         CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
 
         if(corePlayer.isFighting){
-            Bukkit.broadcastMessage("§7[§b§lDuel§r§7] §4" + player.getName() + " a perdu le duel !");
+            Bukkit.broadcastMessage("§7[§b§lDuel§r§7] §c" + player.getName() + " a perdu le duel !");
             corePlayer.isFighting = false;
             Arena arena = corePlayer.arena;
 
@@ -84,8 +83,6 @@ public class DuelListeners implements Listener {
             }
 
             corePlayer.isFighting = false;
-            CorePlayer victoryCore = CoreManagerPlayers.getCorePlayer(arena.getVictoryPlayer());
-            victoryCore.isFighting = false;
 
             arena.setArenaState(ArenaState.AFTER_FIGHT);
             arena.setFirstPlayer(null);
@@ -104,12 +101,21 @@ public class DuelListeners implements Listener {
             PlayersManager.getConsulatPlayer(arena.getVictoryPlayer()).addMoney((double) (arena.bet*2));
             arena.getVictoryPlayer().sendMessage("§aTu as gagné " + arena.bet*2 + "€ !");
             Bukkit.getScheduler().runTaskLater(ConsulatCore.INSTANCE, () -> {
-                Bukkit.broadcastMessage("§7[§b§lDuel§r§7] §4L'arène est à nouveau disponible.");
+                arena.getVictoryPlayer().getNearbyEntities(10, 5, 10).forEach(entity -> {
+                    if(entity instanceof Item){
+                        entity.remove();
+                    }
+                });
+
+                Bukkit.broadcastMessage("§7[§b§lDuel§r§7] §cL'arène est à nouveau disponible.");
                 arena.setArenaState(ArenaState.FREE);
                 arena.setBusy(false);
                 arena.getVictoryPlayer().teleport(arena.winLocation);
                 CoreManagerPlayers.getCorePlayer(arena.getVictoryPlayer()).isFighting = false;
-            }, 20*60);
+
+                // Retrait du /back qui téléporterait à nouveau dans l'arène
+                CoreManagerPlayers.getCorePlayer(arena.getVictoryPlayer()).oldLocation = arena.winLocation;
+            }, 20*20);
         }
     }
 
@@ -144,18 +150,6 @@ public class DuelListeners implements Listener {
         if(corePlayer.isFighting){
             if(item.getType() == Material.CHORUS_FRUIT){
                 player.sendMessage(ChatColor.RED + "Tu ne peux pas manger ceci en combat.");
-                event.setCancelled(true);
-            }
-        }
-    }
-
-    @EventHandler
-    public void onPlayerTeleport(PlayerTeleportEvent event) {
-        Player player = event.getPlayer();
-        CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
-        if(event.getCause().equals(PlayerTeleportEvent.TeleportCause.ENDER_PEARL))  {
-            if(corePlayer.isFighting){
-                player.sendMessage(ChatColor.RED + "Tu ne peux pas lancer d'enderpearl en combat.");
                 event.setCancelled(true);
             }
         }
