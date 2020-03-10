@@ -57,7 +57,7 @@ public class DuelCommand extends ConsulatCommand {
 
                 Bukkit.getOnlinePlayers().forEach(player -> {
                     if(!DuelManager.removeAnnounces.contains(player)){
-                        player.sendMessage("§7[§b§lDuel§r§7] &c"  + arena.getFirstPlayer().getName() + " vs " + arena.getSecondPlayer().getName()  +" ! Mise de chaque participant : §6" +  arena.bet + "€ §c! Pour y être téléporté afin de regarder le duel, /duel spectate");
+                        player.sendMessage("§7[§b§lDuel§r§7] §c"  + arena.getFirstPlayer().getName() + " vs " + arena.getSecondPlayer().getName()  +" ! Mise de chaque participant : §6" +  arena.bet + "€ §c! Pour y être téléporté afin de regarder le duel, /duel spectate");
                     }
                 });
 
