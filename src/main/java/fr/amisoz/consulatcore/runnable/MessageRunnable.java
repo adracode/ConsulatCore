@@ -18,6 +18,7 @@ public class MessageRunnable implements Runnable {
         messageList.add("Cheater et insulter ne sert à rien !");
         messageList.add("Tu peux acheter et vendre des items à l'admin shop au spawn !");
         messageList.add("Tu peux vendre et acheter des items à d'autres joueurs, /shop help !");
+        messageList.add("Un nouveau grade a fait son apparition, il est disponible pour 15 000€ au shop admin ! (Prix actuellement réduit)");
     }
 
     @Override
