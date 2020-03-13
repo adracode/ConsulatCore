@@ -17,7 +17,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class FlyRunnable extends BukkitRunnable {
 
     private Player player;
-    private static int duration;
+    public static int duration;
 
     public FlyRunnable(Player player, int duration) {
         this.player = player;
@@ -36,11 +36,10 @@ public class FlyRunnable extends BukkitRunnable {
         duration = ConsulatCore.INSTANCE.getFlySQL().getDuration(player);
 
         if(duration == 240 || duration == 180 || duration == 120 || duration == 60 || duration == 30 || duration == 10 ||duration == 5){
-            if(duration >= 60){
-                Title.send(player, ChatColor.GOLD+"[Fly]", ChatColor.BLUE+"Tu as encore ton fly pendant " + ConsulatCore.INSTANCE.getFlySQL().getDuration(player)/60 + " minutes !", 1, 4, 2);
-            }else {
-                Title.send(player, ChatColor.GOLD+"[Fly]", ChatColor.BLUE+"Tu as encore ton fly pendant " + ConsulatCore.INSTANCE.getFlySQL().getDuration(player) + " secondes !", 1, 4, 2);
-            }
+            System.out.println("Duration: " + ConsulatCore.INSTANCE.getFlySQL().getDuration(player) + "s");
+            System.out.println("Duration: " + ConsulatCore.INSTANCE.getFlySQL().getDuration(player)/60 + "min");
+
+            Title.send(player, ChatColor.GOLD+"[Fly]", ChatColor.BLUE+"Tu as encore ton fly pendant " + (duration >= 60 ? ConsulatCore.INSTANCE.getFlySQL().getDuration(player)/60 + " minutes !" : ConsulatCore.INSTANCE.getFlySQL().getDuration(player) + " secondes !"), 1, 4, 2);
         }else if(duration == 3 || duration == 2 || duration == 1) {
             Title.send(player, ChatColor.GOLD + "[Fly]", ChatColor.RED + "Tu as encore ton fly pendant " + ConsulatCore.INSTANCE.getFlySQL().getDuration(player) + " secondes !", 1, 4, 2);
             player.playSound(player.getLocation(), Sound.BLOCK_LEVER_CLICK, 1f, 1f);
@@ -56,7 +55,14 @@ public class FlyRunnable extends BukkitRunnable {
             player.sendMessage(ChatColor.RED+"Ton fly est terminé !");
             cancel();
         }
+        if(!player.isOnline()){
+            ConsulatCore.INSTANCE.getFlySQL().setDuration(player, 300);
+            CommandFly.fly.remove(player);
+            CommandFly.cooldowns.put(player.getName(), System.currentTimeMillis());
+            player.setAllowFlight(false);
+            player.setFlying(false);
+            cancel();
+        }
         ConsulatCore.INSTANCE.getFlySQL().updateDuration(player);
-        System.out.println(duration+"s");
     }
 }

@@ -71,11 +71,7 @@ public class CommandFly extends ConsulatCommand {
                         return;
                     }
 
-                    if(ConsulatCore.INSTANCE.getFlySQL().getDuration(player) >= 60){
-                        player.sendMessage(ChatColor.RED+"Tu as encore ton fly pendant " + ConsulatCore.INSTANCE.getFlySQL().getDuration(player)/60 + " minutes !");
-                    }else {
-                        player.sendMessage(ChatColor.RED+"Tu as encore ton fly pendant " + ConsulatCore.INSTANCE.getFlySQL().getDuration(player) + " secondes !");
-                    }
+                    player.sendMessage(ChatColor.BLUE+"Tu as encore ton fly pendant " + (FlyRunnable.duration >= 60 ? FlyRunnable.duration/60 + " minutes !" : FlyRunnable.duration + " secondes !"));
                     break;
                 default: break;
             }

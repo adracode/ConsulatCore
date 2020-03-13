@@ -93,6 +93,7 @@ public class ShopCommand implements CommandExecutor {
             CoreManagerPlayers.getCorePlayer(target).canFly = true;
             CoreManagerPlayers.getCorePlayer(target).flyDuration = 300;
             ConsulatCore.INSTANCE.getFlySQL().setParams(target.getUniqueId().toString(), CoreManagerPlayers.getCorePlayer(target).canFly, CoreManagerPlayers.getCorePlayer(target).flyDuration);
+            target.sendMessage(ChatColor.GREEN+"Suite à ton achat tu as maintenant accès au /fly !");
         }
         return false;
     }
