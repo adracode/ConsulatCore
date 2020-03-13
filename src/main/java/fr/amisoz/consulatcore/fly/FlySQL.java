@@ -121,7 +121,7 @@ public class FlySQL {
         try {
             PreparedStatement sts = ConsulatAPI.getDatabase().prepareStatement("UPDATE fly SET duration=? WHERE uuid=?");
             sts.setInt(1, duration);
-            sts.setString(3, player.getUniqueId().toString());
+            sts.setString(2, player.getUniqueId().toString());
             sts.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
