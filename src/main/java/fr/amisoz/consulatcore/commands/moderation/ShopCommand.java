@@ -1,6 +1,9 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.players.CoreManagerPlayers;
+import fr.amisoz.consulatcore.players.CorePlayer;
+import fr.amisoz.consulatcore.runnable.FlyRunnable;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.custom.CustomDatabase;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -83,6 +86,13 @@ public class ShopCommand implements CommandExecutor {
                 target.sendMessage("§cUne erreur s'est produite lors de l'achat de grade personnalisé, préviens un administrateur !");
                 e.printStackTrace();
             }
+        }
+
+        //ceci est juste pour tester à delete plus tard
+        if(args[0].equals("fly5")){
+            CoreManagerPlayers.getCorePlayer(target).canFly = true;
+            CoreManagerPlayers.getCorePlayer(target).flyDuration = 300;
+            ConsulatCore.INSTANCE.getFlySQL().setParams(target.getUniqueId().toString(), CoreManagerPlayers.getCorePlayer(target).canFly, CoreManagerPlayers.getCorePlayer(target).flyDuration);
         }
         return false;
     }

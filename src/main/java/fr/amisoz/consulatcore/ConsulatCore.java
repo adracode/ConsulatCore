@@ -7,6 +7,7 @@ import fr.amisoz.consulatcore.moderation.ModerationDatabase;
 import fr.amisoz.consulatcore.runnable.AFKRunnable;
 import fr.amisoz.consulatcore.runnable.MessageRunnable;
 import fr.amisoz.consulatcore.runnable.MonitoringRunnable;
+import fr.amisoz.consulatcore.fly.FlySQL;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.ranks.RankDatabase;
 import fr.leconsulat.api.ranks.RankManager;
@@ -28,6 +29,7 @@ public class ConsulatCore extends JavaPlugin {
 
     public static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy 'à' HH:mm");
 
+    private FlySQL flySQL;
     private RankDatabase rankDatabase;
     private RankManager rankManager;
     private ModerationDatabase moderationDatabase;
@@ -47,6 +49,8 @@ public class ConsulatCore extends JavaPlugin {
 
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 
+        flySQL = new FlySQL();
+        flySQL.createTable();
         rankDatabase = new RankDatabase();
         rankManager = new RankManager(rankDatabase);
         moderationDatabase = new ModerationDatabase(this);
@@ -78,6 +82,7 @@ public class ConsulatCore extends JavaPlugin {
 
             ConsulatCore.textPerso.add(textComponent);
         }
+
         sendConsole("ShazenCore loaded in " + (System.currentTimeMillis() - startLoading) + " ms.");
     }
 
@@ -97,4 +102,8 @@ public class ConsulatCore extends JavaPlugin {
     public RankManager getRankManager() { return rankManager; }
 
     public ModerationDatabase getModerationDatabase() { return moderationDatabase;  }
+
+    public FlySQL getFlySQL() {
+        return flySQL;
+    }
 }

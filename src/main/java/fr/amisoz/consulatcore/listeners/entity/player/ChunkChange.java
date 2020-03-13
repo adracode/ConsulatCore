@@ -1,6 +1,8 @@
 package fr.amisoz.consulatcore.listeners.entity.player;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.commands.players.CommandFly;
+import fr.amisoz.consulatcore.players.CoreManagerPlayers;
 import fr.amisoz.consulatcore.runnable.FlyRunnable;
 import fr.leconsulat.api.claim.ChunkLoader;
 import fr.leconsulat.api.claim.ClaimObject;
@@ -29,7 +31,7 @@ public class ChunkChange implements Listener {
         //si il leave son claim
         if (chunk == null && consulatPlayer.claimedChunk != null) {
             if(CommandFly.fly.contains(player)){
-                FlyRunnable.setDuration(4);
+                ConsulatCore.INSTANCE.getFlySQL().setDuration(player, 4);
                 player.sendMessage(ChatColor.RED+"Ton fly se terminera dans 4 secondes ! Tu as quitté ton claim..");
                 consulatPlayer.claimedChunk = null;
             }

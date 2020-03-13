@@ -1,9 +1,11 @@
 package fr.amisoz.consulatcore.listeners.entity.player;
 
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.commands.players.CommandFly;
 import fr.amisoz.consulatcore.moderation.ModerationUtils;
 import fr.amisoz.consulatcore.players.CoreManagerPlayers;
 import fr.amisoz.consulatcore.players.CorePlayer;
+import fr.amisoz.consulatcore.runnable.FlyRunnable;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.player.PlayersManager;
 import fr.leconsulat.api.ranks.RankEnum;
@@ -73,11 +75,18 @@ public class ConnectionListeners implements Listener {
 
         CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
         corePlayer.lastMove = System.currentTimeMillis();
+        ConsulatCore.INSTANCE.getFlySQL().insertInFly(player);
+        if(ConsulatCore.INSTANCE.getFlySQL().canFly(player)){
+            ConsulatCore.INSTANCE.getFlySQL().setParams(player.getUniqueId().toString(), false, 0);
+        }
     }
 
     @EventHandler
     public void onLeave(PlayerQuitEvent event) {
         Player player = event.getPlayer();
+        if(CommandFly.fly.contains(player)){
+            ConsulatCore.INSTANCE.getFlySQL().setDuration(player, 0);
+        }
         CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
         RankEnum playerRank = PlayersManager.getConsulatPlayer(player).getRank();
 
@@ -106,7 +115,7 @@ public class ConnectionListeners implements Listener {
                 event.setQuitMessage(ChatColor.GRAY + "(" + ChatColor.RED + "-" + ChatColor.GRAY + ")" + playerRank.getRankColor() + " [" + playerRank.getRankName() + "] " + player.getName());
             }
         }
-
+        ConsulatCore.INSTANCE.getFlySQL().saveInformations(player);
     }
 
     private void saveConnection(Player player) throws SQLException {

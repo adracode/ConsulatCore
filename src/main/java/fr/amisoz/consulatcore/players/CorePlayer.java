@@ -33,6 +33,9 @@ public class CorePlayer {
     public CustomEnum persoState = CustomEnum.START;
     public String persoNick = "";
 
+    public boolean canFly = false;
+    public int flyDuration = 0;
+
     public String getSanctionTarget() {
         return sanctionTarget;
     }
