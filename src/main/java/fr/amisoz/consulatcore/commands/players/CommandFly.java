@@ -26,7 +26,7 @@ public class CommandFly extends ConsulatCommand {
     public static Map<String, Long> cooldowns = new HashMap<>();
 
     public CommandFly() {
-        super("usage", 1, RankEnum.JOUEUR);
+        super("/fly [start/info]", 1, RankEnum.JOUEUR);
     }
 
     @Override
