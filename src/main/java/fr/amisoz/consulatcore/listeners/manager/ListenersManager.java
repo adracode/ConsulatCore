@@ -19,5 +19,6 @@ public class ListenersManager {
         Bukkit.getPluginManager().registerEvents(new ExperienceListener(), consulatCore);
         Bukkit.getPluginManager().registerEvents(new FoodListener(), consulatCore);
         Bukkit.getPluginManager().registerEvents(new SignListener(), consulatCore);
+        Bukkit.getPluginManager().registerEvents(new ChunkChange(), consulatCore);
     }
 }
