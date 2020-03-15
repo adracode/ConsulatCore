@@ -14,19 +14,6 @@ import java.sql.SQLException;
  */
 public class FlySQL {
 
-    public void createTable(){
-        try {
-            PreparedStatement sts = ConsulatAPI.getDatabase().prepareStatement("CREATE TABLE IF NOT EXISTS fly(" +
-                    "`#` INT NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
-                    "uuid VARCHAR(255), " +
-                    "canFly BOOL, " +
-                    "duration LONG)");
-            sts.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void insertInFly(Player player){
         try {
             PreparedStatement sts = ConsulatAPI.getDatabase().prepareStatement("SELECT uuid FROM fly WHERE uuid='" + player.getUniqueId().toString() + "'");

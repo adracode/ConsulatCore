@@ -50,7 +50,6 @@ public class ConsulatCore extends JavaPlugin {
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 
         flySQL = new FlySQL();
-        flySQL.createTable();
         rankDatabase = new RankDatabase();
         rankManager = new RankManager(rankDatabase);
         moderationDatabase = new ModerationDatabase(this);
