@@ -48,7 +48,7 @@ public class FlyRunnable extends BukkitRunnable {
         }
 
         if(duration == 0){
-            ConsulatCore.INTANCE.getFlySQL().setDuration(player, durationAtEnd);
+            ConsulatCore.INSTANCE.getFlySQL().setDuration(player, durationAtEnd);
             CommandFly.fly5.remove(player);
             CommandFly.cooldowns.put(player.getName(), System.currentTimeMillis());
             player.setAllowFlight(false);
