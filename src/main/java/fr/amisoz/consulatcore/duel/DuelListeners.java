@@ -10,18 +10,39 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.projectiles.ProjectileSource;
 
 import java.util.Random;
 
 public class DuelListeners implements Listener {
+
+    @EventHandler
+    public void projectileLaunch(ProjectileLaunchEvent event){
+        Projectile projectile = event.getEntity();
+        ProjectileSource projectileSource = projectile.getShooter();
+
+        if(!(projectileSource instanceof Player)) return;
+
+        Player player = (Player) projectileSource;
+        CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
+
+        if(corePlayer.isFighting && corePlayer.arena.getArenaState() == ArenaState.DUEL_ACCEPTED){
+            event.setCancelled(true);
+            player.sendMessage(ChatColor.RED + "Le duel n'a pas encore commencé !");
+        }
+    }
 
     @EventHandler
     public void onMove(PlayerMoveEvent event){
