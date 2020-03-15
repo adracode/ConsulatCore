@@ -76,7 +76,7 @@ public class ConnectionListeners implements Listener {
         CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
         corePlayer.lastMove = System.currentTimeMillis();
         ConsulatCore.INSTANCE.getFlySQL().insertInFly(player);
-        if(ConsulatCore.INSTANCE.getFlySQL().canFly(player)){
+        if(!ConsulatCore.INSTANCE.getFlySQL().canFly(player)){
             ConsulatCore.INSTANCE.getFlySQL().setParams(player.getUniqueId().toString(), false, 0);
         }
     }
@@ -84,9 +84,6 @@ public class ConnectionListeners implements Listener {
     @EventHandler
     public void onLeave(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        if(CommandFly.fly.contains(player)){
-            ConsulatCore.INSTANCE.getFlySQL().setDuration(player, 0);
-        }
         CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
         RankEnum playerRank = PlayersManager.getConsulatPlayer(player).getRank();
 

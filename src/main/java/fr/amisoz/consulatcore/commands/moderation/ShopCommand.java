@@ -88,12 +88,19 @@ public class ShopCommand implements CommandExecutor {
             }
         }
 
-        //ceci est juste pour tester à delete plus tard
-        if(args[0].equals("fly5")){
+        //vrai valeur
+        if(args[0].equals("fly25")){
             CoreManagerPlayers.getCorePlayer(target).canFly = true;
-            CoreManagerPlayers.getCorePlayer(target).flyDuration = 300;
+            CoreManagerPlayers.getCorePlayer(target).flyDuration = 1500;
             ConsulatCore.INSTANCE.getFlySQL().setParams(target.getUniqueId().toString(), CoreManagerPlayers.getCorePlayer(target).canFly, CoreManagerPlayers.getCorePlayer(target).flyDuration);
-            target.sendMessage(ChatColor.GREEN+"Suite à ton achat tu as maintenant accès au /fly !");
+            target.sendMessage(ChatColor.GREEN+"Suite à ton achat tu as maintenant accès au /fly qui dure 25 minutes toute les heures !");
+        }
+
+        if(args[0].equals("infinite")){
+            CoreManagerPlayers.getCorePlayer(target).canFly = true;
+            CoreManagerPlayers.getCorePlayer(target).flyDuration = Integer.MAX_VALUE;
+            ConsulatCore.INSTANCE.getFlySQL().setParams(target.getUniqueId().toString(), CoreManagerPlayers.getCorePlayer(target).canFly, CoreManagerPlayers.getCorePlayer(target).flyDuration);
+            target.sendMessage(ChatColor.GREEN+"Suite à ton achat tu as maintenant accès au /fly illimité toute les heures !");
         }
         return false;
     }

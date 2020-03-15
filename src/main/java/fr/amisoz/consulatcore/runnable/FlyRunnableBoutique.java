@@ -11,25 +11,24 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 /**
- * Created by KIZAFOX on 12/03/2020 for ConsulatCore
+ * Created by KIZAFOX on 15/03/2020 for ConsulatCore
  */
-public class FlyRunnable extends BukkitRunnable {
+public class FlyRunnableBoutique extends BukkitRunnable {
 
     private Player player;
-    public static final int INFINITY = Integer.MAX_VALUE;
     public static int duration;
     private int durationAtEnd;
 
-    public FlyRunnable(Player player, int duration, int durationAtEnd) {
+    public FlyRunnableBoutique(Player player, int duration, int durationAtEnd) {
         this.player = player;
-        FlyRunnable.duration = duration;
+        FlyRunnableBoutique.duration = duration;
         this.durationAtEnd = durationAtEnd;
     }
 
     @Override
     public void run() {
-        if(!CommandFly.fly5.contains(player)){
-            CommandFly.fly5.add(player);
+        if(!CommandFly.fly25.contains(player)){
+            CommandFly.fly25.add(player);
             player.setAllowFlight(true);
             player.setFlying(true);
             player.sendMessage(ChatColor.GREEN+"Tu viens d'activer ton fly !");
@@ -37,7 +36,7 @@ public class FlyRunnable extends BukkitRunnable {
 
         duration = ConsulatCore.INSTANCE.getFlySQL().getDuration(player);
 
-        if(duration == 240 || duration == 180 || duration == 120 || duration == 60 || duration == 30 || duration == 10 || duration == 5){
+        if(duration == 1200 || duration == 900 || duration == 600 || duration == 300 || duration == 30 || duration == 10 || duration == 5){
             System.out.println("Duration: " + ConsulatCore.INSTANCE.getFlySQL().getDuration(player) + "s");
             System.out.println("Duration: " + ConsulatCore.INSTANCE.getFlySQL().getDuration(player)/60 + "min");
 
