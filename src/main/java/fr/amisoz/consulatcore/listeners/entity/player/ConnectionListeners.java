@@ -75,10 +75,8 @@ public class ConnectionListeners implements Listener {
 
         CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
         corePlayer.lastMove = System.currentTimeMillis();
+
         ConsulatCore.INSTANCE.getFlySQL().insertInFly(player);
-        if(!ConsulatCore.INSTANCE.getFlySQL().canFly(player)){
-            ConsulatCore.INSTANCE.getFlySQL().setParams(player.getUniqueId().toString(), false, 0);
-        }
     }
 
     @EventHandler
