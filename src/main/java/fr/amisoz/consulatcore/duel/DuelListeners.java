@@ -114,7 +114,7 @@ public class DuelListeners implements Listener {
             if(result == 2){
                 ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
                 SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
-                skullMeta.setPlayerProfile(player.getPlayerProfile());
+                skullMeta.setOwningPlayer(player);
                 skull.setItemMeta(skullMeta);
                 arena.getVictoryPlayer().getWorld().dropItemNaturally(arena.getVictoryPlayer().getLocation(), skull);
             }

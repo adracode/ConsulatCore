@@ -5,10 +5,7 @@ import fr.amisoz.consulatcore.commands.manager.CommandManager;
 import fr.amisoz.consulatcore.duel.DuelManager;
 import fr.amisoz.consulatcore.listeners.manager.ListenersManager;
 import fr.amisoz.consulatcore.moderation.ModerationDatabase;
-import fr.amisoz.consulatcore.runnable.AFKRunnable;
-import fr.amisoz.consulatcore.runnable.MeceneRunnable;
-import fr.amisoz.consulatcore.runnable.MessageRunnable;
-import fr.amisoz.consulatcore.runnable.MonitoringRunnable;
+import fr.amisoz.consulatcore.runnable.*;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.ranks.RankDatabase;
 import fr.leconsulat.api.ranks.RankManager;
@@ -60,6 +57,7 @@ public class ConsulatCore extends JavaPlugin {
         Bukkit.getScheduler().runTaskTimer(this, new MonitoringRunnable(this), 0L, 20*60*10);
         Bukkit.getScheduler().runTaskTimer(this, new MessageRunnable(), 0L, 20*60*15);
         Bukkit.getScheduler().runTaskTimer(this, new MeceneRunnable(), 0L, 20*60*60);
+        Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new ServerTPS(), 100L, 1L);
 
         new ListenersManager(this);
         new CommandManager(this);

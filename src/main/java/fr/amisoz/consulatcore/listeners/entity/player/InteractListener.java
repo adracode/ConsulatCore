@@ -70,6 +70,12 @@ public class InteractListener implements Listener {
 
         if(corePlayer.isModerate()){
             if(itemMeta.getDisplayName().contains("Se téléporter aléatoirement")) {
+                if(Bukkit.getOnlinePlayers().size() == 1){
+                    player.sendMessage(ChatColor.RED + "Tu es seul.... désolé");
+                    event.setCancelled(true);
+                    return;
+                }
+
                 ArrayList<Player> playersOnline = new ArrayList<>(Bukkit.getOnlinePlayers());
                 playersOnline.remove(player);
                 Player resultedPlayer = playersOnline.get(new Random().nextInt(playersOnline.size()));
