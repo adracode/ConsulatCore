@@ -37,6 +37,8 @@ public class CorePlayer {
     public Arena arena;
     public boolean isFighting;
 
+    public boolean canUp = false;
+
 
     public String getSanctionTarget() {
         return sanctionTarget;
