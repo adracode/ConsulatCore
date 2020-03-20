@@ -2,7 +2,6 @@ package fr.amisoz.consulatcore.listeners.entity.player;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.commands.players.CommandFly;
-import fr.amisoz.consulatcore.players.CoreManagerPlayers;
 import fr.amisoz.consulatcore.runnable.FlyRunnable;
 import fr.leconsulat.api.claim.ChunkLoader;
 import fr.leconsulat.api.claim.ClaimObject;
@@ -14,8 +13,6 @@ import org.bukkit.Chunk;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 
 /**
  * Created by KIZAFOX on 13/03/2020 for ConsulatCore
@@ -32,18 +29,9 @@ public class ChunkChange implements Listener {
 
         //si il leave son claim
         if (chunk == null && consulatPlayer.claimedChunk != null) {
-            if(CommandFly.fly5.contains(player) || CommandFly.fly25.contains(player)){
+            if(FlyRunnable.flyMap.containsKey(player)){
                 ConsulatCore.INSTANCE.getFlySQL().setDuration(player, 4);
                 player.sendMessage(ChatColor.RED+"Ton fly se terminera dans 4 secondes ! Tu as quitté ton claim..");
-                consulatPlayer.claimedChunk = null;
-            }else if(CommandFly.infinite.contains(player)){
-                player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10*20, 100));
-                ConsulatCore.INSTANCE.getFlySQL().setDuration(player, Integer.MAX_VALUE);
-                CommandFly.infinite.remove(player);
-                CommandFly.cooldowns.put(player.getName(), System.currentTimeMillis());
-                player.setAllowFlight(false);
-                player.setFlying(false);
-                player.sendMessage(ChatColor.RED+"Ton fly est désactivé ! Tu as quitté ton claim..");
                 consulatPlayer.claimedChunk = null;
             }
         }

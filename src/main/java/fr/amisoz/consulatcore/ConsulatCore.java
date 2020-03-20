@@ -15,6 +15,7 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.sql.Connection;
 import java.text.SimpleDateFormat;
@@ -55,8 +56,7 @@ public class ConsulatCore extends JavaPlugin {
         Bukkit.getScheduler().runTaskTimer(this, new AFKRunnable(), 0L, 20*60*5);
         Bukkit.getScheduler().runTaskTimer(this, new MonitoringRunnable(this), 0L, 20*60*10);
         Bukkit.getScheduler().runTaskTimer(this, new MessageRunnable(), 0L, 20*60*15);
-        Bukkit.getScheduler().runTaskTimer(this, new FlyRunnable(), 0L, 20);
-        Bukkit.getScheduler().runTaskTimer(this, new FlyRunnableBoutique(), 0L, 20);
+        Bukkit.getScheduler().runTaskTimer(this, new FlyRunnable(), 0L, 20L);
 
         new ListenersManager(this);
         new CommandManager(this);

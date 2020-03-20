@@ -21,10 +21,12 @@ public class FlySQL {
 
             if(!rs.next()){
                 sts.close();
-                sts = ConsulatAPI.getDatabase().prepareStatement("INSERT INTO fly(uuid, canFly, duration) VALUES (?, ?, ?)");
+                sts = ConsulatAPI.getDatabase().prepareStatement("INSERT INTO fly(uuid, canFly, duration, flyTime, lastTime) VALUES (?, ?, ?, ?, ?)");
                 sts.setString(1, player.getUniqueId().toString());
                 sts.setBoolean(2, CoreManagerPlayers.getCorePlayer(player).canFly);
                 sts.setLong(3, CoreManagerPlayers.getCorePlayer(player).flyDuration);
+                sts.setLong(4, CoreManagerPlayers.getCorePlayer(player).flyTime);
+                sts.setLong(5, CoreManagerPlayers.getCorePlayer(player).lastTime);
                 sts.executeUpdate();
             }
         } catch (SQLException e) {
@@ -35,25 +37,31 @@ public class FlySQL {
     public void saveInformations(Player player){
         CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
         boolean canFly = corePlayer.canFly;
-        int duration = corePlayer.flyDuration;
+        long duration = corePlayer.flyDuration;
+        long flyTime = corePlayer.flyTime;
+        long lastTime = corePlayer.lastTime;
 
         try {
-            PreparedStatement sts = ConsulatAPI.getDatabase().prepareStatement("UPDATE fly SET canFly=?, duration=? WHERE uuid=?");
+            PreparedStatement sts = ConsulatAPI.getDatabase().prepareStatement("UPDATE fly SET canFly=?, duration=?, flyTime=?, lastTime=? WHERE uuid=?");
             sts.setBoolean(1, canFly);
             sts.setLong(2, duration);
-            sts.setString(3, player.getUniqueId().toString());
+            sts.setLong(3, flyTime);
+            sts.setLong(4, lastTime);
+            sts.setString(5, player.getUniqueId().toString());
             sts.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public void setParams(String uuid, boolean fly, int duration) {
+    public void setParams(String uuid, boolean fly, long duration, long flyTime, long lastTime) {
         try {
-            PreparedStatement sts = ConsulatAPI.getDatabase().prepareStatement("UPDATE fly SET canFly=?, duration=? WHERE uuid=?");
+            PreparedStatement sts = ConsulatAPI.getDatabase().prepareStatement("UPDATE fly SET canFly=?, duration=?, flyTime=?, lastTime=? WHERE uuid=?");
             sts.setBoolean(1, fly);
             sts.setLong(2, duration);
-            sts.setString(3, uuid);
+            sts.setLong(3, flyTime);
+            sts.setLong(4, lastTime);
+            sts.setString(5, uuid);
             sts.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -61,7 +69,7 @@ public class FlySQL {
     }
 
     public boolean canFly(Player player){
-        boolean canFly = CoreManagerPlayers.getCorePlayer(player).canFly;
+        boolean canFly = false;
         try {
             PreparedStatement sts = ConsulatAPI.getDatabase().prepareStatement("SELECT canFly FROM fly WHERE uuid=?");
             sts.setString(1, player.getUniqueId().toString());
@@ -73,23 +81,77 @@ public class FlySQL {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return !canFly;
+        return canFly;
     }
 
-    public int getDuration(Player player) {
-        int duration = 0;
+    public long getDuration(Player player) {
+        long duration = 0;
         try {
             PreparedStatement sts = ConsulatAPI.getDatabase().prepareStatement("SELECT duration FROM fly WHERE uuid=?");
             sts.setString(1, player.getUniqueId().toString());
             ResultSet rs = sts.executeQuery();
 
             if(rs.next()){
-                duration = rs.getInt("duration");
+                duration = rs.getLong("duration");
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return duration;
+    }
+
+    public void setDuration(Player player, long duration) {
+        try {
+            PreparedStatement sts = ConsulatAPI.getDatabase().prepareStatement("UPDATE fly SET duration=? WHERE uuid=?");
+            sts.setLong(1, duration);
+            sts.setString(2, player.getUniqueId().toString());
+            sts.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public long getLastTime(Player player) {
+        long lastTime = 0;
+        try {
+            PreparedStatement sts = ConsulatAPI.getDatabase().prepareStatement("SELECT lastTime FROM fly WHERE uuid=?");
+            sts.setString(1, player.getUniqueId().toString());
+            ResultSet rs = sts.executeQuery();
+
+            if(rs.next()){
+                lastTime = rs.getLong("lastTime");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return lastTime;
+    }
+
+    public void setLastTime(Player player, long lastTime) {
+        try {
+            PreparedStatement sts = ConsulatAPI.getDatabase().prepareStatement("UPDATE fly SET lastTime=? WHERE uuid=?");
+            sts.setLong(1, lastTime);
+            sts.setString(2, player.getUniqueId().toString());
+            sts.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public long getFlyTime(Player player) {
+        long flyTime = 0;
+        try {
+            PreparedStatement sts = ConsulatAPI.getDatabase().prepareStatement("SELECT flyTime FROM fly WHERE uuid=?");
+            sts.setString(1, player.getUniqueId().toString());
+            ResultSet rs = sts.executeQuery();
+
+            if(rs.next()){
+                flyTime = rs.getLong("flyTime");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return flyTime;
     }
 
     public void updateDuration(Player player) {
@@ -99,17 +161,6 @@ public class FlySQL {
             rs.setString(2, player.getUniqueId().toString());
             rs.executeUpdate();
             rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setDuration(Player player, int duration) {
-        try {
-            PreparedStatement sts = ConsulatAPI.getDatabase().prepareStatement("UPDATE fly SET duration=? WHERE uuid=?");
-            sts.setInt(1, duration);
-            sts.setString(2, player.getUniqueId().toString());
-            sts.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }

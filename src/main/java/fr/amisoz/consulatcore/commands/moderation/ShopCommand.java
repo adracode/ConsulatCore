@@ -2,8 +2,6 @@ package fr.amisoz.consulatcore.commands.moderation;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.players.CoreManagerPlayers;
-import fr.amisoz.consulatcore.players.CorePlayer;
-import fr.amisoz.consulatcore.runnable.FlyRunnable;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.custom.CustomDatabase;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -88,19 +86,20 @@ public class ShopCommand implements CommandExecutor {
             }
         }
 
-        //vrai valeur
         if(args[0].equals("fly25")){
             CoreManagerPlayers.getCorePlayer(target).canFly = true;
             CoreManagerPlayers.getCorePlayer(target).flyDuration = 1500;
-            ConsulatCore.INSTANCE.getFlySQL().setParams(target.getUniqueId().toString(), CoreManagerPlayers.getCorePlayer(target).canFly, CoreManagerPlayers.getCorePlayer(target).flyDuration);
+            CoreManagerPlayers.getCorePlayer(target).flyTime = CoreManagerPlayers.getCorePlayer(target).flyDuration;
+            ConsulatCore.INSTANCE.getFlySQL().setParams(target.getUniqueId().toString(), CoreManagerPlayers.getCorePlayer(target).canFly, CoreManagerPlayers.getCorePlayer(target).flyDuration, CoreManagerPlayers.getCorePlayer(target).flyTime, CoreManagerPlayers.getCorePlayer(target).lastTime);
             target.sendMessage(ChatColor.GREEN+"Suite à ton achat tu as maintenant accès au /fly qui dure 25 minutes toute les heures !");
         }
 
         if(args[0].equals("infinite")){
             CoreManagerPlayers.getCorePlayer(target).canFly = true;
             CoreManagerPlayers.getCorePlayer(target).flyDuration = Integer.MAX_VALUE;
-            ConsulatCore.INSTANCE.getFlySQL().setParams(target.getUniqueId().toString(), CoreManagerPlayers.getCorePlayer(target).canFly, CoreManagerPlayers.getCorePlayer(target).flyDuration);
-            target.sendMessage(ChatColor.GREEN+"Suite à ton achat tu as maintenant accès au /fly illimité toute les heures !");
+            CoreManagerPlayers.getCorePlayer(target).flyTime = CoreManagerPlayers.getCorePlayer(target).flyDuration;
+            ConsulatCore.INSTANCE.getFlySQL().setParams(target.getUniqueId().toString(), CoreManagerPlayers.getCorePlayer(target).canFly, CoreManagerPlayers.getCorePlayer(target).flyDuration, CoreManagerPlayers.getCorePlayer(target).flyTime, CoreManagerPlayers.getCorePlayer(target).lastTime);
+            target.sendMessage(ChatColor.GREEN+"Suite à ton achat tu as maintenant accès au /fly infini toute les heures !");
         }
         return false;
     }

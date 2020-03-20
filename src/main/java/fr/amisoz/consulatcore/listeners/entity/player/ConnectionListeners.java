@@ -1,11 +1,9 @@
 package fr.amisoz.consulatcore.listeners.entity.player;
 
 import fr.amisoz.consulatcore.ConsulatCore;
-import fr.amisoz.consulatcore.commands.players.CommandFly;
 import fr.amisoz.consulatcore.moderation.ModerationUtils;
 import fr.amisoz.consulatcore.players.CoreManagerPlayers;
 import fr.amisoz.consulatcore.players.CorePlayer;
-import fr.amisoz.consulatcore.runnable.FlyRunnable;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.player.PlayersManager;
 import fr.leconsulat.api.ranks.RankEnum;
