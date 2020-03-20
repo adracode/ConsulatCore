@@ -2,6 +2,7 @@ package fr.amisoz.consulatcore.listeners.entity.player;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.commands.players.CommandFly;
+import fr.amisoz.consulatcore.players.CoreManagerPlayers;
 import fr.amisoz.consulatcore.runnable.FlyRunnable;
 import fr.leconsulat.api.claim.ChunkLoader;
 import fr.leconsulat.api.claim.ClaimObject;
@@ -13,6 +14,8 @@ import org.bukkit.Chunk;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 /**
  * Created by KIZAFOX on 13/03/2020 for ConsulatCore
@@ -33,6 +36,11 @@ public class ChunkChange implements Listener {
                 ConsulatCore.INSTANCE.getFlySQL().setDuration(player, 4);
                 player.sendMessage(ChatColor.RED+"Ton fly se terminera dans 4 secondes ! Tu as quitté ton claim..");
                 consulatPlayer.claimedChunk = null;
+            }else if(CommandFly.infiniteFly.contains(player)){
+                player.setAllowFlight(false);
+                player.setFlying(false);
+                player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10*20, 100));
+                player.sendMessage(ChatColor.RED+"Ton fly infini est terminé car tu as quitté ton claim !");
             }
         }
     }

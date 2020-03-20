@@ -33,9 +33,6 @@ public class FlyRunnable implements Runnable{
                 }
             }else if(ConsulatCore.INSTANCE.getFlySQL().getFlyTime(player) == 1500){
                 if(duration == 1200 || duration == 900 || duration == 600 || duration == 300 || duration == 30 || duration == 10 || duration == 5){
-                    System.out.println("Duration: " + ConsulatCore.INSTANCE.getFlySQL().getDuration(player) + "s");
-                    System.out.println("Duration: " + ConsulatCore.INSTANCE.getFlySQL().getDuration(player)/60 + "min");
-
                     Title.send(player, ChatColor.GOLD+"[Fly]", ChatColor.BLUE+"Tu as encore ton fly pendant " + (duration >= 60 ? ConsulatCore.INSTANCE.getFlySQL().getDuration(player)/60 + " minutes !" : ConsulatCore.INSTANCE.getFlySQL().getDuration(player) + " secondes !"), 1, 4, 2);
                 }
             }
