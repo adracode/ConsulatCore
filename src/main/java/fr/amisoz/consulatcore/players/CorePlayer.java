@@ -34,7 +34,6 @@ public class CorePlayer {
     public String persoNick = "";
 
     public boolean canFly = false;
-    public long flyDuration = 0;
     public long flyTime = 0;
     public long lastTime = 0;
 
