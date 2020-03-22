@@ -15,13 +15,14 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import sun.net.www.http.ChunkedOutputStream;
 
 import java.sql.SQLException;
 
 /**
  * Created by KIZAFOX on 13/03/2020 for ConsulatCore
  */
-public class ChunkChange implements Listener {
+public class ChunkChangeListener implements Listener {
 
     @EventHandler
     public void onChunkChangeEvent(ChunkChangeEvent event) {
@@ -31,12 +32,12 @@ public class ChunkChange implements Listener {
         ConsulatPlayer consulatPlayer = PlayersManager.getConsulatPlayer(player);
         ClaimObject chunk = ChunkLoader.getClaimedZone(chunkTo);
 
-        //si il leave son claim
-        if (chunk == null && consulatPlayer.claimedChunk != null) {
-            if(FlyManager.flyMap.containsKey(player) || FlyManager.infiniteFly.contains(player)){
+        if (FlyManager.flyMap.containsKey(player) || FlyManager.infiniteFly.contains(player)) {
+
+            if (!canFly(player, chunk)) {
                 player.setAllowFlight(false);
                 player.setFlying(false);
-                player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10*20, 100));
+                player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10 * 20, 100));
                 player.sendMessage(FlyManager.flyPrefix + "Ton fly est terminé car tu as quitté ton claim !");
 
                 FlyManager.flyMap.remove(player);
@@ -52,5 +53,11 @@ public class ChunkChange implements Listener {
                 });
             }
         }
+    }
+
+    private boolean canFly(Player player, ClaimObject chunk) {
+        if (chunk != null) {
+            return chunk.getPlayerUUID().equalsIgnoreCase(player.getUniqueId().toString()) || chunk.access.contains(player.getUniqueId().toString());
+        }else return false;
     }
 }
