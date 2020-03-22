@@ -34,6 +34,6 @@ public class CommandManager {
         consulatCore.getCommand("perso").setExecutor(new PersoCommand());
         consulatCore.getCommand("site").setExecutor(new SiteCommand());
         consulatCore.getCommand("discord").setExecutor(new PersoCommand());
-        consulatCore.getCommand("fly").setExecutor(new CommandFly());
+        consulatCore.getCommand("fly").setExecutor(new FlyCommand());
     }
 }

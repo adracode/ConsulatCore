@@ -37,46 +37,6 @@ public class FlySQL {
         preparedStatement.close();
     }
 
-    public boolean canFly(Player player) {
-        boolean canFly = false;
-        try {
-            PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("SELECT canFly FROM fly WHERE uuid=?");
-            preparedStatement.setString(1, player.getUniqueId().toString());
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            if (resultSet.next()) {
-                canFly = resultSet.getBoolean("canFly");
-            }
-
-            resultSet.close();
-            preparedStatement.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return canFly;
-    }
-
-    public long getLastTime(Player player) {
-        long lastTime = 0;
-        try {
-            PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("SELECT lastTime FROM fly WHERE uuid=?");
-            preparedStatement.setString(1, player.getUniqueId().toString());
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            if (resultSet.next()) {
-                lastTime = resultSet.getLong("lastTime");
-            }
-
-            resultSet.close();
-            preparedStatement.close();
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return lastTime;
-    }
-
     public void setLastTime(Player player, long lastTime) throws SQLException {
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE fly SET lastTime=? WHERE uuid=?");
         preparedStatement.setLong(1, lastTime);

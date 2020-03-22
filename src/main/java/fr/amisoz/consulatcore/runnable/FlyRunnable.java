@@ -21,7 +21,6 @@ import java.util.Map;
 public class FlyRunnable implements Runnable {
 
 
-
     @Override
     public void run() {
         for (Map.Entry<Player, Long> fly : FlyManager.flyMap.entrySet()) {
@@ -29,21 +28,17 @@ public class FlyRunnable implements Runnable {
             CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
 
             long startFly = FlyManager.flyMap.get(player);
-            long timeLeft = corePlayer.flyTime -  (System.currentTimeMillis() - startFly)/1000;
+            long timeLeft = corePlayer.flyTime - (System.currentTimeMillis() - startFly) / 1000;
 
-            if (corePlayer.flyTime == 300) {
-                if (timeLeft == 240 || timeLeft == 180 || timeLeft == 120 || timeLeft == 60 || timeLeft == 30 || timeLeft == 10 || timeLeft == 5) {
-                    Title.send(player, ChatColor.GOLD + "[Fly]", ChatColor.BLUE + "Tu as encore ton fly pendant " + (timeLeft >= 60 ? timeLeft + " minutes !" : timeLeft + " secondes !"), 1, 4, 2);
+            long minutes = ((timeLeft / 60) % 60);
+            long seconds = timeLeft % 60;
 
-                }
-            } else if (corePlayer.flyTime == 1500) {
-                if (timeLeft == 1200 || timeLeft == 900 || timeLeft == 600 || timeLeft == 300 || timeLeft == 30 || timeLeft == 10 || timeLeft == 5) {
-                    Title.send(player, ChatColor.GOLD + "[Fly]", ChatColor.BLUE + "Tu as encore ton fly pendant " + (timeLeft >= 60 ? timeLeft + " minutes !" : timeLeft + " secondes !"), 1, 4, 2);
-                }
+            if(timeLeft % 60 == 0 && timeLeft > 0){
+                Title.send(player, ChatColor.GOLD + "[Fly]", ChatColor.BLUE + "Tu as encore ton fly pendant " + minutes + " minute" + ((minutes > 1) ? ("s") : ("")), 1, 4, 2);
             }
 
-            if (timeLeft == 3 || timeLeft == 2 || timeLeft == 1) {
-                Title.send(player, ChatColor.GOLD + "[Fly]", ChatColor.RED + "Tu as encore ton fly pendant " + timeLeft + " secondes !", 1, 4, 2);
+            if (timeLeft == 30 || timeLeft == 10 || timeLeft == 5 || timeLeft == 3 || timeLeft == 2 || timeLeft == 1) {
+                Title.send(player, ChatColor.GOLD + "[Fly]", ChatColor.RED + "Tu as encore ton fly pendant " + seconds + " seconde" + ((seconds > 1) ? ("s") : ("")), 1, 4, 2);
                 player.playSound(player.getLocation(), Sound.BLOCK_LEVER_CLICK, 1f, 1f);
             }
 
@@ -52,13 +47,13 @@ public class FlyRunnable implements Runnable {
                 try {
                     ConsulatCore.INSTANCE.getFlySQL().setLastTime(player, FlyManager.flyMap.get(player));
                 } catch (SQLException e) {
-                    player.sendMessage(ChatColor.RED + "Erreur lors de la sauvegarde du fly.");
+                    player.sendMessage(FlyManager.flyPrefix + "Erreur lors de la sauvegarde du fly.");
                 }
                 FlyManager.flyMap.remove(player);
                 player.setAllowFlight(false);
                 player.setFlying(false);
                 player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10 * 20, 100));
-                player.sendMessage(ChatColor.RED + "Ton fly est terminé !");
+                player.sendMessage(FlyManager.flyPrefix + "Ton fly est terminé !");
             }
         }
     }

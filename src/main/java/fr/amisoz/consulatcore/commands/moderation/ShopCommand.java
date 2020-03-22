@@ -1,6 +1,7 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.fly.FlyManager;
 import fr.amisoz.consulatcore.players.CoreManagerPlayers;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.custom.CustomDatabase;
@@ -89,13 +90,13 @@ public class ShopCommand implements CommandExecutor {
         if (args[0].equals("fly5")) {
             CoreManagerPlayers.getCorePlayer(target).canFly = true;
             CoreManagerPlayers.getCorePlayer(target).flyTime = 300;
-            target.sendMessage(ChatColor.GREEN + "Suite à ton achat tu as maintenant accès au /fly qui dure 25minutes toute les heures !");
+            target.sendMessage(FlyManager.flyPrefix + "Suite à ton achat tu as maintenant accès au /fly qui dure 5minutes toute les heures !");
 
             Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.INSTANCE, () -> {
                 try {
                     ConsulatCore.INSTANCE.getFlySQL().updateFlyTime(target, 300L);
                 } catch (SQLException e) {
-                    target.sendMessage(ChatColor.RED + "La sauvegarde de ton Fly a échoué, contacte un administrateur.");
+                    target.sendMessage(FlyManager.flyPrefix + "La sauvegarde de ton Fly a échoué, contacte un administrateur.");
                 }
             });
         }
@@ -104,13 +105,13 @@ public class ShopCommand implements CommandExecutor {
         if (args[0].equals("fly25")) {
             CoreManagerPlayers.getCorePlayer(target).canFly = true;
             CoreManagerPlayers.getCorePlayer(target).flyTime = 1500;
-            target.sendMessage(ChatColor.GREEN + "Suite à ton achat tu as maintenant accès au /fly qui dure 25 minutes toute les heures !");
+            target.sendMessage(FlyManager.flyPrefix + "Suite à ton achat tu as maintenant accès au /fly qui dure 25 minutes toute les heures !");
 
             Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.INSTANCE, () -> {
                 try {
                     ConsulatCore.INSTANCE.getFlySQL().updateFlyTime(target, 1500L);
                 } catch (SQLException e) {
-                    target.sendMessage(ChatColor.RED + "La sauvegarde de ton Fly a échoué, contacte un administrateur.");
+                    target.sendMessage(FlyManager.flyPrefix + "La sauvegarde de ton Fly a échoué, contacte un administrateur.");
                 }
             });
         }
@@ -118,13 +119,13 @@ public class ShopCommand implements CommandExecutor {
         if (args[0].equals("infinite")) {
             CoreManagerPlayers.getCorePlayer(target).canFly = true;
             CoreManagerPlayers.getCorePlayer(target).flyTime = -1;
-            target.sendMessage(ChatColor.GREEN + "Suite à ton achat tu as maintenant accès au /fly infini !");
+            target.sendMessage(FlyManager.flyPrefix + "Suite à ton achat tu as maintenant accès au /fly infini !");
 
             Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.INSTANCE, () -> {
                 try {
                     ConsulatCore.INSTANCE.getFlySQL().updateFlyTime(target, -1L);
                 } catch (SQLException e) {
-                    target.sendMessage(ChatColor.RED + "La sauvegarde de ton Fly a échoué, contacte un administrateur.");
+                    target.sendMessage(FlyManager.flyPrefix + "La sauvegarde de ton Fly a échoué, contacte un administrateur.");
                 }
             });
         }

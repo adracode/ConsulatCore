@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.fly;
 
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -11,5 +12,7 @@ public class FlyManager {
 
     public static List<Player> infiniteFly = new ArrayList<>();
     public static Map<Player, Long> flyMap = new HashMap<>();
+    public static String flyPrefix = ChatColor.GRAY + "[" + ChatColor.GOLD + "Fly" + ChatColor.GRAY + "] " + ChatColor.YELLOW;
+
 
 }
