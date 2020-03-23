@@ -34,11 +34,14 @@ public class CorePlayer {
     public CustomEnum persoState = CustomEnum.START;
     public String persoNick = "";
 
+    public boolean canFly = false;
+    public long flyTime = 0;
+    public long lastTime = 0;
+
     public Arena arena;
     public boolean isFighting;
 
     public boolean canUp = false;
-
 
     public String getSanctionTarget() {
         return sanctionTarget;

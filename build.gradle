@@ -25,8 +25,10 @@ repositories {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    compileOnly 'org.spigotmc:spigot-api:1.15.2-R0.1-SNAPSHOT'
+    implementation files('libs/paper.jar')
+    compileOnly 'org.spigotmc:spigot-api:1.14.4-R0.1-SNAPSHOT'
     implementation files('libs/ConsulatAPI.jar')
+
 }
 
 processResources {

@@ -1,6 +1,7 @@
 package fr.amisoz.consulatcore.listeners.entity.player;
 
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.commands.manager.ConsulatCommand;
 import fr.amisoz.consulatcore.moderation.ModerationUtils;
 import fr.amisoz.consulatcore.players.CoreManagerPlayers;
 import fr.amisoz.consulatcore.players.CorePlayer;
@@ -73,6 +74,16 @@ public class ConnectionListeners implements Listener {
 
         CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
         corePlayer.lastMove = System.currentTimeMillis();
+
+        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.INSTANCE, () -> {
+            try {
+                ConsulatCore.INSTANCE.getFlySQL().flyInitialize(player);
+            } catch (SQLException e) {
+                e.printStackTrace();
+                player.sendMessage(ChatColor.RED + "Erreur lors du chargement du fly.");
+            }
+        });
+
     }
 
     @EventHandler
@@ -107,6 +118,15 @@ public class ConnectionListeners implements Listener {
             }
         }
 
+        if(corePlayer.canFly && player.getAllowFlight()){
+            Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.INSTANCE, () -> {
+                try {
+                    ConsulatCore.INSTANCE.getFlySQL().setLastTime(player, System.currentTimeMillis());
+                } catch (SQLException e) {
+                    player.sendMessage(ChatColor.RED + "Erreur lors de la sauvegarde du fly.");
+                }
+            });
+        }
     }
 
     private void saveConnection(Player player) throws SQLException {

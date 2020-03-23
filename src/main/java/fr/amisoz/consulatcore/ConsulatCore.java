@@ -3,9 +3,13 @@ package fr.amisoz.consulatcore;
 
 import fr.amisoz.consulatcore.commands.manager.CommandManager;
 import fr.amisoz.consulatcore.duel.DuelManager;
+import fr.amisoz.consulatcore.fly.FlySQL;
 import fr.amisoz.consulatcore.listeners.manager.ListenersManager;
 import fr.amisoz.consulatcore.moderation.ModerationDatabase;
-import fr.amisoz.consulatcore.runnable.*;
+import fr.amisoz.consulatcore.runnable.AFKRunnable;
+import fr.amisoz.consulatcore.runnable.FlyRunnable;
+import fr.amisoz.consulatcore.runnable.MessageRunnable;
+import fr.amisoz.consulatcore.runnable.MonitoringRunnable;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.ranks.RankDatabase;
 import fr.leconsulat.api.ranks.RankManager;
@@ -15,6 +19,7 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.sql.Connection;
 import java.text.SimpleDateFormat;
@@ -28,6 +33,7 @@ public class ConsulatCore extends JavaPlugin {
 
     public static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy 'à' HH:mm");
 
+    private FlySQL flySQL;
     private RankDatabase rankDatabase;
     private RankManager rankManager;
     private ModerationDatabase moderationDatabase;
@@ -49,6 +55,7 @@ public class ConsulatCore extends JavaPlugin {
 
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 
+        flySQL = new FlySQL();
         rankDatabase = new RankDatabase();
         rankManager = new RankManager(rankDatabase);
         moderationDatabase = new ModerationDatabase(this);
@@ -56,8 +63,7 @@ public class ConsulatCore extends JavaPlugin {
         Bukkit.getScheduler().runTaskTimer(this, new AFKRunnable(), 0L, 20*60*5);
         Bukkit.getScheduler().runTaskTimer(this, new MonitoringRunnable(this), 0L, 20*60*10);
         Bukkit.getScheduler().runTaskTimer(this, new MessageRunnable(), 0L, 20*60*15);
-        Bukkit.getScheduler().runTaskTimer(this, new MeceneRunnable(), 0L, 20*60*60);
-        Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new ServerTPS(), 100L, 1L);
+        Bukkit.getScheduler().runTaskTimer(this, new FlyRunnable(), 0L, 20L);
 
         new ListenersManager(this);
         new CommandManager(this);
@@ -82,6 +88,7 @@ public class ConsulatCore extends JavaPlugin {
 
             ConsulatCore.textPerso.add(textComponent);
         }
+
         sendConsole("ShazenCore loaded in " + (System.currentTimeMillis() - startLoading) + " ms.");
     }
 
@@ -101,4 +108,8 @@ public class ConsulatCore extends JavaPlugin {
     public RankManager getRankManager() { return rankManager; }
 
     public ModerationDatabase getModerationDatabase() { return moderationDatabase;  }
+
+    public FlySQL getFlySQL() {
+        return flySQL;
+    }
 }
