@@ -6,10 +6,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 
-public class UpCommand extends ConsulatCommand {
+public class TopCommand extends ConsulatCommand {
 
-    public UpCommand() {
-        super("/up", 0, RankEnum.JOUEUR);
+    public TopCommand() {
+        super("/top", 0, RankEnum.JOUEUR);
     }
 
     @Override
