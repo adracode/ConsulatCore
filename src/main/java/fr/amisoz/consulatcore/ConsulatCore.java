@@ -2,10 +2,14 @@ package fr.amisoz.consulatcore;
 
 
 import fr.amisoz.consulatcore.commands.manager.CommandManager;
+import fr.amisoz.consulatcore.duel.DuelManager;
+import fr.amisoz.consulatcore.fly.FlySQL;
 import fr.amisoz.consulatcore.listeners.manager.ListenersManager;
 import fr.amisoz.consulatcore.moderation.ModerationDatabase;
-import fr.amisoz.consulatcore.runnable.*;
-import fr.amisoz.consulatcore.fly.FlySQL;
+import fr.amisoz.consulatcore.runnable.AFKRunnable;
+import fr.amisoz.consulatcore.runnable.FlyRunnable;
+import fr.amisoz.consulatcore.runnable.MessageRunnable;
+import fr.amisoz.consulatcore.runnable.MonitoringRunnable;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.ranks.RankDatabase;
 import fr.leconsulat.api.ranks.RankManager;
@@ -20,6 +24,7 @@ import org.bukkit.scheduler.BukkitTask;
 import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ConsulatCore extends JavaPlugin {
@@ -39,12 +44,14 @@ public class ConsulatCore extends JavaPlugin {
 
     public static List<TextComponent> textPerso = new ArrayList<>();
 
+    public static List<String> forbiddenPerso = Arrays.asList("Modo", "Moderateur", "Modérateur", "Admin", "Animateur", "Partenaire", "Youtubeur", "Streamer", "Ami");
     @Override
     public void onEnable() {
         INSTANCE = this;
         long startLoading = System.currentTimeMillis();
         spawnLocation = new Location(Bukkit.getWorlds().get(0), 330, 65, -438, -145, 0);
 
+        new DuelManager();
 
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 

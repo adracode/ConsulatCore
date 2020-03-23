@@ -131,6 +131,7 @@ public class InventoryListeners implements Listener {
         try {
             if(!consulatCore.getRankDatabase().hasAccount(consulatCore.getRankDatabase().getUUID(targetName))){
                 player.sendMessage(ChatColor.RED + "Le joueur ne s'est jamais connecté au serveur.");
+                event.setCancelled(true);
                 return;
             }
         } catch (SQLException e) {

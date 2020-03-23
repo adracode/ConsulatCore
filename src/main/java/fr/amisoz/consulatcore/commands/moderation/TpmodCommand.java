@@ -15,6 +15,11 @@ public class TpmodCommand extends ConsulatCommand {
 
     @Override
     public void consulatCommand() {
+        if(!ModerationUtils.moderatePlayers.contains(getPlayer()) && getConsulatPlayer().getRank().getRankPower() < RankEnum.ADMIN.getRankPower()){
+            getPlayer().sendMessage(ChatColor.RED + "Tu dois être en mode modérateur.");
+            return;
+        }
+
         Player target = Bukkit.getPlayer(getArgs()[0]);
         if(target == null) {
             getPlayer().sendMessage(ChatColor.RED + "Cible introuvable.");
@@ -29,11 +34,6 @@ public class TpmodCommand extends ConsulatCommand {
             }
             target.teleport(to);
             getPlayer().sendMessage("§aTu as téléporté " + target.getName() + " à " + to.getName());
-            return;
-        }
-
-        if(!ModerationUtils.moderatePlayers.contains(getPlayer()) && getConsulatPlayer().getRank().getRankPower() < RankEnum.ADMIN.getRankPower()){
-            getPlayer().sendMessage(ChatColor.RED + "Tu dois être en mode modérateur.");
             return;
         }
 

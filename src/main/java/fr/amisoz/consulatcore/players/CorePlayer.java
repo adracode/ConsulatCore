@@ -1,6 +1,7 @@
 package fr.amisoz.consulatcore.players;
 
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.duel.Arena;
 import fr.amisoz.consulatcore.moderation.MuteObject;
 import fr.amisoz.consulatcore.utils.CustomEnum;
 import org.bukkit.Location;
@@ -36,6 +37,11 @@ public class CorePlayer {
     public boolean canFly = false;
     public long flyTime = 0;
     public long lastTime = 0;
+
+    public Arena arena;
+    public boolean isFighting;
+
+    public boolean canUp = false;
 
     public String getSanctionTarget() {
         return sanctionTarget;

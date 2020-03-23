@@ -19,6 +19,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.util.Date;
@@ -42,18 +43,16 @@ public class ConnectionListeners implements Listener {
             player.getInventory().addItem(new ItemStack(Material.BREAD, 32));
         }
 
-        RankEnum playerRank;
         try {
-            playerRank = PlayersManager.getConsulatPlayer(player).getRank();
 
             CoreManagerPlayers.initializePlayer(player, new CorePlayer());
             consulatCore.getModerationDatabase().setMute(player);
+            ConsulatPlayer consulatPlayer =  PlayersManager.getConsulatPlayer(player);
+            RankEnum playerRank = consulatPlayer.getRank();
 
             if(playerRank.getRankPower() < RankEnum.MODO.getRankPower()) {
                 ModerationUtils.vanishedPlayers.forEach(moderator -> player.hidePlayer(consulatCore, moderator));
             }
-
-            ConsulatPlayer consulatPlayer =  PlayersManager.getConsulatPlayer(player);
 
             if(playerRank.getRankPower() >= RankEnum.MODO.getRankPower()){
                 event.setJoinMessage(null);
@@ -67,6 +66,7 @@ public class ConnectionListeners implements Listener {
 
             saveConnection(player);
 
+            setPerks(player);
         } catch (SQLException e) {
             e.printStackTrace();
             player.kickPlayer(ChatColor.RED + "Erreur lors de la récupération de vos données.\n" + e.getMessage());
@@ -140,6 +140,21 @@ public class ConnectionListeners implements Listener {
         preparedStatement.setString(4, shortDateFormat.format(new Date()));
 
         preparedStatement.executeUpdate();
+        preparedStatement.close();
+    }
+
+    private void setPerks(Player player) throws SQLException {
+        PreparedStatement preparedStatement = consulatCore.getDatabaseConnection().prepareStatement("SELECT canUp FROM players WHERE player_uuid = ?");
+        preparedStatement.setString(1, player.getUniqueId().toString());
+
+        ResultSet resultSet = preparedStatement.executeQuery();
+
+        if(resultSet.next()){
+            CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
+            corePlayer.canUp = resultSet.getBoolean("canUp");
+        }
+
+        resultSet.close();
         preparedStatement.close();
     }
 }

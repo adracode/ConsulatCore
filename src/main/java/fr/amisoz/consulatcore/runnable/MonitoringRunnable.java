@@ -22,7 +22,8 @@ public class MonitoringRunnable implements Runnable {
     public void run() {
         try {
             PreparedStatement preparedStatement = consulatCore.getDatabaseConnection().prepareStatement("INSERT INTO monitoring(tps, players, insert_date) VALUES(?, ?, ?)");
-            preparedStatement.setDouble(1, Bukkit.getServer().getTPS()[0]);
+            preparedStatement.setDouble(1, ServerTPS.getTPS());
+
             preparedStatement.setInt(2, Bukkit.getOnlinePlayers().size());
             DateFormat shortDateFormat = DateFormat.getDateTimeInstance(
                     DateFormat.SHORT,

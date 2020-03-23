@@ -52,7 +52,7 @@ public class ChatListeners implements Listener {
                 return;
             }
 
-            if(message.contains("Modérateur") || message.contains("Admin")){
+            if(ConsulatCore.forbiddenPerso.contains(message)){
                 player.sendMessage("§cTu ne peux pas appeler ton grade comme cela ! Tape §ocancel §r§csi tu veux annuler.");
                 event.setCancelled(true);
                 return;
@@ -91,6 +91,9 @@ public class ChatListeners implements Listener {
             event.setFormat(playerRank.getRankColor() + "[" + playerRank.getRankName() + "] " + "%s" + ChatColor.GRAY + " : " + ChatColor.WHITE + "%s");
         }
 
+        if(playerRank.getRankPower() >= RankEnum.MODO.getRankPower()){
+            event.setMessage(ChatColor.translateAlternateColorCodes('&', event.getMessage()));
+        }
 
     }
 
