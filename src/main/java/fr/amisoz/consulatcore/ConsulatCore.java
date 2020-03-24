@@ -32,6 +32,7 @@ public class ConsulatCore extends JavaPlugin {
     public static Location spawnLocation;
 
     public static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy 'à' HH:mm");
+    public static final String PREFIX = "§7[§6Consulat§7]§6 ";
 
     private FlySQL flySQL;
     private RankDatabase rankDatabase;
