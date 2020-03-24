@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Calendar;
+import java.util.HashMap;
 
 public class CorePlayer {
 
@@ -42,6 +43,9 @@ public class CorePlayer {
     public boolean isFighting;
 
     public boolean canUp = false;
+
+    public HashMap<String, Location> homes = new HashMap<>();
+
 
     public String getSanctionTarget() {
         return sanctionTarget;
