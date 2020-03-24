@@ -16,12 +16,15 @@ import org.bukkit.entity.Player;
 public class DuelCommand extends ConsulatCommand {
 
     public DuelCommand() {
-        super("/duel spectate ou /duel <Joueur> <Mise> ou /duel accept/reject ou /duel annonce on/off", 1, RankEnum.JOUEUR);
+        super("/duel spectate ou /duel <Joueur> <Mise> ou /duel accept/reject ou /duel annonce on/off", 0, RankEnum.JOUEUR);
     }
 
     @Override
     public void consulatCommand() {
-        if(getArgs().length == 1){
+        getPlayer().sendMessage("§7[§b§lDuel§r§7] §cLes duels sont actuellement en cours de maintenance.");
+        return;
+
+        /*if(getArgs().length == 1){
 
             if(getArgs()[0].equalsIgnoreCase("spectate")){
                 Arena arena = null;
@@ -218,6 +221,6 @@ public class DuelCommand extends ConsulatCommand {
             }, 30*20);
         }else{
             sendUsage();
-        }
+        }*/
     }
 }
