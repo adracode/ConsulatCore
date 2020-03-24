@@ -43,8 +43,10 @@ public class CorePlayer {
     public boolean isFighting;
 
     public boolean canUp = false;
+    public boolean isSpy = false;
 
     public HashMap<String, Location> homes = new HashMap<>();
+
 
 
     public String getSanctionTarget() {

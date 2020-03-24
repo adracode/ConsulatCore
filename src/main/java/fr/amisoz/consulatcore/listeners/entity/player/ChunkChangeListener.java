@@ -15,7 +15,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import sun.net.www.http.ChunkedOutputStream;
 
 import java.sql.SQLException;
 

@@ -59,5 +59,12 @@ public class MpCommand extends ConsulatCommand {
 
         targetCore.lastPrivate = getPlayer();
         getPlayer().sendMessage("§7[§6MP§7] §r§6Toi §7>> §6§l" + target.getName() + "§r§7 : §f" + messageResult);
+
+        Bukkit.getOnlinePlayers().forEach(player -> {
+            CorePlayer coreEach = CoreManagerPlayers.getCorePlayer(player);
+            if(coreEach.isSpy && player != getPlayer() && player != target){
+                player.sendMessage("§2(Spy) §a" + getPlayer().getName() + "§7 > §a" + target.getName() +"§7 : " + messageResult);
+            }
+        });
     }
 }
