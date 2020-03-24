@@ -39,5 +39,8 @@ public class CommandManager {
         consulatCore.getCommand("ec").setExecutor(new EnderchestCommand());
         consulatCore.getCommand("top").setExecutor(new TopCommand());
         consulatCore.getCommand("sp").setExecutor(new SocialSpyCommand());
+        consulatCore.getCommand("home").setExecutor(new HomeCommand());
+        consulatCore.getCommand("sethome").setExecutor(new SetHomeCommand());
+        consulatCore.getCommand("delhome").setExecutor(new DelHomeCommand());
     }
 }

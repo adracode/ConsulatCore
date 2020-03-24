@@ -38,3 +38,6 @@ commands:
     fly:
     top:
     sp:
+    home:
+    delhome:
+    sethome:
