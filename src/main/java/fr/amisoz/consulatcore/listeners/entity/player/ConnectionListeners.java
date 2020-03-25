@@ -5,11 +5,17 @@ import fr.amisoz.consulatcore.commands.manager.ConsulatCommand;
 import fr.amisoz.consulatcore.moderation.ModerationUtils;
 import fr.amisoz.consulatcore.players.CoreManagerPlayers;
 import fr.amisoz.consulatcore.players.CorePlayer;
+import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.player.PlayersManager;
 import fr.leconsulat.api.ranks.RankEnum;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -49,6 +55,8 @@ public class ConnectionListeners implements Listener {
             consulatCore.getModerationDatabase().setMute(player);
             ConsulatPlayer consulatPlayer =  PlayersManager.getConsulatPlayer(player);
             RankEnum playerRank = consulatPlayer.getRank();
+
+            getHomes(player);
 
             if(playerRank.getRankPower() < RankEnum.MODO.getRankPower()) {
                 ModerationUtils.vanishedPlayers.forEach(moderator -> player.hidePlayer(consulatCore, moderator));
@@ -152,6 +160,20 @@ public class ConnectionListeners implements Listener {
         if(resultSet.next()){
             CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
             corePlayer.canUp = resultSet.getBoolean("canUp");
+        }
+
+        resultSet.close();
+        preparedStatement.close();
+    }
+
+    private void getHomes(Player player) throws SQLException {
+        PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM homes INNER JOIN players ON players.id = homes.idplayer WHERE players.player_name = ?");
+        preparedStatement.setString(1, player.getName());
+
+        ResultSet resultSet = preparedStatement.executeQuery();
+        while(resultSet.next()) {
+            Location homeLocation = new Location(Bukkit.getWorlds().get(0), resultSet.getInt("x"), resultSet.getInt("y"), resultSet.getInt("z"));
+            CoreManagerPlayers.getCorePlayer(player).homes.put(resultSet.getString("home_name"), homeLocation);
         }
 
         resultSet.close();

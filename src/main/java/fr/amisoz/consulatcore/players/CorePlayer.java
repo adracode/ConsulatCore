@@ -47,8 +47,6 @@ public class CorePlayer {
 
     public HashMap<String, Location> homes = new HashMap<>();
 
-
-
     public String getSanctionTarget() {
         return sanctionTarget;
     }
