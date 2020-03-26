@@ -44,7 +44,7 @@ public class HomeCommand extends ConsulatCommand {
 
         String homeName = getArgs()[0];
 
-        if(playerRank.getRankPower() >= RankEnum.RESPONSABLE.getRankPower()){
+        if(playerRank.getRankPower() >= RankEnum.MODPLUS.getRankPower()){
             if(homeName.endsWith(":")){
                 homeName = homeName.substring(0, homeName.length()-1);
                 getPlayer().sendMessage("§6Liste des homes de : §c" + homeName);

@@ -19,7 +19,7 @@ public class AdvertCommand extends ConsulatCommand {
     @Override
     public void consulatCommand() {
         String message = StringUtils.join(getArgs(), " ");
-        if(((System.currentTimeMillis() - getCorePlayer().advertDelay) >= 1000*60*60*3) || getConsulatPlayer().getRank().equals(RankEnum.ANIMATEUR)){
+        if(((System.currentTimeMillis() - getCorePlayer().advertDelay) >= 1000*60*60*3)){
 
             if(getCorePlayer().isMuted){
                 MuteObject muteInfo = getCorePlayer().getMute();

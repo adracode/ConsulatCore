@@ -8,7 +8,7 @@ public class ToggleChatCommand extends ConsulatCommand {
 
 
     public ToggleChatCommand() {
-        super("/chat", 0, RankEnum.ADMIN);
+        super("/chat", 0, RankEnum.RESPONSABLE);
     }
 
     @Override

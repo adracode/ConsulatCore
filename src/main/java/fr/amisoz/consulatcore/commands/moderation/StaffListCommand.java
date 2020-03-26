@@ -11,7 +11,7 @@ import org.bukkit.Bukkit;
 public class StaffListCommand extends ConsulatCommand {
 
     public StaffListCommand() {
-        super("/stafflist", 0, RankEnum.MODO);
+        super("/stafflist", 0, RankEnum.MODPLUS);
     }
 
     @Override
