@@ -23,7 +23,7 @@ public class DelHomeCommand extends ConsulatCommand {
     @Override
     public void consulatCommand() {
 
-        if (getArgs().length == 2 && getConsulatPlayer().getRank().getRankPower() >= RankEnum.RESPONSABLE.getRankPower()) {
+        if (getArgs().length == 2 && getConsulatPlayer().getRank().getRankPower() >= RankEnum.MODPLUS.getRankPower()) {
             OfflinePlayer target = Bukkit.getOfflinePlayer(getArgs()[0]);
             if (!target.hasPlayedBefore()) {
                 getPlayer().sendMessage(ChatColor.RED + "Joueur inexistant.");

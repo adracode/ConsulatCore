@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 public class EnderchestCommand extends ConsulatCommand {
 
     public EnderchestCommand() {
-        super("/ec <Joueur>", 1, RankEnum.RESPONSABLE);
+        super("/ec <Joueur>", 1, RankEnum.MODPLUS);
     }
 
     @Override
