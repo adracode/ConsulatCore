@@ -36,33 +36,34 @@ public class FlyCommand extends ConsulatCommand {
                 return;
             }
 
-            if ((System.currentTimeMillis() - getCorePlayer().lastTime) / 1000 >= 3600) {
-                if(checkFly(player, chunk)){
-                    player.sendMessage(FlyManager.flyPrefix + "Erreur | Tu ne peux pas fly dans un autre claim que le tien ou ceux que tu as accès !");
-                    return;
-                }
-
-                if (FlyManager.flyMap.containsKey(player)) {
-                    player.sendMessage(FlyManager.flyPrefix + "Erreur | Ton fly est déjà actif !");
-                    return;
-                }
-
-                player.setAllowFlight(true);
-                player.setFlying(true);
-                player.sendMessage(FlyManager.flyPrefix + "Tu as activé ton fly !");
-                FlyManager.flyMap.put(player, System.currentTimeMillis());
-
-            } else {
+            if ((System.currentTimeMillis() - getCorePlayer().lastTime) / 1000 < 3600 && getCorePlayer().isFinished) {
                 long timeWait = (getCorePlayer().lastTime + 3600000) - (System.currentTimeMillis());
                 long minutes = ((timeWait / (1000 * 60)) % 60);
                 long seconds = ((timeWait / 1000) % 60);
                 player.sendMessage(FlyManager.flyPrefix + "Erreur | Tu n'as pas attendu assez longtemps ! Tu dois encore attendre " + minutes + "M" + seconds + "S.");
+                return;
             }
+
+            if (checkFly(player, chunk)) {
+                player.sendMessage(FlyManager.flyPrefix + "Erreur | Tu ne peux pas fly dans un autre claim que le tien ou ceux que tu as accès !");
+                return;
+            }
+
+            if (FlyManager.flyMap.containsKey(player)) {
+                player.sendMessage(FlyManager.flyPrefix + "Erreur | Ton fly est déjà actif !");
+                return;
+            }
+
+            player.setAllowFlight(true);
+            player.setFlying(true);
+            player.sendMessage(FlyManager.flyPrefix + "Tu as activé ton fly !");
+            FlyManager.flyMap.put(player, System.currentTimeMillis());
+
         } else if (getArgs()[0].equalsIgnoreCase("info")) {
             if (!FlyManager.flyMap.containsKey(player)) {
                 player.sendMessage(FlyManager.flyPrefix + "Erreur | Tu n'as pas encore activé ton fly !");
-            return;
-        }
+                return;
+            }
 
             long startFly = FlyManager.flyMap.get(player);
             long timeLeft = getCorePlayer().flyTime - (System.currentTimeMillis() - startFly) / 1000;
@@ -72,7 +73,7 @@ public class FlyCommand extends ConsulatCommand {
             player.sendMessage(FlyManager.flyPrefix + "Tu as encore ton fly pendant " + minutes + "M" + seconds + "S.");
 
         } else if (getArgs()[0].equalsIgnoreCase("infini")) {
-            if(checkFly(player, chunk)){
+            if (checkFly(player, chunk)) {
                 player.sendMessage(FlyManager.flyPrefix + "Erreur | Tu ne peux pas fly dans un autre claim que le tien ou ceux que tu as accès !");
                 return;
             }
@@ -92,8 +93,8 @@ public class FlyCommand extends ConsulatCommand {
         }
     }
 
-    public boolean checkFly(Player player, ClaimObject chunk){
-        if(chunk == null){
+    public boolean checkFly(Player player, ClaimObject chunk) {
+        if (chunk == null) {
             return true;
         }
 
