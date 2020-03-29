@@ -2,6 +2,7 @@ package fr.amisoz.consulatcore.listeners.entity.player;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.commands.manager.ConsulatCommand;
+import fr.amisoz.consulatcore.fly.FlyManager;
 import fr.amisoz.consulatcore.moderation.ModerationUtils;
 import fr.amisoz.consulatcore.players.CoreManagerPlayers;
 import fr.amisoz.consulatcore.players.CorePlayer;
@@ -126,10 +127,14 @@ public class ConnectionListeners implements Listener {
             }
         }
 
-        if(corePlayer.canFly && player.getAllowFlight()){
+        if(FlyManager.flyMap.containsKey(player)){
             Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.INSTANCE, () -> {
                 try {
-                    ConsulatCore.INSTANCE.getFlySQL().setLastTime(player, System.currentTimeMillis());
+
+                    long startFly = FlyManager.flyMap.get(player);
+                    long timeLeft = corePlayer.timeLeft - (System.currentTimeMillis() - startFly) / 1000;
+
+                    ConsulatCore.INSTANCE.getFlySQL().saveFly(player, System.currentTimeMillis(), timeLeft);
                 } catch (SQLException e) {
                     player.sendMessage(ChatColor.RED + "Erreur lors de la sauvegarde du fly.");
                 }

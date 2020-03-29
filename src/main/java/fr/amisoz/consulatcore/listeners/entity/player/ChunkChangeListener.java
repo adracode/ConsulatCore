@@ -3,6 +3,7 @@ package fr.amisoz.consulatcore.listeners.entity.player;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.fly.FlyManager;
 import fr.amisoz.consulatcore.players.CoreManagerPlayers;
+import fr.amisoz.consulatcore.players.CorePlayer;
 import fr.leconsulat.api.claim.ChunkLoader;
 import fr.leconsulat.api.claim.ClaimObject;
 import fr.leconsulat.api.listeners.ChunkChangeEvent;
@@ -28,7 +29,7 @@ public class ChunkChangeListener implements Listener {
         Player player = event.getPlayer();
         Chunk chunkTo = event.getChunkTo();
 
-        ConsulatPlayer consulatPlayer = PlayersManager.getConsulatPlayer(player);
+        CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
         ClaimObject chunk = ChunkLoader.getClaimedZone(chunkTo);
 
         if (FlyManager.flyMap.containsKey(player) || FlyManager.infiniteFly.contains(player)) {
@@ -39,14 +40,19 @@ public class ChunkChangeListener implements Listener {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10 * 20, 100));
                 player.sendMessage(FlyManager.flyPrefix + "Ton fly est terminé car tu as quitté ton claim !");
 
+                long startFly = FlyManager.flyMap.get(player);
+
+                corePlayer.timeLeft = corePlayer.timeLeft - (System.currentTimeMillis() - startFly) / 1000;
+
                 FlyManager.flyMap.remove(player);
                 FlyManager.infiniteFly.remove(player);
                 CoreManagerPlayers.getCorePlayer(player).lastTime = System.currentTimeMillis();
 
                 Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.INSTANCE, () -> {
                     try {
-                        ConsulatCore.INSTANCE.getFlySQL().setLastTime(player, System.currentTimeMillis());
+                        ConsulatCore.INSTANCE.getFlySQL().saveFly(player, System.currentTimeMillis(), corePlayer.timeLeft);
                     } catch (SQLException e) {
+                        e.printStackTrace();
                         player.sendMessage(FlyManager.flyPrefix + "Erreur lors de la sauvegarde du fly.");
                     }
                 });

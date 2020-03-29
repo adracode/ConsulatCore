@@ -38,6 +38,7 @@ public class CorePlayer {
     public boolean canFly = false;
     public long flyTime = 0;
     public long lastTime = 0;
+    public long timeLeft = 0;
 
     public Arena arena;
     public boolean isFighting;

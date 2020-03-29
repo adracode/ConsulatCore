@@ -28,7 +28,7 @@ public class FlyRunnable implements Runnable {
             CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
 
             long startFly = FlyManager.flyMap.get(player);
-            long timeLeft = corePlayer.flyTime - (System.currentTimeMillis() - startFly) / 1000;
+            long timeLeft = corePlayer.timeLeft - (System.currentTimeMillis() - startFly) / 1000;
 
             long minutes = ((timeLeft / 60) % 60);
             long seconds = timeLeft % 60;
@@ -43,9 +43,10 @@ public class FlyRunnable implements Runnable {
             }
 
             if (timeLeft <= 0) {
-                CoreManagerPlayers.getCorePlayer(player).lastTime = System.currentTimeMillis();
                 try {
-                    ConsulatCore.INSTANCE.getFlySQL().setLastTime(player, FlyManager.flyMap.get(player));
+                    ConsulatCore.INSTANCE.getFlySQL().saveFly(player, System.currentTimeMillis(), corePlayer.flyTime);
+                    corePlayer.timeLeft = corePlayer.flyTime;
+                    corePlayer.lastTime = System.currentTimeMillis();
                 } catch (SQLException e) {
                     player.sendMessage(FlyManager.flyPrefix + "Erreur lors de la sauvegarde du fly.");
                 }
