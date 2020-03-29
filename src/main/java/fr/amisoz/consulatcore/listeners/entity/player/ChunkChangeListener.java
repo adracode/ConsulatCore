@@ -42,7 +42,7 @@ public class ChunkChangeListener implements Listener {
 
                 long startFly = FlyManager.flyMap.get(player);
 
-                corePlayer.timeLeft = corePlayer.flyTime - (System.currentTimeMillis() - startFly) / 1000;
+                corePlayer.timeLeft = corePlayer.timeLeft - (System.currentTimeMillis() - startFly) / 1000;
 
                 FlyManager.flyMap.remove(player);
                 FlyManager.infiniteFly.remove(player);
@@ -52,6 +52,7 @@ public class ChunkChangeListener implements Listener {
                     try {
                         ConsulatCore.INSTANCE.getFlySQL().saveFly(player, System.currentTimeMillis(), corePlayer.timeLeft);
                     } catch (SQLException e) {
+                        e.printStackTrace();
                         player.sendMessage(FlyManager.flyPrefix + "Erreur lors de la sauvegarde du fly.");
                     }
                 });

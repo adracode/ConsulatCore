@@ -24,9 +24,7 @@ public class FlySQL {
             corePlayer.canFly = resultSet.getBoolean("canFly");
             corePlayer.flyTime = resultSet.getLong("flyTime");
             corePlayer.lastTime = resultSet.getLong("lastTime");
-            long timeLeft = resultSet.getLong("timeLeft");
-            corePlayer.timeLeft = timeLeft;
-            corePlayer.isFinished = timeLeft > 0 && timeLeft < corePlayer.flyTime;
+            corePlayer.timeLeft = resultSet.getLong("timeLeft");
         } else {
             PreparedStatement insertFly = ConsulatAPI.getDatabase().prepareStatement("INSERT INTO fly(uuid, canFly, flyTime, lastTime, timeLeft) VALUES (?, 0, 0, 0)");
             insertFly.setString(1, player.getUniqueId().toString());
@@ -40,8 +38,8 @@ public class FlySQL {
     public void saveFly(Player player, long lastTime, long timeLeft) throws SQLException {
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE fly SET lastTime=?, timeLeft = ? WHERE uuid=?");
         preparedStatement.setLong(1, lastTime);
-        preparedStatement.setLong(1, timeLeft);
-        preparedStatement.setString(2, player.getUniqueId().toString());
+        preparedStatement.setLong(2, timeLeft);
+        preparedStatement.setString(3, player.getUniqueId().toString());
         preparedStatement.executeUpdate();
         preparedStatement.close();
     }

@@ -36,7 +36,7 @@ public class FlyCommand extends ConsulatCommand {
                 return;
             }
 
-            if ((System.currentTimeMillis() - getCorePlayer().lastTime) / 1000 < 3600 && getCorePlayer().isFinished) {
+            if ((System.currentTimeMillis() - getCorePlayer().lastTime) / 1000 < 3600 && getCorePlayer().timeLeft == getCorePlayer().flyTime) {
                 long timeWait = (getCorePlayer().lastTime + 3600000) - (System.currentTimeMillis());
                 long minutes = ((timeWait / (1000 * 60)) % 60);
                 long seconds = ((timeWait / 1000) % 60);
@@ -66,7 +66,7 @@ public class FlyCommand extends ConsulatCommand {
             }
 
             long startFly = FlyManager.flyMap.get(player);
-            long timeLeft = getCorePlayer().flyTime - (System.currentTimeMillis() - startFly) / 1000;
+            long timeLeft = getCorePlayer().timeLeft - (System.currentTimeMillis() - startFly) / 1000;
             long minutes = ((timeLeft / 60) % 60);
             long seconds = timeLeft % 60;
 
