@@ -27,7 +27,7 @@ public class ChatListeners implements Listener {
     public void onChat(AsyncPlayerChatEvent event){
         Player player = event.getPlayer();
 
-        if(!ConsulatCore.chat_activated && PlayersManager.getConsulatPlayer(player).getRank().getRankPower() < RankEnum.ADMIN.getRankPower()){
+        if(!ConsulatCore.chat_activated && PlayersManager.getConsulatPlayer(player).getRank().getRankPower() < RankEnum.RESPONSABLE.getRankPower()){
             player.sendMessage("§cChat coupé.");
             event.setCancelled(true);
         }
