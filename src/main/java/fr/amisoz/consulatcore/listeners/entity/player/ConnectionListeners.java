@@ -98,13 +98,16 @@ public class ConnectionListeners implements Listener {
     @EventHandler
     public void onLeave(PlayerQuitEvent event) {
         Player player = event.getPlayer();
+        ConsulatPlayer consulatPlayer = PlayersManager.getConsulatPlayer(player);
+        if(consulatPlayer == null) return;
         CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
-        RankEnum playerRank = PlayersManager.getConsulatPlayer(player).getRank();
+        RankEnum playerRank = consulatPlayer.getRank();
+
 
         if(corePlayer.isFreezed){
             Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
-                ConsulatPlayer consulatPlayer = PlayersManager.getConsulatPlayer(onlinePlayer);
-                if(consulatPlayer != null && consulatPlayer.getRank().getRankPower() >= RankEnum.MODO.getRankPower()){
+                ConsulatPlayer consulatOnline = PlayersManager.getConsulatPlayer(onlinePlayer);
+                if(consulatOnline != null && consulatOnline.getRank().getRankPower() >= RankEnum.MODO.getRankPower()){
                     onlinePlayer.sendMessage(ModerationUtils.MODERATION_PREFIX + ChatColor.GOLD + player.getName() + ChatColor.RED + " s'est déconnecté en étant freeze.");
                 }
             });
@@ -114,8 +117,6 @@ public class ConnectionListeners implements Listener {
             player.getInventory().clear();
             player.getInventory().setContents(corePlayer.stockedInventory);
         }
-
-        ConsulatPlayer consulatPlayer =  PlayersManager.getConsulatPlayer(player);
 
         if (playerRank.getRankPower() >= RankEnum.MODO.getRankPower()) {
             event.setQuitMessage("");
