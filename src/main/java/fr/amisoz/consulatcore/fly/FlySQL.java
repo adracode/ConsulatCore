@@ -26,7 +26,7 @@ public class FlySQL {
             corePlayer.lastTime = resultSet.getLong("lastTime");
             corePlayer.timeLeft = resultSet.getLong("timeLeft");
         } else {
-            PreparedStatement insertFly = ConsulatAPI.getDatabase().prepareStatement("INSERT INTO fly(uuid, canFly, flyTime, lastTime, timeLeft) VALUES (?, 0, 0, 0)");
+            PreparedStatement insertFly = ConsulatAPI.getDatabase().prepareStatement("INSERT INTO fly(uuid, canFly, flyTime, lastTime, timeLeft) VALUES (?, 0, 0, 0, 0)");
             insertFly.setString(1, player.getUniqueId().toString());
             insertFly.executeUpdate();
             insertFly.close();
