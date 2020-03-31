@@ -14,7 +14,7 @@ public class GamemodeCommand extends ConsulatCommand {
     @Override
     public void consulatCommand() {
         if(!ModerationUtils.moderatePlayers.contains(getPlayer())){
-            getPlayer().sendMessage("§cTu dois être en staff mdoe.");
+            getPlayer().sendMessage("§cTu dois être en staff mode.");
             return;
         }
 
