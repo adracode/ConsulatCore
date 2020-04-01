@@ -116,6 +116,11 @@ public class FlyCommand extends ConsulatCommand {
                 return;
             }
 
+            if(!FlyManager.flyMap.containsKey(getPlayer())){
+                getPlayer().sendMessage(FlyManager.flyPrefix + "Erreur | Tu n'es pas en fly.");
+                return;
+            }
+
             player.setAllowFlight(false);
             player.setFlying(false);
             player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10 * 20, 100));
