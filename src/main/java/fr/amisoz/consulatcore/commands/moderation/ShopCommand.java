@@ -3,6 +3,7 @@ package fr.amisoz.consulatcore.commands.moderation;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.fly.FlyManager;
 import fr.amisoz.consulatcore.players.CoreManagerPlayers;
+import fr.amisoz.consulatcore.players.CorePlayer;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.custom.CustomDatabase;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -45,6 +46,7 @@ public class ShopCommand implements CommandExecutor {
         }
 
         ConsulatPlayer consulatPlayer = PlayersManager.getConsulatPlayer(target);
+        CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(target);
 
         if(args[0].equalsIgnoreCase("rank")){
             String rank = args[2];
@@ -87,8 +89,10 @@ public class ShopCommand implements CommandExecutor {
         }
 
         if (args[0].equals("fly5")) {
-            CoreManagerPlayers.getCorePlayer(target).canFly = true;
-            CoreManagerPlayers.getCorePlayer(target).flyTime = 300;
+            corePlayer.canFly = true;
+            corePlayer.flyTime = 300;
+            corePlayer.timeLeft = 300;
+
             target.sendMessage(FlyManager.flyPrefix + "Suite à ton achat tu as maintenant accès au /fly qui dure 5minutes toute les heures !");
 
             Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.INSTANCE, () -> {
@@ -102,8 +106,9 @@ public class ShopCommand implements CommandExecutor {
 
 
         if (args[0].equals("fly25")) {
-            CoreManagerPlayers.getCorePlayer(target).canFly = true;
-            CoreManagerPlayers.getCorePlayer(target).flyTime = 1500;
+            corePlayer.canFly = true;
+            corePlayer.flyTime = 1500;
+            corePlayer.timeLeft = 1500;
             target.sendMessage(FlyManager.flyPrefix + "Suite à ton achat tu as maintenant accès au /fly qui dure 25 minutes toute les heures !");
 
             Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.INSTANCE, () -> {
