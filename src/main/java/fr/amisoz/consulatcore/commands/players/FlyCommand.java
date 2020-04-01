@@ -1,14 +1,19 @@
 package fr.amisoz.consulatcore.commands.players;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.commands.manager.ConsulatCommand;
 import fr.amisoz.consulatcore.fly.FlyManager;
+import fr.amisoz.consulatcore.players.CoreManagerPlayers;
 import fr.leconsulat.api.claim.ClaimObject;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.player.PlayersManager;
 import fr.leconsulat.api.ranks.RankEnum;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+
+import java.sql.SQLException;
 
 /**
  * Created by KIZAFOX on 03/03/2020 for ConsulatCore
@@ -17,7 +22,7 @@ public class FlyCommand extends ConsulatCommand {
 
 
     public FlyCommand() {
-        super("/fly [start/info/infini]", 1, RankEnum.JOUEUR);
+        super("/fly [start/stop/info/infini]", 1, RankEnum.JOUEUR);
     }
 
     @Override
@@ -27,6 +32,11 @@ public class FlyCommand extends ConsulatCommand {
         ClaimObject chunk = consulatPlayer.claimedChunk;
         if (!getCorePlayer().canFly) {
             player.sendMessage(FlyManager.flyPrefix + "Erreur | Tu n'as pas acheté le fly !");
+            return;
+        }
+
+        if(!(player.getWorld().equals(Bukkit.getWorlds().get(0)))){
+            player.sendMessage(FlyManager.flyPrefix + "Erreur | Tu dois être dans le monde de base !");
             return;
         }
 
@@ -73,6 +83,11 @@ public class FlyCommand extends ConsulatCommand {
             player.sendMessage(FlyManager.flyPrefix + "Tu as encore ton fly pendant " + minutes + "M" + seconds + "S.");
 
         } else if (getArgs()[0].equalsIgnoreCase("infini")) {
+            if (!getCorePlayer().canFly || getCorePlayer().flyTime != -1) {
+                getPlayer().sendMessage(FlyManager.flyPrefix + "Erreur | Tu n'as pas de fly infini.");
+                return;
+            }
+
             if (checkFly(player, chunk)) {
                 player.sendMessage(FlyManager.flyPrefix + "Erreur | Tu ne peux pas fly dans un autre claim que le tien ou ceux que tu as accès !");
                 return;
@@ -90,6 +105,39 @@ public class FlyCommand extends ConsulatCommand {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10 * 20, 100));
                 FlyManager.infiniteFly.remove(player);
             }
+        }else if(getArgs()[0].equalsIgnoreCase("stop")){
+            if(!getCorePlayer().canFly){
+                getPlayer().sendMessage(FlyManager.flyPrefix + "Erreur | Tu n'as pas de fly.");
+                return;
+            }
+
+            if (getCorePlayer().flyTime == -1) {
+                getPlayer().sendMessage(FlyManager.flyPrefix + "Erreur | Tu dois faire /fly infini.");
+                return;
+            }
+
+            player.setAllowFlight(false);
+            player.setFlying(false);
+            player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10 * 20, 100));
+            player.sendMessage(FlyManager.flyPrefix + "Ton fly est en pause !");
+
+            long startFly = FlyManager.flyMap.get(player);
+
+            getCorePlayer().timeLeft = getCorePlayer().timeLeft - (System.currentTimeMillis() - startFly) / 1000;
+
+            FlyManager.flyMap.remove(player);
+            CoreManagerPlayers.getCorePlayer(player).lastTime = System.currentTimeMillis();
+
+            Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.INSTANCE, () -> {
+                try {
+                    ConsulatCore.INSTANCE.getFlySQL().saveFly(player, System.currentTimeMillis(), getCorePlayer().timeLeft);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    player.sendMessage(FlyManager.flyPrefix + "Erreur lors de la sauvegarde du fly.");
+                }
+            });
+        }else{
+            player.sendMessage(FlyManager.flyPrefix + "/fly [start/stop/info/infini]");
         }
     }
 

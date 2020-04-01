@@ -2,6 +2,12 @@ package fr.amisoz.consulatcore.listeners.entity.player;
 
 import fr.amisoz.consulatcore.players.CoreManagerPlayers;
 import fr.amisoz.consulatcore.players.CorePlayer;
+import fr.leconsulat.api.claim.ChunkLoader;
+import fr.leconsulat.api.claim.ClaimObject;
+import fr.leconsulat.api.listeners.ChunkChangeEvent;
+import fr.leconsulat.api.player.PlayersManager;
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -32,6 +38,11 @@ public class MoveListeners implements Listener {
     public void onTeleport(PlayerTeleportEvent event){
         CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(event.getPlayer());
         corePlayer.oldLocation = event.getFrom();
+
+        Chunk chunkTo = event.getTo().getChunk();
+        Chunk chunkFrom = event.getFrom().getChunk();
+
+        Bukkit.getPluginManager().callEvent(new ChunkChangeEvent(event.getPlayer(), chunkFrom, chunkTo));
     }
 
 }

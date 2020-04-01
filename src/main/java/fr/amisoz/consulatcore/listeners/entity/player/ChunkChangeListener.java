@@ -33,16 +33,16 @@ public class ChunkChangeListener implements Listener {
         ClaimObject chunk = ChunkLoader.getClaimedZone(chunkTo);
 
         if (FlyManager.flyMap.containsKey(player) || FlyManager.infiniteFly.contains(player)) {
-
             if (!canFly(player, chunk)) {
                 player.setAllowFlight(false);
                 player.setFlying(false);
                 player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10 * 20, 100));
                 player.sendMessage(FlyManager.flyPrefix + "Ton fly est terminé car tu as quitté ton claim !");
 
-                long startFly = FlyManager.flyMap.get(player);
-
-                corePlayer.timeLeft = corePlayer.timeLeft - (System.currentTimeMillis() - startFly) / 1000;
+                if(FlyManager.flyMap.containsKey(player)) {
+                    long startFly = FlyManager.flyMap.get(player);
+                    corePlayer.timeLeft = corePlayer.timeLeft - (System.currentTimeMillis() - startFly) / 1000;
+                }
 
                 FlyManager.flyMap.remove(player);
                 FlyManager.infiniteFly.remove(player);
