@@ -45,9 +45,10 @@ public class FlySQL {
     }
 
     public void updateFlyTime(Player player, Long flyTime) throws SQLException {
-        PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE fly SET flyTime = ?,canFly=1 WHERE uuid=?");
+        PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE fly SET flyTime = ?,canFly=1,timeLeft=? WHERE uuid=?");
         preparedStatement.setLong(1, flyTime);
-        preparedStatement.setString(2, player.getUniqueId().toString());
+        preparedStatement.setLong(2, flyTime);
+        preparedStatement.setString(3, player.getUniqueId().toString());
         preparedStatement.executeUpdate();
         preparedStatement.close();
     }
