@@ -38,6 +38,7 @@ public class MoveListeners implements Listener {
     public void onTeleport(PlayerTeleportEvent event){
         CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(event.getPlayer());
         corePlayer.oldLocation = event.getFrom();
+        corePlayer.lastTeleport = System.currentTimeMillis();
 
         Chunk chunkTo = event.getTo().getChunk();
         Chunk chunkFrom = event.getFrom().getChunk();

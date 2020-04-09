@@ -103,9 +103,9 @@ public class SetHomeCommand extends ConsulatCommand {
 
     public void updateHome(Player player, String homeName, Location location) throws SQLException {
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE homes SET x = ?, y = ?, z = ? WHERE home_name = ? AND idplayer = ?");
-        preparedStatement.setInt(1, location.getBlockX());
-        preparedStatement.setInt(2, location.getBlockY());
-        preparedStatement.setInt(3, location.getBlockZ());
+        preparedStatement.setDouble(1, location.getX());
+        preparedStatement.setDouble(2, location.getY());
+        preparedStatement.setDouble(3, location.getZ());
         preparedStatement.setString(4, homeName);
         preparedStatement.setInt(5, PlayersManager.getConsulatPlayer(player).getIdPlayer());
 
@@ -115,9 +115,9 @@ public class SetHomeCommand extends ConsulatCommand {
 
     public void insertHome(Player player, String homeName, Location location) throws SQLException {
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("INSERT INTO homes(x, y, z, idplayer, home_name) VALUES(?, ?, ?, ?, ?)");
-        preparedStatement.setInt(1, location.getBlockX());
-        preparedStatement.setInt(2, location.getBlockY());
-        preparedStatement.setInt(3, location.getBlockZ());
+        preparedStatement.setDouble(1, location.getX());
+        preparedStatement.setDouble(2, location.getY());
+        preparedStatement.setDouble(3, location.getZ());
         preparedStatement.setInt(4, PlayersManager.getConsulatPlayer(player).getIdPlayer());
         preparedStatement.setString(5, homeName);
         preparedStatement.executeUpdate();

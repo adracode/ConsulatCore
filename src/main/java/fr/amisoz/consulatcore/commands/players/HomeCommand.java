@@ -59,8 +59,9 @@ public class HomeCommand extends ConsulatCommand {
         }
 
         if (getCorePlayer().homes.containsKey(homeName)) {
-            Location home = new Location(Bukkit.getWorlds().get(0), getCorePlayer().homes.get(homeName).getBlockX(), getCorePlayer().homes.get(homeName).getBlockY(), getCorePlayer().homes.get(homeName).getBlockZ());
-            getPlayer().teleport(home.add(0, 1, 0));
+            getCorePlayer().oldLocation = getPlayer().getLocation();
+            Location home = new Location(Bukkit.getWorlds().get(0), getCorePlayer().homes.get(homeName).getX(), getCorePlayer().homes.get(homeName).getY(), getCorePlayer().homes.get(homeName).getZ());
+            getPlayer().teleport(home);
             getPlayer().sendMessage(ConsulatCore.PREFIX + "§aTu as bien été téléporté à ton home : §2" + homeName);
         } else {
             StringBuilder result = new StringBuilder();

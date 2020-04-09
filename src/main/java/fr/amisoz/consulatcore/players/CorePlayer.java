@@ -25,6 +25,7 @@ public class CorePlayer {
     public Long advertDelay = 0L;
 
     public Long lastMove = 0L;
+    public Long lastTeleport = 0L;
 
     public boolean isFreezed;
 
