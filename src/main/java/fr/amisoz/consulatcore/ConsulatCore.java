@@ -1,6 +1,7 @@
 package fr.amisoz.consulatcore;
 
 
+import fr.amisoz.consulatcore.claims.ClaimManager;
 import fr.amisoz.consulatcore.commands.manager.CommandManager;
 import fr.amisoz.consulatcore.duel.DuelManager;
 import fr.amisoz.consulatcore.fly.FlySQL;
@@ -29,6 +30,8 @@ import java.util.List;
 
 public class ConsulatCore extends JavaPlugin {
 
+    private ClaimManager claimManager;
+    
     public static Location spawnLocation;
 
     public static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy 'à' HH:mm");
@@ -51,11 +54,13 @@ public class ConsulatCore extends JavaPlugin {
         INSTANCE = this;
         long startLoading = System.currentTimeMillis();
         spawnLocation = new Location(Bukkit.getWorlds().get(0), 330, 65, -438, -145, 0);
-
+        
         new DuelManager();
 
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 
+        claimManager = new ClaimManager();
+        
         flySQL = new FlySQL();
         rankDatabase = new RankDatabase();
         rankManager = new RankManager(rankDatabase);

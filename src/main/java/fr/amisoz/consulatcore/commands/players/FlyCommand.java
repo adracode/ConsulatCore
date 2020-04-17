@@ -1,10 +1,11 @@
 package fr.amisoz.consulatcore.commands.players;
 
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.claims.Claim;
+import fr.amisoz.consulatcore.claims.ClaimManager;
 import fr.amisoz.consulatcore.commands.manager.ConsulatCommand;
 import fr.amisoz.consulatcore.fly.FlyManager;
 import fr.amisoz.consulatcore.players.CoreManagerPlayers;
-import fr.leconsulat.api.claim.ClaimObject;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.player.PlayersManager;
 import fr.leconsulat.api.ranks.RankEnum;
@@ -19,8 +20,7 @@ import java.sql.SQLException;
  * Created by KIZAFOX on 03/03/2020 for ConsulatCore
  */
 public class FlyCommand extends ConsulatCommand {
-
-
+    
     public FlyCommand() {
         super("/fly [start/stop/info/infini]", 1, RankEnum.JOUEUR);
     }
@@ -29,7 +29,7 @@ public class FlyCommand extends ConsulatCommand {
     public void consulatCommand() {
         Player player = getPlayer();
         ConsulatPlayer consulatPlayer = PlayersManager.getConsulatPlayer(player);
-        ClaimObject chunk = consulatPlayer.claimedChunk;
+        Claim chunk = ClaimManager.getInstance().getClaim(player);
         if (!getCorePlayer().canFly) {
             player.sendMessage(FlyManager.flyPrefix + "Erreur | Tu n'as pas acheté le fly !");
             return;
@@ -54,7 +54,7 @@ public class FlyCommand extends ConsulatCommand {
                 return;
             }
 
-            if (checkFly(player, chunk)) {
+            if (!canFly(player, chunk)) {
                 player.sendMessage(FlyManager.flyPrefix + "Erreur | Tu ne peux pas fly dans un autre claim que le tien ou ceux que tu as accès !");
                 return;
             }
@@ -88,7 +88,7 @@ public class FlyCommand extends ConsulatCommand {
                 return;
             }
 
-            if (checkFly(player, chunk)) {
+            if (!canFly(player, chunk)) {
                 player.sendMessage(FlyManager.flyPrefix + "Erreur | Tu ne peux pas fly dans un autre claim que le tien ou ceux que tu as accès !");
                 return;
             }
@@ -146,11 +146,10 @@ public class FlyCommand extends ConsulatCommand {
         }
     }
 
-    public boolean checkFly(Player player, ClaimObject chunk) {
+    private boolean canFly(Player player, Claim chunk) {
         if (chunk == null) {
-            return true;
+            return false;
         }
-
-        return !chunk.getPlayerUUID().equalsIgnoreCase(getPlayer().getUniqueId().toString()) && !chunk.access.contains(player.getUniqueId().toString());
+        return chunk.isAllowed(player.getUniqueId());
     }
 }

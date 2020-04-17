@@ -2,10 +2,7 @@ package fr.amisoz.consulatcore.listeners.entity.player;
 
 import fr.amisoz.consulatcore.players.CoreManagerPlayers;
 import fr.amisoz.consulatcore.players.CorePlayer;
-import fr.leconsulat.api.claim.ChunkLoader;
-import fr.leconsulat.api.claim.ClaimObject;
 import fr.leconsulat.api.listeners.ChunkChangeEvent;
-import fr.leconsulat.api.player.PlayersManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
