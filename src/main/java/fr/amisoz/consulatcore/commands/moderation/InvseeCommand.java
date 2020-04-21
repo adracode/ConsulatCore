@@ -1,26 +1,28 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
-import fr.amisoz.consulatcore.commands.manager.ConsulatCommand;
-import fr.leconsulat.api.ranks.RankEnum;
+import fr.amisoz.consulatcore.players.SPlayerManager;
+import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.player.CPlayerManager;
+import fr.leconsulat.api.player.ConsulatPlayer;
+import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 public class InvseeCommand extends ConsulatCommand {
 
     public InvseeCommand() {
-        super("/invsee <Joueur>", 1, RankEnum.MODO);
+        super("/invsee <Joueur>", 1, Rank.MODO);
     }
 
     @Override
-    public void consulatCommand() {
-        Player target = Bukkit.getPlayer(getArgs()[0]);
-
+    public void onCommand(ConsulatPlayer sender, String[] args){
+        SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[0]);
         if(target == null){
-            getPlayer().sendMessage("§cJoueur invalide");
+            sender.sendMessage("§cJoueur invalide");
             return;
         }
-
-        getCorePlayer().seeInv = true;
-        getPlayer().openInventory(target.getInventory());
+        ((SurvivalPlayer)sender).setLookingInventory(true);
+        sender.getPlayer().openInventory(target.getPlayer().getInventory());
     }
 }

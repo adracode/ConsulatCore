@@ -1,58 +1,49 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
-import fr.amisoz.consulatcore.ConsulatCore;
-import fr.amisoz.consulatcore.commands.manager.ConsulatCommand;
-import fr.amisoz.consulatcore.moderation.ModerationUtils;
-import fr.amisoz.consulatcore.players.CoreManagerPlayers;
-import fr.amisoz.consulatcore.players.CorePlayer;
+import fr.amisoz.consulatcore.Text;
+import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
-import fr.leconsulat.api.player.PlayersManager;
-import fr.leconsulat.api.ranks.RankEnum;
+import fr.leconsulat.api.ranks.Rank;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 public class ReportCommand extends ConsulatCommand {
-
-    private ConsulatCore consulatCore;
-
-    public ReportCommand(ConsulatCore consulatCore) {
-        super( "/report <Joueur> <Raison>", 2, RankEnum.JOUEUR);
-        this.consulatCore = consulatCore;
+    
+    public ReportCommand(){
+        super("/report <Joueur> <Raison>", 2, Rank.JOUEUR);
     }
-
-
+    
     @Override
-    public void consulatCommand() {
-
-        Player target = Bukkit.getPlayer(getArgs()[0]);
-        if (target == null) {
-            getPlayer().sendMessage(ChatColor.RED + "Joueur ciblé introuvable ! " + ChatColor.GRAY + "( " + getArgs()[0] + " )");
+    public void onCommand(ConsulatPlayer sender, String[] args){
+        SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[0]);
+        if(target == null){
+            sender.sendMessage("§cJoueur ciblé introuvable !§7 ( " + args[0] + " )");
             return;
         }
-
-        StringBuilder stringBuilder = new StringBuilder() ;
-        for(int i = 1; i < getArgs().length; i++){
-            stringBuilder.append(" ").append(getArgs()[i]);
+        StringBuilder stringBuilder = new StringBuilder(args[1]);
+        for(int i = 2; i < args.length; ++i){
+            stringBuilder.append(" ").append(args[i]);
         }
         String reason = stringBuilder.toString();
-
+        TextComponent textComponent = new TextComponent(Text.MODERATION_PREFIX + "§a" + target.getName() + "§2 a été report.");
+        textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                new ComponentBuilder("§2Raison : §a" + reason +
+                        "\n§2Par : §a" + sender.getName() +
+                        "\n§7§oClique pour te téléporter au joueur concerné"
+                ).create()));
+        textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpmod " + target.getName()));
         Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
-            ConsulatPlayer consulatPlayer = PlayersManager.getConsulatPlayer(onlinePlayer);
-            if(consulatPlayer.getRank().getRankPower() >= RankEnum.MODO.getRankPower()){
-                net.md_5.bungee.api.chat.TextComponent textComponent = new TextComponent(ModerationUtils.MODERATION_PREFIX + ChatColor.GREEN + target.getName() + ChatColor.DARK_GREEN + " a été report.");
-                textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                        new ComponentBuilder(ChatColor.DARK_GREEN + "Raison : " + ChatColor.GREEN + reason +
-                                ChatColor.DARK_GREEN + "\nPar : " + ChatColor.GREEN + getPlayer().getName() +
-                                ChatColor.GRAY + "\n§oClique pour te téléporter au joueur concerné"
-                        ).create()));
-                textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpmod " + target.getName()));
+            ConsulatPlayer consulatPlayer = CPlayerManager.getInstance().getConsulatPlayer(onlinePlayer.getUniqueId());
+            if(consulatPlayer.hasPower(Rank.MODO)){
                 onlinePlayer.spigot().sendMessage(textComponent);
             }
         });
+        sender.sendMessage("§aTu as report " + target.getName() + " pour " + reason);
     }
 }

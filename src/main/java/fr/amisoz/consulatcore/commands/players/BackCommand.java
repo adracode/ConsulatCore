@@ -1,19 +1,23 @@
 package fr.amisoz.consulatcore.commands.players;
 
-import fr.amisoz.consulatcore.commands.manager.ConsulatCommand;
-import fr.leconsulat.api.ranks.RankEnum;
+import fr.amisoz.consulatcore.players.SPlayerManager;
+import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.player.ConsulatPlayer;
+import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
 
 public class BackCommand extends ConsulatCommand {
 
     public BackCommand() {
-        super("/back", 0, RankEnum.MECENE);
+        super("/back", 0, Rank.MECENE);
     }
 
     @Override
-    public void consulatCommand() {
-        Bukkit.getWorlds().get(0).getChunkAt(getCorePlayer().oldLocation).load(true);
-        getPlayer().teleport(getCorePlayer().oldLocation);
-        getPlayer().sendMessage("§aTu as été téléporté ! ");
+    public void onCommand(ConsulatPlayer sender, String[] args){
+        SurvivalPlayer player = (SurvivalPlayer)sender;
+        Bukkit.getWorlds().get(0).getChunkAt(player.getOldLocation()).load(true);
+        sender.getPlayer().teleport(player.getOldLocation());
+        sender.sendMessage("§aTu as été téléporté ! ");
     }
 }

@@ -11,8 +11,8 @@ public class MessageRunnable implements Runnable {
     private int index = 0;
 
     public MessageRunnable() {
-        messageList.add("N'oublies pas de t'inscrire sur le site, pour y accéder tu peux faire /site.");
-        messageList.add("N'oublies pas de rejoindre le discord via le /discord.");
+        messageList.add("N'oublie pas de t'inscrire sur le site, pour y accéder tu peux faire /site.");
+        messageList.add("N'oublie pas de rejoindre le discord via le /discord.");
         messageList.add("L'end et le nether sont reset approximativement toutes les 2 semaines.");
         messageList.add("Le /help et /news sont tes amis si tu as une question");
         messageList.add("Cheater et insulter ne sert à rien !");

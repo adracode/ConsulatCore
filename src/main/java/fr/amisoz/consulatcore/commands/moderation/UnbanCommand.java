@@ -1,23 +1,26 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
 import fr.amisoz.consulatcore.ConsulatCore;
-import fr.amisoz.consulatcore.commands.manager.ConsulatCommand;
+import fr.amisoz.consulatcore.Text;
+import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.amisoz.consulatcore.moderation.ModerationUtils;
-import fr.leconsulat.api.ranks.RankEnum;
+import fr.leconsulat.api.player.ConsulatPlayer;
+import fr.leconsulat.api.ranks.Rank;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 public class UnbanCommand extends ConsulatCommand {
-
-    private ConsulatCore consulatCore;
-
-    public UnbanCommand(ConsulatCore consulatCore) {
-        super("/unban <Pseudo>", 1, RankEnum.ADMIN);
-        this.consulatCore = consulatCore;
+    
+    public UnbanCommand(){
+        super("/unban <Pseudo>", 1, Rank.ADMIN);
     }
-
+    
     @Override
-    public void consulatCommand() {
-        String playerName = getArgs()[0];
-        consulatCore.getModerationDatabase().unban(playerName);
-        getPlayer().sendMessage(ModerationUtils.MODERATION_PREFIX + "Si le joueur était banni, il a été dé-banni.");
+    public void onCommand(ConsulatPlayer sender, String[] args){
+        String playerName = args[0];
+        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
+            ConsulatCore.getInstance().getModerationDatabase().unban(playerName);
+            sender.sendMessage(Text.MODERATION_PREFIX + "Si le joueur était banni, il a été dé-banni.");
+        });
     }
 }

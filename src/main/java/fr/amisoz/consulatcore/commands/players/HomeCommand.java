@@ -1,95 +1,93 @@
 package fr.amisoz.consulatcore.commands.players;
 
 import fr.amisoz.consulatcore.ConsulatCore;
-import fr.amisoz.consulatcore.commands.manager.ConsulatCommand;
-import fr.leconsulat.api.ConsulatAPI;
-import fr.leconsulat.api.ranks.RankEnum;
+import fr.amisoz.consulatcore.Text;
+import fr.amisoz.consulatcore.players.SPlayerManager;
+import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.player.ConsulatPlayer;
+import fr.leconsulat.api.ranks.Rank;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
+import java.util.Set;
 
 public class HomeCommand extends ConsulatCommand {
-
-    public HomeCommand() {
-        super("/home <Nom du home>", 0, RankEnum.JOUEUR);
+    
+    public HomeCommand(){
+        super("/home <Nom du home>", 0, Rank.JOUEUR);
     }
-
+    
     @Override
-    public void consulatCommand() {
-        RankEnum playerRank = getConsulatPlayer().getRank();
-
-        if (getArgs().length == 0) {
-            StringBuilder result = new StringBuilder();
-            for (String key : getCorePlayer().homes.keySet()) {
-                result.append(key).append(", ");
-            }
-
-            if (result.length() != 0) {
-                getPlayer().sendMessage(ConsulatCore.PREFIX + "§eVoici la liste de tes homes: " + result.substring(0, result.length() - 2));
-            } else {
-                getPlayer().sendMessage(ConsulatCore.PREFIX + "§cTu ne possèdes aucun home.");
-                getPlayer().sendMessage(ConsulatCore.PREFIX + "§eFais: §c/sethome <Nom du home> §epour poser un home.");
-            }
-            return;
-        }
-
-        String homeName = getArgs()[0];
-
-        if(playerRank.getRankPower() >= RankEnum.MODPLUS.getRankPower()){
-            if(homeName.endsWith(":")){
-                homeName = homeName.substring(0, homeName.length()-1);
-                getPlayer().sendMessage("§6Liste des homes de : §c" + homeName);
-                getPlayer().sendMessage("§7---------------------------------");
-                try {
-                    getHomes(getPlayer(), homeName);
-                } catch (SQLException e) {
-                    getPlayer().sendMessage(ChatColor.RED + "Erreur");
-                }
+    public void onCommand(ConsulatPlayer sender, String[] args){
+        SurvivalPlayer survivalPlayer = (SurvivalPlayer)sender;
+        if(args.length == 0){
+            Set<String> homes = survivalPlayer.getNameHomes();
+            if(homes.size() == 0){
+                sender.sendMessage(Text.PREFIX + "§cTu ne possèdes aucun home.");
+                sender.sendMessage(Text.PREFIX + "§eFais: §c/sethome <Nom du home> §epour poser un home.");
                 return;
             }
-        }
-
-        if (getCorePlayer().homes.containsKey(homeName)) {
-            getCorePlayer().oldLocation = getPlayer().getLocation();
-            Location home = new Location(Bukkit.getWorlds().get(0), getCorePlayer().homes.get(homeName).getX(), getCorePlayer().homes.get(homeName).getY(), getCorePlayer().homes.get(homeName).getZ());
-            getPlayer().teleport(home);
-            getPlayer().sendMessage(ConsulatCore.PREFIX + "§aTu as bien été téléporté à ton home : §2" + homeName);
-        } else {
             StringBuilder result = new StringBuilder();
-            for (String key : getCorePlayer().homes.keySet()) {
+            for(String key : homes){
                 result.append(key).append(", ");
             }
-            if(getCorePlayer().homes.size() == 0) getPlayer().sendMessage(ConsulatCore.PREFIX + "§cTu n'as pas de home défini.");
-            else getPlayer().sendMessage(ConsulatCore.PREFIX + "§cHome inconnu, voici la liste : " + result.substring(0, result.length() - 2));
+            sender.sendMessage(Text.PREFIX + "§eVoici la liste de tes homes: " + result.substring(0, result.length() - 2));
+            return;
         }
-    }
-
-    private void getHomes(Player player, String playerName) throws SQLException {
-        PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM homes INNER JOIN players ON players.id = homes.idplayer WHERE players.player_name = ?");
-        preparedStatement.setString(1, playerName);
-
-        ResultSet resultSet = preparedStatement.executeQuery();
-        int homeNumber = 0;
-        while(resultSet.next()){
-            homeNumber++;
-            TextComponent textComponent = new TextComponent("§a" + resultSet.getString("home_name") + " §7| §cX§7:§6" + resultSet.getInt("x") + " §cY§7:§6" + resultSet.getInt("y") + " §cZ§7:§6" + resultSet.getInt("z"));
-            textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§7Clique pour t'y téléporter.").create()));
-            textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp " + resultSet.getInt("x") + " " + resultSet.getInt("y") + " " + resultSet.getInt("z")));
-            getPlayer().spigot().sendMessage(textComponent);
+        String homeName = args[0];
+        if(survivalPlayer.hasPower(Rank.MODPLUS) && homeName.endsWith(":")){
+            homeName = homeName.substring(0, homeName.length() - 1);
+            String player = homeName;
+            Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
+                try {
+                    Map<String, Location> homes = SPlayerManager.getInstance().getHomes(player, true);
+                    if(homes.isEmpty()){
+                        sender.sendMessage("§cCe joueur n'a pas de homes");
+                    } else {
+                        sender.sendMessage("§6Liste des homes de : §c" + player);
+                        sender.sendMessage("§7---------------------------------");
+                        for(Map.Entry<String, Location> home : homes.entrySet()){
+                            TextComponent textComponent = new TextComponent("§a" + home.getKey() + " §7| §cX§7:§6" +
+                                    home.getValue().getBlockX() + " §cY§7:§6" +
+                                    home.getValue().getBlockY() + " §cZ§7:§6" +
+                                    home.getValue().getBlockZ());
+                            textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§7Clique pour t'y téléporter.").create()));
+                            textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp " +
+                                    home.getValue().getBlockX() + " " +
+                                    home.getValue().getBlockY() + " " +
+                                    home.getValue().getBlockZ()));
+                            sender.sendMessage(textComponent);
+                        }
+                    }
+                } catch(SQLException e){
+                    sender.sendMessage("§cUne erreur interne est survenue.");
+                }
+            });
+            return;
         }
-
-        if(homeNumber == 0) getPlayer().sendMessage(ChatColor.RED + "Ce joueur n'a pas de home.");
-
-        resultSet.close();
-        preparedStatement.close();
+        Location home = survivalPlayer.getHome(homeName);
+        if(home != null){
+            survivalPlayer.setOldLocation(sender.getPlayer().getLocation());
+            sender.getPlayer().teleport(home);
+            sender.sendMessage(Text.PREFIX + "§aTu as bien été téléporté à ton home : §2" + homeName);
+        } else {
+            Set<String> names = survivalPlayer.getNameHomes();
+            if(names.size() == 0){
+                sender.sendMessage(Text.PREFIX + "§cTu n'as pas de home défini.");
+                return;
+            }
+            StringBuilder result = new StringBuilder();
+            for(String key : survivalPlayer.getNameHomes()){
+                result.append(key).append(", ");
+            }
+            sender.sendMessage(Text.PREFIX + "§cHome inconnu, voici la liste : " + result.substring(0, result.length() - 2));
+        }
     }
 }

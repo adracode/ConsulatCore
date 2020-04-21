@@ -1,9 +1,10 @@
 package fr.amisoz.consulatcore.runnable;
 
+import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.ConsulatAPI;
-import fr.leconsulat.api.player.ConsulatPlayer;
-import fr.leconsulat.api.player.PlayersManager;
-import fr.leconsulat.api.ranks.RankEnum;
+import fr.leconsulat.api.player.CPlayerManager;
+import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
 
 import java.sql.PreparedStatement;
@@ -20,16 +21,19 @@ public class MeceneRunnable implements Runnable {
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         if(hour != 22) return;
 
-        try {
-            giveToMecenes();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), ()->{
+            try {
+                giveToMecenes();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+        
 
         Bukkit.getOnlinePlayers().forEach(player -> {
-            ConsulatPlayer consulatPlayer = PlayersManager.getConsulatPlayer(player);
-            if(consulatPlayer.getRank().equals(RankEnum.MECENE)){
-                consulatPlayer.addMoney(100D);
+            SurvivalPlayer consulatPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
+            if(consulatPlayer.getRank().equals(Rank.MECENE)){
+                consulatPlayer.addMoneyNoBDD(100D);
             }
         });
     }

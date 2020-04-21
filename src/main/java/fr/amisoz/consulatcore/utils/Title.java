@@ -5,9 +5,6 @@ import org.bukkit.entity.Player;
 
 import java.lang.reflect.Constructor;
 
-/**
- * Created by KIZAFOX on 12/03/2020 for ConsulatCore
- */
 public class Title {
 
     public static void send(Player player, String title, String subtitle, int fadeInTime, int showTime, int fadeOutTime) {

@@ -1,16 +1,18 @@
 package fr.amisoz.consulatcore.commands.players;
 
-import fr.amisoz.consulatcore.commands.manager.ConsulatCommand;
-import fr.leconsulat.api.ranks.RankEnum;
+import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.player.ConsulatPlayer;
+import fr.leconsulat.api.ranks.Rank;
+import org.bukkit.entity.Player;
 
 public class NewsCommand extends ConsulatCommand {
 
     public NewsCommand() {
-        super("/news", 0, RankEnum.JOUEUR);
+        super("/news", 0, Rank.JOUEUR);
     }
 
     @Override
-    public void consulatCommand() {
+    public void onCommand(ConsulatPlayer sender, String[] args){
         String newsMessage = "§7§l§m-------§r§7§l[ §r§6ConsulatNews §r§7§l§m]§m-------"
                 + "\n§r§cModifications du 01/03/2020"
                 + "\n§r§7§l§m-------------------------------------------"
@@ -20,6 +22,6 @@ public class NewsCommand extends ConsulatCommand {
                 + "\n§r§c[Correction bug]§6 Il arrivait que les shops ne soient pas décomptés & que la limite soit atteinte alors que ce n'était pas le cas"
                 + "\n§r§c- Note : Le plugin de duel arrive très vite, le plugin de ville.. vite :p.";
 
-        getPlayer().sendMessage(newsMessage);
+        sender.sendMessage(newsMessage);
     }
 }

@@ -1,24 +1,24 @@
 package fr.amisoz.consulatcore.commands.players;
 
 import fr.amisoz.consulatcore.ConsulatCore;
-import fr.amisoz.consulatcore.commands.manager.ConsulatCommand;
-import fr.leconsulat.api.ranks.RankEnum;
+import fr.amisoz.consulatcore.players.SPlayerManager;
+import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.player.ConsulatPlayer;
+import fr.leconsulat.api.ranks.Rank;
 
 public class SpawnCommand extends ConsulatCommand {
-
-    public SpawnCommand() {
-        super("/spawn", 0, RankEnum.JOUEUR);
+    
+    public SpawnCommand(){
+        super("/spawn", 0, Rank.JOUEUR);
     }
-
+    
     @Override
-    public void consulatCommand() {
-        if(getArgs().length == 1){
-            if(getArgs()[0].equalsIgnoreCase("set") && getConsulatPlayer().getRank().getRankPower() == RankEnum.ADMIN.getRankPower()){
-                ConsulatCore.spawnLocation = getPlayer().getLocation();
-                getPlayer().sendMessage("§aLocation définie.");
-            }
-        }else{
-            getPlayer().teleport(ConsulatCore.spawnLocation);
+    public void onCommand(ConsulatPlayer sender, String[] args){
+        if(args.length == 1 && sender.hasPower(Rank.ADMIN) && args[0].equalsIgnoreCase("set")){
+            ConsulatCore.getInstance().setSpawn(sender.getPlayer().getLocation());
+            sender.sendMessage("§aLocation définie.");
+        } else {
+            sender.getPlayer().teleport(ConsulatCore.getInstance().getSpawn());
         }
     }
 }

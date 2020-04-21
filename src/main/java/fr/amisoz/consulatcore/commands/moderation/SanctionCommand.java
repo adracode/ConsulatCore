@@ -1,22 +1,32 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
-import fr.amisoz.consulatcore.commands.manager.ConsulatCommand;
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.moderation.InventorySanction;
-import fr.leconsulat.api.ranks.RankEnum;
+import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.player.CPlayerManager;
+import fr.leconsulat.api.player.ConsulatPlayer;
+import fr.leconsulat.api.ranks.Rank;
+import org.bukkit.Bukkit;
 
+import java.util.UUID;
 
 public class SanctionCommand extends ConsulatCommand {
-
-    public SanctionCommand() {
-        super("/sanction <Joueur>", 1, RankEnum.MODO);
+    
+    public SanctionCommand(){
+        super("/sanction <Joueur>", 1, Rank.MODO);
     }
-
+    
     @Override
-    public void consulatCommand() {
-        String targetName = getArgs()[0];
-
-        getCorePlayer().setSanctionTarget(targetName);
-        getPlayer().openInventory(InventorySanction.selectSanctionInventory(targetName));
+    public void onCommand(ConsulatPlayer sender, String[] args){
+        String targetName = args[0];
+        SurvivalPlayer player = (SurvivalPlayer)sender;
+        UUID uuid = CPlayerManager.getInstance().getPlayerUUID(args[0]);
+        if(uuid == null){
+            player.sendMessage(Text.PREFIX + "§cCe joueur ne s'est jamais connecté");
+            return;
+        }
+        player.setSanctionTarget(Bukkit.getOfflinePlayer(uuid).getName());
+        sender.getPlayer().openInventory(InventorySanction.selectSanctionInventory(targetName));
     }
-
 }
