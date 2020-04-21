@@ -363,10 +363,12 @@ public class ShopManager implements Listener {
             player.sendMessage(Text.PREFIX + "§cCe shop n'est pas disponible.");
             return;
         }
-        /*if(shop.getOwner().equals(player.getUUID())){
-            player.sendMessage(Text.PREFIX + "§cTu ne peux pas acheter à ton propre shop!");
-            return;
-        }*/
+        if(shop.getOwner().equals(player.getUUID())){
+            if(!ConsulatAPI.getConsulatAPI().isDebug()){
+                player.sendMessage(Text.PREFIX + "§cTu ne peux pas acheter à ton propre shop!");
+                return;
+            }
+        }
         int placeAvailable = player.spaceAvailable(shop.getItem());
         if(placeAvailable <= 0){
             player.sendMessage("§cVous n'avez pas assez de place dans votre inventaire.");

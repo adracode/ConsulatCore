@@ -46,8 +46,6 @@ public class ConsulatCore extends JavaPlugin {
     private static ConsulatCore instance;
     private static Random random;
     
-    private boolean debug = true;
-    
     private ClaimManager claimManager;
     private SPlayerManager playerManager;
     private BaltopManager baltopManager;
@@ -102,7 +100,7 @@ public class ConsulatCore extends JavaPlugin {
             textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/perso " + color.getChar()));
             textPerso.add(textComponent);
         }
-        if(debug){
+        if(ConsulatAPI.getConsulatAPI().isDebug()){
             for(Player p : Bukkit.getOnlinePlayers()){
                 getServer().getPluginManager().callEvent(new PlayerJoinEvent(p, ""));
             }
