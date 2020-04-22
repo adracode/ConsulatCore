@@ -35,33 +35,31 @@ public class ClaimManager implements Listener {
     }
     
     private void loadClaims(){
-        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-            try {
-                PreparedStatement getClaims = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM claims;");
-                ResultSet resultClaims = getClaims.executeQuery();
-                while(resultClaims.next()){
-                    addClaim(resultClaims.getInt("claim_x"),
-                            resultClaims.getInt("claim_z"),
-                            UUID.fromString(resultClaims.getString("player_uuid")),
-                            resultClaims.getString("description"));
-                }
-                resultClaims.close();
-                getClaims.close();
-                PreparedStatement getAllowedPlayers = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM access;");
-                ResultSet resultAllowedPlayers = getAllowedPlayers.executeQuery();
-                while(resultAllowedPlayers.next()){
-                    getClaim(resultAllowedPlayers.getInt("claim_x"),
-                            resultAllowedPlayers.getInt("claim_z"))
-                            .addPlayer(UUID.fromString(resultAllowedPlayers.getString("player_uuid")));
-                }
-                resultAllowedPlayers.close();
-                getAllowedPlayers.close();
-            } catch(SQLException e){
-                ConsulatAPI.getConsulatAPI().log(Level.SEVERE, "Erreur lors de l'initialisation des claims");
-                e.printStackTrace();
-                Bukkit.shutdown();
+        try {
+            PreparedStatement getClaims = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM claims;");
+            ResultSet resultClaims = getClaims.executeQuery();
+            while(resultClaims.next()){
+                addClaim(resultClaims.getInt("claim_x"),
+                        resultClaims.getInt("claim_z"),
+                        UUID.fromString(resultClaims.getString("player_uuid")),
+                        resultClaims.getString("description"));
             }
-        });
+            resultClaims.close();
+            getClaims.close();
+            PreparedStatement getAllowedPlayers = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM access;");
+            ResultSet resultAllowedPlayers = getAllowedPlayers.executeQuery();
+            while(resultAllowedPlayers.next()){
+                getClaim(resultAllowedPlayers.getInt("claim_x"),
+                        resultAllowedPlayers.getInt("claim_z"))
+                        .addPlayer(UUID.fromString(resultAllowedPlayers.getString("player_uuid")));
+            }
+            resultAllowedPlayers.close();
+            getAllowedPlayers.close();
+        } catch(SQLException e){
+            ConsulatAPI.getConsulatAPI().log(Level.SEVERE, "Erreur lors de l'initialisation des claims");
+            e.printStackTrace();
+            Bukkit.shutdown();
+        }
     }
     
     private Claim addClaim(int x, int z, UUID owner, String description){
