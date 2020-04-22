@@ -1,5 +1,7 @@
 package fr.amisoz.consulatcore.players;
 
+import fr.leconsulat.api.ConsulatAPI;
+
 public class Fly {
     
     public static final Fly FLY_5 = new Fly(5 * 60, System.currentTimeMillis(), 5 * 60);
@@ -38,7 +40,7 @@ public class Fly {
     }
     
     public boolean canFly(){
-        return hasInfiniteFly() || timeLeft > 0;
+        return hasInfiniteFly() || (timeLeft > 0 && reset < System.currentTimeMillis());
     }
     
     public boolean hasInfiniteFly(){
@@ -51,8 +53,9 @@ public class Fly {
     
     public void setFlying(boolean flying){
         this.flying = flying;
-        if(flying && flyTime != -1 && flyTime == timeLeft){
+        if(!flying && !hasInfiniteFly() && timeLeft <= 0){
             reset = System.currentTimeMillis() + 3_600_000;
+            timeLeft = flyTime;
         }
     }
 }

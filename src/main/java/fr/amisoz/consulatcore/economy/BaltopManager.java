@@ -18,7 +18,7 @@ public class BaltopManager {
     private SortedSet<MoneyOwner> rank = new TreeSet<>();
     private final int max = 10;
     private long lastUpdate = System.currentTimeMillis();
-    private final int timeBetweenUpdate = 5 * 60 * 1000;
+    private int timeBetweenUpdate = 5 * 60 * 1000;
     
     public BaltopManager(){
         if(instance != null){
@@ -26,17 +26,6 @@ public class BaltopManager {
         }
         instance = this;
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), this::updateBaltop);
-    }
-    
-    public void add(double money, String name){
-        if(rank.size() >= max){
-            if(rank.last().money < money){
-                rank.remove(rank.last());
-            } else {
-                return;
-            }
-        }
-        rank.add(new MoneyOwner(money, name));
     }
     
     private void updateBaltop(){
@@ -48,11 +37,13 @@ public class BaltopManager {
                 preparedStatement.setInt(1, max);
                 preparedStatement.executeQuery();
                 ResultSet result = preparedStatement.executeQuery();
+                SortedSet<MoneyOwner> rank = new TreeSet<>();
                 while(result.next()){
-                    add(result.getDouble("money"),
-                            result.getString("player_name"));
+                    rank.add(new MoneyOwner(result.getDouble("money"),
+                            result.getString("player_name")));
                 }
                 preparedStatement.close();
+                this.rank = rank;
             } catch(SQLException e){
                 e.printStackTrace();
             }
@@ -60,12 +51,10 @@ public class BaltopManager {
     }
     
     public SortedSet<MoneyOwner> getBaltop(){
-        SortedSet<MoneyOwner> result = Collections.unmodifiableSortedSet(rank);
-        //On actualise après pour renvoyer le classement actualisé la prochaine fois
         if(System.currentTimeMillis() - lastUpdate > timeBetweenUpdate){
             updateBaltop();
         }
-        return result;
+        return Collections.unmodifiableSortedSet(rank);
     }
     
     public static BaltopManager getInstance(){

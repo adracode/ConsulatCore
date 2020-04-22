@@ -64,13 +64,15 @@ public class SPlayerManager implements Listener {
             try {
                 fetchPlayer(player);
                 core.getModerationDatabase().setMute(player.getPlayer());
-                Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), ()->{
+                Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
                     Bukkit.getServer().getPluginManager().callEvent(new SurvivalPlayerLoadedEvent(player));
                 });
                 saveConnection(player);
             } catch(SQLException e){
                 e.printStackTrace();
-                player.getPlayer().kickPlayer("§cErreur lors de la récupération de vos données.\n" + e.getMessage());
+                Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
+                    player.getPlayer().kickPlayer("§cErreur lors de la récupération de vos données.\n" + e.getMessage());
+                });
             }
         });
     }
@@ -182,7 +184,10 @@ public class SPlayerManager implements Listener {
                             new Location(Bukkit.getWorlds().get(0),
                                     resultSet.getDouble("x"),
                                     resultSet.getDouble("y"),
-                                    resultSet.getDouble("z")) :
+                                    resultSet.getDouble("z"),
+                                    resultSet.getFloat("pitch"),
+                                    resultSet.getFloat("yaw")
+                            ) :
                             null);
         }
         resultSet.close();
@@ -193,13 +198,15 @@ public class SPlayerManager implements Listener {
     public void addHome(SurvivalPlayer player, String homeName, Location location) throws SQLException{
         PreparedStatement preparedStatement =
                 player.getHome(homeName) == null ?
-                        ConsulatAPI.getDatabase().prepareStatement("INSERT INTO homes(x, y, z, idplayer, home_name) VALUES(?, ?, ?, ?, ?)") :
-                        ConsulatAPI.getDatabase().prepareStatement("UPDATE homes SET x = ?, y = ?, z = ? WHERE idplayer = ? AND home_name = ?");
+                        ConsulatAPI.getDatabase().prepareStatement("INSERT INTO homes(x, y, z, pitch, yaw, idplayer, home_name) VALUES(?, ?, ?, ?, ?, ?, ?)") :
+                        ConsulatAPI.getDatabase().prepareStatement("UPDATE homes SET x = ?, y = ?, z = ?, pitch = ?, yaw = ? WHERE idplayer = ? AND home_name = ?");
         preparedStatement.setDouble(1, location.getX());
         preparedStatement.setDouble(2, location.getY());
         preparedStatement.setDouble(3, location.getZ());
-        preparedStatement.setInt(4, player.getId());
-        preparedStatement.setString(5, homeName);
+        preparedStatement.setFloat(4, location.getPitch());
+        preparedStatement.setFloat(5, location.getYaw());
+        preparedStatement.setInt(6, player.getId());
+        preparedStatement.setString(7, homeName);
         preparedStatement.executeUpdate();
         preparedStatement.close();
     }

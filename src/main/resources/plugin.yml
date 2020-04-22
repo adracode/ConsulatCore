@@ -15,6 +15,7 @@ commands:
     tpmod:
     help:
     msg:
+        aliases: [mp]
     spawn:
     advert:
     kick:

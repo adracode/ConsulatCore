@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.shop;
 
+import com.destroystokyo.paper.Namespaced;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.commands.economy.ShopCommand;
@@ -255,7 +256,8 @@ public class ShopManager implements Listener {
         event.setLine(1, String.valueOf(price));
         if(sold.getType() == Material.ENCHANTED_BOOK){
             Map.Entry<Enchantment, Integer> enchantment = ((EnchantmentStorageMeta)sold.getItemMeta()).getStoredEnchants().entrySet().iterator().next();
-            event.setLine(2, enchantment.getKey().getKey().getKey().substring(0, 10) + " " + enchantment.getValue());
+            String name = enchantment.getKey().getKey().getKey();
+            event.setLine(2, name.substring(0, Math.min(10, name.length())) + " " + enchantment.getValue());
         } else {
             event.setLine(2, sold.getType().toString());
         }
@@ -441,7 +443,7 @@ public class ShopManager implements Listener {
         if(event.getClickedBlock() == null || event.getClickedBlock().getType() != Material.CHEST){
             return;
         }
-        if(event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK){
+        if(event.getAction() != Action.RIGHT_CLICK_BLOCK){
             return;
         }
         Shop shop = getShop(event.getClickedBlock().getLocation());

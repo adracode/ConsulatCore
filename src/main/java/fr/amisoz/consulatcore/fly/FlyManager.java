@@ -38,14 +38,17 @@ public class FlyManager {
                     player.getPlayer().playSound(player.getPlayer().getLocation(), Sound.BLOCK_LEVER_CLICK, 1f, 1f);
                 }
                 if(timeLeft <= 0){
-                    try {
-                        player.disableFly();
-                    } catch(SQLException e){
-                        player.sendMessage(Text.FLY + "§cUne erreur interne est survenue.");
-                    }
-                    player.sendMessage(Text.FLY + "Ton fly est terminé !");
+                    Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), ()->{
+                        try {
+                            player.disableFly();
+                            player.sendMessage(Text.FLY + "Ton fly est terminé !");
+                        } catch(SQLException e){
+                            player.sendMessage(Text.FLY + "§cUne erreur interne est survenue.");
+                        }
+                    });
+                } else {
+                    player.decrementTimeLeft();
                 }
-                player.decrementTimeLeft();
             }
         }, 0L, 20L);
     }

@@ -1,6 +1,7 @@
 package fr.amisoz.consulatcore.shop;
 
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.ConsulatAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -159,7 +160,7 @@ public class Shop {
     }
     
     public static ItemFrame getItemFrame(Location location){
-        Collection<Entity> entities = location.add(0, 1, 0).getNearbyEntities(1, 1, 1);
+        Collection<Entity> entities = location.add(0.5, 1.5, 0.5).getNearbyEntities(0.5, 0.5, 0.5);
         for(Entity entity : entities){
             if(entity.getType() == EntityType.ITEM_FRAME){
                 ItemFrame itemFrame = (ItemFrame)entity;

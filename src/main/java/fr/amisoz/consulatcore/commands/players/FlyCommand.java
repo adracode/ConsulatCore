@@ -34,10 +34,11 @@ public class FlyCommand extends ConsulatCommand {
                     return;
                 }
                 if(!player.isFlyAvailable()){
-                    long timeWait = (System.currentTimeMillis() - player.getFlyReset()) / 1000;
+                    long timeWait = (player.getFlyReset() - System.currentTimeMillis()) / 1000;
                     long minutes = ((timeWait / 60) % 60);
                     long seconds = (timeWait % 60);
                     player.sendMessage(Text.FLY + "Erreur | Tu n'as pas attendu assez longtemps ! Tu dois encore attendre " + minutes + "m" + seconds + "s.");
+                    return;
                 }
                 if(!player.canFly()){
                     sender.sendMessage(Text.FLY + "Erreur | Tu ne peux pas fly dans un autre claim que le tien ou ceux que tu as accès !");

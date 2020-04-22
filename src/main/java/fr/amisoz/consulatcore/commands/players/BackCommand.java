@@ -16,6 +16,10 @@ public class BackCommand extends ConsulatCommand {
     @Override
     public void onCommand(ConsulatPlayer sender, String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
+        if(player.getOldLocation() == null){
+            player.sendMessage("§cTu n'as pas déjà été téléporté.");
+            return;
+        }
         Bukkit.getWorlds().get(0).getChunkAt(player.getOldLocation()).load(true);
         sender.getPlayer().teleport(player.getOldLocation());
         sender.sendMessage("§aTu as été téléporté ! ");

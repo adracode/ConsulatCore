@@ -392,8 +392,8 @@ public class SurvivalPlayer extends ConsulatPlayer {
         if(!hasFly()){
             return;
         }
-        SPlayerManager.getInstance().setFly(getUUID(), this.fly);
         this.fly.setFlying(false);
+        SPlayerManager.getInstance().setFly(getUUID(), this.fly);
         FlyManager.getInstance().removeFlyingPlayer(this);
         Player player = getPlayer();
         Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), ()->{
