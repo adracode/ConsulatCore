@@ -13,8 +13,8 @@ public class MessageRunnable implements Runnable {
     public MessageRunnable() {
         messageList.add("N'oublie pas de t'inscrire sur le site, pour y accéder tu peux faire /site.");
         messageList.add("N'oublie pas de rejoindre le discord via le /discord.");
-        messageList.add("L'end et le nether sont reset approximativement toutes les 2 semaines.");
-        messageList.add("Le /help et /news sont tes amis si tu as une question");
+        //messageList.add("L'end et le nether sont reset approximativement toutes les 2 semaines.");
+        messageList.add("Le /help est ton ami si tu as une question");
         messageList.add("Cheater et insulter ne sert à rien !");
         messageList.add("Tu peux acheter et vendre des items à l'admin shop au spawn !");
         messageList.add("Tu peux vendre et acheter des items à d'autres joueurs, /shop help !");

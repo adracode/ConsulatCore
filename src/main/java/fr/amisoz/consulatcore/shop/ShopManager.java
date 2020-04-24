@@ -143,7 +143,6 @@ public class ShopManager implements Listener {
         player.sendMessage(ChatColor.YELLOW + "     prix à l'unité (une virgule est un point)");
         player.sendMessage(ChatColor.YELLOW + "                       VIDE");
         player.sendMessage(ChatColor.YELLOW + "                       VIDE");
-        player.sendMessage(Text.PREFIX + "Les maps ainsi que les livres enchantés ne peuvent pas être vendus.");
     }
     
     private boolean isChestEmpty(Chest chest){

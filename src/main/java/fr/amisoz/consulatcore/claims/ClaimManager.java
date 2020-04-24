@@ -35,6 +35,7 @@ public class ClaimManager implements Listener {
     }
     
     private void loadClaims(){
+        long start = System.currentTimeMillis();
         try {
             PreparedStatement getClaims = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM claims;");
             ResultSet resultClaims = getClaims.executeQuery();
@@ -60,6 +61,7 @@ public class ClaimManager implements Listener {
             e.printStackTrace();
             Bukkit.shutdown();
         }
+        ConsulatAPI.getConsulatAPI().log(Level.INFO, "Chunks loaded in " + (System.currentTimeMillis() - start) + " ms");
     }
     
     private Claim addClaim(int x, int z, UUID owner, String description){
