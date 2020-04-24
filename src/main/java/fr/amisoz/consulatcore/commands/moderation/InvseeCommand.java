@@ -19,7 +19,7 @@ public class InvseeCommand extends ConsulatCommand {
     public void onCommand(ConsulatPlayer sender, String[] args){
         SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[0]);
         if(target == null){
-            sender.sendMessage("§cJoueur invalide");
+            sender.sendMessage("§cJoueur invalide.");
             return;
         }
         ((SurvivalPlayer)sender).setLookingInventory(true);

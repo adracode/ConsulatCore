@@ -278,7 +278,7 @@ public class ShopManager implements Listener {
     }
     
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void OnShopBreak(BlockBreakEvent event){
+    public void onShopBreak(BlockBreakEvent event){
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
         switch(event.getBlock().getType()){
             case CHEST:{
@@ -396,7 +396,7 @@ public class ShopManager implements Listener {
                     SPlayerManager.getInstance().addMoney(shop.getOwner(), shop.getPrice());
                 } else {
                     target.addMoney(shop.getPrice());
-                    target.sendMessage("§aTu as reçu " + price + ".");
+                    target.sendMessage(Text.PREFIX + "§aTu as reçu " + price + " € grâce à un de tes shops.");
                 }
             } catch(SQLException e){
                 player.sendMessage("§cUne erreur interne est survenue, la transaction a échoué");

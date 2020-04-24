@@ -23,7 +23,7 @@ public class SanctionCommand extends ConsulatCommand {
         SurvivalPlayer player = (SurvivalPlayer)sender;
         UUID uuid = CPlayerManager.getInstance().getPlayerUUID(args[0]);
         if(uuid == null){
-            player.sendMessage(Text.PREFIX + "§cCe joueur ne s'est jamais connecté");
+            player.sendMessage(Text.PREFIX + "§cCe joueur ne s'est jamais connecté.");
             return;
         }
         player.setSanctionTarget(Bukkit.getOfflinePlayer(uuid).getName());

@@ -50,7 +50,7 @@ public class UnclaimCommand extends ConsulatCommand {
                     sender.sendMessage(Text.PREFIX + "§aChunk unclaim.");
                 }
             } catch(SQLException e){
-                sender.sendMessage(Text.PREFIX + "§cErreur lors de l'unclaim");
+                sender.sendMessage(Text.PREFIX + "§cErreur lors de l'unclaim.");
                 e.printStackTrace();
             }
         });

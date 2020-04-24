@@ -22,7 +22,7 @@ public class RankCommand extends ConsulatCommand {
     public void onCommand(ConsulatPlayer sender, String[] args){
         SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[0]);
         if(target == null){
-            sender.sendMessage("§cJoueur ciblé introuvable ! §7( " + args[0] + " )");
+            sender.sendMessage("§cJoueur ciblé introuvable ! §7(" + args[0] + ")");
             return;
         }
         String newRankName = args[1];
@@ -33,7 +33,7 @@ public class RankCommand extends ConsulatCommand {
             return;
         }
         if(!sender.hasPower(newRank)){
-            sender.sendMessage("§cTu ne peux pas ajouter ce grade");
+            sender.sendMessage("§cTu ne peux pas ajouter ce grade.");
             return;
         }
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {

@@ -132,7 +132,6 @@ public class ConsulatCore extends JavaPlugin {
         this.getCommand("stafflist").setExecutor(new StaffListCommand());
         this.getCommand("hub").setExecutor(new HubCommand());
         this.getCommand("r").setExecutor(new AnswerCommand());
-        this.getCommand("news").setExecutor(new NewsCommand());
         this.getCommand("seen").setExecutor(new SeenCommand());
         this.getCommand("invsee").setExecutor(new InvseeCommand());
         this.getCommand("boutique").setExecutor(new ShopCommand());

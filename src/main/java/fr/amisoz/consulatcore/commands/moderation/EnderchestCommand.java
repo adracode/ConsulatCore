@@ -18,7 +18,7 @@ public class EnderchestCommand extends ConsulatCommand {
     public void onCommand(ConsulatPlayer sender, String[] args) {
         SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[0]);
         if(target == null){
-            sender.sendMessage("§cJoueur invalide");
+            sender.sendMessage("§cJoueur invalide.");
             return;
         }
         sender.getPlayer().openInventory(target.getPlayer().getEnderChest());
