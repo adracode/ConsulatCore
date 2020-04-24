@@ -1,6 +1,7 @@
 package fr.amisoz.consulatcore.listeners.entity.player;
 
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.player.CPlayerManager;
 import org.bukkit.entity.Player;
@@ -22,12 +23,13 @@ public class DamageListener implements Listener {
         if(player.isInModeration()){
             event.setCancelled(true);
         }
-        long cooldownTeleport = (System.currentTimeMillis() - player.getLastTeleport()) / 1000;
-        if(cooldownTeleport > 2 && cooldownTeleport < 20){
-            EntityDamageEvent.DamageCause damageCause = event.getCause();
-            if(damageCause.equals(EntityDamageEvent.DamageCause.SUFFOCATION) || player.getPlayer().getLocation().getY() < 5){
+        EntityDamageEvent.DamageCause damageCause = event.getCause();
+        if(damageCause == EntityDamageEvent.DamageCause.SUFFOCATION){
+            long cooldownTeleport = (System.currentTimeMillis() - player.getLastTeleport()) / 1000;
+            if((cooldownTeleport > 2 && cooldownTeleport < 10) || (cooldownTeleport <= 2 && player.getPlayer().getHealth() <= 2)){
                 player.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 40, 10));
                 player.getPlayer().teleport(ConsulatCore.getInstance().getSpawn());
+                player.sendMessage(Text.PREFIX + "§aTu as été téléporté au spawn pour cause de suffocation.");
             }
         }
     }
