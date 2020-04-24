@@ -10,10 +10,7 @@ import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.*;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.Chest;
-import org.bukkit.block.Sign;
+import org.bukkit.block.*;
 import org.bukkit.block.data.Directional;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
@@ -78,9 +75,19 @@ public class ShopManager implements Listener {
             Block block = world.getBlockAt(location);
             if(!(block.getState() instanceof Chest)){
                 if(block.getState() instanceof Sign){
+                    Chest chest = getChestFromSign(block);
+                    if(chest == null){
+                        ConsulatAPI.getConsulatAPI().log(Level.SEVERE, "Le shop en " + location + " n'est pas valide (pas un panneau), il sera supprimé.");
+                        ConsulatAPI.getConsulatAPI().logFile("Le shop en " + location + " n'est pas valide, il a été supprimé, owner: " + uuid + ", item vendu: " + resultShops.getString("material"));
+                        removeShopDatabase(uuid, location.getBlockX(), location.getBlockY(), location.getBlockZ());
+                        continue;
+                    }
                     block = getChestFromSign(block).getBlock();
                     Location old = location;
                     location = block.getLocation();
+                    if(isDoubleChest(chest)){
+                        setChestsSingle(chest.getBlock(), getNextChest(chest.getBlock()));
+                    }
                     updateShop(old, location);
                 } else {
                     ConsulatAPI.getConsulatAPI().log(Level.SEVERE, "Le shop en " + location + " n'est pas valide, il sera supprimé.");
@@ -154,6 +161,10 @@ public class ShopManager implements Listener {
         return true;
     }
     
+    public boolean isDoubleChest(Chest chest){
+        return ((org.bukkit.block.data.type.Chest)chest.getBlock().getBlockData()).getType() != org.bukkit.block.data.type.Chest.Type.SINGLE;
+    }
+    
     @EventHandler
     public void onShopCreated(SignChangeEvent event){
         if(!event.getLines()[0].equalsIgnoreCase("[ConsulShop]")){
@@ -171,7 +182,7 @@ public class ShopManager implements Listener {
             player.sendMessage("§cUn shop ne peut être que sur un coffre.");
             return;
         }
-        if(((org.bukkit.block.data.type.Chest)chest.getBlock().getBlockData()).getType() != org.bukkit.block.data.type.Chest.Type.SINGLE){
+        if(isDoubleChest(chest)){
             event.getBlock().breakNaturally();
             player.sendMessage("§cUn shop ne peut être que sur un coffre simple.");
             return;
@@ -526,12 +537,17 @@ public class ShopManager implements Listener {
         if(!isShop((Chest)otherChest.getState())){
             return;
         }
+        setChestsSingle(chest, otherChest);
+        event.getPlayer().sendBlockChange(otherChest.getLocation(), otherChest.getBlockData());
+    }
+    
+    public void setChestsSingle(Block chest, Block otherChest){
+        org.bukkit.block.data.type.Chest chestData = (org.bukkit.block.data.type.Chest)chest.getBlockData();
         org.bukkit.block.data.type.Chest otherChestData = ((org.bukkit.block.data.type.Chest)otherChest.getBlockData());
         chestData.setType(org.bukkit.block.data.type.Chest.Type.SINGLE);
         otherChestData.setType(org.bukkit.block.data.type.Chest.Type.SINGLE);
         chest.setBlockData(chestData);
         otherChest.setBlockData(otherChestData);
-        event.getPlayer().sendBlockChange(otherChest.getLocation(), otherChestData);
     }
     
     @EventHandler
