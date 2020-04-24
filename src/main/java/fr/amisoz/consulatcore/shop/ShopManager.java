@@ -82,9 +82,10 @@ public class ShopManager implements Listener {
                     Location old = location;
                     location = block.getLocation();
                     updateShop(old, location);
-    
                 } else {
-                    ConsulatAPI.getConsulatAPI().log(Level.SEVERE, "Le shop en " + location + " n'est pas valide.");
+                    ConsulatAPI.getConsulatAPI().log(Level.SEVERE, "Le shop en " + location + " n'est pas valide, il sera supprimé.");
+                    ConsulatAPI.getConsulatAPI().logFile("Le shop en " + location + " n'est pas valide, il a été supprimé, owner: " + uuid + ", item vendu: " + resultShops.getString("material"));
+                    removeShopDatabase(uuid, location.getBlockX(), location.getBlockY(), location.getBlockZ());
                     continue;
                 }
             }
@@ -587,7 +588,7 @@ public class ShopManager implements Listener {
     }
     
     public void removeShop(Shop shop) throws SQLException{
-        removeShopDatabase(shop);
+        removeShopDatabase(shop.getOwner(), shop.getX(), shop.getY(), shop.getZ());
         this.shops.remove(shop.getCoords());
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(shop.getOwner());
         if(player != null){
@@ -648,12 +649,12 @@ public class ShopManager implements Listener {
         preparedStatement.close();
     }
     
-    public void removeShopDatabase(Shop shop) throws SQLException{
+    public void removeShopDatabase(UUID uuId, int x, int y, int z) throws SQLException{
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("DELETE FROM shopinfo WHERE owner_uuid = ? AND shop_x = ? AND shop_y = ? AND shop_z = ?");
-        preparedStatement.setString(1, shop.getOwner().toString());
-        preparedStatement.setInt(2, shop.getX());
-        preparedStatement.setInt(3, shop.getY());
-        preparedStatement.setInt(4, shop.getZ());
+        preparedStatement.setString(1, uuId.toString());
+        preparedStatement.setInt(2, x);
+        preparedStatement.setInt(3, y);
+        preparedStatement.setInt(4, z);
         preparedStatement.executeUpdate();
         preparedStatement.close();
     }
