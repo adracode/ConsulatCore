@@ -24,7 +24,7 @@ public class DamageListener implements Listener {
             event.setCancelled(true);
         }
         EntityDamageEvent.DamageCause damageCause = event.getCause();
-        if(damageCause == EntityDamageEvent.DamageCause.SUFFOCATION){
+        if(damageCause == EntityDamageEvent.DamageCause.SUFFOCATION || damageCause == EntityDamageEvent.DamageCause.VOID){
             long cooldownTeleport = (System.currentTimeMillis() - player.getLastTeleport()) / 1000;
             if((cooldownTeleport > 2 && cooldownTeleport < 10) || (cooldownTeleport <= 2 && player.getPlayer().getHealth() <= 2)){
                 player.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 40, 10));
