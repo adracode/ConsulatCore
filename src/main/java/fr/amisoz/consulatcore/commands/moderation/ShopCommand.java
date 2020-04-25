@@ -67,7 +67,7 @@ public class ShopCommand implements CommandExecutor {
                 Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
                     try {
                         target.setPerkTop(true);
-                        target.sendMessage("§7Suite à ton achat, tu as accès au /up !");
+                        target.sendMessage("§7Suite à ton achat, tu as accès au /top !");
                     } catch(SQLException e){
                         target.sendMessage("§cUne erreur s'est produite lors de l'achat de ton /up, préviens un administrateur !");
                         e.printStackTrace();

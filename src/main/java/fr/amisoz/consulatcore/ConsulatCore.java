@@ -63,7 +63,7 @@ public class ConsulatCore extends JavaPlugin {
     
     private Set<String> forbiddenPerso = new HashSet<>(Arrays.asList(
             "Modo", "Moderateur", "Modérateur", "Admin", "Animateur", "Partenaire", "Youtubeur", "Streamer", "Ami",
-            "Fonda", "Dev", "Builder"));
+            "Fonda", "Dev", "Builder", "Fondateur"));
     
     @Override
     public void onEnable(){

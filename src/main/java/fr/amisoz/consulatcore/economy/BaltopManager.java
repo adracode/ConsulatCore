@@ -3,6 +3,7 @@ package fr.amisoz.consulatcore.economy;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.players.SurvivalOffline;
 import fr.leconsulat.api.ConsulatAPI;
+import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
 
 import java.sql.PreparedStatement;
@@ -33,7 +34,7 @@ public class BaltopManager {
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
                 PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement(
-                        "SELECT player_name, money FROM players WHERE player_rank != 'Admin' ORDER BY money DESC limit ?;");
+                        "SELECT player_name, money FROM players WHERE player_rank != 'Admin' AND player_rank != 'Superviseur' ORDER BY money DESC limit ?;");
                 preparedStatement.setInt(1, max);
                 preparedStatement.executeQuery();
                 ResultSet result = preparedStatement.executeQuery();
