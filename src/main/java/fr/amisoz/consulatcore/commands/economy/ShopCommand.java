@@ -24,10 +24,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class ShopCommand extends ConsulatCommand {
     
@@ -105,19 +102,24 @@ public class ShopCommand extends ConsulatCommand {
     //Pas encore modifié, je ferai après
     public static Inventory createShoplistInventory(Player player, int page){
         Inventory list = Bukkit.createInventory(null, 54, "§cListe des Shops");
-        List<Shop> allShops;
-        allShops = new ArrayList<>(new HashSet<>(ShopManager.getInstance().getShops()));
-        if(allShops.size() == 0){
+        Collection<Shop> shopCollection = ShopManager.getInstance().getShops();
+        List<Shop> shops = new ArrayList<>(shopCollection.size());
+        for(Shop shop : shopCollection){
+            if(!shop.isEmpty()){
+                shops.add(shop);
+            }
+        }
+        if(shops.size() == 0){
             player.sendMessage(ChatColor.RED + "Il n'y a aucun shop.");
             return null;
         } else {
             int inventoryUsedSlot = 44;
             int start = (inventoryUsedSlot * page) - inventoryUsedSlot;
             int end = (inventoryUsedSlot * page) - 1;
-            int size = allShops.size();
+            int size = shops.size();
             for(int i = start; i <= end; ++i){
                 if(size >= (i + 1)){
-                    Shop shopItem = allShops.get(i);
+                    Shop shopItem = shops.get(i);
                     int x = shopItem.getX();
                     int z = shopItem.getZ();
                     int y = shopItem.getY();
