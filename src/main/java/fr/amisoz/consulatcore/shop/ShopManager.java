@@ -123,7 +123,7 @@ public class ShopManager implements Listener {
                     location,
                     itemFrame == null
             );
-            Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), ()->{
+            Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
                 if(itemFrame == null){
                     shop.placeItemFrame();
                 }
@@ -869,7 +869,12 @@ public class ShopManager implements Listener {
                 return;
             }
             ItemStack itemStack = new ItemStack(material, 1, data);
+            int spaceAvailable = player.spaceAvailable(itemStack);
             if(player.getPlayer().isSneaking()){
+                if(spaceAvailable < 64){
+                    player.sendMessage(Text.PREFIX + "§cVous n'avez pas assez de place dans votre inventaire");
+                    return;
+                }
                 if(player.hasMoney(buyPrice * 64)){
                     Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
                         try {
@@ -888,6 +893,10 @@ public class ShopManager implements Listener {
                     player.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent");
                 }
             } else {
+                if(spaceAvailable == 0){
+                    player.sendMessage(Text.PREFIX + "§cVous n'avez pas assez de place dans votre inventaire");
+                    return;
+                }
                 if(player.hasMoney(buyPrice)){
                     Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
                         try {

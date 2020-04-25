@@ -89,8 +89,11 @@ public class SPlayerManager implements Listener {
                 Bukkit.broadcastMessage("§7(§a+§7)" + playerRank.getRankColor() + " [" + playerRank.getRankName() + "] " + player.getName());
             }
         }
-        for(Claim claim : ClaimManager.getInstance().getClaims(player.getUUID())){
-            player.addClaim(claim);
+        Set<Claim> claims = ClaimManager.getInstance().getClaims(player.getUUID());
+        if(claims != null){
+            for(Claim claim : claims){
+                player.addClaim(claim);
+            }
         }
     }
     
