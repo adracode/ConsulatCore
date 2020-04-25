@@ -72,11 +72,11 @@ public class InventoryListeners implements Listener {
         if(!(event.getPlayer() instanceof Player)){
             return;
         }
-        
         Player player = (Player)event.getPlayer();
         SurvivalPlayer survivalPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
-        survivalPlayer.setLookingInventory(false);
-        
+        if(survivalPlayer != null){
+            survivalPlayer.setLookingInventory(false);
+        }
     }
     
     //A refaire

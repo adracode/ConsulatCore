@@ -29,6 +29,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.util.*;
+import java.util.logging.Level;
 
 public class SPlayerManager implements Listener {
     
@@ -101,6 +102,10 @@ public class SPlayerManager implements Listener {
     @EventHandler
     public void onLeave(ConsulatPlayerLeaveEvent event){
         SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
+        if(player == null){
+            ConsulatAPI.getConsulatAPI().log(Level.WARNING, "A player who has left is null");
+            return;
+        }
         if(player.isFrozen()){
             Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
                 ConsulatPlayer consulatOnline = CPlayerManager.getInstance().getConsulatPlayer(onlinePlayer.getUniqueId());

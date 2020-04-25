@@ -11,8 +11,10 @@ public class AFKRunnable implements Runnable {
     public void run() {
         Bukkit.getOnlinePlayers().forEach(player -> {
             SurvivalPlayer survivalPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
-            if((System.currentTimeMillis() - survivalPlayer.getLastMove()) > 10 * 60 * 1000 && survivalPlayer.getLastMove() != 0){
-                player.kickPlayer("§7§l§m ----[ §r§6§lLe Consulat §7§l§m]----\n\n§cTu as été exclu.\n§cRaison : §4AFK");
+            if(survivalPlayer != null){
+                if((System.currentTimeMillis() - survivalPlayer.getLastMove()) > 10 * 60 * 1000 && survivalPlayer.getLastMove() != 0){
+                    player.kickPlayer("§7§l§m ----[ §r§6§lLe Consulat §7§l§m]----\n\n§cTu as été exclu.\n§cRaison : §4AFK");
+                }
             }
         });
     }
