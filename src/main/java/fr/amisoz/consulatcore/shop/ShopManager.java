@@ -382,6 +382,16 @@ public class ShopManager implements Listener {
             return;
         }
         event.setCancelled(true);
+        if(player.hasPower(Rank.DEVELOPPEUR) && player.getPlayer().getInventory().getItemInMainHand().getType() == Material.HEART_OF_THE_SEA){
+            ItemMeta meta = player.getPlayer().getInventory().getItemInMainHand().getItemMeta();
+            if(meta != null && meta.getDisplayName().equals("Debug tool")){
+                player.sendMessage("Shop x = " + shop.getX() + " y = " + shop.getY() + " z = " + shop.getZ());
+                player.sendMessage("ItemFrame: " + shop.getItemFrame().getLocation() + ", Facing: " + shop.getItemFrame().getFacing());
+                player.sendMessage("Restant: " + shop.getAmount());
+                player.sendMessage("Item: " + shop.getItem());
+                return;
+            }
+        }
         if(shop.isEmpty()){
             player.sendMessage(Text.PREFIX + "§cCe shop est actuellement vide.");
             return;
