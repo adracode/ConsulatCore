@@ -1,7 +1,7 @@
 package fr.amisoz.consulatcore.listeners.entity.player;
 
-import fr.amisoz.consulatcore.players.CoreManagerPlayers;
-import fr.amisoz.consulatcore.players.CorePlayer;
+import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.player.CPlayerManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,10 +11,11 @@ public class FoodListener implements Listener {
 
     @EventHandler
     public void onFood(FoodLevelChangeEvent event){
-        if(!(event.getEntity() instanceof Player)) return;
-        Player player = (Player) event.getEntity();
-        CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
-        if(corePlayer.isModerate()){
+        if(!(event.getEntity() instanceof Player)) {
+            return;
+        }
+        SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getEntity().getUniqueId());
+        if(player.isInModeration()){
             event.setCancelled(true);
         }
     }

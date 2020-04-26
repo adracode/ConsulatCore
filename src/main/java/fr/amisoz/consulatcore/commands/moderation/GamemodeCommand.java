@@ -1,29 +1,31 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
-import fr.amisoz.consulatcore.commands.manager.ConsulatCommand;
+import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.amisoz.consulatcore.moderation.ModerationUtils;
-import fr.leconsulat.api.ranks.RankEnum;
+import fr.leconsulat.api.player.ConsulatPlayer;
+import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.GameMode;
+import org.bukkit.entity.Player;
 
 public class GamemodeCommand extends ConsulatCommand {
-
-    public GamemodeCommand() {
-        super("/gm", 0, RankEnum.MODO);
+    
+    public GamemodeCommand(){
+        super("/gm", 0, Rank.MODO);
     }
-
+    
     @Override
-    public void consulatCommand() {
-        if(!ModerationUtils.moderatePlayers.contains(getPlayer())){
-            getPlayer().sendMessage("§cTu dois être en staff mode.");
+    public void onCommand(ConsulatPlayer sender, String[] args){
+        if(!ModerationUtils.moderatePlayers.contains(sender.getPlayer())){
+            sender.sendMessage("§cTu dois être en staff mode.");
             return;
         }
-
-        if(getPlayer().getGameMode().equals(GameMode.SURVIVAL)){
-            getPlayer().setGameMode(GameMode.SPECTATOR);
-        }else if(getPlayer().getGameMode().equals(GameMode.SPECTATOR)){
-            getPlayer().setGameMode(GameMode.SURVIVAL);
-            getPlayer().setAllowFlight(true);
-            getPlayer().setFlying(true);
+        Player bukkitPlayer = sender.getPlayer();
+        if(bukkitPlayer.getGameMode() == GameMode.SURVIVAL){
+            bukkitPlayer.setGameMode(GameMode.SPECTATOR);
+        } else if(bukkitPlayer.getGameMode() == GameMode.SPECTATOR){
+            bukkitPlayer.setGameMode(GameMode.SURVIVAL);
+            bukkitPlayer.setAllowFlight(true);
+            bukkitPlayer.setFlying(true);
         }
     }
 }

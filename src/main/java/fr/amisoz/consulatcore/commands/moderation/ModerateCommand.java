@@ -1,110 +1,100 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
 import fr.amisoz.consulatcore.ConsulatCore;
-import fr.amisoz.consulatcore.commands.manager.ConsulatCommand;
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.moderation.ModerationUtils;
+import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
-import fr.leconsulat.api.player.PlayersManager;
-import fr.leconsulat.api.ranks.RankEnum;
+import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 public class ModerateCommand extends ConsulatCommand {
-
-    private ConsulatCore consulatCore;
-
-    public ModerateCommand(ConsulatCore consulatCore) {
-        super("/staff", 0, RankEnum.MODO);
-        this.consulatCore = consulatCore;
+    
+    public ModerateCommand(){
+        super("/staff", 0, Rank.MODO);
     }
-
+    
     @Override
-    public void consulatCommand() {
-
-        if(getCorePlayer().isModerate()){
-            getPlayer().sendMessage(ModerationUtils.MODERATION_PREFIX + ChatColor.RED + "Tu n'es plus en mode modérateur.");
-            ModerationUtils.moderatePlayers.remove(getPlayer());
-            ModerationUtils.vanishedPlayers.remove(getPlayer());
-
-            for(PotionEffect effect  : getPlayer().getActivePotionEffects()){
+    public void onCommand(ConsulatPlayer sender, String[] args){
+        SurvivalPlayer player = (SurvivalPlayer)sender;
+        Player bukkitPlayer = sender.getPlayer();
+        if(player.isInModeration()){
+            sender.sendMessage(Text.MODERATION_PREFIX + "§cTu n'es plus en mode modérateur.");
+            ModerationUtils.moderatePlayers.remove(bukkitPlayer);
+            ModerationUtils.vanishedPlayers.remove(bukkitPlayer);
+            for(PotionEffect effect : bukkitPlayer.getActivePotionEffects()){
                 if(effect.getType().equals(PotionEffectType.NIGHT_VISION) || effect.getType().equals(PotionEffectType.INVISIBILITY)){
-                    getPlayer().removePotionEffect(effect.getType());
+                    bukkitPlayer.removePotionEffect(effect.getType());
                 }
             }
-
-            Bukkit.getOnlinePlayers().forEach(onlinePlayers -> onlinePlayers.showPlayer(consulatCore, getPlayer()));
-
-            getPlayer().getInventory().setContents(getCorePlayer().stockedInventory);
-
-            if(getPlayer().getGameMode() == GameMode.SURVIVAL) {
-                getPlayer().setAllowFlight(false);
-                getPlayer().setFlying(false);
+            Bukkit.getOnlinePlayers().forEach(onlinePlayers -> onlinePlayers.showPlayer(ConsulatCore.getInstance(), bukkitPlayer));
+            bukkitPlayer.getInventory().setContents(player.getStockedInventory());
+            if(bukkitPlayer.getGameMode() == GameMode.SURVIVAL){
+                bukkitPlayer.setAllowFlight(false);
+                bukkitPlayer.setFlying(false);
             }
-        }else{
-            getPlayer().sendMessage(ModerationUtils.MODERATION_PREFIX + ChatColor.GREEN + "Tu es désormais en mode modérateur.");
-            ModerationUtils.moderatePlayers.add(getPlayer());
-            ModerationUtils.vanishedPlayers.add(getPlayer());
-
-            getCorePlayer().stockedInventory = getPlayer().getInventory().getContents();
-
+        } else {
+            sender.sendMessage(Text.MODERATION_PREFIX + "§aTu es désormais en mode modérateur.");
+            ModerationUtils.moderatePlayers.add(bukkitPlayer);
+            ModerationUtils.vanishedPlayers.add(bukkitPlayer);
+            player.setStockedInventory(bukkitPlayer.getInventory().getContents());
             Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
-                if(onlinePlayer != getPlayer()) {
-                    ConsulatPlayer consulatPlayer = PlayersManager.getConsulatPlayer(onlinePlayer);
-                    if (consulatPlayer.getRank().getRankPower() < RankEnum.MODO.getRankPower()) {
-                        onlinePlayer.hidePlayer(consulatCore, getPlayer());
+                if(onlinePlayer != bukkitPlayer){
+                    ConsulatPlayer consulatPlayer = CPlayerManager.getInstance().getConsulatPlayer(onlinePlayer.getUniqueId());
+                    if(!consulatPlayer.hasPower(Rank.MODO)){
+                        onlinePlayer.hidePlayer(ConsulatCore.getInstance(), bukkitPlayer);
                     }
                 }
             });
-
-            getPlayer().getInventory().clear();
-            getPlayer().getInventory().setHelmet(null);
-            getPlayer().getInventory().setChestplate(null);
-            getPlayer().getInventory().setLeggings(null);
-            getPlayer().getInventory().setBoots(null);
-
-            getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 2, false, false));
-            getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 2, false, false));
+            bukkitPlayer.getInventory().clear();
+            bukkitPlayer.getInventory().setHelmet(null);
+            bukkitPlayer.getInventory().setChestplate(null);
+            bukkitPlayer.getInventory().setLeggings(null);
+            bukkitPlayer.getInventory().setBoots(null);
+            bukkitPlayer.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 2, false, false));
+            bukkitPlayer.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 2, false, false));
             // Tp aléatoire, vanish/devanish, see inv du joueur sur lequel on clique
             ItemStack randomTeleport = new ItemStack(Material.ENDER_EYE);
             ItemMeta randomMeta = randomTeleport.getItemMeta();
             assert randomMeta != null;
             randomMeta.setDisplayName("§6Se téléporter aléatoirement");
             randomTeleport.setItemMeta(randomMeta);
-
+            
             ItemStack vanish = new ItemStack(Material.BLAZE_POWDER);
             ItemMeta vanishMeta = vanish.getItemMeta();
             assert vanishMeta != null;
             vanishMeta.setDisplayName("§cChanger son statut d'invisibilité");
             vanish.setItemMeta(vanishMeta);
-
+            
             ItemStack invsee = new ItemStack(Material.PAPER);
             ItemMeta invseeMeta = invsee.getItemMeta();
             assert invseeMeta != null;
             invseeMeta.setDisplayName("§aVoir l'inventaire");
             invsee.setItemMeta(invseeMeta);
-
+            
             ItemStack freeze = new ItemStack(Material.PACKED_ICE);
             ItemMeta freezeMeta = freeze.getItemMeta();
             assert freezeMeta != null;
             invseeMeta.setDisplayName("§bFreeze");
             freeze.setItemMeta(invseeMeta);
-
-            getPlayer().getInventory().setItem(3, randomTeleport);
-            getPlayer().getInventory().setItem(4, vanish);
-            getPlayer().getInventory().setItem(5, invsee);
-            getPlayer().getInventory().setItem(6, freeze);
-
-            getPlayer().setAllowFlight(true);
-            getPlayer().setFlying(true);
+            
+            bukkitPlayer.getInventory().setItem(3, randomTeleport);
+            bukkitPlayer.getInventory().setItem(4, vanish);
+            bukkitPlayer.getInventory().setItem(5, invsee);
+            bukkitPlayer.getInventory().setItem(6, freeze);
+    
+            bukkitPlayer.setAllowFlight(true);
+            bukkitPlayer.setFlying(true);
         }
-
-
-        getCorePlayer().setModerate(!getCorePlayer().isModerate());
+        player.setInModeration(!player.isInModeration());
     }
 }

@@ -1,20 +1,21 @@
 package fr.amisoz.consulatcore.commands.players;
 
-import fr.amisoz.consulatcore.commands.manager.ConsulatCommand;
-import fr.leconsulat.api.ranks.RankEnum;
+import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.player.ConsulatPlayer;
+import fr.leconsulat.api.ranks.Rank;
+import org.bukkit.entity.Player;
 
 public class HelpCommand extends ConsulatCommand {
 
     public HelpCommand() {
-        super("/help", 0, RankEnum.JOUEUR);
+        super("/help", 0, Rank.JOUEUR);
     }
 
     @Override
-    public void consulatCommand() {
+    public void onCommand(ConsulatPlayer sender, String[] args){
         String helpMessage = "§7§l§m-------§r§7§l[ §r§6ConsulatHelp §r§7§l§m]§m-------"
-                + "\n§r§cAdministration §7: §c§oShazen, Thomeryc, Amisoz"
-                + "\n§r§9Développement §7: §9§oAmisoz, B_nair"
-                + "\n§r§2Construction §7: §2§oOpoz"
+                + "\n§r§cAdministration §7: §c§oShazen, Thomeryc, Elfas_"
+                + "\n§r§9Développement §7: §9§oElfas_, adracode"
                 + "\n§r§7§l§m-------------------------------------------"
                 + "\n§r§6/spawn §r§7: Téléportation au spawn"
                 + "\n§r§6/mp <Joueur> <Message> §r§7:  Envoyer un message privé à un joueur"
@@ -28,6 +29,6 @@ public class HelpCommand extends ConsulatCommand {
                 + "\n§r§6/unclaim §r§7: Unclaim le claim dans lequel tu te trouves en te remboursant de 70%"
                 + "\n§r§6Le shop §6est situé au spawn, §6il te permet de vendre §6différents item à différents prix §6afin §6d'obtenir de la monnaie §6pour les tp, les claims, etc.";
 
-        getPlayer().sendMessage(helpMessage);
+        sender.sendMessage(helpMessage);
     }
 }

@@ -1,8 +1,8 @@
 name: ConsulatCore
 version: ${version}
-author: Amisoz
+authors: [Amisoz, adracode]
 main: fr.amisoz.consulatcore.ConsulatCore
-softdepend: [ConsulatAPI]
+depend: [ConsulatAPI]
 api-version: 1.14
 commands:
     rank:
@@ -15,6 +15,7 @@ commands:
     tpmod:
     help:
     msg:
+        aliases: [mp]
     spawn:
     advert:
     kick:
@@ -24,7 +25,6 @@ commands:
     back:
     hub:
     stafflist:
-    news:
     r:
     seen:
     invsee:
@@ -41,3 +41,12 @@ commands:
     home:
     delhome:
     sethome:
+    access:
+    claim:
+    unclaim:
+    baltop:
+    money:
+    pay:
+    tpa:
+    shop:
+    socialspy:

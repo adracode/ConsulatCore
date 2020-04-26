@@ -1,43 +1,44 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
-import fr.amisoz.consulatcore.commands.manager.ConsulatCommand;
+import fr.amisoz.consulatcore.players.SPlayerManager;
+import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.amisoz.consulatcore.moderation.ModerationUtils;
-import fr.leconsulat.api.ranks.RankEnum;
+import fr.leconsulat.api.player.CPlayerManager;
+import fr.leconsulat.api.player.ConsulatPlayer;
+import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 public class TpmodCommand extends ConsulatCommand {
-
-    public TpmodCommand() {
-        super("/tpmod <Joueur>", 1, RankEnum.MODO);
+    
+    public TpmodCommand(){
+        super("/tpmod <Joueur>", 1, Rank.MODO);
     }
-
+    
     @Override
-    public void consulatCommand() {
-        if(!ModerationUtils.moderatePlayers.contains(getPlayer()) && getConsulatPlayer().getRank().getRankPower() < RankEnum.ADMIN.getRankPower()){
-            getPlayer().sendMessage(ChatColor.RED + "Tu dois être en mode modérateur.");
+    public void onCommand(ConsulatPlayer sender, String[] args){
+        SurvivalPlayer survivalSender = (SurvivalPlayer)sender;
+        if(!ModerationUtils.moderatePlayers.contains(sender.getPlayer()) && !survivalSender.hasPower(Rank.ADMIN)){
+            sender.sendMessage("§cTu dois être en mode modérateur.");
             return;
         }
-
-        Player target = Bukkit.getPlayer(getArgs()[0]);
-        if(target == null) {
-            getPlayer().sendMessage(ChatColor.RED + "Cible introuvable.");
+        SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[0]);
+        if(target == null){
+            sender.sendMessage("§cCe joueur n'est pas connecté.");
             return;
         }
-
-        if(getArgs().length == 2){
-            Player to = Bukkit.getPlayer(getArgs()[1]);
-            if(to == null) {
-                getPlayer().sendMessage(ChatColor.RED + "Cible introuvable.");
+        if(args.length == 2){
+            SurvivalPlayer to = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[1]);
+            if(to == null){
+                sender.sendMessage("§cCe joueur n'est pas connecté.");
                 return;
             }
-            target.teleport(to);
-            getPlayer().sendMessage("§aTu as téléporté " + target.getName() + " à " + to.getName());
+            target.getPlayer().teleport(to.getPlayer());
+            sender.sendMessage("§aTu as téléporté " + target.getName() + " à " + to.getName());
             return;
         }
-
-        getPlayer().teleport(target);
-        getPlayer().sendMessage(ChatColor.GREEN + "Tu t'es téléporté à " + getArgs()[0] + ".");
+        sender.getPlayer().teleport(target.getPlayer());
+        sender.sendMessage("§aTu t'es téléporté à " + args[0] + ".");
     }
 }

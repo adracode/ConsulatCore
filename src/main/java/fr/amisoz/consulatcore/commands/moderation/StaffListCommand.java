@@ -1,27 +1,25 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
-import fr.amisoz.consulatcore.commands.manager.ConsulatCommand;
-import fr.amisoz.consulatcore.players.CoreManagerPlayers;
-import fr.amisoz.consulatcore.players.CorePlayer;
+import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
-import fr.leconsulat.api.player.PlayersManager;
-import fr.leconsulat.api.ranks.RankEnum;
+import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
 
 public class StaffListCommand extends ConsulatCommand {
 
     public StaffListCommand() {
-        super("/stafflist", 0, RankEnum.MODPLUS);
+        super("/stafflist", 0, Rank.MODPLUS);
     }
 
     @Override
-    public void consulatCommand() {
-        getPlayer().sendMessage("§6§uListe du staff en ligne : ");
+    public void onCommand(ConsulatPlayer sender, String[] args){
+        sender.sendMessage("§6§uListe du staff en ligne : ");
         Bukkit.getOnlinePlayers().forEach(player -> {
-            ConsulatPlayer consulatPlayer = PlayersManager.getConsulatPlayer(player);
-            RankEnum rank = consulatPlayer.getRank();
-            if(rank.getRankPower() >= RankEnum.BUILDER.getRankPower()){
-                getPlayer().sendMessage(rank.getRankColor() + "[" + rank.getRankName() + "] " + player.getName());
+            ConsulatPlayer consulatPlayer = CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
+            if(consulatPlayer.hasPower(Rank.BUILDER)){
+                Rank rank = consulatPlayer.getRank();
+                player.sendMessage(rank.getRankColor() + "[" + rank.getRankName() + "] " + player.getName());
             }
         });
     }

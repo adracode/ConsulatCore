@@ -1,16 +1,19 @@
 package fr.amisoz.consulatcore.commands.players;
 
-import fr.amisoz.consulatcore.commands.manager.ConsulatCommand;
-import fr.leconsulat.api.ranks.RankEnum;
+import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.player.ConsulatPlayer;
+import fr.leconsulat.api.ranks.Rank;
+import org.bukkit.entity.Player;
 
 public class IgnoreCommand extends ConsulatCommand {
 
-    public IgnoreCommand(String usage, int argsMin, RankEnum rankMinimum) {
-        super("/ignore <Joueur> | /ignore remove <Joueur>", 1, RankEnum.JOUEUR);
+    public IgnoreCommand(String usage, int argsMin, Rank rankMinimum) {
+        super("/ignore <Joueur> | /ignore remove <Joueur>", 1, Rank.JOUEUR);
     }
 
+    //TODO
     @Override
-    public void consulatCommand() {
+    public void onCommand(ConsulatPlayer sender, String[] args){
 
     }
 

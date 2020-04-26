@@ -1,92 +1,76 @@
 package fr.amisoz.consulatcore.commands.players;
 
 import fr.amisoz.consulatcore.ConsulatCore;
-import fr.amisoz.consulatcore.commands.manager.ConsulatCommand;
-import fr.leconsulat.api.ConsulatAPI;
-import fr.leconsulat.api.player.PlayersManager;
-import fr.leconsulat.api.ranks.RankEnum;
+import fr.amisoz.consulatcore.Text;
+import fr.amisoz.consulatcore.players.SPlayerManager;
+import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.player.CPlayerManager;
+import fr.leconsulat.api.player.ConsulatPlayer;
+import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.entity.Player;
+import org.bukkit.Location;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Map;
+import java.util.UUID;
 
 public class DelHomeCommand extends ConsulatCommand {
-
-
-    public DelHomeCommand() {
-        super("/delhome <Nom du home>", 1, RankEnum.JOUEUR);
+    
+    
+    public DelHomeCommand(){
+        super("/delhome <Nom du home>", 1, Rank.JOUEUR);
     }
-
+    
     @Override
-    public void consulatCommand() {
-
-        if (getArgs().length == 2 && getConsulatPlayer().getRank().getRankPower() >= RankEnum.MODPLUS.getRankPower()) {
-            OfflinePlayer target = Bukkit.getOfflinePlayer(getArgs()[0]);
-            if (!target.hasPlayedBefore()) {
-                getPlayer().sendMessage(ChatColor.RED + "Joueur inexistant.");
-                return;
-            }
-
-            Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.INSTANCE, () -> {
+    public void onCommand(ConsulatPlayer sender, String[] args){
+        SurvivalPlayer survivalSender = (SurvivalPlayer)sender;
+        if(args.length == 2 && survivalSender.hasPower(Rank.MODPLUS)){
+            Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
                 try {
-                    if (delHomeModeration(target.getName(), getArgs()[1]) > 0) {
-                        if (target.isOnline()) {
-                            Player onlineTarget = target.getPlayer();
-                            if (onlineTarget == null) return;
-
-                            getCorePlayer().homes.remove(getArgs()[1]);
-
+                    UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(args[0]);
+                    if(targetUUID != null){
+                        SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(targetUUID);
+                        if(target != null){
+                            if(target.hasHome(args[1])){
+                                target.removeHome(args[1]);
+                                sender.sendMessage("§aHome supprimé avec succès.");
+                            } else {
+                                sender.sendMessage("§cCe joueur ne possède pas ce home.");
+                            }
+                            return;
                         }
-                        getPlayer().sendMessage(ChatColor.GREEN + "Home supprimé.");
-                    } else {
-                        getPlayer().sendMessage(ChatColor.RED + "Ce home n'existe pas.");
                     }
-                } catch (SQLException e) {
-                    getPlayer().sendMessage(ChatColor.RED + "Erreur lors de la suppression.");
+                    //Sera utile lors de la refonte des commandes
+                    Map<String, Location> homes = SPlayerManager.getInstance().getHomes(args[0], false);
+                    if(!homes.containsKey(args[1].toLowerCase())){
+                        sender.sendMessage("§cCe joueur ne possède pas ce home.");
+                    } else {
+                        if(SPlayerManager.getInstance().removeHome(args[0], args[1])){
+                            sender.sendMessage("§aHome supprimé avec succès.");
+                        } else {
+                            sender.sendMessage("§cCe joueur ne possède pas ce home.");
+                        }
+                    }
+                } catch(SQLException e){
+                    sender.sendMessage("§cUne erreur interne est survenue.");
                     e.printStackTrace();
                 }
             });
-
             return;
         }
-
-        String homeName = getArgs()[0];
-        if (!getCorePlayer().homes.containsKey(homeName)) {
-            getPlayer().sendMessage(ChatColor.RED + "Home introuvable !");
+        if(!survivalSender.hasHome(args[0])){
+            sender.sendMessage("§cHome introuvable !");
             return;
         }
-
-        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.INSTANCE, () -> {
+        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
-                delHome(getPlayer(), getArgs()[0]);
-                getCorePlayer().homes.remove(getArgs()[0]);
-                getPlayer().sendMessage(ConsulatCore.PREFIX + "§aTon home a bien été supprimé.");
-            } catch (SQLException e) {
-                getPlayer().sendMessage(ConsulatCore.PREFIX + "§cErreur lors de la suppression.");
+                survivalSender.removeHome(args[0]);
+                sender.sendMessage(Text.PREFIX + "§aTon home a bien été supprimé.");
+            } catch(SQLException e){
+                sender.sendMessage(Text.PREFIX + "§cErreur lors de la suppression.");
                 e.printStackTrace();
             }
         });
-    }
-
-    public void delHome(Player player, String homeName) throws SQLException {
-        PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("DELETE FROM `homes` WHERE `idplayer` = ? AND `home_name` = ?");
-        preparedStatement.setInt(1, PlayersManager.getConsulatPlayer(player).getIdPlayer());
-        preparedStatement.setString(2, homeName);
-
-        preparedStatement.executeUpdate();
-        preparedStatement.close();
-    }
-
-    private int delHomeModeration(String playerName, String homeName) throws SQLException {
-        PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("DELETE h FROM homes h INNER JOIN players ON players.id = h.idplayer WHERE players.player_name = ? AND h.home_name = ?");
-        preparedStatement.setString(1, playerName);
-        preparedStatement.setString(2, homeName);
-        int updated = preparedStatement.executeUpdate();
-
-        preparedStatement.close();
-        return updated;
     }
 }

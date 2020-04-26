@@ -1,24 +1,26 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
 import fr.amisoz.consulatcore.ConsulatCore;
-import fr.amisoz.consulatcore.commands.manager.ConsulatCommand;
-import fr.leconsulat.api.ranks.RankEnum;
+import fr.amisoz.consulatcore.Text;
+import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.player.ConsulatPlayer;
+import fr.leconsulat.api.ranks.Rank;
+import org.bukkit.entity.Player;
 
 public class ToggleChatCommand extends ConsulatCommand {
-
-
-    public ToggleChatCommand() {
-        super("/chat", 0, RankEnum.RESPONSABLE);
+    
+    public ToggleChatCommand(){
+        super("/chat", 0, Rank.RESPONSABLE);
     }
-
+    
     @Override
-    public void consulatCommand() {
-        if(!ConsulatCore.chat_activated){
-            getPlayer().performCommand("annonce Le chat est à nouveau disponible.");
-        }else{
-            getPlayer().performCommand("annonce Le chat est coupé.");
+    public void onCommand(ConsulatPlayer sender, String[] args){
+        ConsulatCore core = ConsulatCore.getInstance();
+        if(!core.isChatActivated()){
+            sender.getPlayer().performCommand("annonce Le chat est à nouveau disponible.");
+        } else {
+            sender.getPlayer().performCommand("annonce Le chat est coupé.");
         }
-
-        ConsulatCore.chat_activated = !ConsulatCore.chat_activated;
+        core.setChat(!core.isChatActivated());
     }
 }

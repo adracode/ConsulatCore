@@ -1,11 +1,9 @@
 package fr.amisoz.consulatcore.listeners.entity.player;
 
-import fr.amisoz.consulatcore.players.CoreManagerPlayers;
-import fr.amisoz.consulatcore.players.CorePlayer;
-import fr.leconsulat.api.claim.ChunkLoader;
-import fr.leconsulat.api.claim.ClaimObject;
-import fr.leconsulat.api.listeners.ChunkChangeEvent;
-import fr.leconsulat.api.player.PlayersManager;
+import fr.amisoz.consulatcore.events.ChunkChangeEvent;
+import fr.amisoz.consulatcore.players.SPlayerManager;
+import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.player.CPlayerManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -16,34 +14,33 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 public class MoveListeners implements Listener {
-
+    
     @EventHandler
     public void onMove(PlayerMoveEvent event){
         Player player = event.getPlayer();
-        CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(player);
-
-        if(corePlayer.isFreezed){
+        SurvivalPlayer survivalPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
+        if(survivalPlayer.isFrozen()){
             event.setCancelled(true);
         }
-
+        
         Location from = event.getFrom();
         Location to = event.getTo();
-
-        if((from.getYaw() != to.getYaw() || from.getPitch() != to.getPitch())){
-            corePlayer.lastMove = System.currentTimeMillis();
+        
+        if(from.getYaw() != to.getYaw() || from.getPitch() != to.getPitch()){
+            survivalPlayer.setLastMove(System.currentTimeMillis());
         }
     }
-
+    
     @EventHandler
     public void onTeleport(PlayerTeleportEvent event){
-        CorePlayer corePlayer = CoreManagerPlayers.getCorePlayer(event.getPlayer());
-        corePlayer.oldLocation = event.getFrom();
-        corePlayer.lastTeleport = System.currentTimeMillis();
-
+        SurvivalPlayer survivalPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
+        survivalPlayer.setOldLocation(event.getFrom());
+        survivalPlayer.setLastTeleport(System.currentTimeMillis());
+        
         Chunk chunkTo = event.getTo().getChunk();
         Chunk chunkFrom = event.getFrom().getChunk();
-
+        
         Bukkit.getPluginManager().callEvent(new ChunkChangeEvent(event.getPlayer(), chunkFrom, chunkTo));
     }
-
+    
 }
