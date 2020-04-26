@@ -19,7 +19,7 @@ public class StaffListCommand extends ConsulatCommand {
             ConsulatPlayer consulatPlayer = CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
             if(consulatPlayer.hasPower(Rank.BUILDER)){
                 Rank rank = consulatPlayer.getRank();
-                player.sendMessage(rank.getRankColor() + "[" + rank.getRankName() + "] " + player.getName());
+                sender.sendMessage(rank.getRankColor() + "[" + rank.getRankName() + "] " + player.getName());
             }
         });
     }
