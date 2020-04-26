@@ -13,6 +13,7 @@ import org.bukkit.*;
 import org.bukkit.block.*;
 import org.bukkit.block.data.Directional;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
@@ -111,6 +112,9 @@ public class ShopManager implements Listener {
                 }
             } else {
                 item = itemFrame.getItem();
+                if(itemFrame.getFacing() != BlockFace.UP){
+                    itemFrame.setFacingDirection(BlockFace.UP);
+                }
             }
             String stringMaterial = resultShops.getString("material");
             if(stringMaterial == null){
@@ -329,7 +333,7 @@ public class ShopManager implements Listener {
                 if(shop == null){
                     return;
                 }
-                if(player.getUUID().equals(shop.getOwner())){
+                if(player.getUUID().equals(shop.getOwner()) || player.hasPower(Rank.RESPONSABLE)){
                     Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
                         try {
                             removeShop(shop);
@@ -728,7 +732,7 @@ public class ShopManager implements Listener {
                 SurvivalPlayer survivalPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
                 if(survivalPlayer.hasMoney(10.0)){
                     try {
-                        player.teleport(teleportLocation.add(0, 1, 0));
+                        player.teleport(teleportLocation.clone().add(0, 1, 0));
                     } catch(NullPointerException e){
                         player.sendMessage("Erreur lors de la téléportation");
                         return;
@@ -795,6 +799,9 @@ public class ShopManager implements Listener {
     
     @EventHandler
     public void onInteract(PlayerInteractEvent event){
+        if(event.getHand() != EquipmentSlot.HAND){
+            return;
+        }
         if(event.getClickedBlock() == null){
             return;
         }

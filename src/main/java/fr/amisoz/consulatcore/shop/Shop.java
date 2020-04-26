@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Rotation;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -149,18 +150,18 @@ public class Shop {
         Location location = getLocation();
         ItemFrame frame;
         try {
-            frame = location.getWorld().spawn(location.add(0, 1, 0), ItemFrame.class);
+            frame = location.getWorld().spawn(location.clone().add(0, 1, 0), ItemFrame.class);
         } catch(IllegalArgumentException e){
             return false;
         }
-        frame.setRotation(Rotation.FLIPPED);
+        frame.setFacingDirection(BlockFace.UP);
         frame.setItem(forSale);
         frame.setInvulnerable(true);
         return true;
     }
     
     public static ItemFrame getItemFrame(Location location){
-        Collection<Entity> entities = location.add(0.5, 1.5, 0.5).getNearbyEntities(0.5, 0.5, 0.5);
+        Collection<Entity> entities = location.clone().add(0.5, 1.5, 0.5).getNearbyEntities(0.5, 0.5, 0.5);
         for(Entity entity : entities){
             if(entity.getType() == EntityType.ITEM_FRAME){
                 ItemFrame itemFrame = (ItemFrame)entity;
