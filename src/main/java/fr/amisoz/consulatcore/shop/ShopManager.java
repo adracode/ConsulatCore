@@ -872,63 +872,64 @@ public class ShopManager implements Listener {
                 } else {
                     player.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent");
                 }
-            }
-            Material material;
-            byte data = 0;
-            if(getShopMaterial(sign.getLines()[1]) != null){
-                ShopEnum shop = getShopMaterial(sign.getLines()[1]);
-                material = Material.getMaterial(shop.getOldMaterialName());
-                data = shop.getMetadata();
             } else {
-                material = Material.getMaterial(sign.getLines()[1]);
-            }
-            if(material == null){
-                return;
-            }
-            ItemStack itemStack = new ItemStack(material, 1, data);
-            int spaceAvailable = player.spaceAvailable(itemStack);
-            if(player.getPlayer().isSneaking()){
-                if(spaceAvailable < 64){
-                    player.sendMessage(Text.PREFIX + "§cVous n'avez pas assez de place dans votre inventaire");
+                Material material;
+                byte data = 0;
+                if(getShopMaterial(sign.getLines()[1]) != null){
+                    ShopEnum shop = getShopMaterial(sign.getLines()[1]);
+                    material = Material.getMaterial(shop.getOldMaterialName());
+                    data = shop.getMetadata();
+                } else {
+                    material = Material.getMaterial(sign.getLines()[1]);
+                }
+                if(material == null){
                     return;
                 }
-                if(player.hasMoney(buyPrice * 64)){
-                    Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                        try {
-                            player.removeMoney(buyPrice * 64);
-                            Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
-                                itemStack.setAmount(64);
-                                player.getPlayer().getInventory().addItem(itemStack);
-                                player.sendMessage(Text.PREFIX + "Tu as acheté §e" + material.name() + " x 64 §6pour §e" + buyPrice * 64);
-                            });
-                        } catch(SQLException e){
-                            player.sendMessage(Text.PREFIX + "§cUne erreur est survenue");
-                            e.printStackTrace();
-                        }
-                    });
+                ItemStack itemStack = new ItemStack(material, 1, data);
+                int spaceAvailable = player.spaceAvailable(itemStack);
+                if(player.getPlayer().isSneaking()){
+                    if(spaceAvailable < 64){
+                        player.sendMessage(Text.PREFIX + "§cVous n'avez pas assez de place dans votre inventaire");
+                        return;
+                    }
+                    if(player.hasMoney(buyPrice * 64)){
+                        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
+                            try {
+                                player.removeMoney(buyPrice * 64);
+                                Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
+                                    itemStack.setAmount(64);
+                                    player.getPlayer().getInventory().addItem(itemStack);
+                                    player.sendMessage(Text.PREFIX + "Tu as acheté §e" + material.name() + " x 64 §6pour §e" + buyPrice * 64);
+                                });
+                            } catch(SQLException e){
+                                player.sendMessage(Text.PREFIX + "§cUne erreur est survenue");
+                                e.printStackTrace();
+                            }
+                        });
+                    } else {
+                        player.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent");
+                    }
                 } else {
-                    player.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent");
-                }
-            } else {
-                if(spaceAvailable == 0){
-                    player.sendMessage(Text.PREFIX + "§cVous n'avez pas assez de place dans votre inventaire");
-                    return;
-                }
-                if(player.hasMoney(buyPrice)){
-                    Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                        try {
-                            player.removeMoney(buyPrice);
-                            player.sendMessage(Text.PREFIX + "Tu as acheté §e" + material.name() + " x 1 §6pour §e" + buyPrice);
-                            Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
-                                player.getPlayer().getInventory().addItem(itemStack);
-                            });
-                        } catch(SQLException e){
-                            player.sendMessage(Text.PREFIX + "§cUne erreur est survenue");
-                            e.printStackTrace();
-                        }
-                    });
-                } else {
-                    player.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent");
+                    if(spaceAvailable == 0){
+                        player.sendMessage(Text.PREFIX + "§cVous n'avez pas assez de place dans votre inventaire");
+                        return;
+                    }
+                    if(player.hasMoney(buyPrice)){
+                        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
+                            try {
+                                player.removeMoney(buyPrice);
+                                player.sendMessage(Text.PREFIX + "Tu as acheté §e" + material.name() + " x 1 §6pour §e" + buyPrice);
+                                Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
+                                    player.getPlayer().getInventory().addItem(itemStack);
+                                });
+                            } catch(SQLException e){
+                                player.sendMessage(Text.PREFIX + "§cUne erreur est survenue");
+                                e.printStackTrace();
+                            }
+                        });
+                    } else {
+                        player.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent");
+                    }
                 }
             }
         }
@@ -972,15 +973,18 @@ public class ShopManager implements Listener {
                     if(material == Material.EGG){
                         if(itemInHand.getAmount() == 16){
                             itemStack.setAmount(16);
+                            ItemStack save = player.getPlayer().getInventory().getItemInMainHand();
+                            player.getPlayer().getInventory().clear(player.getPlayer().getInventory().getHeldItemSlot());
+                            player.getPlayer().updateInventory();
                             Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
                                 try {
                                     player.addMoney(sellPrice * 16);
-                                    Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
-                                        player.getPlayer().getInventory().clear(player.getPlayer().getInventory().getHeldItemSlot());
-                                        player.getPlayer().updateInventory();
-                                        player.sendMessage(Text.PREFIX + "Tu as vendu §e" + material.name() + " x 16 §6pour §e" + sellPrice * 16);
-                                    });
+                                    player.sendMessage(Text.PREFIX + "Tu as vendu §e" + material.name() + " x 16 §6pour §e" + sellPrice * 16);
                                 } catch(SQLException e){
+                                    player.sendMessage(Text.PREFIX + "§cUne erreur interne est survenue");
+                                    Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
+                                        player.getPlayer().getInventory().addItem(save);
+                                    });
                                     e.printStackTrace();
                                 }
                             });
@@ -988,15 +992,18 @@ public class ShopManager implements Listener {
                     } else {
                         if(itemInHand.getAmount() == 64){
                             itemStack.setAmount(64);
+                            ItemStack save = player.getPlayer().getInventory().getItemInMainHand();
+                            player.getPlayer().getInventory().clear(player.getPlayer().getInventory().getHeldItemSlot());
+                            player.getPlayer().updateInventory();
                             Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
                                 try {
                                     player.addMoney(sellPrice * 64);
-                                    Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
-                                        player.getPlayer().getInventory().clear(player.getPlayer().getInventory().getHeldItemSlot());
-                                        player.getPlayer().updateInventory();
-                                        player.sendMessage(Text.PREFIX + "Tu as vendu §e" + material.name() + " x 64 §6pour§e " + sellPrice * 64);
-                                    });
+                                    player.sendMessage(Text.PREFIX + "Tu as vendu §e" + material.name() + " x 64 §6pour §e" + sellPrice * 64);
                                 } catch(SQLException e){
+                                    player.sendMessage(Text.PREFIX + "§cUne erreur interne est survenue");
+                                    Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
+                                        player.getPlayer().getInventory().addItem(save);
+                                    });
                                     e.printStackTrace();
                                 }
                             });
@@ -1007,19 +1014,16 @@ public class ShopManager implements Listener {
                 }
             } else {
                 if(itemInHand.getType() == material){
+                    if(itemInHand.getAmount() > 1){
+                        itemInHand.setAmount((itemInHand.getAmount() - 1));
+                    } else {
+                        player.getPlayer().getInventory().clear(player.getPlayer().getInventory().getHeldItemSlot());
+                    }
+                    player.getPlayer().updateInventory();
                     Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
                         try {
                             player.addMoney(sellPrice);
-                            Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
-                                if(itemInHand.getAmount() > 1){
-                                    itemInHand.setAmount((itemInHand.getAmount() - 1));
-                                    player.getPlayer().updateInventory();
-                                } else {
-                                    player.getPlayer().getInventory().clear(player.getPlayer().getInventory().getHeldItemSlot());
-                                    player.getPlayer().updateInventory();
-                                }
-                                player.sendMessage(Text.PREFIX + "Tu as vendu §e" + material.name() + " x 1 §6pour §e" + sellPrice);
-                            });
+                            player.sendMessage(Text.PREFIX + "Tu as vendu §e" + material.name() + " x 1 §6pour §e" + sellPrice);
                         } catch(SQLException e){
                             e.printStackTrace();
                         }

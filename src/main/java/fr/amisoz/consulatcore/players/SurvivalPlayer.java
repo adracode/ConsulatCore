@@ -163,8 +163,8 @@ public class SurvivalPlayer extends ConsulatPlayer {
     }
     
     public void addMoney(double amount) throws SQLException{
-        SPlayerManager.getInstance().addMoney(getUUID(), amount);
         addMoneyNoBDD(amount);
+        SPlayerManager.getInstance().addMoney(getUUID(), amount);
     }
     
     public double getMoney(){
