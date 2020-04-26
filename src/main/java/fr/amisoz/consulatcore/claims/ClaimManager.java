@@ -40,9 +40,14 @@ public class ClaimManager implements Listener {
             PreparedStatement getClaims = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM claims;");
             ResultSet resultClaims = getClaims.executeQuery();
             while(resultClaims.next()){
+                String uuid = resultClaims.getString("player_uuid");
+                if(uuid == null){
+                    ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Player UUID id null at claim x=" + resultClaims.getInt("claim_x") + ", z=" + resultClaims.getInt("claim_z") + " in claim table");
+                    continue;
+                }
                 addClaim(resultClaims.getInt("claim_x"),
                         resultClaims.getInt("claim_z"),
-                        UUID.fromString(resultClaims.getString("player_uuid")),
+                        UUID.fromString(uuid),
                         resultClaims.getString("description"));
             }
             resultClaims.close();
@@ -50,9 +55,18 @@ public class ClaimManager implements Listener {
             PreparedStatement getAllowedPlayers = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM access;");
             ResultSet resultAllowedPlayers = getAllowedPlayers.executeQuery();
             while(resultAllowedPlayers.next()){
-                getClaim(resultAllowedPlayers.getInt("claim_x"),
-                        resultAllowedPlayers.getInt("claim_z"))
-                        .addPlayer(UUID.fromString(resultAllowedPlayers.getString("player_uuid")));
+                String uuid = resultAllowedPlayers.getString("player_uuid");
+                if(uuid == null){
+                    ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Player UUID id null at claim x=" + resultAllowedPlayers.getInt("claim_x") + ", z=" + resultClaims.getInt("claim_z") + " in access table");
+                    continue;
+                }
+                Claim claim = getClaim(resultAllowedPlayers.getInt("claim_x"),
+                        resultAllowedPlayers.getInt("claim_z"));
+                if(claim == null){
+                    ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Claim is null at x=" + resultAllowedPlayers.getInt("claim_x") + ", z=" + resultAllowedPlayers.getInt("claim_z") + " in access table");
+                    continue;
+                }
+                claim.addPlayer(UUID.fromString(uuid));
             }
             resultAllowedPlayers.close();
             getAllowedPlayers.close();

@@ -27,7 +27,9 @@ public class SeenCommand extends ConsulatCommand {
                 preparedStatement.setString(1, args[0]);
                 ResultSet resultSet = preparedStatement.executeQuery();
                 while(resultSet.next()){
-                    sender.sendMessage("§7Date : §6" + resultSet.getString("connection_date") + " §7 | IP : §6" + resultSet.getString("player_ip"));
+                    sender.sendMessage("§7Date : §6" +
+                            resultSet.getString("connection_date") + " §7 | IP : §6" +
+                            resultSet.getString("player_ip"));
                 }
                 preparedStatement.close();
                 resultSet.close();

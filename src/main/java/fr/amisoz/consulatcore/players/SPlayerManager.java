@@ -259,11 +259,24 @@ public class SPlayerManager implements Listener {
         ResultSet resultSet = request.executeQuery();
         SurvivalOffline offline;
         if(resultSet.next()){
+            int id = resultSet.getInt("id");
+            String uuid = resultSet.getString("player_uuid");
+            if(uuid == null){
+                resultSet.close();
+                request.close();
+                throw new SQLException("player_uuid is null at id " + id);
+            }
+            String rank = resultSet.getString("player_rank");
+            if(rank == null){
+                resultSet.close();
+                request.close();
+                throw new SQLException("player_rank is null at id " + id);
+            }
             offline = new SurvivalOffline(
-                    resultSet.getInt("id"),
-                    UUID.fromString(resultSet.getString("player_uuid")),
+                    id,
+                    UUID.fromString(uuid),
                     resultSet.getString("player_name"),
-                    Rank.byName(resultSet.getString("player_rank")),
+                    Rank.byName(rank),
                     resultSet.getString("registered"),
                     resultSet.getDouble("money"));
         } else {

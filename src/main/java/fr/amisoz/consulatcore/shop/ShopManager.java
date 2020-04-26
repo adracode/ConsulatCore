@@ -71,7 +71,12 @@ public class ShopManager implements Listener {
                     resultShops.getInt("shop_y"),
                     resultShops.getInt("shop_z")
             );
-            UUID uuid = UUID.fromString(resultShops.getString("owner_uuid"));
+            String stringUUID = resultShops.getString("owner_uuid");
+            if(stringUUID == null){
+                ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Player UUID id null at " + location + " in shopinfo table");
+                continue;
+            }
+            UUID uuid = UUID.fromString(stringUUID);
             Block block = world.getBlockAt(location);
             if(!(block.getState() instanceof Chest)){
                 if(block.getState() instanceof Sign){
@@ -107,7 +112,12 @@ public class ShopManager implements Listener {
             } else {
                 item = itemFrame.getItem();
             }
-            Material type = Material.valueOf(resultShops.getString("material"));
+            String stringMaterial = resultShops.getString("material");
+            if(stringMaterial == null){
+                ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Material id null at " + location + " in shopinfo table");
+                continue;
+            }
+            Material type = Material.valueOf(stringMaterial);
             if(item == null){
                 item = new ItemStack(type);
             }
