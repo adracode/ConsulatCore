@@ -400,7 +400,7 @@ public class ShopManager implements Listener {
             return;
         }
         event.setCancelled(true);
-        if(player.hasPower(Rank.RESPONSABLE) && player.getPlayer().getInventory().getItemInMainHand().getType() == Material.HEART_OF_THE_SEA){
+        if((player.getRank() == Rank.ADMIN || player.getRank() == Rank.DEVELOPPEUR) && player.getPlayer().getInventory().getItemInMainHand().getType() == Material.HEART_OF_THE_SEA){
             ItemMeta meta = player.getPlayer().getInventory().getItemInMainHand().getItemMeta();
             if(meta != null && meta.getDisplayName().equals("Debug tool")){
                 player.sendMessage("Shop x = " + shop.getX() + " y = " + shop.getY() + " z = " + shop.getZ());
