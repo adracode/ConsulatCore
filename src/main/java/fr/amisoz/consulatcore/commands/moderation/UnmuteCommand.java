@@ -7,11 +7,12 @@ import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 
 public class UnmuteCommand extends ConsulatCommand {
     
     public UnmuteCommand(){
-        super("/unmute <Joueur>", 1, Rank.ADMIN);
+        super("/unmute <Joueur>", 1, Rank.RESPONSABLE);
     }
     
     @Override
@@ -23,6 +24,7 @@ public class UnmuteCommand extends ConsulatCommand {
                 SurvivalPlayer targetPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(target.getUUID());
                 if(targetPlayer.isMuted()){
                     targetPlayer.setMuted(false);
+                    sender.sendMessage(ChatColor.GREEN + "Joueur démute !");
                 } else {
                     sender.sendMessage("§cCe joueur n'est pas mute.");
                 }

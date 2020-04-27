@@ -154,6 +154,7 @@ public class ConsulatCore extends JavaPlugin {
         this.getCommand("pay").setExecutor(new PayCommand());
         this.getCommand("tpa").setExecutor(new TPaCommand());
         this.getCommand("shop").setExecutor(new fr.amisoz.consulatcore.commands.economy.ShopCommand());
+        this.getCommand("infos").setExecutor(new InfosCommand());
     }
     
     private void registerEvents(){

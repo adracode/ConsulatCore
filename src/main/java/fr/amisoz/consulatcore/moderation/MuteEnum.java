@@ -4,12 +4,17 @@ import org.bukkit.Material;
 
 public enum MuteEnum {
 
-    FLOOD("Flood", Material.PAPER, 15*60L, "15m"),
-    CAPS_LOCK("Majuscules abusives", Material.APPLE, 10*60L, "10m"),
-    INSULTE("Langage incorrect", Material.ACACIA_SIGN, 30*60L, "30m"),
-    PUB("Publicité", Material.EGG, 60*60L, "1h"),
-    PROVOCATION("Provocation", Material.WHITE_WOOL, 15*60L, "15m"),
-    RACISTE("Racisme", Material.WATER_BUCKET, 60*60*6L, "6h");
+    FLOOD("Flood", Material.PAPER, 15*60L, "15 minutes"),
+    SPAM("Spam", Material.MAP, 30*60L, "30 minutes"),
+    CAPS_LOCK("Majuscules abusives", Material.APPLE, 10*60L, "10 minutes"),
+    INSULTE("Langage incorrect", Material.ACACIA_SIGN, 30*60L, "30 minutes"),
+    ARROGANCE_IRRESPECT("Arrogance/Irrespect", Material.SKELETON_SKULL, 30*60L, "30 minutes"),
+    INSULTE_STAFF("Insulte staff", Material.BARRIER, 60*60L, "1 heure"),
+    REPORT_ABUSE("Abus de /report", Material.BLACK_TERRACOTTA, 60*60L, "1 heure"),
+    PUB("Publicité", Material.EGG, 60*60L, "1 heure"),
+    PROVOCATION("Provocation", Material.WHITE_WOOL, 15*60L, "15 minutes"),
+    RACISME("Racisme", Material.WATER_BUCKET, 60*60*6L, "6 heures"),
+    HOMOPHOBIE("Homophobie", Material.LAVA_BUCKET, 60*60*6L, "6 heures");
 
     private String sanctionName;
     private Material guiMaterial;

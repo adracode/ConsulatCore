@@ -12,7 +12,7 @@ import org.bukkit.entity.Player;
 public class UnbanCommand extends ConsulatCommand {
     
     public UnbanCommand(){
-        super("/unban <Pseudo>", 1, Rank.ADMIN);
+        super("/unban <Pseudo>", 1, Rank.RESPONSABLE);
     }
     
     @Override
