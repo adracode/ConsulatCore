@@ -6,9 +6,12 @@ import fr.amisoz.consulatcore.players.SurvivalOffline;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.CPlayerManager;
-import fr.leconsulat.api.player.ConsulatOffline;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -67,22 +70,27 @@ public class InfosCommand extends ConsulatCommand {
                 player.sendMessage(ChatColor.GRAY + "Dernières connexions : ");
                 sendConnections(args[0], player.getPlayer());
 
-                if (offlinePlayer.isOnline()) return;
+                if (!offlinePlayer.isOnline()) {
+                    Optional<SurvivalOffline> offlineConsulat = SPlayerManager.getInstance().fetchOffline(args[0]);
 
-                Optional<SurvivalOffline> offlineConsulat = SPlayerManager.getInstance().fetchOffline(args[0]);
+                    if (!offlineConsulat.isPresent()) {
+                        return;
+                    }
 
-                if (!offlineConsulat.isPresent()) {
-                    return;
+                    SurvivalOffline offlineTarget = offlineConsulat.get();
+
+                    player.sendMessage(ChatColor.GRAY + "Grade ⤗ " + offlineTarget.getRank().getRankColor() + offlineTarget.getRank().getRankName() + ChatColor.GRAY + " ↭ Argent ⤗ " + ChatColor.BLUE + offlineTarget.getMoney() + "€");
                 }
-
-                SurvivalOffline offlineTarget = offlineConsulat.get();
-
-                player.sendMessage(ChatColor.GRAY + "Grade ⤗ " + offlineTarget.getRank().getRankColor() + offlineTarget.getRank().getRankName() + ChatColor.GRAY + " ↭ Argent ⤗ " + ChatColor.BLUE + offlineTarget.getMoney() + "€");
-
             } catch (SQLException e) {
                 player.sendMessage(ChatColor.RED + "Erreur lors de la récupération de certaines informations.");
                 e.printStackTrace();
             }
+
+            TextComponent textComponent = new TextComponent(ChatColor.GRAY + "[" + ChatColor.GOLD + "Voir les homes" + ChatColor.GRAY + "]");
+            textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GRAY + "Clique pour voir les homes !").create()));
+            textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/home " + args[0] + ":"));
+
+            player.getPlayer().spigot().sendMessage(textComponent);
         });
     }
 
