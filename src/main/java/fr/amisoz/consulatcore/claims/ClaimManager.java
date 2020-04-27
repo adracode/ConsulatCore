@@ -63,6 +63,7 @@ public class ClaimManager implements Listener {
                 Claim claim = getClaim(resultAllowedPlayers.getInt("claim_x"),
                         resultAllowedPlayers.getInt("claim_z"));
                 if(claim == null){
+                    removeAccessesDatabase(resultAllowedPlayers.getInt("claim_x"), resultAllowedPlayers.getInt("claim_z"));
                     ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Claim is null at x=" + resultAllowedPlayers.getInt("claim_x") + ", z=" + resultAllowedPlayers.getInt("claim_z") + " in access table");
                     continue;
                 }

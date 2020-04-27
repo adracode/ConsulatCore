@@ -196,7 +196,10 @@ public class Shop {
     }
     
     public void destroyFrame(){
-        getItemFrame().remove();
+        ItemFrame frame = getItemFrame();
+        if(frame != null){
+            destroyFrame();
+        }
     }
     
     public void buy(int amount){

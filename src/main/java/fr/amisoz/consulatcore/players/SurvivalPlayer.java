@@ -395,12 +395,14 @@ public class SurvivalPlayer extends ConsulatPlayer {
         this.fly.setFlying(false);
         SPlayerManager.getInstance().setFly(getUUID(), this.fly);
         FlyManager.getInstance().removeFlyingPlayer(this);
-        Player player = getPlayer();
-        Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), ()->{
-            player.setAllowFlight(false);
-            player.setFlying(false);
-            player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10 * 20, 100));
-        });
+        if(!isInModeration()){
+            Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
+                Player player = getPlayer();
+                player.setAllowFlight(false);
+                player.setFlying(false);
+                player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10 * 20, 100));
+            });
+        }
     }
     
     public int getFlyTimeLeft(){
