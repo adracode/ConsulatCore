@@ -149,7 +149,7 @@ public class ShopManager implements Listener {
             Shop shop = new Shop(
                     uuid,
                     Bukkit.getOfflinePlayer(uuid).getName(),
-                    item,
+                    item == null ? new ItemStack(type) : item,
                     resultShops.getDouble("price"),
                     location,
                     itemFrame == null
@@ -351,7 +351,7 @@ public class ShopManager implements Listener {
                 if(shop == null){
                     return;
                 }
-                if(player.getUUID().equals(shop.getOwner()) || player.hasPower(Rank.RESPONSABLE)){
+                if(player.getUUID().equals(shop.getOwner()) || player.hasPower(Rank.RESPONSABLE) || player.getRank() == Rank.DEVELOPPEUR){
                     Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
                         try {
                             removeShop(shop);
