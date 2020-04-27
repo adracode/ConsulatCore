@@ -72,7 +72,7 @@ public class TPaCommand extends ConsulatCommand {
                     target.sendMessage("§aTu as été téléporté à " + sender.getName() + ".");
                 }
             } else {
-                sender.sendMessage(Text.PREFIX + "§c/tpa <player>");
+                sender.sendMessage(Text.PREFIX + "§c/tpa accept <joueur>");
             }
         } else {
             sender.sendMessage("§c" + getUsage());

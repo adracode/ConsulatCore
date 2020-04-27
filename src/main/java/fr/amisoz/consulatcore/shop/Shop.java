@@ -6,8 +6,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Rotation;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
@@ -26,6 +28,8 @@ public class Shop {
     private static final int LIMIT_Z = 1 << SHIFT; //33 554 432 > 30 000 000
     private static final long CONVERT_Y = ((long)1 << SHIFT + SHIFT_Y + 1) - 1;
     private static final int CONVERT_X = (1 << SHIFT + 1) - 1;
+    
+    private static BlockFace[] chestFaces = new BlockFace[]{BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
     
     private long coords;
     private UUID owner;
@@ -88,6 +92,20 @@ public class Shop {
     
     public int getAmount(){
         return amount;
+    }
+    
+    public Sign getSign(){
+        Block chest = getLocation().getBlock();
+        for(BlockFace face : chestFaces){
+            Block sign = chest.getRelative(face);
+            if(sign.getType() == Material.OAK_WALL_SIGN){
+                Sign state = (Sign)sign.getState();
+                if(state.getLine(0).equals("§8[§aConsulShop§8]") && ShopManager.getInstance().getChestFromSign(sign).equals(chest.getState())){
+                    return state;
+                }
+            }
+        }
+        return null;
     }
     
     private void setCoords(int x, int y, int z){
