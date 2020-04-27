@@ -27,6 +27,10 @@ public class FlyCommand extends ConsulatCommand {
             sender.sendMessage(Text.FLY + "Erreur | Tu dois être dans le monde de base !");
             return;
         }
+        if(player.isInModeration()){
+            sender.sendMessage(Text.PREFIX + "§cTu ne peux pas utiliser cette commande en modération");
+            return;
+        }
         switch(args[0].toLowerCase()){
             case "start":
                 if(player.isFlying()){

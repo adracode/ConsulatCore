@@ -27,10 +27,6 @@ public class MpCommand extends ConsulatCommand {
             sender.sendMessage("§cLe joueur n'existe pas.");
             return;
         }
-        if(target.isInModeration()){
-            sender.sendMessage("§cLe joueur n'existe pas.");
-            return;
-        }
         SurvivalPlayer survivalSender = (SurvivalPlayer)sender;
         if(survivalSender.isMuted()){
             MuteObject muteInfo = survivalSender.getMute();

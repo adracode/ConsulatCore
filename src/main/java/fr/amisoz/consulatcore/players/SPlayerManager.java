@@ -23,6 +23,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -115,12 +117,16 @@ public class SPlayerManager implements Listener {
             });
         }
 
-        if (player.isInModeration()) {
-            player.getPlayer().getInventory().clear();
-            player.getPlayer().getInventory().setContents(player.getStockedInventory());
-            player.getPlayer().getActivePotionEffects().forEach(effect -> {
-                player.getPlayer().removePotionEffect(effect.getType());
-            });
+        if(player.isInModeration()){
+            Player bukkitPlayer = player.getPlayer();
+            ModerationUtils.moderatePlayers.remove(bukkitPlayer);
+            ModerationUtils.vanishedPlayers.remove(bukkitPlayer);
+            for(PotionEffect effect : bukkitPlayer.getActivePotionEffects()){
+                if(effect.getType().equals(PotionEffectType.NIGHT_VISION) || effect.getType().equals(PotionEffectType.INVISIBILITY)){
+                    bukkitPlayer.removePotionEffect(effect.getType());
+                }
+            }
+            bukkitPlayer.getInventory().setContents(player.getStockedInventory());
         }
 
         if (!player.hasPower(Rank.MODO)) {
@@ -199,8 +205,8 @@ public class SPlayerManager implements Listener {
                                     resultSet.getDouble("x"),
                                     resultSet.getDouble("y"),
                                     resultSet.getDouble("z"),
-                                    resultSet.getFloat("pitch"),
-                                    resultSet.getFloat("yaw")
+                                    resultSet.getFloat("yaw"),
+                                    resultSet.getFloat("pitch")
                             ) :
                             null);
         }
