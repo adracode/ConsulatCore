@@ -20,6 +20,7 @@ import fr.amisoz.consulatcore.listeners.world.SignListener;
 import fr.amisoz.consulatcore.moderation.ModerationDatabase;
 import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.runnable.AFKRunnable;
+import fr.amisoz.consulatcore.runnable.MeceneRunnable;
 import fr.amisoz.consulatcore.runnable.MessageRunnable;
 import fr.amisoz.consulatcore.runnable.MonitoringRunnable;
 import fr.amisoz.consulatcore.shop.ShopManager;
@@ -84,6 +85,8 @@ public class ConsulatCore extends JavaPlugin {
         Bukkit.getScheduler().runTaskTimer(this, new AFKRunnable(), 0L, 5 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MonitoringRunnable(this), 0L, 10 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MessageRunnable(), 0L, 15 * 60 * 20);
+        Bukkit.getScheduler().runTaskTimer(this, new MeceneRunnable(), 0L, 20*60*60);
+
         registerEvents();
         registerCommands();
         Bukkit.getWorlds().forEach(world -> {
