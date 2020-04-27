@@ -160,6 +160,7 @@ public class ShopManager implements Listener {
             if(itemFrame == null){
                 if(!shop.placeItemFrame()){
                     shop.getSign().getBlock().breakNaturally();
+                    removeShop(shop);
                 }
             }
         }
