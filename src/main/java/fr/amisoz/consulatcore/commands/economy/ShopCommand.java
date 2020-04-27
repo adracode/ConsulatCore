@@ -42,49 +42,6 @@ public class ShopCommand extends ConsulatCommand {
             return;
         }
         if(args[0].equalsIgnoreCase("init") && sender.getName().equalsIgnoreCase("Elfas_")){
-            try {
-                PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM shopinfo");
-                ResultSet resultSet = preparedStatement.executeQuery();
-                while(resultSet.next()){
-                    int x = resultSet.getInt("shop_x");
-                    int y = resultSet.getInt("shop_y");
-                    int z = resultSet.getInt("shop_z");
-                    Block block = (new Location(Bukkit.getWorlds().get(0), x, y, z)).getBlock();
-                    BlockData data = block.getBlockData();
-                    if(data instanceof Directional){
-                        Directional directional = (Directional)data;
-                        Block blockBehind = block.getRelative(directional.getFacing().getOppositeFace());
-                        Chest chest = (Chest)blockBehind.getState();
-                        Inventory inventory = chest.getInventory();
-                        int number = 0;
-                        for(ItemStack itemStacks : inventory.getContents()){
-                            if(itemStacks != null){
-                                number += itemStacks.getAmount();
-                            }
-                        }
-                        
-                        if(number == 0){
-                            System.out.println("empty shop x" + x + ":y" + y + ":z" + z);
-                        } else {
-                            System.out.println(resultSet.getString("material") + " : " + number);
-                        }
-                        
-                        PreparedStatement update = ConsulatAPI.getDatabase().prepareStatement("UPDATE shopinfo SET isEmpty = ? WHERE shop_x = ? AND shop_y = ? AND shop_z = ? AND owner_uuid = ? AND price = ?");
-                        update.setBoolean(1, (number == 0));
-                        update.setInt(2, x);
-                        update.setInt(3, y);
-                        update.setInt(4, z);
-                        update.setString(5, resultSet.getString("owner_uuid"));
-                        update.setDouble(6, resultSet.getDouble("price"));
-                        update.executeUpdate();
-                        update.close();
-                    }
-                }
-                resultSet.close();
-                preparedStatement.close();
-            } catch(SQLException e){
-                e.printStackTrace();
-            }
             return;
         }
         switch(args[0].toLowerCase()){

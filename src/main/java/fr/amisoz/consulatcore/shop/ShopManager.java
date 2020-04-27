@@ -103,31 +103,29 @@ public class ShopManager implements Listener {
                 }
             }
             ItemFrame itemFrame = Shop.getItemFrame(block.getLocation());
-            ItemStack item = null;
+            ItemStack item;
             String stringMaterial = resultShops.getString("material");
             if(stringMaterial == null){
                 ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Material id null at " + location + " in shopinfo table");
                 continue;
             }
+            Material type = Material.valueOf(stringMaterial);
             if(itemFrame != null){
                 item = itemFrame.getItem();
+                if(item.getType() == Material.AIR){
+                    item = new ItemStack(type);
+                    itemFrame.setItem(item);
+                }
                 if(itemFrame.getFacing() != BlockFace.UP){
                     itemFrame.setFacingDirection(BlockFace.UP);
                 }
-            }
-            Material type = Material.valueOf(stringMaterial);
-            if(item == null){
-                item = new ItemStack(type);
-            }
-            if(item.getType() != type){
-                ConsulatAPI.getConsulatAPI().log(Level.SEVERE, "Le shop en " + location.getBlockX() + " " + location.getBlockY() + " " + location.getBlockZ() + " est censé" +
-                        " avoir un item " + type + " mais à un item de type " + item.getType());
-            }
-            if(itemFrame == null){
+            } else {
                 ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Missing item frame for shop " + location + " of " + Bukkit.getOfflinePlayer(uuid).getName());
                 item = getFirstItem((Chest)block.getState());
                 if(item != null){
                     item.setItemMeta(null);
+                } else {
+                    item = new ItemStack(type);
                 }
                 Collection<Entity> entities = location.clone().add(0.5, 1.5, 0.5).getNearbyEntities(0.5, 0.5, 0.5);
                 ItemFrame frame = null;
@@ -146,21 +144,24 @@ public class ShopManager implements Listener {
                 }
                 itemFrame = frame;
             }
+            if(item.getType() != type){
+                ConsulatAPI.getConsulatAPI().log(Level.SEVERE, "Le shop en " + location.getBlockX() + " " + location.getBlockY() + " " + location.getBlockZ() + " est censé" +
+                        " avoir un item " + type + " mais à un item de type " + item.getType());
+            }
             Shop shop = new Shop(
                     uuid,
                     Bukkit.getOfflinePlayer(uuid).getName(),
-                    item == null ? new ItemStack(type) : item,
+                    item,
                     resultShops.getDouble("price"),
                     location,
                     itemFrame == null
             );
-            ItemFrame finalItemFrame = itemFrame;
-            Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
-                if(finalItemFrame == null){
-                    shop.placeItemFrame();
-                }
-            }, 50L);
             this.shops.put(shop.getCoords(), shop);
+            if(itemFrame == null){
+                if(!shop.placeItemFrame()){
+                    shop.getSign().getBlock().breakNaturally();
+                }
+            }
         }
     }
     

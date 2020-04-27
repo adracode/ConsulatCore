@@ -17,6 +17,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.sql.SQLException;
+
 public class ModerateCommand extends ConsulatCommand {
     
     public ModerateCommand(){
@@ -27,7 +29,8 @@ public class ModerateCommand extends ConsulatCommand {
     public void onCommand(ConsulatPlayer sender, String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
         Player bukkitPlayer = sender.getPlayer();
-        if(player.isInModeration()){
+        player.setInModeration(!player.isInModeration());
+        if(!player.isInModeration()){
             sender.sendMessage(Text.MODERATION_PREFIX + "§cTu n'es plus en mode modérateur.");
             ModerationUtils.moderatePlayers.remove(bukkitPlayer);
             ModerationUtils.vanishedPlayers.remove(bukkitPlayer);
@@ -91,10 +94,18 @@ public class ModerateCommand extends ConsulatCommand {
             bukkitPlayer.getInventory().setItem(4, vanish);
             bukkitPlayer.getInventory().setItem(5, invsee);
             bukkitPlayer.getInventory().setItem(6, freeze);
-    
-            bukkitPlayer.setAllowFlight(true);
-            bukkitPlayer.setFlying(true);
+            if(player.isFlying()){
+                Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
+                    try {
+                        player.disableFly();
+                    } catch(SQLException e){
+                        e.printStackTrace();
+                    }
+                });
+            } else {
+                bukkitPlayer.setAllowFlight(true);
+                bukkitPlayer.setFlying(true);
+            }
         }
-        player.setInModeration(!player.isInModeration());
     }
 }
