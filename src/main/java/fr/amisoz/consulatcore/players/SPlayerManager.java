@@ -78,17 +78,6 @@ public class SPlayerManager implements Listener {
                 });
             }
         });
-        if(player.isInModeration()){
-            Player bukkitPlayer = player.getPlayer();
-            ModerationUtils.moderatePlayers.remove(bukkitPlayer);
-            ModerationUtils.vanishedPlayers.remove(bukkitPlayer);
-            for(PotionEffect effect : bukkitPlayer.getActivePotionEffects()){
-                if(effect.getType().equals(PotionEffectType.NIGHT_VISION) || effect.getType().equals(PotionEffectType.INVISIBILITY)){
-                    bukkitPlayer.removePotionEffect(effect.getType());
-                }
-            }
-            bukkitPlayer.getInventory().setContents(player.getStockedInventory());
-        }
     }
     
     @EventHandler
@@ -128,8 +117,15 @@ public class SPlayerManager implements Listener {
             });
         }
         if(player.isInModeration()){
-            player.getPlayer().getInventory().clear();
-            player.getPlayer().getInventory().setContents(player.getStockedInventory());
+            Player bukkitPlayer = player.getPlayer();
+            ModerationUtils.moderatePlayers.remove(bukkitPlayer);
+            ModerationUtils.vanishedPlayers.remove(bukkitPlayer);
+            for(PotionEffect effect : bukkitPlayer.getActivePotionEffects()){
+                if(effect.getType().equals(PotionEffectType.NIGHT_VISION) || effect.getType().equals(PotionEffectType.INVISIBILITY)){
+                    bukkitPlayer.removePotionEffect(effect.getType());
+                }
+            }
+            bukkitPlayer.getInventory().setContents(player.getStockedInventory());
         }
         if(!player.hasPower(Rank.MODO)){
             if(player.hasCustomRank() && player.getCustomRank() != null && !player.getCustomRank().isEmpty()){
