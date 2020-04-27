@@ -34,13 +34,13 @@ import java.util.*;
 import java.util.logging.Level;
 
 public class SPlayerManager implements Listener {
-    
+
     private static SPlayerManager instance;
-    
+
     private DateFormat dateFormat;
-    
-    public SPlayerManager(){
-        if(instance != null){
+
+    public SPlayerManager() {
+        if (instance != null) {
             return;
         }
         instance = this;
@@ -48,20 +48,20 @@ public class SPlayerManager implements Listener {
                 DateFormat.SHORT,
                 DateFormat.SHORT, new Locale("FR", "fr"));
     }
-    
+
     @EventHandler
-    public void onJoin(PlayerJoinEvent event){
+    public void onJoin(PlayerJoinEvent event) {
         event.setJoinMessage(null);
         Player player = event.getPlayer();
-        if(!player.hasPlayedBefore()){
+        if (!player.hasPlayedBefore()) {
             player.teleport(ConsulatCore.getInstance().getSpawn());
             player.getInventory().addItem(new ItemStack(Material.BREAD, 32));
         }
     }
-    
+
     @EventHandler
-    public void onPlayerLoaded(ConsulatPlayerLoadedEvent event){
-        SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
+    public void onPlayerLoaded(ConsulatPlayerLoadedEvent event) {
+        SurvivalPlayer player = (SurvivalPlayer) event.getPlayer();
         ConsulatCore core = ConsulatCore.getInstance();
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
@@ -71,7 +71,7 @@ public class SPlayerManager implements Listener {
                     Bukkit.getServer().getPluginManager().callEvent(new SurvivalPlayerLoadedEvent(player));
                 });
                 saveConnection(player);
-            } catch(SQLException e){
+            } catch (SQLException e) {
                 e.printStackTrace();
                 Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
                     player.getPlayer().kickPlayer("§cErreur lors de la récupération de vos données.\n" + e.getMessage());
@@ -79,43 +79,44 @@ public class SPlayerManager implements Listener {
             }
         });
     }
-    
+
     @EventHandler
-    public void onSurvivalPlayerLoaded(SurvivalPlayerLoadedEvent event){
+    public void onSurvivalPlayerLoaded(SurvivalPlayerLoadedEvent event) {
         SurvivalPlayer player = event.getPlayer();
         Rank playerRank = player.getRank();
-        if(!player.hasPower(Rank.MODO)){
+        if (!player.hasPower(Rank.MODO)) {
             ModerationUtils.vanishedPlayers.forEach(moderator -> player.getPlayer().hidePlayer(ConsulatCore.getInstance(), moderator));
-            if(player.hasCustomRank() && player.getCustomRank() != null && !player.getCustomRank().isEmpty()){
+            if (player.hasCustomRank() && player.getCustomRank() != null && !player.getCustomRank().isEmpty()) {
                 Bukkit.broadcastMessage("§7(§a+§7) " + ChatColor.translateAlternateColorCodes('&', player.getCustomRank()) + player.getName());
             } else {
                 Bukkit.broadcastMessage("§7(§a+§7)" + playerRank.getRankColor() + " [" + playerRank.getRankName() + "] " + player.getName());
             }
         }
         Set<Claim> claims = ClaimManager.getInstance().getClaims(player.getUUID());
-        if(claims != null){
-            for(Claim claim : claims){
+        if (claims != null) {
+            for (Claim claim : claims) {
                 player.addClaim(claim);
             }
         }
     }
-    
+
     //TODO: Liste modo
     @EventHandler
-    public void onLeave(ConsulatPlayerLeaveEvent event){
-        SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
-        if(player == null){
+    public void onLeave(ConsulatPlayerLeaveEvent event) {
+        SurvivalPlayer player = (SurvivalPlayer) event.getPlayer();
+        if (player == null) {
             ConsulatAPI.getConsulatAPI().log(Level.WARNING, "A player who has left is null");
             return;
         }
-        if(player.isFrozen()){
+        if (player.isFrozen()) {
             Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
                 ConsulatPlayer consulatOnline = CPlayerManager.getInstance().getConsulatPlayer(onlinePlayer.getUniqueId());
-                if(consulatOnline != null && consulatOnline.hasPower(Rank.MODO)){
+                if (consulatOnline != null && consulatOnline.hasPower(Rank.MODO)) {
                     onlinePlayer.sendMessage(Text.MODERATION_PREFIX + ChatColor.GOLD + player.getPlayer().getName() + ChatColor.RED + " s'est déconnecté en étant freeze.");
                 }
             });
         }
+
         if(player.isInModeration()){
             Player bukkitPlayer = player.getPlayer();
             ModerationUtils.moderatePlayers.remove(bukkitPlayer);
@@ -127,27 +128,29 @@ public class SPlayerManager implements Listener {
             }
             bukkitPlayer.getInventory().setContents(player.getStockedInventory());
         }
-        if(!player.hasPower(Rank.MODO)){
-            if(player.hasCustomRank() && player.getCustomRank() != null && !player.getCustomRank().isEmpty()){
+
+        if (!player.hasPower(Rank.MODO)) {
+            if (player.hasCustomRank() && player.getCustomRank() != null && !player.getCustomRank().isEmpty()) {
                 Bukkit.broadcastMessage("§7(§c-§7) " + ChatColor.translateAlternateColorCodes('&', player.getCustomRank()) + player.getPlayer().getName());
             } else {
                 Rank playerRank = player.getRank();
                 Bukkit.broadcastMessage("§7(§c-§7)" + playerRank.getRankColor() + " [" + playerRank.getRankName() + "] " + player.getPlayer().getName());
             }
         }
-        if(player.isFlying()){
+
+        if (player.isFlying()) {
             Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
                 try {
                     player.disableFly();
-                } catch(SQLException e){
+                } catch (SQLException e) {
                     player.getPlayer().sendMessage("§cErreur lors de la sauvegarde du fly.");
                     e.printStackTrace();
                 }
             });
         }
     }
-    
-    public void fetchPlayer(SurvivalPlayer player) throws SQLException{
+
+    public void fetchPlayer(SurvivalPlayer player) throws SQLException {
         Map<String, Location> homes = getHomes(player.getName(), true);
         Fly fly = getFly(player.getUUID());
         List<Shop> shops = ShopManager.getInstance().getShops(player.getUUID());
@@ -155,7 +158,7 @@ public class SPlayerManager implements Listener {
                 "SELECT * FROM players WHERE player_uuid = ?;");
         preparedStatement.setString(1, player.getUUID().toString());
         ResultSet result = preparedStatement.executeQuery();
-        if(result.next()){
+        if (result.next()) {
             player.initialize(
                     result.getDouble("money"),
                     result.getInt("moreHomes"),
@@ -179,8 +182,8 @@ public class SPlayerManager implements Listener {
         result.close();
         preparedStatement.close();
     }
-    
-    private void saveConnection(ConsulatPlayer player) throws SQLException{
+
+    private void saveConnection(ConsulatPlayer player) throws SQLException {
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("INSERT INTO connections(player_name, player_id, player_ip, connection_date) VALUES(?, ?, ?, ?)");
         preparedStatement.setString(1, player.getName());
         preparedStatement.setInt(2, player.getId());
@@ -189,13 +192,13 @@ public class SPlayerManager implements Listener {
         preparedStatement.executeUpdate();
         preparedStatement.close();
     }
-    
-    public Map<String, Location> getHomes(String player, boolean getLocations) throws SQLException{
+
+    public Map<String, Location> getHomes(String player, boolean getLocations) throws SQLException {
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM homes INNER JOIN players ON players.id = homes.idplayer WHERE players.player_name = ?");
         preparedStatement.setString(1, player);
         ResultSet resultSet = preparedStatement.executeQuery();
         Map<String, Location> result = new HashMap<>();
-        while(resultSet.next()){
+        while (resultSet.next()) {
             result.put(resultSet.getString("home_name").toLowerCase(),
                     getLocations ?
                             new Location(Bukkit.getWorlds().get(0),
@@ -211,8 +214,8 @@ public class SPlayerManager implements Listener {
         preparedStatement.close();
         return result;
     }
-    
-    public void addHome(SurvivalPlayer player, String homeName, Location location) throws SQLException{
+
+    public void addHome(SurvivalPlayer player, String homeName, Location location) throws SQLException {
         PreparedStatement preparedStatement =
                 player.getHome(homeName) == null ?
                         ConsulatAPI.getDatabase().prepareStatement("INSERT INTO homes(x, y, z, pitch, yaw, idplayer, home_name) VALUES(?, ?, ?, ?, ?, ?, ?)") :
@@ -227,8 +230,8 @@ public class SPlayerManager implements Listener {
         preparedStatement.executeUpdate();
         preparedStatement.close();
     }
-    
-    public boolean removeHome(String name, String home) throws SQLException{
+
+    public boolean removeHome(String name, String home) throws SQLException {
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("DELETE homes FROM homes INNER JOIN players ON players.id = homes.idplayer WHERE player_name = ? AND home_name = ?");
         preparedStatement.setString(1, name);
         preparedStatement.setString(1, home);
@@ -236,11 +239,11 @@ public class SPlayerManager implements Listener {
         preparedStatement.close();
         return result != 0;
     }
-    
-    public boolean removeHome(UUID uuid, String home) throws SQLException{
+
+    public boolean removeHome(UUID uuid, String home) throws SQLException {
         ConsulatPlayer player = CPlayerManager.getInstance().getConsulatPlayer(uuid);
         PreparedStatement preparedStatement;
-        if(player != null){
+        if (player != null) {
             preparedStatement = ConsulatAPI.getDatabase().prepareStatement("DELETE FROM homes WHERE idplayer = ? AND home_name = ?");
             preparedStatement.setInt(1, player.getId());
             preparedStatement.setString(2, home);
@@ -253,30 +256,30 @@ public class SPlayerManager implements Listener {
         preparedStatement.close();
         return result != 0;
     }
-    
-    public void addMoney(UUID uuid, double amount) throws SQLException{
+
+    public void addMoney(UUID uuid, double amount) throws SQLException {
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE players SET money = money + ? WHERE player_uuid = ?");
         preparedStatement.setDouble(1, amount);
         preparedStatement.setString(2, uuid.toString());
         preparedStatement.executeUpdate();
         preparedStatement.close();
     }
-    
-    public Optional<SurvivalOffline> fetchOffline(String playerName) throws SQLException{
+
+    public Optional<SurvivalOffline> fetchOffline(String playerName) throws SQLException {
         PreparedStatement request = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM players WHERE player_name = ?");
         request.setString(1, playerName);
         ResultSet resultSet = request.executeQuery();
         SurvivalOffline offline;
-        if(resultSet.next()){
+        if (resultSet.next()) {
             int id = resultSet.getInt("id");
             String uuid = resultSet.getString("player_uuid");
-            if(uuid == null){
+            if (uuid == null) {
                 resultSet.close();
                 request.close();
                 throw new SQLException("player_uuid is null at id " + id);
             }
             String rank = resultSet.getString("player_rank");
-            if(rank == null){
+            if (rank == null) {
                 resultSet.close();
                 request.close();
                 throw new SQLException("player_rank is null at id " + id);
@@ -297,40 +300,40 @@ public class SPlayerManager implements Listener {
                 "SELECT connection_date FROM connections WHERE player_id = ? ORDER BY id DESC LIMIT 1");
         lastConnection.setInt(1, offline.getId());
         ResultSet resultLastConnection = lastConnection.executeQuery();
-        if(resultLastConnection.next()){
+        if (resultLastConnection.next()) {
             offline.setLastConnection(resultLastConnection.getString("connection_date"));
         }
         resultLastConnection.close();
         lastConnection.close();
         return Optional.of(offline);
     }
-    
-    
-    public void setPerkUp(UUID uuid, boolean perkTop) throws SQLException{
+
+
+    public void setPerkUp(UUID uuid, boolean perkTop) throws SQLException {
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE players SET canUp = ? WHERE player_uuid = ?");
         preparedStatement.setBoolean(1, perkTop);
         preparedStatement.setString(2, uuid.toString());
         preparedStatement.executeUpdate();
         preparedStatement.close();
     }
-    
-    public void incrementLimitHome(UUID uuid) throws SQLException{
+
+    public void incrementLimitHome(UUID uuid) throws SQLException {
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE players SET moreHomes = moreHomes + 1 WHERE player_uuid = ?");
         preparedStatement.setString(1, uuid.toString());
         preparedStatement.executeUpdate();
         preparedStatement.close();
     }
-    
-    public Fly getFly(UUID uuid) throws SQLException{
+
+    public Fly getFly(UUID uuid) throws SQLException {
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM fly WHERE uuid = ?");
         preparedStatement.setString(1, uuid.toString());
         ResultSet resultSet = preparedStatement.executeQuery();
         Fly fly;
-        if(resultSet.next()){
+        if (resultSet.next()) {
             fly = new Fly(
-                    (int)resultSet.getLong("flyTime"),
+                    (int) resultSet.getLong("flyTime"),
                     resultSet.getLong("lastTime"),
-                    (int)resultSet.getLong("timeLeft"));
+                    (int) resultSet.getLong("timeLeft"));
         } else {
             PreparedStatement insertFly = ConsulatAPI.getDatabase().prepareStatement("INSERT INTO fly(uuid, canFly, flyTime, lastTime, timeLeft) VALUES (?, 0, 0, 0, 0)");
             insertFly.setString(1, uuid.toString());
@@ -342,8 +345,8 @@ public class SPlayerManager implements Listener {
         preparedStatement.close();
         return fly.getFlyTime() == 0 ? null : fly;
     }
-    
-    public void setFly(UUID uuid, Fly fly) throws SQLException{
+
+    public void setFly(UUID uuid, Fly fly) throws SQLException {
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE fly SET flyTime = ?, lastTime = ?, timeLeft = ? WHERE uuid = ?");
         preparedStatement.setLong(1, fly.getFlyTime());
         preparedStatement.setLong(2, fly.getReset());
@@ -352,12 +355,12 @@ public class SPlayerManager implements Listener {
         preparedStatement.executeUpdate();
         preparedStatement.close();
     }
-    
-    public static SPlayerManager getInstance(){
+
+    public static SPlayerManager getInstance() {
         return instance;
     }
-    
-    public boolean hasAccount(String playerName) throws SQLException{
+
+    public boolean hasAccount(String playerName) throws SQLException {
         PreparedStatement request = ConsulatAPI.getDatabase().prepareStatement("SELECT id FROM players WHERE player_name = ?");
         request.setString(1, playerName);
         ResultSet resultSet = request.executeQuery();
@@ -366,5 +369,5 @@ public class SPlayerManager implements Listener {
         request.close();
         return present;
     }
-    
+
 }
