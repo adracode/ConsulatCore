@@ -159,7 +159,9 @@ public class ShopManager implements Listener {
             this.shops.put(shop.getCoords(), shop);
             if(itemFrame == null){
                 if(!shop.placeItemFrame()){
-                    shop.getSign().getBlock().breakNaturally();
+                    if(shop.getSign() != null){
+                        shop.getSign().getBlock().breakNaturally();
+                    }
                     removeShop(shop);
                 }
             }
