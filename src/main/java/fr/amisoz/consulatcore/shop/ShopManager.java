@@ -28,6 +28,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
@@ -321,6 +322,17 @@ public class ShopManager implements Listener {
             }
         });
         player.sendMessage("§aTon shop a bien été crée!");
+    }
+    
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onClick(PlayerInteractEntityEvent event){
+        if(event.getRightClicked().getType() == EntityType.ITEM_FRAME){
+            Entity frame = event.getRightClicked();
+            Location location = frame.getLocation().clone().add(0, -1, 0);
+            if(frame.isInvulnerable() && getShop(location) == null){
+                frame.remove();
+            }
+        }
     }
     
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
