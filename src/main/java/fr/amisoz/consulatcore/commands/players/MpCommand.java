@@ -14,10 +14,12 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
+
 public class MpCommand extends ConsulatCommand {
 
     public MpCommand() {
-        super("msg", "/msg <Joueur> <Message>", 2, Rank.JOUEUR);
+        super("msg", Arrays.asList("mp", "whisper", "tell"), "/msg <Joueur> <Message>", 2, Rank.JOUEUR);
     }
 
     @Override

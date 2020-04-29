@@ -8,10 +8,12 @@ import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import java.util.Collections;
+
 public class EnderchestCommand extends ConsulatCommand {
 
     public EnderchestCommand() {
-        super("ec", "/ec <Joueur>", 1, Rank.MODPLUS);
+        super("enderchest", Collections.singletonList("ec"), "/ec <Joueur>", 1, Rank.MODPLUS);
     }
 
     @Override

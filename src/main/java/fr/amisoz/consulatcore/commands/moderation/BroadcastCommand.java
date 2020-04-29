@@ -10,10 +10,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
+
 public class BroadcastCommand extends ConsulatCommand {
     
     public BroadcastCommand() {
-        super("annonce", "/annonce <Message>", 1, Rank.RESPONSABLE);
+        super("annonce",
+                Arrays.asList("broadcast", "bc"),
+                "/annonce <Message>", 1, Rank.RESPONSABLE);
     }
 
     @Override

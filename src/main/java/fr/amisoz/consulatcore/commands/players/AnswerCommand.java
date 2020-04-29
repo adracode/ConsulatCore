@@ -10,10 +10,12 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import java.util.Collections;
+
 public class AnswerCommand extends ConsulatCommand {
 
     public AnswerCommand() {
-        super("r", "/r <Message>", 1, Rank.JOUEUR);
+        super("answer", Collections.singletonList("r"), "/r <Message>", 1, Rank.JOUEUR);
     }
 
     @Override

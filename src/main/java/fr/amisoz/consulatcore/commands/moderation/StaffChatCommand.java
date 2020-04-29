@@ -7,10 +7,12 @@ import fr.leconsulat.api.ranks.Rank;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 
+import java.util.Collections;
+
 public class StaffChatCommand extends ConsulatCommand {
     
     public StaffChatCommand() {
-        super("sc", "/sc <Message>", 1, Rank.MODO);
+        super("staffchat", Collections.singletonList("sc"), "/sc <Message>", 1, Rank.MODO);
     }
 
     @Override
