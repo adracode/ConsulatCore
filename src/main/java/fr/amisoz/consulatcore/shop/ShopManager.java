@@ -439,7 +439,7 @@ public class ShopManager implements Listener {
         }
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
-                player.removeMoney(shop.getPrice());
+                player.removeMoney(price);
             } catch(SQLException e){
                 player.sendMessage("§cUne erreur interne est survenue, la transaction a échoué.");
                 e.printStackTrace();
@@ -447,9 +447,9 @@ public class ShopManager implements Listener {
             SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(shop.getOwner());
             try {
                 if(target == null){
-                    SPlayerManager.getInstance().addMoney(shop.getOwner(), shop.getPrice());
+                    SPlayerManager.getInstance().addMoney(shop.getOwner(), price);
                 } else {
-                    target.addMoney(shop.getPrice());
+                    target.addMoney(price);
                     target.sendMessage(Text.PREFIX + "§aTu as reçu " + price + " € grâce à un de tes shops.");
                 }
             } catch(SQLException e){
@@ -461,7 +461,7 @@ public class ShopManager implements Listener {
                 player.addItemInInventory(amount, shop.getItem());
             });
         });
-        player.sendMessage(Text.PREFIX + "Tu as acheté §e" + shop.getItemType().toString() + " x " + amount + " §6pour §e" + shop.getPrice() * amount);
+        player.sendMessage(Text.PREFIX + "Tu as acheté §e" + shop.getItemType().toString() + " x " + amount + " §6pour §e" + price);
         ConsulatAPI.getConsulatAPI().logFile("Achat: " + player + " a acheté au shop " + shop + " " + amount + " items pour un prix de " + price);
     }
     
