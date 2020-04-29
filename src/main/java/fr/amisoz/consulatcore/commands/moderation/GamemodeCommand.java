@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 public class GamemodeCommand extends ConsulatCommand {
     
     public GamemodeCommand(){
-        super("/gm", 0, Rank.MODO);
+        super("gm", "/gm", 0, Rank.MODO);
     }
     
     @Override

@@ -12,7 +12,7 @@ import org.bukkit.ChatColor;
 public class UnmuteCommand extends ConsulatCommand {
     
     public UnmuteCommand(){
-        super("/unmute <Joueur>", 1, Rank.RESPONSABLE);
+        super("unmute", "/unmute <Joueur>", 1, Rank.RESPONSABLE);
     }
     
     @Override

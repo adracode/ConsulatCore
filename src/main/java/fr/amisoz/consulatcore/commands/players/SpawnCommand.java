@@ -9,7 +9,7 @@ import fr.leconsulat.api.ranks.Rank;
 public class SpawnCommand extends ConsulatCommand {
     
     public SpawnCommand(){
-        super("/spawn", 0, Rank.JOUEUR);
+        super("spawn","/spawn", 0, Rank.JOUEUR);
     }
     
     @Override

@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 public class ToggleChatCommand extends ConsulatCommand {
     
     public ToggleChatCommand(){
-        super("/chat", 0, Rank.RESPONSABLE);
+        super("chat", "/chat", 0, Rank.RESPONSABLE);
     }
     
     @Override

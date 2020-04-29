@@ -19,7 +19,7 @@ import java.util.UUID;
 public class AccessCommand extends ConsulatCommand {
     
     public AccessCommand(){
-        super("/access [add <Joueur>, remove <Joueur>, list, addall <Joueur>, removeall <Joueur>]", 1, Rank.JOUEUR);
+        super("access", "/access [add <Joueur>, remove <Joueur>, list, addall <Joueur>, removeall <Joueur>]", 1, Rank.JOUEUR);
     }
     
     @Override

@@ -14,7 +14,7 @@ import java.util.UUID;
 public class SanctionCommand extends ConsulatCommand {
     
     public SanctionCommand(){
-        super("/sanction <Joueur>", 1, Rank.MODO);
+        super("sanction", "/sanction <Joueur>", 1, Rank.MODO);
     }
     
     @Override

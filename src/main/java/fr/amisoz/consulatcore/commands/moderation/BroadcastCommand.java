@@ -13,7 +13,7 @@ import org.bukkit.entity.Player;
 public class BroadcastCommand extends ConsulatCommand {
     
     public BroadcastCommand() {
-        super("/annonce <Message>", 1, Rank.RESPONSABLE);
+        super("annonce", "/annonce <Message>", 1, Rank.RESPONSABLE);
     }
 
     @Override

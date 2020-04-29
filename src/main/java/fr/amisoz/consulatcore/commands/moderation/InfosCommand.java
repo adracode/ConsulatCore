@@ -27,7 +27,7 @@ import java.util.Optional;
 public class InfosCommand extends ConsulatCommand {
 
     public InfosCommand() {
-        super("/infos <Joueur>", 1, Rank.RESPONSABLE);
+        super("infos", "/infos <Joueur>", 1, Rank.RESPONSABLE);
     }
 
     @Override

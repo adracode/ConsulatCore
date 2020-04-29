@@ -13,7 +13,7 @@ import java.sql.SQLException;
 public class SetHomeCommand extends ConsulatCommand {
     
     public SetHomeCommand(){
-        super("/sethome <Nom du home>", 1, Rank.JOUEUR);
+        super("sethome", "/sethome <Nom du home>", 1, Rank.JOUEUR);
     }
     
     @Override

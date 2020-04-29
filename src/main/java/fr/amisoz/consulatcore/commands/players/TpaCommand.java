@@ -13,12 +13,12 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TPaCommand extends ConsulatCommand {
+public class TpaCommand extends ConsulatCommand {
     
     private Map<ConsulatPlayer, ConsulatPlayer> request = new HashMap<>();
     
-    public TPaCommand(){
-        super("/tpa <Joueur> | /tpa accept", 1, Rank.JOUEUR);
+    public TpaCommand(){
+        super("tpa", "/tpa <Joueur> | /tpa accept", 1, Rank.JOUEUR);
     }
     
     @Override

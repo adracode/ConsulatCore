@@ -21,7 +21,7 @@ import java.util.Set;
 public class ClaimCommand extends ConsulatCommand {
     
     public ClaimCommand(){
-        super("/claim | /claim kick <Joueur> | /claim desc <Description> | /claim list", 0, Rank.JOUEUR);
+        super("claim", "/claim | /claim kick <Joueur> | /claim desc <Description> | /claim list", 0, Rank.JOUEUR);
     }
     
     @Override

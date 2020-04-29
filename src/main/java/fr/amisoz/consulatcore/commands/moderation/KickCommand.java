@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 public class KickCommand extends ConsulatCommand {
 
     public KickCommand() {
-        super("/kick <Joueur> <Raison>", 2, Rank.MODO);
+        super("kick", "/kick <Joueur> <Raison>", 2, Rank.MODO);
     }
 
     @Override

@@ -17,7 +17,7 @@ import org.bukkit.entity.Player;
 public class MpCommand extends ConsulatCommand {
 
     public MpCommand() {
-        super("/msg <Joueur> <Message>", 2, Rank.JOUEUR);
+        super("msg", "/msg <Joueur> <Message>", 2, Rank.JOUEUR);
     }
 
     @Override

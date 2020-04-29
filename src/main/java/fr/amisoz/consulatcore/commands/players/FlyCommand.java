@@ -13,7 +13,7 @@ import java.sql.SQLException;
 public class FlyCommand extends ConsulatCommand {
     
     public FlyCommand(){
-        super("/fly [start/stop/info]", 1, Rank.JOUEUR);
+        super("fly", "/fly [start/stop/info]", 1, Rank.JOUEUR);
     }
     
     @Override

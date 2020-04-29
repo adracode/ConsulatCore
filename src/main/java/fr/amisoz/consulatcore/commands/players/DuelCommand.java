@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 public class DuelCommand extends ConsulatCommand {
 
     public DuelCommand() {
-        super("/duel spectate ou /duel <Joueur> <Mise> ou /duel accept/reject ou /duel annonce on/off", 0, Rank.JOUEUR);
+        super("duel", "/duel spectate ou /duel <Joueur> <Mise> ou /duel accept/reject ou /duel annonce on/off", 0, Rank.JOUEUR);
     }
 
     @Override

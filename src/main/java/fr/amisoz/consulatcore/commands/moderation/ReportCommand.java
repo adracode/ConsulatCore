@@ -16,7 +16,7 @@ import org.bukkit.entity.Player;
 public class ReportCommand extends ConsulatCommand {
     
     public ReportCommand(){
-        super("/report <Joueur> <Raison>", 2, Rank.JOUEUR);
+        super("report", "/report <Joueur> <Raison>", 2, Rank.JOUEUR);
     }
     
     @Override

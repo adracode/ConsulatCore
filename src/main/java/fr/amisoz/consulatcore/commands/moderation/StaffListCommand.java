@@ -9,7 +9,7 @@ import org.bukkit.Bukkit;
 public class StaffListCommand extends ConsulatCommand {
 
     public StaffListCommand() {
-        super("/stafflist", 0, Rank.MODPLUS);
+        super("stafflist", "/stafflist", 0, Rank.MODPLUS);
     }
 
     @Override

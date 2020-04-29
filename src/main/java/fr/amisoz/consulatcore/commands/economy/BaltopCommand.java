@@ -14,7 +14,7 @@ public class BaltopCommand extends ConsulatCommand {
     private DecimalFormat formatMoney = new DecimalFormat("###,###,###");
     
     public BaltopCommand(){
-        super("/baltop", 0, Rank.JOUEUR);
+        super("baltop", "/baltop", 0, Rank.JOUEUR);
     }
     
     @Override

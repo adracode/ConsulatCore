@@ -13,7 +13,7 @@ import org.bukkit.entity.Player;
 public class TpmodCommand extends ConsulatCommand {
     
     public TpmodCommand(){
-        super("/tpmod <Joueur>", 1, Rank.MODO);
+        super("tpmod", "/tpmod <Joueur>", 1, Rank.MODO);
     }
     
     @Override

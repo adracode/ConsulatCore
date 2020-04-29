@@ -21,7 +21,7 @@ import java.util.Set;
 public class HomeCommand extends ConsulatCommand {
     
     public HomeCommand(){
-        super("/home <Nom du home>", 0, Rank.JOUEUR);
+        super("home", "/home <Nom du home>", 0, Rank.JOUEUR);
     }
     
     @Override

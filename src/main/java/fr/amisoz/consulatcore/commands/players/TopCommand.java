@@ -10,7 +10,7 @@ import org.bukkit.block.Block;
 public class TopCommand extends ConsulatCommand {
 
     public TopCommand() {
-        super("/top", 0, Rank.JOUEUR);
+        super("top", "/top", 0, Rank.JOUEUR);
     }
 
     @Override

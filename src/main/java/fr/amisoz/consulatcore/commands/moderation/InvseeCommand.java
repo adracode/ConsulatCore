@@ -12,7 +12,7 @@ import org.bukkit.entity.Player;
 public class InvseeCommand extends ConsulatCommand {
 
     public InvseeCommand() {
-        super("/invsee <Joueur>", 1, Rank.MODO);
+        super("invsee", "/invsee <Joueur>", 1, Rank.MODO);
     }
 
     @Override

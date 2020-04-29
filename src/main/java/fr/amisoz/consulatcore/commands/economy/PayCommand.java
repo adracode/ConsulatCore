@@ -17,7 +17,7 @@ import java.util.Optional;
 public class PayCommand extends ConsulatCommand {
     
     public PayCommand(){
-        super("/pay <Joueur> <Montant>", 2, Rank.JOUEUR);
+        super("pay", "/pay <Joueur> <Montant>", 2, Rank.JOUEUR);
     }
     
     @Override

@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 public class HelpCommand extends ConsulatCommand {
 
     public HelpCommand() {
-        super("/help", 0, Rank.JOUEUR);
+        super("help", "/help", 0, Rank.JOUEUR);
     }
 
     @Override

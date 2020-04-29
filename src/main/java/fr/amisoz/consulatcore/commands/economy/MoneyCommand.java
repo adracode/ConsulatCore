@@ -14,7 +14,7 @@ public class MoneyCommand extends ConsulatCommand {
     private DecimalFormat df = new DecimalFormat();
     
     public MoneyCommand(){
-        super("/money", 0, Rank.JOUEUR);
+        super("money", "/money", 0, Rank.JOUEUR);
         df.setMaximumFractionDigits(2);
         df.setMinimumFractionDigits(2);
         df.setDecimalSeparatorAlwaysShown(true);

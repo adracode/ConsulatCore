@@ -16,7 +16,7 @@ import java.sql.SQLException;
 public class PersoCommand extends ConsulatCommand {
     
     public PersoCommand(){
-        super("/perso", 0, Rank.JOUEUR);
+        super("perso", "/perso", 0, Rank.JOUEUR);
     }
     
     @Override

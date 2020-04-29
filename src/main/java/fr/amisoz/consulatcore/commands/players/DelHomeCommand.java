@@ -19,7 +19,7 @@ public class DelHomeCommand extends ConsulatCommand {
     
     
     public DelHomeCommand(){
-        super("/delhome <Nom du home>", 1, Rank.JOUEUR);
+        super("/delhome", "/delhome <Nom du home>", 1, Rank.JOUEUR);
     }
     
     @Override

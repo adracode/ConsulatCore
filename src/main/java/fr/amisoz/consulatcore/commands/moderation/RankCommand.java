@@ -15,7 +15,7 @@ import java.util.Arrays;
 public class RankCommand extends ConsulatCommand {
     
     public RankCommand(){
-        super("/rank <Joueur> <Rang>", 2, Rank.RESPONSABLE);
+        super("rank", "/rank <Joueur> <Rang>", 2, Rank.RESPONSABLE);
     }
     
     @Override

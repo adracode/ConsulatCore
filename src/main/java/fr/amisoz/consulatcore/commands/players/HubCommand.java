@@ -10,7 +10,7 @@ import fr.leconsulat.api.ranks.Rank;
 public class HubCommand extends ConsulatCommand {
 
     public HubCommand() {
-        super("/hub", 0, Rank.JOUEUR);
+        super("hub", "/hub", 0, Rank.JOUEUR);
     }
 
     @Override

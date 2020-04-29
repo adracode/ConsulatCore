@@ -10,7 +10,7 @@ import org.bukkit.Bukkit;
 public class StaffChatCommand extends ConsulatCommand {
     
     public StaffChatCommand() {
-        super("/sc <Message>", 1, Rank.MODO);
+        super("sc", "/sc <Message>", 1, Rank.MODO);
     }
 
     @Override

@@ -18,7 +18,7 @@ public class AdvertCommand extends ConsulatCommand {
     private Map<UUID, Long> delay = new HashMap<>();
     
     public AdvertCommand(){
-        super("/advert <Annonce>", 1, Rank.FINANCEUR);
+        super("advert", "/advert <Annonce>", 1, Rank.FINANCEUR);
     }
     
     @Override

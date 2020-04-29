@@ -13,7 +13,7 @@ import org.bukkit.entity.Player;
 public class AnswerCommand extends ConsulatCommand {
 
     public AnswerCommand() {
-        super("/r <Message>", 1, Rank.JOUEUR);
+        super("r", "/r <Message>", 1, Rank.JOUEUR);
     }
 
     @Override

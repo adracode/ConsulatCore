@@ -14,7 +14,7 @@ import java.sql.SQLException;
 public class SeenCommand extends ConsulatCommand {
     
     public SeenCommand(){
-        super("/seen <Pseudo>", 1, Rank.ADMIN);
+        super("seen", "/seen <Pseudo>", 1, Rank.ADMIN);
     }
     
     @Override

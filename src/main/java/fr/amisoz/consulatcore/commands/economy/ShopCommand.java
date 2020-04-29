@@ -29,7 +29,7 @@ import java.util.*;
 public class ShopCommand extends ConsulatCommand {
     
     public ShopCommand(){
-        super("/shop list|help", 0, Rank.JOUEUR);
+        super("shop", "/shop list|help", 0, Rank.JOUEUR);
     }
     
     

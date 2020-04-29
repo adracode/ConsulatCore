@@ -20,14 +20,7 @@ import java.util.Set;
 
 public class ChatListeners implements Listener {
     
-    private Set<String> forbiddenCommands = new HashSet<>();
-    
     public ChatListeners(){
-        forbiddenCommands.add("/w");
-        forbiddenCommands.add("/whisper");
-        forbiddenCommands.add("/tell");
-        forbiddenCommands.add("/me");
-        forbiddenCommands.add("/bukkit");
     }
     
     @EventHandler
@@ -93,15 +86,6 @@ public class ChatListeners implements Listener {
         }
         if(player.hasPower(Rank.MODO)){
             event.setMessage(ChatColor.translateAlternateColorCodes('&', event.getMessage()));
-        }
-    }
-    
-    @EventHandler
-    public void PlayerCommand(PlayerCommandPreprocessEvent event){
-        int stop = event.getMessage().indexOf(' ');
-        if(forbiddenCommands.contains(event.getMessage().substring(0, stop == -1 ? event.getMessage().length() : stop))){
-            event.setCancelled(true);
-            event.getPlayer().sendMessage("§cCommande désactivée.");
         }
     }
 }

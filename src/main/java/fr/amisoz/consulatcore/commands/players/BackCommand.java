@@ -10,7 +10,7 @@ import org.bukkit.Bukkit;
 public class BackCommand extends ConsulatCommand {
 
     public BackCommand() {
-        super("/back", 0, Rank.MECENE);
+        super("back", "/back", 0, Rank.MECENE);
     }
 
     @Override
