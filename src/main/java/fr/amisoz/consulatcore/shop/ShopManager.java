@@ -437,6 +437,8 @@ public class ShopManager implements Listener {
             player.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent");
             return;
         }
+        shop.buy(amount);
+        player.addItemInInventory(amount, shop.getItem());
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
                 player.removeMoney(price);
@@ -456,10 +458,6 @@ public class ShopManager implements Listener {
                 player.sendMessage("§cUne erreur interne est survenue, la transaction a échoué");
                 e.printStackTrace();
             }
-            Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
-                shop.buy(amount);
-                player.addItemInInventory(amount, shop.getItem());
-            });
         });
         player.sendMessage(Text.PREFIX + "Tu as acheté §e" + shop.getItemType().toString() + " x " + amount + " §6pour §e" + price);
         ConsulatAPI.getConsulatAPI().logFile("Achat: " + player + " a acheté au shop " + shop + " " + amount + " items pour un prix de " + price);
