@@ -23,8 +23,10 @@ import fr.amisoz.consulatcore.runnable.AFKRunnable;
 import fr.amisoz.consulatcore.runnable.MeceneRunnable;
 import fr.amisoz.consulatcore.runnable.MessageRunnable;
 import fr.amisoz.consulatcore.runnable.MonitoringRunnable;
+import fr.amisoz.consulatcore.shop.ShopGui;
 import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.leconsulat.api.ConsulatAPI;
+import fr.leconsulat.api.gui.GuiManager;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -34,6 +36,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -51,6 +54,7 @@ public class ConsulatCore extends JavaPlugin {
     private SPlayerManager playerManager;
     private BaltopManager baltopManager;
     private FlyManager flyManager;
+    private ShopManager shopManager;
     
     private Location spawn;
     
@@ -65,6 +69,7 @@ public class ConsulatCore extends JavaPlugin {
     private Set<String> forbiddenPerso = new HashSet<>(Arrays.asList(
             "Modo", "Moderateur", "Modérateur", "Admin", "Animateur", "Partenaire", "Youtubeur", "Streamer", "Ami",
             "Fonda", "Dev", "Builder", "Fondateur"));
+   
     
     @Override
     public void onEnable(){
@@ -82,11 +87,13 @@ public class ConsulatCore extends JavaPlugin {
         baltopManager = new BaltopManager();
         flyManager = new FlyManager();
         moderationDatabase = new ModerationDatabase(this);
+        GuiManager guiManager = GuiManager.getInstance();
+        guiManager.addRootGui("shop", new ShopGui());
+        shopManager = new ShopManager();
         Bukkit.getScheduler().runTaskTimer(this, new AFKRunnable(), 0L, 5 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MonitoringRunnable(this), 0L, 10 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MessageRunnable(), 0L, 15 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MeceneRunnable(), 0L, 20*60*60);
-
         registerEvents();
         registerCommands();
         Bukkit.getWorlds().forEach(world -> {
@@ -176,7 +183,7 @@ public class ConsulatCore extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new ClaimCancelListener(), this);
         Bukkit.getPluginManager().registerEvents(claimManager, this);
         Bukkit.getPluginManager().registerEvents(playerManager, this);
-        Bukkit.getPluginManager().registerEvents(new ShopManager(), this);
+        Bukkit.getPluginManager().registerEvents(shopManager, this);
     }
     
     public Connection getDatabaseConnection(){

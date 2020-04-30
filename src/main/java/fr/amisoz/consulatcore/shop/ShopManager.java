@@ -7,6 +7,8 @@ import fr.amisoz.consulatcore.commands.economy.ShopCommand;
 import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.ConsulatAPI;
+import fr.leconsulat.api.gui.GuiListener;
+import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.*;
@@ -62,6 +64,7 @@ public class ShopManager implements Listener {
     }
     
     private void initShops() throws SQLException{
+        ShopGui gui = (ShopGui)GuiManager.getInstance().getRootGui("shop");
         PreparedStatement shops = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM shopinfo");
         ResultSet resultShops = shops.executeQuery();
         World world = Bukkit.getWorlds().get(0);
@@ -161,15 +164,21 @@ public class ShopManager implements Listener {
                 if(!shop.placeItemFrame()){
                     shop.getSign().getBlock().breakNaturally();
                     removeShop(shop);
+                    continue;
                 }
             }
+            gui.addShop(shop);
         }
     }
     
     public void addShop(SurvivalPlayer player, Shop shop) throws SQLException{
         addShopDatabase(player.getUUID(), shop);
-        player.addShop(shop);
-        shops.put(shop.getCoords(), shop);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), ()->{
+            player.addShop(shop);
+            shops.put(shop.getCoords(), shop);
+            ((ShopGui)GuiManager.getInstance().getRootGui("shop")).addShop(shop);
+        });
+        
     }
     
     public boolean isShop(Chest chest){
@@ -354,6 +363,7 @@ public class ShopManager implements Listener {
                     return;
                 }
                 if(player.getUUID().equals(shop.getOwner()) || player.hasPower(Rank.RESPONSABLE) || player.getRank() == Rank.DEVELOPPEUR){
+                    ((ShopGui)GuiManager.getInstance().getRootGui("shop")).removeShop(shop);
                     Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
                         try {
                             removeShop(shop);
@@ -716,102 +726,6 @@ public class ShopManager implements Listener {
         preparedStatement.setInt(4, z);
         preparedStatement.executeUpdate();
         preparedStatement.close();
-    }
-    
-    //Pas encore modifié
-    @EventHandler
-    public void onInventoryClick(InventoryClickEvent event){
-        Player player = (Player)event.getWhoClicked();
-        InventoryView view = event.getView();
-        String inventoryName = view.getTitle();
-        
-        if(inventoryName.equalsIgnoreCase(ChatColor.RED + "Liste des Shops")){
-            ItemStack item = event.getCurrentItem();
-            if(item == null) return;
-            
-            ItemMeta meta = item.getItemMeta();
-            if(meta == null) return;
-            
-            List<String> lores = meta.getLore();
-            
-            String location = null;
-            Location teleportLocation = null;
-            
-            event.setCancelled(true);
-            if(item.getType() != Material.PAPER && item.getType() != Material.ARROW){
-                if(lores != null){
-                    for(String lore : lores){
-                        if(lore.contains("Coordonnées")){
-                            location = lore;
-                            break;
-                        }
-                    }
-                    if(location == null){
-                        return;
-                    }
-                } else {
-                    return;
-                }
-                if(location != null){
-                    String[] coordonnees = ChatColor.stripColor(location.replaceAll(" ", "")).split(":");
-                    int x = Integer.parseInt(ChatColor.stripColor(coordonnees[2].replace("Y", "")));
-                    int y = Integer.parseInt(ChatColor.stripColor(coordonnees[3].replace("Z", "")));
-                    int z = Integer.parseInt(ChatColor.stripColor(coordonnees[4]));
-                    teleportLocation = new Location(Bukkit.getWorlds().get(0), x, y, z);
-                }
-                SurvivalPlayer survivalPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
-                if(survivalPlayer.hasMoney(10.0)){
-                    try {
-                        Shop shop = ShopManager.getInstance().getShop(teleportLocation);
-                        if(shop != null){
-                            Sign sign = shop.getSign();
-                            System.out.println(sign);
-                            if(sign == null){
-                                player.teleport(teleportLocation.clone().add(0, 1, 0));
-                            } else {
-                                Location block = sign.getLocation().clone().add(0.5, 0, 0.5);
-                                if(block.getBlock().getRelative(BlockFace.UP).getType() != Material.AIR){
-                                    block.add(0, -1, 0);
-                                }
-                                player.teleport(block);
-                            }
-                        } else {
-                            player.teleport(teleportLocation.clone().add(0, 1, 0));
-                        }
-                    } catch(NullPointerException e){
-                        player.sendMessage("Erreur lors de la téléportation");
-                        return;
-                    }
-                    player.sendMessage(ChatColor.YELLOW + "Téléportation réussie pour " + ChatColor.RED + "10.0" + ChatColor.YELLOW + "€.");
-                    Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                        try {
-                            survivalPlayer.removeMoney(10.0);
-                        } catch(SQLException e){
-                            e.printStackTrace();
-                        }
-                    });
-                }
-            } else {
-                if(item.getType() == Material.ARROW){
-                    if(meta.getDisplayName().contains(ChatColor.stripColor("Page précédente"))){
-                        if(getShoplistId(player) >= 1){
-                            Inventory inventory = ShopCommand.createShoplistInventory(player, getShoplistId(player) - 1);
-                            if(inventory != null){
-                                player.openInventory(inventory);
-                            }
-                        }
-                    }
-                    
-                    if(meta.getDisplayName().contains(ChatColor.stripColor("Page suivante"))){
-                        Inventory inventory = ShopCommand.createShoplistInventory(player, getShoplistId(player) + 1);
-                        if(inventory != null){
-                            player.openInventory(inventory);
-                        }
-                    }
-                }
-            }
-            
-        }
     }
     
     //Pas encore modifié

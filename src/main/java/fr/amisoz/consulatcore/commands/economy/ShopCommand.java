@@ -4,34 +4,28 @@ import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.shop.Shop;
 import fr.amisoz.consulatcore.shop.ShopManager;
-import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.Directional;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 public class ShopCommand extends ConsulatCommand {
     
     public ShopCommand(){
         super("shop", "/shop list|help", 0, Rank.JOUEUR);
     }
-    
     
     @Override
     public void onCommand(ConsulatPlayer sender, String[] args){
@@ -46,60 +40,13 @@ public class ShopCommand extends ConsulatCommand {
         }
         switch(args[0].toLowerCase()){
             case "list":
-                Inventory inventory = createShoplistInventory(sender.getPlayer(), 1);
-                if(inventory != null)
-                    sender.getPlayer().openInventory(inventory);
+                if(!GuiManager.getInstance().getRootGui("shop").open(sender, 1)){
+                    sender.sendMessage(Text.PREFIX + "§cIl n'y a aucun shop.");
+                }
                 break;
             case "help":
                 ShopManager.getInstance().tutorial((SurvivalPlayer)sender);
                 break;
-        }
-    }
-    
-    //Pas encore modifié, je ferai après
-    public static Inventory createShoplistInventory(Player player, int page){
-        Inventory list = Bukkit.createInventory(null, 54, "§cListe des Shops");
-        Collection<Shop> shopCollection = ShopManager.getInstance().getShops();
-        List<Shop> shops = new ArrayList<>(shopCollection.size());
-        for(Shop shop : shopCollection){
-            if(!shop.isEmpty()){
-                shops.add(shop);
-            }
-        }
-        if(shops.size() == 0){
-            player.sendMessage(ChatColor.RED + "Il n'y a aucun shop.");
-            return null;
-        } else {
-            int inventoryUsedSlot = 44;
-            int start = (inventoryUsedSlot * page) - inventoryUsedSlot;
-            int end = (inventoryUsedSlot * page) - 1;
-            int size = shops.size();
-            for(int i = start; i <= end; ++i){
-                if(size >= (i + 1)){
-                    Shop shopItem = shops.get(i);
-                    int x = shopItem.getX();
-                    int z = shopItem.getZ();
-                    int y = shopItem.getY();
-                    double price = shopItem.getPrice();
-                    String owner = shopItem.getOwnerName();
-                    ItemStack item = new ItemStack(shopItem.getItem());
-                    ItemMeta meta = item.getItemMeta();
-                    List<String> lores = new ArrayList<>();
-                    lores.add(ChatColor.YELLOW + "Vendu par: " + ChatColor.RED + owner);
-                    lores.add(ChatColor.YELLOW + "Prix unitaire: " + ChatColor.RED + price + ChatColor.YELLOW + "€.");
-                    lores.add(ChatColor.YELLOW + "Coordonnées: " + ChatColor.YELLOW + "X: " + ChatColor.RED + x + ChatColor.YELLOW + " Y: " + ChatColor.RED + y + ChatColor.YELLOW + " Z: " + ChatColor.RED + z);
-                    lores.add(ChatColor.YELLOW + "Téléportation pour: " + ChatColor.RED + "10" + ChatColor.YELLOW + "€.");
-                    meta.setLore(lores);
-                    item.setItemMeta(meta);
-                    list.addItem(item);
-                } else {
-                    break;
-                }
-            }
-            list.setItem(45, getCustomItem(Material.ARROW, ChatColor.RED + "Page précédente"));
-            list.setItem(49, getCustomItem(Material.PAPER, ChatColor.RED + "Page: " + page));
-            list.setItem(53, getCustomItem(Material.ARROW, ChatColor.RED + "Page suivante"));
-            return list;
         }
     }
     
