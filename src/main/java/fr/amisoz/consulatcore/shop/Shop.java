@@ -2,6 +2,7 @@ package fr.amisoz.consulatcore.shop;
 
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.ConsulatAPI;
+import fr.leconsulat.api.gui.GuiManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -58,8 +59,14 @@ public class Shop {
     public void setOpen(boolean open){
         this.open = open;
         if(!open){
+            boolean wasEmpty = isEmpty();
             amount = setAmount();
             buy(0);
+            if(wasEmpty && !isEmpty()){
+                ((ShopGui)GuiManager.getInstance().getRootGui("shop")).addShop(this);
+            } else if(!wasEmpty && isEmpty()){
+                ((ShopGui)GuiManager.getInstance().getRootGui("shop")).removeShop(this);
+            }
         }
     }
     
@@ -220,6 +227,9 @@ public class Shop {
             inventory.setItem(index, newItem);
             count += newItem.getAmount();
             ++index;
+        }
+        if(isEmpty()){
+            ((ShopGui)GuiManager.getInstance().getRootGui("shop")).removeShop(this);
         }
     }
     

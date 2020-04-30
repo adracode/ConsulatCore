@@ -39,6 +39,9 @@ public class ShopGui extends GuiListener {
     }
     
     public void addShop(Shop shop){
+        if(shop.isEmpty()){
+            return;
+        }
         Gui gui = getGui(lastGui);
         if(gui == null || nextSlot >= (gui.getLines() - 1) * 9){
             ++lastGui;
@@ -48,7 +51,7 @@ public class ShopGui extends GuiListener {
         GuiItem item = new GuiItem(shop.getItem(), nextSlot++);
         item.setDescription("§eVendu par: §c" + shop.getOwnerName(),
                 "§ePrix unitaire: §c" + shop.getPrice() + "§e€.",
-                "§eCoordonnées: X: §c" + shop.getX() + "§e Y: §c" + shop.getY() + "§e Z: §c" + shop.getY(),
+                "§eCoordonnées: X: §c" + shop.getX() + "§e Y: §c" + shop.getY() + "§e Z: §c" + shop.getZ(),
                 "§eTéléportation pour: §c10§e€.");
         item.setAttachedObject(shop);
         gui.setItem(item);
@@ -67,8 +70,12 @@ public class ShopGui extends GuiListener {
                             lastGui.moveItem(nextSlot - 1, gui, i);
                         }
                         if(nextSlot <= 1){
-                            nextSlot = (gui.getLines() - 1) * 9;
-                            --lastGui;
+                            if(lastGui > 1){
+                                --lastGui;
+                                nextSlot = (gui.getLines() - 1) * 9;
+                            } else {
+                                nextSlot = 0;
+                            }
                         } else {
                             --nextSlot;
                         }
