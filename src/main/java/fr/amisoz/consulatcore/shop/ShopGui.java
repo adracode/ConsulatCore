@@ -4,17 +4,21 @@ import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.ConsulatAPI;
-import fr.leconsulat.api.gui.*;
+import fr.leconsulat.api.gui.Gui;
+import fr.leconsulat.api.gui.GuiItem;
+import fr.leconsulat.api.gui.GuiListener;
+import fr.leconsulat.api.gui.events.GuiClickEvent;
+import fr.leconsulat.api.gui.events.GuiCloseEvent;
+import fr.leconsulat.api.gui.events.GuiCreateEvent;
+import fr.leconsulat.api.gui.events.GuiOpenEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
-import org.bukkit.inventory.ItemStack;
 
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -25,22 +29,21 @@ public class ShopGui extends GuiListener {
     
     public ShopGui(){
         super(null, Integer.class);
-        addGui(null, this, "§eListe des §cshops", 6,
-                getItem("§ePage précédente", 45, Material.ARROW),
-                getItem("§ePage suivante", 53, Material.ARROW),
-                getItem("§ePage: §c", 49, Material.PAPER)
+        int lines = 2;
+        addGui(null, this, "§eListe des shops §c(0)", lines,
+                getItem("§ePage précédente", (lines - 1) * 9, Material.ARROW),
+                getItem("§ePage suivante", lines * 9 - 1, Material.ARROW)
+                
         );
         setCreateOnOpen(false);
     }
     
     public void addShop(Shop shop){
         Gui gui = getGui(lastGui);
-        if(nextSlot >= 44 || gui == null){
+        if(gui == null || nextSlot >= (gui.getLines() - 1) * 9){
             ++lastGui;
             nextSlot = 0;
-            if(gui == null){
-                gui = create(lastGui);
-            }
+            gui = create(lastGui);
         }
         GuiItem item = new GuiItem(shop.getItem(), nextSlot++);
         item.setDescription("§eVendu par: §c" + shop.getOwnerName(),
@@ -54,14 +57,20 @@ public class ShopGui extends GuiListener {
     public void removeShop(Shop shop){
         for(Map.Entry<Object, Gui> guis : getGuis().entrySet()){
             Gui gui = guis.getValue();
-            for(int i = 0; i < 45; ++i){
+            for(int i = 0; i < (gui.getLines() - 1) * 9; ++i){
                 GuiItem item = gui.getItem(i);
                 if(item != null){
                     if(shop.equals(item.getAttachedObject())){
                         gui.removeItem(i);
-                        if(i != nextSlot - 1 && (int)gui.getKey() != lastGui){
+                        if(i != nextSlot - 1 || (int)gui.getKey() != lastGui){
                             Gui lastGui = getGui(this.lastGui);
                             lastGui.moveItem(nextSlot - 1, gui, i);
+                        }
+                        if(nextSlot <= 1){
+                            nextSlot = (gui.getLines() - 1) * 9;
+                            --lastGui;
+                        } else {
+                            --nextSlot;
                         }
                         return;
                     }
@@ -77,7 +86,7 @@ public class ShopGui extends GuiListener {
         }
         Gui gui = event.getGui();
         lastGui = (int)event.getKey();
-        gui.setDisplayName(49, "§ePage: §c" + lastGui);
+        gui.setName("§eListe des shops §c(" + lastGui + ")");
     }
     
     @Override
@@ -93,19 +102,17 @@ public class ShopGui extends GuiListener {
     @Override
     public void onClick(GuiClickEvent event){
         switch(event.getSlot()){
-            case 45:
+            case 9:
                 if((int)event.getGui().getKey() <= 1){
                     return;
                 }
                 open(event.getPlayer(), (int)event.getGui().getKey() - 1);
                 break;
-            case 53:
+            case 17:
                 if((int)event.getGui().getKey() == lastGui){
                     return;
                 }
                 open(event.getPlayer(), (int)event.getGui().getKey() + 1);
-                break;
-            case 49:
                 break;
             default:
                 Shop shop = (Shop)event.getGui().getItem(event.getSlot()).getAttachedObject();
@@ -114,10 +121,12 @@ public class ShopGui extends GuiListener {
                     try {
                         if(shop != null){
                             Sign sign = shop.getSign();
+                            Location shopLocation = shop.getLocation();
                             if(sign == null){
-                                player.getPlayer().teleport(shop.getLocation().clone().add(0, 1, 0));
+                                player.getPlayer().teleport(shopLocation.clone().add(0, 1, 0));
                             } else {
                                 Location block = sign.getLocation().clone().add(0.5, 0, 0.5);
+                                block.setDirection(block.toBlockLocation().subtract(shopLocation).multiply(-1).toVector());
                                 if(block.getBlock().getRelative(BlockFace.UP).getType() != Material.AIR){
                                     block.add(0, -1, 0);
                                 }

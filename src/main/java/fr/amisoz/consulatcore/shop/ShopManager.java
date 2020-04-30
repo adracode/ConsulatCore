@@ -30,6 +30,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
@@ -162,7 +163,9 @@ public class ShopManager implements Listener {
             this.shops.put(shop.getCoords(), shop);
             if(itemFrame == null){
                 if(!shop.placeItemFrame()){
-                    shop.getSign().getBlock().breakNaturally();
+                    if(shop.getSign() != null){
+                        shop.getSign().getBlock().breakNaturally();
+                    }
                     removeShop(shop);
                     continue;
                 }
@@ -330,6 +333,17 @@ public class ShopManager implements Listener {
         player.sendMessage("§aTon shop a bien été crée!");
     }
     
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onClick(PlayerInteractEntityEvent event){
+        if(event.getRightClicked().getType() == EntityType.ITEM_FRAME){
+            Entity frame = event.getRightClicked();
+            Location location = frame.getLocation().clone().add(0, -1, 0);
+            if(frame.isInvulnerable() && getShop(location) == null){
+                frame.remove();
+            }
+        }
+    }
+    
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onShopBreak(BlockBreakEvent event){
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
@@ -447,9 +461,11 @@ public class ShopManager implements Listener {
             player.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent");
             return;
         }
+        shop.buy(amount);
+        player.addItemInInventory(amount, shop.getItem());
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
-                player.removeMoney(shop.getPrice());
+                player.removeMoney(price);
             } catch(SQLException e){
                 player.sendMessage("§cUne erreur interne est survenue, la transaction a échoué.");
                 e.printStackTrace();
@@ -457,21 +473,17 @@ public class ShopManager implements Listener {
             SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(shop.getOwner());
             try {
                 if(target == null){
-                    SPlayerManager.getInstance().addMoney(shop.getOwner(), shop.getPrice());
+                    SPlayerManager.getInstance().addMoney(shop.getOwner(), price);
                 } else {
-                    target.addMoney(shop.getPrice());
+                    target.addMoney(price);
                     target.sendMessage(Text.PREFIX + "§aTu as reçu " + price + " € grâce à un de tes shops.");
                 }
             } catch(SQLException e){
                 player.sendMessage("§cUne erreur interne est survenue, la transaction a échoué");
                 e.printStackTrace();
             }
-            Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
-                shop.buy(amount);
-                player.addItemInInventory(amount, shop.getItem());
-            });
         });
-        player.sendMessage(Text.PREFIX + "Tu as acheté §e" + shop.getItemType().toString() + " x " + amount + " §6pour §e" + shop.getPrice() * amount);
+        player.sendMessage(Text.PREFIX + "Tu as acheté §e" + shop.getItemType().toString() + " x " + amount + " §6pour §e" + price);
         ConsulatAPI.getConsulatAPI().logFile("Achat: " + player + " a acheté au shop " + shop + " " + amount + " items pour un prix de " + price);
     }
     
@@ -726,18 +738,6 @@ public class ShopManager implements Listener {
         preparedStatement.setInt(4, z);
         preparedStatement.executeUpdate();
         preparedStatement.close();
-    }
-    
-    //Pas encore modifié
-    public static int getShoplistId(Player player){
-        InventoryView inv = player.getOpenInventory();
-        if(inv.getTitle().equalsIgnoreCase(ChatColor.RED + "Liste des Shops")){
-            ItemStack item = inv.getItem(49);
-            ItemMeta meta = Objects.requireNonNull(item).getItemMeta();
-            int id = Integer.parseInt(ChatColor.stripColor(Objects.requireNonNull(meta).getDisplayName().replace("Page: ", "")));
-            return id;
-        }
-        return 1;
     }
     
     @EventHandler

@@ -198,7 +198,7 @@ public class Shop {
     public void destroyFrame(){
         ItemFrame frame = getItemFrame();
         if(frame != null){
-            destroyFrame();
+            frame.remove();
         }
     }
     

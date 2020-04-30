@@ -8,6 +8,7 @@ import fr.amisoz.consulatcore.fly.FlyManager;
 import fr.amisoz.consulatcore.moderation.MuteObject;
 import fr.amisoz.consulatcore.shop.Shop;
 import fr.amisoz.consulatcore.utils.CustomEnum;
+import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -98,7 +99,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
     }
     
     public boolean canAddNewShop(){
-        return shops.size() < limitShop;
+        return shops.size() < limitShop || ConsulatAPI.getConsulatAPI().isDebug();
     }
     
     public Claim getClaimLocation(){
