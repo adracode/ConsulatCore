@@ -164,7 +164,12 @@ public class ShopManager implements Listener {
                         shop.getSign().getBlock().breakNaturally();
                     }
                     removeShop(shop);
+                    ConsulatAPI.getConsulatAPI().logFile("Le shop " + shop + " a été détruit par il n'a pas de cadre");
                 }
+            }
+            if(shop.getSign() == null){
+                removeShop(shop);
+                ConsulatAPI.getConsulatAPI().logFile("Le shop " + shop + " a été détruit par il n'a pas de panneau");
             }
         }
     }
