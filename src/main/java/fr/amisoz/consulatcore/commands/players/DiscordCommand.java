@@ -14,7 +14,7 @@ public class DiscordCommand extends ConsulatCommand {
     private TextComponent discord;
     
     public DiscordCommand() {
-        super("/discord", "/discord", 0, Rank.JOUEUR);
+        super("discord", "/discord", 0, Rank.JOUEUR);
         discord = new TextComponent(ChatColor.GREEN + "Clique ici pour accéder au discord");
         discord.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://discord.gg/xCm8hAc"));
         discord.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GRAY + "Clique pour accéder au discord").create()));

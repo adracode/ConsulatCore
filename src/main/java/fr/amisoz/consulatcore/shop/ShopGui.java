@@ -29,11 +29,10 @@ public class ShopGui extends GuiListener {
     
     public ShopGui(){
         super(null, Integer.class);
-        int lines = 2;
+        int lines = 6;
         addGui(null, this, "§eListe des shops §c(0)", lines,
                 getItem("§ePage précédente", (lines - 1) * 9, Material.ARROW),
                 getItem("§ePage suivante", lines * 9 - 1, Material.ARROW)
-                
         );
         setCreateOnOpen(false);
     }
@@ -109,13 +108,13 @@ public class ShopGui extends GuiListener {
     @Override
     public void onClick(GuiClickEvent event){
         switch(event.getSlot()){
-            case 9:
+            case 45:
                 if((int)event.getGui().getKey() <= 1){
                     return;
                 }
                 open(event.getPlayer(), (int)event.getGui().getKey() - 1);
                 break;
-            case 17:
+            case 53:
                 if((int)event.getGui().getKey() == lastGui){
                     return;
                 }
@@ -124,6 +123,7 @@ public class ShopGui extends GuiListener {
             default:
                 Shop shop = (Shop)event.getGui().getItem(event.getSlot()).getAttachedObject();
                 SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
+                player.getPlayer().closeInventory();
                 if(player.hasMoney(10.0)){
                     try {
                         if(shop != null){
@@ -158,7 +158,6 @@ public class ShopGui extends GuiListener {
                     });
                 } else {
                     player.sendMessage(Text.PREFIX + "§cVous n'avez pas assez d'argent.");
-                    player.getPlayer().closeInventory();
                 }
         }
     }
