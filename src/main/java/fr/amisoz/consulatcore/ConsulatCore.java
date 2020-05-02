@@ -26,6 +26,7 @@ import fr.amisoz.consulatcore.runnable.MonitoringRunnable;
 import fr.amisoz.consulatcore.shop.ShopGui;
 import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.leconsulat.api.ConsulatAPI;
+import fr.leconsulat.api.events.PostInitEvent;
 import fr.leconsulat.api.gui.GuiManager;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -36,6 +37,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -45,7 +48,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
 
-public class ConsulatCore extends JavaPlugin {
+public class ConsulatCore extends JavaPlugin implements Listener {
     
     private static ConsulatCore instance;
     private static Random random;
@@ -95,7 +98,6 @@ public class ConsulatCore extends JavaPlugin {
         Bukkit.getScheduler().runTaskTimer(this, new MessageRunnable(), 0L, 15 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MeceneRunnable(), 0L, 20*60*60);
         registerEvents();
-        registerCommands();
         Bukkit.getWorlds().forEach(world -> {
             world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
         });
@@ -118,6 +120,11 @@ public class ConsulatCore extends JavaPlugin {
             }
         }
         ConsulatAPI.getConsulatAPI().log(Level.FINE, "ConsulatCore loaded in " + (System.currentTimeMillis() - startLoading) + " ms.");
+    }
+    
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onPostInit(PostInitEvent event){
+        registerCommands();
     }
     
     @SuppressWarnings("ConstantConditions")
@@ -168,6 +175,7 @@ public class ConsulatCore extends JavaPlugin {
     }
     
     private void registerEvents(){
+        Bukkit.getPluginManager().registerEvents(this, this);
         Bukkit.getPluginManager().registerEvents(new ChatListeners(), this);
         Bukkit.getPluginManager().registerEvents(new InventoryListeners(this), this);
         Bukkit.getPluginManager().registerEvents(new InteractListener(this), this);

@@ -17,7 +17,9 @@ repositories {
     maven {
         url "https://oss.sonatype.org/content/repositories/snapshots"
     }
-
+    maven {
+        url "https://libraries.minecraft.net"
+    }
     flatDir {
         dirs 'libs'
     }
@@ -28,6 +30,7 @@ dependencies {
     implementation files('libs/paper.jar')
     compileOnly 'org.spigotmc:spigot-api:1.14.4-R0.1-SNAPSHOT'
     implementation files('libs/ConsulatAPI.jar')
+    compile 'com.mojang:brigadier:1.0.17'
 
 }
 
