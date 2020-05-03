@@ -25,7 +25,7 @@ public class RankCommand extends ConsulatCommand {
         for(Rank rank : Rank.values()){
             playerRequired.then(LiteralArgumentBuilder.literal(rank.getRankName()));
         }
-        suggest(builder.then(Arguments.player("joueur")));
+        suggest(builder.then(playerRequired));
     }
     
     @Override
