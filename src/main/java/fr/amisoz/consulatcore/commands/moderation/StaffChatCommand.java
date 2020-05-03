@@ -1,5 +1,8 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -13,6 +16,8 @@ public class StaffChatCommand extends ConsulatCommand {
     
     public StaffChatCommand() {
         super("staffchat", Collections.singletonList("sc"), "/sc <Message>", 1, Rank.MODO);
+        suggest(LiteralArgumentBuilder.literal("staffchat")
+                .then(RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString())));
     }
 
     @Override

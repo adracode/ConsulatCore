@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.commands.players;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -11,6 +12,12 @@ public class TopCommand extends ConsulatCommand {
 
     public TopCommand() {
         super("top", "/top", 0, Rank.JOUEUR);
+        suggest(LiteralArgumentBuilder.literal("top")
+                .requires((listener) -> {
+                    SurvivalPlayer player = (SurvivalPlayer)getConsulatPlayer(listener);
+                    return player != null && player.hasPerkTop();
+                })
+        );
     }
 
     @Override

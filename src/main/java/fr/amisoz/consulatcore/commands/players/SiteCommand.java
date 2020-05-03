@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.commands.players;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
@@ -16,6 +17,7 @@ public class SiteCommand extends ConsulatCommand {
     
     public SiteCommand() {
         super("site", "/site", 0, Rank.JOUEUR);
+        suggest(LiteralArgumentBuilder.literal("site"));
         site = new TextComponent(ChatColor.GREEN + "Clique ici pour accéder au site");
         site.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://leconsulat.fr"));
         site.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GRAY + "Clique pour accéder au site").create()));

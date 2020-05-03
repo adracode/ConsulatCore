@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.ConsulatCommand;
@@ -10,6 +11,7 @@ public class SocialSpyCommand extends ConsulatCommand {
     
     public SocialSpyCommand(){
         super("socialspy", "/socialspy", 0, Rank.RESPONSABLE);
+        suggest(LiteralArgumentBuilder.literal("socialspy"));
     }
     
     @Override

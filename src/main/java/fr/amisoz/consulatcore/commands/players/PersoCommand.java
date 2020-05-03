@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.commands.players;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.utils.CustomEnum;
@@ -17,6 +18,12 @@ public class PersoCommand extends ConsulatCommand {
     
     public PersoCommand(){
         super("perso", "/perso", 0, Rank.JOUEUR);
+        suggest(LiteralArgumentBuilder.literal("perso")
+                .requires((listener) -> {
+                    ConsulatPlayer player = getConsulatPlayer(listener);
+                    return player != null && player.hasCustomRank();
+                })
+        );
     }
     
     @Override

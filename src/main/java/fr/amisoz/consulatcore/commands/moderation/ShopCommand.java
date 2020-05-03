@@ -20,7 +20,7 @@ public class ShopCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args){
         if(commandSender instanceof Player){
-            commandSender.sendMessage("§cTu ne peux pas exécuter cette commande.");
+            ((Player)commandSender).performCommand("help");
             return false;
         }
         if(args.length < 2){

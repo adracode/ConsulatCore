@@ -1,7 +1,11 @@
 package fr.amisoz.consulatcore.commands.players;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import fr.amisoz.consulatcore.moderation.MuteObject;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -17,11 +21,15 @@ import org.bukkit.entity.Player;
 import java.util.Arrays;
 
 public class MpCommand extends ConsulatCommand {
-
-    public MpCommand() {
+    
+    public MpCommand(){
         super("msg", Arrays.asList("mp", "whisper", "tell"), "/msg <Joueur> <Message>", 2, Rank.JOUEUR);
+        suggest(LiteralArgumentBuilder.literal("msg")
+                .then(Arguments.player("joueur")
+                        .then(RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString())))
+        );
     }
-
+    
     @Override
     public void onCommand(ConsulatPlayer sender, String[] args){
         SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[0]);
@@ -32,8 +40,8 @@ public class MpCommand extends ConsulatCommand {
         SurvivalPlayer survivalSender = (SurvivalPlayer)sender;
         if(survivalSender.isMuted()){
             MuteObject muteInfo = survivalSender.getMute();
-            if(muteInfo != null) {
-                sender.sendMessage("§cTu es actuellement mute.\n§4Raison : §c" + muteInfo.getReason() +"\n§4Jusqu'au : §c" + muteInfo.getEndDate());
+            if(muteInfo != null){
+                sender.sendMessage("§cTu es actuellement mute.\n§4Raison : §c" + muteInfo.getReason() + "\n§4Jusqu'au : §c" + muteInfo.getEndDate());
                 return;
             }
         }
@@ -50,7 +58,7 @@ public class MpCommand extends ConsulatCommand {
         Bukkit.getOnlinePlayers().forEach(player -> {
             SurvivalPlayer survivalEach = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
             if(survivalEach.isSpying() && !survivalEach.equals(sender) && player != target){
-                player.sendMessage("§2(Spy) §a" + sender.getName() + "§7 > §a" + target.getName() +"§7 : " + messageResult);
+                player.sendMessage("§2(Spy) §a" + sender.getName() + "§7 > §a" + target.getName() + "§7 : " + messageResult);
             }
         });
     }

@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.commands.claims;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.claims.Claim;
@@ -21,6 +22,7 @@ public class UnclaimCommand extends ConsulatCommand {
     
     public UnclaimCommand(){
         super("unclaim", "/unclaim", 0, Rank.JOUEUR);
+        suggest(LiteralArgumentBuilder.literal("unclaim"));
         shapePrice.setMaximumFractionDigits(2);
         shapePrice.setMinimumFractionDigits(2);
         shapePrice.setDecimalSeparatorAlwaysShown(true);

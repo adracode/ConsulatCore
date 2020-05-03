@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.commands.players;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
@@ -14,6 +15,15 @@ public class FlyCommand extends ConsulatCommand {
     
     public FlyCommand(){
         super("fly", "/fly [start/stop/info]", 1, Rank.JOUEUR);
+        suggest(LiteralArgumentBuilder.literal("fly")
+                .requires((listener) -> {
+                    SurvivalPlayer player = (SurvivalPlayer)getConsulatPlayer(listener);
+                    return player != null && player.hasFly();
+                })
+                .then(LiteralArgumentBuilder.literal("start"))
+                .then(LiteralArgumentBuilder.literal("stop"))
+                .then(LiteralArgumentBuilder.literal("info"))
+        );
     }
     
     @Override

@@ -1,7 +1,11 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -17,6 +21,9 @@ public class ReportCommand extends ConsulatCommand {
     
     public ReportCommand(){
         super("report", "/report <Joueur> <Raison>", 2, Rank.JOUEUR);
+        suggest(LiteralArgumentBuilder.literal("report")
+                .then(Arguments.player("joueur")
+                        .then(RequiredArgumentBuilder.argument("raison", StringArgumentType.greedyString()))));
     }
     
     @Override

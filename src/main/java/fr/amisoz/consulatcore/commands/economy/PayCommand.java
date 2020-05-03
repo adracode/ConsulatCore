@@ -1,10 +1,14 @@
 package fr.amisoz.consulatcore.commands.economy;
 
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalOffline;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -12,12 +16,18 @@ import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
 
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.Optional;
 
 public class PayCommand extends ConsulatCommand {
     
     public PayCommand(){
         super("pay", "/pay <Joueur> <Montant>", 2, Rank.JOUEUR);
+        suggest(LiteralArgumentBuilder.literal("pay")
+                .then(Arguments.player("joueur")
+                        .then(RequiredArgumentBuilder.argument("montant", IntegerArgumentType.integer(0))))
+                .then(Arguments.word("joueur")
+                        .then(RequiredArgumentBuilder.argument("montant", IntegerArgumentType.integer(0)))));
     }
     
     @Override

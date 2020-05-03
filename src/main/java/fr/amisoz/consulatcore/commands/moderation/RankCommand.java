@@ -1,12 +1,16 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
 import java.sql.SQLException;
@@ -16,6 +20,12 @@ public class RankCommand extends ConsulatCommand {
     
     public RankCommand(){
         super("rank", "/rank <Joueur> <Rang>", 2, Rank.RESPONSABLE);
+        LiteralArgumentBuilder<Object> builder = LiteralArgumentBuilder.literal("rank");
+        RequiredArgumentBuilder<Object, ?> playerRequired = Arguments.player("joueur");
+        for(Rank rank : Rank.values()){
+            playerRequired.then(LiteralArgumentBuilder.literal(rank.getRankName()));
+        }
+        suggest(builder.then(Arguments.player("joueur")));
     }
     
     @Override

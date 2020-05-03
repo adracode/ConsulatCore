@@ -1,6 +1,8 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
@@ -15,6 +17,9 @@ public class SeenCommand extends ConsulatCommand {
     
     public SeenCommand(){
         super("seen", "/seen <Pseudo>", 1, Rank.ADMIN);
+        suggest(LiteralArgumentBuilder.literal("seen")
+                .then(Arguments.player("joueur"))
+                .then(Arguments.word("joueur")));
     }
     
     @Override

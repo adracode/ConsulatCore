@@ -1,8 +1,11 @@
 package fr.amisoz.consulatcore.commands.players;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.claims.Claim;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
@@ -14,6 +17,7 @@ public class SetHomeCommand extends ConsulatCommand {
     
     public SetHomeCommand(){
         super("sethome", "/sethome <Nom du home>", 1, Rank.JOUEUR);
+        suggest(LiteralArgumentBuilder.literal("sethome").then(Arguments.word("home")));
     }
     
     @Override

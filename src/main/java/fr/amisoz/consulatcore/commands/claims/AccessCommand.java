@@ -22,22 +22,21 @@ import java.util.UUID;
 public class AccessCommand extends ConsulatCommand {
     
     public AccessCommand(){
-        super("access", Collections.emptyList(), "/access [add <Joueur>, remove <Joueur>, list, addall <Joueur>, removeall <Joueur>]", 1, Rank.JOUEUR,
-                LiteralArgumentBuilder.literal("access")
-                        .then(LiteralArgumentBuilder.literal("list"))
-                        .then(LiteralArgumentBuilder.literal("add")
-                                .then(Arguments.player("player"))
-                                .then(Arguments.word("player")))
-                        .then(LiteralArgumentBuilder.literal("addall")
-                                .then(Arguments.player("player"))
-                                .then(Arguments.word("player")))
-                        .then(LiteralArgumentBuilder.literal("remove")
-                                .then(Arguments.player("player"))
-                                .then(Arguments.word("player")))
-                        .then(LiteralArgumentBuilder.literal("removeall")
-                                .then(Arguments.player("player"))
-                                .then(Arguments.word("player")))
-        );
+        super("access", "/access [add <Joueur>, remove <Joueur>, list, addall <Joueur>, removeall <Joueur>]", 1, Rank.JOUEUR);
+        suggest(LiteralArgumentBuilder.literal("access")
+                .then(LiteralArgumentBuilder.literal("list"))
+                .then(LiteralArgumentBuilder.literal("add")
+                        .then(Arguments.player("player"))
+                        .then(Arguments.word("player")))
+                .then(LiteralArgumentBuilder.literal("addall")
+                        .then(Arguments.player("player"))
+                        .then(Arguments.word("player")))
+                .then(LiteralArgumentBuilder.literal("remove")
+                        .then(Arguments.player("player"))
+                        .then(Arguments.word("player")))
+                .then(LiteralArgumentBuilder.literal("removeall")
+                        .then(Arguments.player("player"))
+                        .then(Arguments.word("player"))));
     }
     
     @Override

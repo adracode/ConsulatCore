@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.leconsulat.api.commands.ConsulatCommand;
@@ -11,6 +12,7 @@ public class ToggleChatCommand extends ConsulatCommand {
     
     public ToggleChatCommand(){
         super("chat", "/chat", 0, Rank.RESPONSABLE);
+        suggest(LiteralArgumentBuilder.literal("chat"));
     }
     
     @Override

@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.moderation.ModerationUtils;
@@ -23,6 +24,7 @@ public class ModerateCommand extends ConsulatCommand {
     
     public ModerateCommand(){
         super("staff", "/staff", 0, Rank.MODO);
+        suggest(LiteralArgumentBuilder.literal("staff"));
     }
     
     @Override

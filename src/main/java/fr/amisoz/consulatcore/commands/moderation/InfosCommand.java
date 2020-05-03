@@ -1,9 +1,11 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalOffline;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -21,13 +23,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Optional;
 
 public class InfosCommand extends ConsulatCommand {
 
     public InfosCommand() {
-        super("infos", "/infos <Joueur>", 1, Rank.RESPONSABLE);
+        super("infos", Collections.emptyList(), "/infos <Joueur>", 1, Rank.RESPONSABLE);
+        suggest(LiteralArgumentBuilder.literal("infos")
+                .then(Arguments.player("joueur"))
+                .then(Arguments.word("joueur")));
     }
 
     @Override

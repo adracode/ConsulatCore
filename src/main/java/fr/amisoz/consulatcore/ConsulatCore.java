@@ -129,8 +129,8 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     
     @SuppressWarnings("ConstantConditions")
     private void registerCommands(){
-        new AdvertCommand();
         new AccessCommand();
+        new AdvertCommand();
         new AnswerCommand();
         new BackCommand();
         new BaltopCommand();

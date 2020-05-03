@@ -1,8 +1,10 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.moderation.InventorySanction;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -15,6 +17,8 @@ public class SanctionCommand extends ConsulatCommand {
     
     public SanctionCommand(){
         super("sanction", "/sanction <Joueur>", 1, Rank.MODO);
+        suggest(LiteralArgumentBuilder.literal("sanction")
+                .then(Arguments.player("joueur")));
     }
     
     @Override
