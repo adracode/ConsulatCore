@@ -70,9 +70,8 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     private List<TextComponent> textPerso = new ArrayList<>();
     
     private Set<String> forbiddenPerso = new HashSet<>(Arrays.asList(
-            "Modo", "Moderateur", "Modérateur", "Admin", "Animateur", "Partenaire", "Youtubeur", "Streamer", "Ami",
-            "Fonda", "Dev", "Builder", "Fondateur"));
-   
+            "modo", "moderateur", "modérateur", "admin", "animateur", "partenaire", "youtubeur", "streamer", "ami",
+            "fonda", "dev", "builder", "fondateur"));
     
     @Override
     public void onEnable(){

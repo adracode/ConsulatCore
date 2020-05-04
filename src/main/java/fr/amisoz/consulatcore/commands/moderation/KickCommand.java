@@ -1,7 +1,6 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.Arguments;
@@ -9,8 +8,6 @@ import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 
 import java.util.Collections;
 
@@ -18,9 +15,8 @@ public class KickCommand extends ConsulatCommand {
 
     public KickCommand() {
         super("kick", Collections.emptyList(), "/kick <Joueur> <Raison>", 2, Rank.MODO);
-        suggest(LiteralArgumentBuilder.literal("kick")
-                .then(Arguments.player("joueur")
-                        .then(RequiredArgumentBuilder.argument("raison", StringArgumentType.greedyString()))));
+        suggest(true, Arguments.player("joueur")
+                        .then(RequiredArgumentBuilder.argument("raison", StringArgumentType.greedyString())));
     }
 
     @Override

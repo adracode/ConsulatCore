@@ -1,7 +1,6 @@
 package fr.amisoz.consulatcore.commands.players;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
@@ -23,10 +22,9 @@ public class TpaCommand extends ConsulatCommand {
     
     public TpaCommand(){
         super("tpa", "/tpa <Joueur> | /tpa accept", 1, Rank.JOUEUR);
-        suggest(LiteralArgumentBuilder.literal("tpa")
-                .then(LiteralArgumentBuilder.literal("accept")
-                        .then(Arguments.player("joueur", request.keySet())))
-                .then(Arguments.player("joueur"))
+        suggest(true, LiteralArgumentBuilder.literal("accept")
+                        .then(Arguments.player("joueur", request.keySet())),
+                Arguments.player("joueur")
         );
     }
     

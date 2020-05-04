@@ -1,8 +1,6 @@
 package fr.amisoz.consulatcore.commands.economy;
 
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.amisoz.consulatcore.economy.BaltopManager;
-import fr.amisoz.consulatcore.players.SurvivalOffline;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
@@ -16,7 +14,7 @@ public class BaltopCommand extends ConsulatCommand {
     
     public BaltopCommand(){
         super("baltop", "/baltop", 0, Rank.JOUEUR);
-        suggest(LiteralArgumentBuilder.literal("baltop"));
+        suggest(true);
     }
     
     @Override

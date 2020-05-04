@@ -1,6 +1,5 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalOffline;
@@ -31,9 +30,8 @@ public class InfosCommand extends ConsulatCommand {
 
     public InfosCommand() {
         super("infos", Collections.emptyList(), "/infos <Joueur>", 1, Rank.RESPONSABLE);
-        suggest(LiteralArgumentBuilder.literal("infos")
-                .then(Arguments.player("joueur"))
-                .then(Arguments.word("joueur")));
+        suggest(true, Arguments.player("joueur"),
+                Arguments.word("joueur"));
     }
 
     @Override

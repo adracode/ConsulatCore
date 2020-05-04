@@ -1,18 +1,18 @@
 package fr.amisoz.consulatcore.shop;
 
-import com.destroystokyo.paper.Namespaced;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.commands.economy.ShopCommand;
 import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.ConsulatAPI;
-import fr.leconsulat.api.gui.GuiListener;
 import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.*;
-import org.bukkit.block.*;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.Chest;
+import org.bukkit.block.Sign;
 import org.bukkit.block.data.Directional;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -33,8 +33,6 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -319,9 +317,11 @@ public class ShopManager implements Listener {
             event.setLine(2, sold.getType().toString());
         }
         event.setLine(3, player.getName());
+        ItemStack[] content = shop.getInventory().getContents();
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
                 addShop(player, shop);
+                ConsulatAPI.getConsulatAPI().logFile("Shop created: " + shop + ", " + Arrays.toString(content));
             } catch(SQLException e){
                 player.sendMessage("§cUne erreur interne est survenue");
                 Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
@@ -378,10 +378,12 @@ public class ShopManager implements Listener {
                 }
                 if(player.getUUID().equals(shop.getOwner()) || player.hasPower(Rank.RESPONSABLE) || player.getRank() == Rank.DEVELOPPEUR){
                     ((ShopGui)GuiManager.getInstance().getRootGui("shop")).removeShop(shop);
+                    ItemStack[] content = shop.getInventory().getContents();
                     Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
                         try {
                             removeShop(shop);
                             player.sendMessage(Text.PREFIX + "Tu viens de détruire un de tes shops!");
+                            ConsulatAPI.getConsulatAPI().logFile("Shop removed: " + shop + ", " + Arrays.toString(content));
                         } catch(SQLException e){
                             player.sendMessage("§cUne erreur interne est survenue");
                             e.printStackTrace();

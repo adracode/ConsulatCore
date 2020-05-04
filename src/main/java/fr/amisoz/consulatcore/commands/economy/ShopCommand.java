@@ -9,15 +9,13 @@ import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 
-import java.util.Collections;
-
 public class ShopCommand extends ConsulatCommand {
     
     public ShopCommand(){
         super("shop", "/shop list|help", 0, Rank.JOUEUR);
-        suggest(LiteralArgumentBuilder.literal("shop")
-                .then(LiteralArgumentBuilder.literal("list"))
-                .then(LiteralArgumentBuilder.literal("help")));
+        suggest(true,
+                LiteralArgumentBuilder.literal("list"),
+                LiteralArgumentBuilder.literal("help"));
     }
     
     @Override

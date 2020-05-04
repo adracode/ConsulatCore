@@ -1,7 +1,5 @@
 package fr.amisoz.consulatcore.commands.players;
 
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -12,7 +10,7 @@ public class BackCommand extends ConsulatCommand {
 
     public BackCommand() {
         super("back", "/back", 0, Rank.MECENE);
-        suggest(LiteralArgumentBuilder.literal("back"));
+        suggest(true);
     }
 
     @Override

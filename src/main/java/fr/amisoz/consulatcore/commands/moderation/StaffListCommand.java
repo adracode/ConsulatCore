@@ -1,6 +1,5 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -11,7 +10,7 @@ public class StaffListCommand extends ConsulatCommand {
 
     public StaffListCommand() {
         super("stafflist", "/stafflist", 0, Rank.MODPLUS);
-        suggest(LiteralArgumentBuilder.literal("stafflist"));
+        suggest(true);
     }
 
     @Override

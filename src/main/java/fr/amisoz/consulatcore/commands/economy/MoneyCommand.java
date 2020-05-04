@@ -1,8 +1,6 @@
 package fr.amisoz.consulatcore.commands.economy;
 
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -16,7 +14,7 @@ public class MoneyCommand extends ConsulatCommand {
     
     public MoneyCommand(){
         super("money", "/money", 0, Rank.JOUEUR);
-        suggest(LiteralArgumentBuilder.literal("money"));
+        suggest(true);
         df.setMaximumFractionDigits(2);
         df.setMinimumFractionDigits(2);
         df.setDecimalSeparatorAlwaysShown(true);

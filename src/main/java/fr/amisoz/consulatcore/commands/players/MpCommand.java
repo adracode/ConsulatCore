@@ -1,7 +1,6 @@
 package fr.amisoz.consulatcore.commands.players;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import fr.amisoz.consulatcore.moderation.MuteObject;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
@@ -16,7 +15,6 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 
@@ -24,9 +22,8 @@ public class MpCommand extends ConsulatCommand {
     
     public MpCommand(){
         super("msg", Arrays.asList("mp", "whisper", "tell"), "/msg <Joueur> <Message>", 2, Rank.JOUEUR);
-        suggest(LiteralArgumentBuilder.literal("msg")
-                .then(Arguments.player("joueur")
-                        .then(RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString())))
+        suggest(true, Arguments.player("joueur")
+                        .then(RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString()))
         );
     }
     

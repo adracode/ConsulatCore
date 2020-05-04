@@ -11,12 +11,9 @@ import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 import java.sql.SQLException;
 import java.util.Calendar;
-import java.util.HashSet;
-import java.util.Set;
 
 public class ChatListeners implements Listener {
     
@@ -51,7 +48,7 @@ public class ChatListeners implements Listener {
                 event.setCancelled(true);
                 return;
             }
-            if(ConsulatCore.getInstance().getForbiddenCustomRank().contains(message)){
+            if(ConsulatCore.getInstance().getForbiddenCustomRank().contains(message.toLowerCase())){
                 player.sendMessage("§cTu ne peux pas appeler ton grade comme cela ! Tape §ocancel §r§csi tu veux annuler.");
                 event.setCancelled(true);
                 return;

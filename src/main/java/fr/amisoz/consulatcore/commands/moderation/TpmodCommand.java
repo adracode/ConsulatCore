@@ -1,24 +1,20 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import fr.amisoz.consulatcore.players.SPlayerManager;
+import fr.amisoz.consulatcore.moderation.ModerationUtils;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
-import fr.amisoz.consulatcore.moderation.ModerationUtils;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 
 public class TpmodCommand extends ConsulatCommand {
     
     public TpmodCommand(){
         super("tpmod", "/tpmod <Joueur>", 1, Rank.MODO);
-        suggest(LiteralArgumentBuilder.literal("tpmod")
-                .then(Arguments.player("joueur"))
-                .then(Arguments.player("joueur")));
+        suggest(true,
+                Arguments.player("joueur"),
+                Arguments.player("joueur").then(Arguments.player("joueur")));
     }
     
     @Override

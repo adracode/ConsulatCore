@@ -15,14 +15,13 @@ public class FlyCommand extends ConsulatCommand {
     
     public FlyCommand(){
         super("fly", "/fly [start/stop/info]", 1, Rank.JOUEUR);
-        suggest(LiteralArgumentBuilder.literal("fly")
-                .requires((listener) -> {
+        suggest(true, (listener) -> {
                     SurvivalPlayer player = (SurvivalPlayer)getConsulatPlayer(listener);
                     return player != null && player.hasFly();
-                })
-                .then(LiteralArgumentBuilder.literal("start"))
-                .then(LiteralArgumentBuilder.literal("stop"))
-                .then(LiteralArgumentBuilder.literal("info"))
+                },
+                LiteralArgumentBuilder.literal("start"),
+                LiteralArgumentBuilder.literal("stop"),
+                LiteralArgumentBuilder.literal("info")
         );
     }
     

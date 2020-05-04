@@ -1,7 +1,6 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
@@ -15,15 +14,13 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 
 public class ReportCommand extends ConsulatCommand {
     
     public ReportCommand(){
         super("report", "/report <Joueur> <Raison>", 2, Rank.JOUEUR);
-        suggest(LiteralArgumentBuilder.literal("report")
-                .then(Arguments.player("joueur")
-                        .then(RequiredArgumentBuilder.argument("raison", StringArgumentType.greedyString()))));
+        suggest(true, Arguments.player("joueur")
+                        .then(RequiredArgumentBuilder.argument("raison", StringArgumentType.greedyString())));
     }
     
     @Override
@@ -47,7 +44,7 @@ public class ReportCommand extends ConsulatCommand {
         textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpmod " + target.getName()));
         Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
             ConsulatPlayer consulatPlayer = CPlayerManager.getInstance().getConsulatPlayer(onlinePlayer.getUniqueId());
-            if(consulatPlayer.hasPower(Rank.MODO)){
+            if(consulatPlayer != null && consulatPlayer.hasPower(Rank.MODO)){
                 onlinePlayer.spigot().sendMessage(textComponent);
             }
         });

@@ -14,7 +14,6 @@ import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
 
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -23,20 +22,21 @@ public class AccessCommand extends ConsulatCommand {
     
     public AccessCommand(){
         super("access", "/access [add <Joueur>, remove <Joueur>, list, addall <Joueur>, removeall <Joueur>]", 1, Rank.JOUEUR);
-        suggest(LiteralArgumentBuilder.literal("access")
-                .then(LiteralArgumentBuilder.literal("list"))
-                .then(LiteralArgumentBuilder.literal("add")
+        suggest(true,
+                LiteralArgumentBuilder.literal("list"),
+                LiteralArgumentBuilder.literal("add")
                         .then(Arguments.player("player"))
-                        .then(Arguments.word("player")))
-                .then(LiteralArgumentBuilder.literal("addall")
+                        .then(Arguments.word("player")),
+                LiteralArgumentBuilder.literal("addall")
                         .then(Arguments.player("player"))
-                        .then(Arguments.word("player")))
-                .then(LiteralArgumentBuilder.literal("remove")
+                        .then(Arguments.word("player")),
+                LiteralArgumentBuilder.literal("remove")
                         .then(Arguments.player("player"))
-                        .then(Arguments.word("player")))
-                .then(LiteralArgumentBuilder.literal("removeall")
+                        .then(Arguments.word("player")),
+                LiteralArgumentBuilder.literal("removeall")
                         .then(Arguments.player("player"))
-                        .then(Arguments.word("player"))));
+                        .then(Arguments.word("player"))
+        );
     }
     
     @Override

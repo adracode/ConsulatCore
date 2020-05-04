@@ -2,7 +2,6 @@ package fr.amisoz.consulatcore.commands.players;
 
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -12,7 +11,7 @@ public class HubCommand extends ConsulatCommand {
 
     public HubCommand() {
         super("hub", "/hub", 0, Rank.JOUEUR);
-        suggest(LiteralArgumentBuilder.literal("home"));
+        suggest(true);
     }
 
     @Override

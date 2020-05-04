@@ -19,7 +19,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
@@ -27,18 +26,18 @@ public class ClaimCommand extends ConsulatCommand {
     
     public ClaimCommand(){
         super("claim", "/claim | /claim kick <Joueur> | /claim desc <Description> | /claim list", 0, Rank.JOUEUR);
-        suggest(LiteralArgumentBuilder.literal("claim")
-                .then(LiteralArgumentBuilder.literal("kick")
-                        .then(Arguments.player("joueur")))
-                .then(LiteralArgumentBuilder.literal("desc")
-                        .then(RequiredArgumentBuilder.argument("description", StringArgumentType.greedyString())))
-                .then(LiteralArgumentBuilder.literal("list"))
-                .then(LiteralArgumentBuilder.literal("info")
+        suggest(true,
+                LiteralArgumentBuilder.literal("kick")
+                        .then(Arguments.player("joueur")),
+                LiteralArgumentBuilder.literal("desc")
+                        .then(RequiredArgumentBuilder.argument("description", StringArgumentType.greedyString())),
+                LiteralArgumentBuilder.literal("list"),
+                LiteralArgumentBuilder.literal("info")
                         .requires((t) -> {
                             ConsulatPlayer player = getConsulatPlayer(t);
                             return player != null && player.hasPower(Rank.RESPONSABLE);
                         })
-                        .then(Arguments.player("joueur"))));
+                        .then(Arguments.player("joueur")));
     }
     
     @Override

@@ -1,6 +1,5 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.leconsulat.api.commands.Arguments;
@@ -13,8 +12,8 @@ public class UnbanCommand extends ConsulatCommand {
     
     public UnbanCommand(){
         super("unban", "/unban <Pseudo>", 1, Rank.RESPONSABLE);
-        suggest(LiteralArgumentBuilder.literal("unban")
-                .then(Arguments.word("joueur")));
+        suggest(true,
+                Arguments.word("joueur"));
     }
     
     @Override
