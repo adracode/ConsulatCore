@@ -253,7 +253,7 @@ public class Shop {
     @Override
     public String toString(){
         return "Shop{" +
-                "coords=" + coords +
+                "coords=" + getLocation() +
                 ", owner=" + owner +
                 ", ownerName='" + ownerName + '\'' +
                 ", forSale=" + forSale +

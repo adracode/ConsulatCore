@@ -57,7 +57,7 @@ public class TpaCommand extends ConsulatCommand {
                     sender.sendMessage(Text.PREFIX + "§cCe joueur n'est pas connecté.");
                     return;
                 }
-                if(!(request.get(target.getUUID()).equals(sender.getUUID()))){
+                if(!sender.getUUID().equals(request.get(target.getUUID()))){
                     sender.sendMessage(Text.PREFIX + "§cCe joueur ne t'as pas demandé en téléportation.");
                     return;
                 }
