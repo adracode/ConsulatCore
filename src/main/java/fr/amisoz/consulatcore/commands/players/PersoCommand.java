@@ -19,7 +19,6 @@ public class PersoCommand extends ConsulatCommand {
         super("perso", "/perso", 0, Rank.JOUEUR);
         suggest(true, (listener) -> {
                     ConsulatPlayer player = getConsulatPlayer(listener);
-                    System.out.println(player);
                     return player != null && player.hasCustomRank();
                 }
         );
