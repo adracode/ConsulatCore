@@ -23,8 +23,11 @@ import fr.amisoz.consulatcore.runnable.AFKRunnable;
 import fr.amisoz.consulatcore.runnable.MeceneRunnable;
 import fr.amisoz.consulatcore.runnable.MessageRunnable;
 import fr.amisoz.consulatcore.runnable.MonitoringRunnable;
+import fr.amisoz.consulatcore.shop.ShopGui;
 import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.leconsulat.api.ConsulatAPI;
+import fr.leconsulat.api.events.PostInitEvent;
+import fr.leconsulat.api.gui.GuiManager;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -34,6 +37,9 @@ import org.bukkit.ChatColor;
 import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -42,7 +48,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
 
-public class ConsulatCore extends JavaPlugin {
+public class ConsulatCore extends JavaPlugin implements Listener {
     
     private static ConsulatCore instance;
     private static Random random;
@@ -51,6 +57,7 @@ public class ConsulatCore extends JavaPlugin {
     private SPlayerManager playerManager;
     private BaltopManager baltopManager;
     private FlyManager flyManager;
+    private ShopManager shopManager;
     
     private Location spawn;
     
@@ -63,8 +70,8 @@ public class ConsulatCore extends JavaPlugin {
     private List<TextComponent> textPerso = new ArrayList<>();
     
     private Set<String> forbiddenPerso = new HashSet<>(Arrays.asList(
-            "Modo", "Moderateur", "Modérateur", "Admin", "Animateur", "Partenaire", "Youtubeur", "Streamer", "Ami",
-            "Fonda", "Dev", "Builder", "Fondateur"));
+            "modo", "moderateur", "modérateur", "admin", "animateur", "partenaire", "youtubeur", "streamer", "ami",
+            "fonda", "dev", "builder", "fondateur"));
     
     @Override
     public void onEnable(){
@@ -82,13 +89,14 @@ public class ConsulatCore extends JavaPlugin {
         baltopManager = new BaltopManager();
         flyManager = new FlyManager();
         moderationDatabase = new ModerationDatabase(this);
+        GuiManager guiManager = GuiManager.getInstance();
+        guiManager.addRootGui("shop", new ShopGui());
+        shopManager = new ShopManager();
         Bukkit.getScheduler().runTaskTimer(this, new AFKRunnable(), 0L, 5 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MonitoringRunnable(this), 0L, 10 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MessageRunnable(), 0L, 15 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MeceneRunnable(), 0L, 20*60*60);
-
         registerEvents();
-        registerCommands();
         Bukkit.getWorlds().forEach(world -> {
             world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
         });
@@ -113,54 +121,60 @@ public class ConsulatCore extends JavaPlugin {
         ConsulatAPI.getConsulatAPI().log(Level.FINE, "ConsulatCore loaded in " + (System.currentTimeMillis() - startLoading) + " ms.");
     }
     
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onPostInit(PostInitEvent event){
+        registerCommands();
+    }
+    
     @SuppressWarnings("ConstantConditions")
     private void registerCommands(){
-        this.getCommand("report").setExecutor(new ReportCommand());
-        this.getCommand("rank").setExecutor(new RankCommand());
-        this.getCommand("sanction").setExecutor(new SanctionCommand());
-        this.getCommand("annonce").setExecutor(new BroadcastCommand());
-        this.getCommand("unban").setExecutor(new UnbanCommand());
-        this.getCommand("unmute").setExecutor(new UnmuteCommand());
-        this.getCommand("staff").setExecutor(new ModerateCommand());
-        this.getCommand("tpmod").setExecutor(new TpmodCommand());
-        this.getCommand("spawn").setExecutor(new SpawnCommand());
-        this.getCommand("help").setExecutor(new HelpCommand());
-        this.getCommand("msg").setExecutor(new MpCommand());
-        this.getCommand("advert").setExecutor(new AdvertCommand());
-        this.getCommand("kick").setExecutor(new KickCommand());
-        this.getCommand("sc").setExecutor(new StaffChatCommand());
-        this.getCommand("chat").setExecutor(new ToggleChatCommand());
-        this.getCommand("gm").setExecutor(new GamemodeCommand());
-        this.getCommand("back").setExecutor(new BackCommand());
-        this.getCommand("stafflist").setExecutor(new StaffListCommand());
-        this.getCommand("hub").setExecutor(new HubCommand());
-        this.getCommand("r").setExecutor(new AnswerCommand());
-        this.getCommand("seen").setExecutor(new SeenCommand());
-        this.getCommand("invsee").setExecutor(new InvseeCommand());
-        this.getCommand("boutique").setExecutor(new ShopCommand());
-        this.getCommand("perso").setExecutor(new PersoCommand());
-        this.getCommand("site").setExecutor(new SiteCommand());
-        this.getCommand("fly").setExecutor(new FlyCommand());
-        this.getCommand("discord").setExecutor(new DiscordCommand());
-        this.getCommand("duel").setExecutor(new DuelCommand());
-        this.getCommand("ec").setExecutor(new EnderchestCommand());
-        this.getCommand("top").setExecutor(new TopCommand());
-        this.getCommand("sp").setExecutor(new SocialSpyCommand());
-        this.getCommand("home").setExecutor(new HomeCommand());
-        this.getCommand("sethome").setExecutor(new SetHomeCommand());
-        this.getCommand("delhome").setExecutor(new DelHomeCommand());
-        this.getCommand("access").setExecutor(new AccessCommand());
-        this.getCommand("claim").setExecutor(new ClaimCommand());
-        this.getCommand("unclaim").setExecutor(new UnclaimCommand());
-        this.getCommand("baltop").setExecutor(new BaltopCommand());
-        this.getCommand("money").setExecutor(new MoneyCommand());
-        this.getCommand("pay").setExecutor(new PayCommand());
-        this.getCommand("tpa").setExecutor(new TPaCommand());
-        this.getCommand("shop").setExecutor(new fr.amisoz.consulatcore.commands.economy.ShopCommand());
-        this.getCommand("infos").setExecutor(new InfosCommand());
+        new AccessCommand();
+        new AdvertCommand();
+        new AnswerCommand();
+        new BackCommand();
+        new BaltopCommand();
+        new BroadcastCommand();
+        new ClaimCommand();
+        new DelHomeCommand();
+        new DiscordCommand();
+        new DuelCommand();
+        new EnderchestCommand();
+        new FlyCommand();
+        new GamemodeCommand();
+        new HelpCommand();
+        new HomeCommand();
+        new HubCommand();
+        new InfosCommand();
+        new InvseeCommand();
+        new KickCommand();
+        new ModerateCommand();
+        new MoneyCommand();
+        new MpCommand();
+        new PayCommand();
+        new PersoCommand();
+        new RankCommand();
+        new ReportCommand();
+        new SanctionCommand();
+        new SeenCommand();
+        new SetHomeCommand();
+        getCommand("boutique").setExecutor(new ShopCommand());
+        new fr.amisoz.consulatcore.commands.economy.ShopCommand();
+        new SiteCommand();
+        new SocialSpyCommand();
+        new SpawnCommand();
+        new StaffChatCommand();
+        new StaffListCommand();
+        new ToggleChatCommand();
+        new TopCommand();
+        new TpaCommand();
+        new TpmodCommand();
+        new UnbanCommand();
+        new UnmuteCommand();
+        new UnclaimCommand();
     }
     
     private void registerEvents(){
+        Bukkit.getPluginManager().registerEvents(this, this);
         Bukkit.getPluginManager().registerEvents(new ChatListeners(), this);
         Bukkit.getPluginManager().registerEvents(new InventoryListeners(this), this);
         Bukkit.getPluginManager().registerEvents(new InteractListener(this), this);
@@ -176,7 +190,7 @@ public class ConsulatCore extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new ClaimCancelListener(), this);
         Bukkit.getPluginManager().registerEvents(claimManager, this);
         Bukkit.getPluginManager().registerEvents(playerManager, this);
-        Bukkit.getPluginManager().registerEvents(new ShopManager(), this);
+        Bukkit.getPluginManager().registerEvents(shopManager, this);
     }
     
     public Connection getDatabaseConnection(){

@@ -1,5 +1,8 @@
 package fr.amisoz.consulatcore.commands.claims;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.claims.Claim;
@@ -7,6 +10,7 @@ import fr.amisoz.consulatcore.claims.ClaimManager;
 import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalOffline;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -21,7 +25,19 @@ import java.util.Set;
 public class ClaimCommand extends ConsulatCommand {
     
     public ClaimCommand(){
-        super("/claim | /claim kick <Joueur> | /claim desc <Description> | /claim list", 0, Rank.JOUEUR);
+        super("claim", "/claim | /claim kick <Joueur> | /claim desc <Description> | /claim list", 0, Rank.JOUEUR);
+        suggest(true,
+                LiteralArgumentBuilder.literal("kick")
+                        .then(Arguments.player("joueur")),
+                LiteralArgumentBuilder.literal("desc")
+                        .then(RequiredArgumentBuilder.argument("description", StringArgumentType.greedyString())),
+                LiteralArgumentBuilder.literal("list"),
+                LiteralArgumentBuilder.literal("info")
+                        .requires((t) -> {
+                            ConsulatPlayer player = getConsulatPlayer(t);
+                            return player != null && player.hasPower(Rank.RESPONSABLE);
+                        })
+                        .then(Arguments.player("joueur")));
     }
     
     @Override

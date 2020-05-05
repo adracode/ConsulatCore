@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.commands.players;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
@@ -8,7 +9,7 @@ import org.bukkit.entity.Player;
 public class DuelCommand extends ConsulatCommand {
 
     public DuelCommand() {
-        super("/duel spectate ou /duel <Joueur> <Mise> ou /duel accept/reject ou /duel annonce on/off", 0, Rank.JOUEUR);
+        super("duel", "/duel spectate ou /duel <Joueur> <Mise> ou /duel accept/reject ou /duel annonce on/off", 0, Rank.JOUEUR);
     }
 
     @Override

@@ -8,6 +8,7 @@ import fr.amisoz.consulatcore.fly.FlyManager;
 import fr.amisoz.consulatcore.moderation.MuteObject;
 import fr.amisoz.consulatcore.shop.Shop;
 import fr.amisoz.consulatcore.utils.CustomEnum;
+import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -98,7 +99,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
     }
     
     public boolean canAddNewShop(){
-        return shops.size() < limitShop;
+        return shops.size() < limitShop || ConsulatAPI.getConsulatAPI().isDebug();
     }
     
     public Claim getClaimLocation(){
@@ -280,15 +281,15 @@ public class SurvivalPlayer extends ConsulatPlayer {
         return fly != null;
     }
     
-    public boolean canFly(){
-        return canFly(getClaimLocation());
+    public boolean canFlyHere(){
+        return canFlyHere(getClaimLocation());
     }
     
-    public boolean canFly(Chunk chunk){
-        return canFly(ClaimManager.getInstance().getClaim(chunk));
+    public boolean canFlyHere(Chunk chunk){
+        return canFlyHere(ClaimManager.getInstance().getClaim(chunk));
     }
     
-    public boolean canFly(Claim claim){
+    public boolean canFlyHere(Claim claim){
         if(claim == null){
             return false;
         }
@@ -367,10 +368,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
     }
     
     public boolean isFlyAvailable(){
-        if(!hasFly()){
-            return false;
-        }
-        return fly.canFly();
+        return hasFly() && fly.canFly();
     }
     
     public boolean isFlying(){
@@ -459,5 +457,9 @@ public class SurvivalPlayer extends ConsulatPlayer {
     
     public void decrementTimeLeft(){
         fly.decrementTimeLeft();
+    }
+    
+    public int getFlyTime(){
+        return hasFly() ? fly.getFlyTime() : 0;
     }
 }

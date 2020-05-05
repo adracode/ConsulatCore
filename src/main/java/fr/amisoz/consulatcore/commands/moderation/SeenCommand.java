@@ -1,11 +1,11 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,7 +14,10 @@ import java.sql.SQLException;
 public class SeenCommand extends ConsulatCommand {
     
     public SeenCommand(){
-        super("/seen <Pseudo>", 1, Rank.ADMIN);
+        super("seen", "/seen <Pseudo>", 1, Rank.ADMIN);
+        suggest(true,
+                Arguments.player("joueur"),
+                Arguments.word("joueur"));
     }
     
     @Override

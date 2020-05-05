@@ -3,12 +3,12 @@ package fr.amisoz.consulatcore.commands.players;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
-import org.bukkit.entity.Player;
 
 public class HelpCommand extends ConsulatCommand {
 
     public HelpCommand() {
-        super("/help", 0, Rank.JOUEUR);
+        super("help", "/help", 0, Rank.JOUEUR);
+        suggest(true);
     }
 
     @Override

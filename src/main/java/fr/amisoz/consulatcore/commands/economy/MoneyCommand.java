@@ -1,7 +1,6 @@
 package fr.amisoz.consulatcore.commands.economy;
 
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -14,7 +13,8 @@ public class MoneyCommand extends ConsulatCommand {
     private DecimalFormat df = new DecimalFormat();
     
     public MoneyCommand(){
-        super("/money", 0, Rank.JOUEUR);
+        super("money", "/money", 0, Rank.JOUEUR);
+        suggest(true);
         df.setMaximumFractionDigits(2);
         df.setMinimumFractionDigits(2);
         df.setDecimalSeparatorAlwaysShown(true);

@@ -1,11 +1,9 @@
 package fr.amisoz.consulatcore.shop;
 
-import fr.amisoz.consulatcore.players.SurvivalPlayer;
-import fr.leconsulat.api.ConsulatAPI;
+import fr.leconsulat.api.gui.GuiManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Rotation;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
@@ -15,9 +13,9 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.UUID;
 
 public class Shop {
     
@@ -39,7 +37,6 @@ public class Shop {
     private int amount;
     private boolean open = false;
     
-    
     public Shop(UUID owner, String ownerName, ItemStack forSale, double price, Location location, boolean legacy){
         this.owner = owner;
         this.ownerName = ownerName;
@@ -58,8 +55,14 @@ public class Shop {
     public void setOpen(boolean open){
         this.open = open;
         if(!open){
+            boolean wasEmpty = isEmpty();
             amount = setAmount();
             buy(0);
+            if(wasEmpty && !isEmpty()){
+                ((ShopGui)GuiManager.getInstance().getRootGui("shop")).addShop(this);
+            } else if(!wasEmpty && isEmpty()){
+                ((ShopGui)GuiManager.getInstance().getRootGui("shop")).removeShop(this);
+            }
         }
     }
     
@@ -210,7 +213,7 @@ public class Shop {
         Inventory inventory = getInventory();
         inventory.clear();
         int count = 0, index = 0, stack = forSale.getMaxStackSize();
-        while(count <= this.amount && index < 27){
+        while(count < this.amount && index < 27){
             ItemStack newItem = new ItemStack(forSale);
             if(count + stack > this.amount){
                 newItem.setAmount(this.amount - count);
@@ -220,6 +223,9 @@ public class Shop {
             inventory.setItem(index, newItem);
             count += newItem.getAmount();
             ++index;
+        }
+        if(isEmpty()){
+            ((ShopGui)GuiManager.getInstance().getRootGui("shop")).removeShop(this);
         }
     }
     
@@ -252,6 +258,8 @@ public class Shop {
                 ", ownerName='" + ownerName + '\'' +
                 ", forSale=" + forSale +
                 ", price=" + price +
+                ", amount=" + amount +
+                ", open=" + open +
                 '}';
     }
     

@@ -3,6 +3,7 @@ package fr.amisoz.consulatcore.commands.players;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.claims.Claim;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
@@ -13,7 +14,8 @@ import java.sql.SQLException;
 public class SetHomeCommand extends ConsulatCommand {
     
     public SetHomeCommand(){
-        super("/sethome <Nom du home>", 1, Rank.JOUEUR);
+        super("sethome", "/sethome <Nom du home>", 1, Rank.JOUEUR);
+        suggest(true, Arguments.word("home"));
     }
     
     @Override

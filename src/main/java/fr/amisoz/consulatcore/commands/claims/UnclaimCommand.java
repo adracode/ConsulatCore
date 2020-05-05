@@ -20,7 +20,8 @@ public class UnclaimCommand extends ConsulatCommand {
     private DecimalFormat shapePrice = new DecimalFormat();
     
     public UnclaimCommand(){
-        super("/unclaim", 0, Rank.JOUEUR);
+        super("unclaim", "/unclaim", 0, Rank.JOUEUR);
+        suggest(true);
         shapePrice.setMaximumFractionDigits(2);
         shapePrice.setMinimumFractionDigits(2);
         shapePrice.setDecimalSeparatorAlwaysShown(true);

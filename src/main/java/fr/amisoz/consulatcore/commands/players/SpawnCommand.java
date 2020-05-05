@@ -1,7 +1,6 @@
 package fr.amisoz.consulatcore.commands.players;
 
 import fr.amisoz.consulatcore.ConsulatCore;
-import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
@@ -9,7 +8,8 @@ import fr.leconsulat.api.ranks.Rank;
 public class SpawnCommand extends ConsulatCommand {
     
     public SpawnCommand(){
-        super("/spawn", 0, Rank.JOUEUR);
+        super("spawn","/spawn", 0, Rank.JOUEUR);
+        suggest(true);
     }
     
     @Override

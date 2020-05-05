@@ -1,11 +1,13 @@
 package fr.amisoz.consulatcore.commands.claims;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.claims.Claim;
 import fr.amisoz.consulatcore.claims.ClaimManager;
 import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalOffline;
+import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
@@ -19,7 +21,22 @@ import java.util.UUID;
 public class AccessCommand extends ConsulatCommand {
     
     public AccessCommand(){
-        super("/access [add <Joueur>, remove <Joueur>, list, addall <Joueur>, removeall <Joueur>]", 1, Rank.JOUEUR);
+        super("access", "/access [add <Joueur>, remove <Joueur>, list, addall <Joueur>, removeall <Joueur>]", 1, Rank.JOUEUR);
+        suggest(true,
+                LiteralArgumentBuilder.literal("list"),
+                LiteralArgumentBuilder.literal("add")
+                        .then(Arguments.player("player"))
+                        .then(Arguments.word("player")),
+                LiteralArgumentBuilder.literal("addall")
+                        .then(Arguments.player("player"))
+                        .then(Arguments.word("player")),
+                LiteralArgumentBuilder.literal("remove")
+                        .then(Arguments.player("player"))
+                        .then(Arguments.word("player")),
+                LiteralArgumentBuilder.literal("removeall")
+                        .then(Arguments.player("player"))
+                        .then(Arguments.word("player"))
+        );
     }
     
     @Override

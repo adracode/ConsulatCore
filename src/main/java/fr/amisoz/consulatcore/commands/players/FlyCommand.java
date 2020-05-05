@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.commands.players;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
@@ -13,7 +14,15 @@ import java.sql.SQLException;
 public class FlyCommand extends ConsulatCommand {
     
     public FlyCommand(){
-        super("/fly [start/stop/info]", 1, Rank.JOUEUR);
+        super("fly", "/fly [start/stop/info]", 1, Rank.JOUEUR);
+        suggest(true, (listener) -> {
+                    SurvivalPlayer player = (SurvivalPlayer)getConsulatPlayer(listener);
+                    return player != null && player.hasFly();
+                },
+                LiteralArgumentBuilder.literal("start"),
+                LiteralArgumentBuilder.literal("stop"),
+                LiteralArgumentBuilder.literal("info")
+        );
     }
     
     @Override
@@ -44,7 +53,7 @@ public class FlyCommand extends ConsulatCommand {
                     player.sendMessage(Text.FLY + "Erreur | Tu n'as pas attendu assez longtemps ! Tu dois encore attendre " + minutes + "m" + seconds + "s.");
                     return;
                 }
-                if(!player.canFly()){
+                if(!player.canFlyHere()){
                     sender.sendMessage(Text.FLY + "Erreur | Tu ne peux pas fly dans un autre claim que le tien ou ceux que tu as accès !");
                     return;
                 }
@@ -56,7 +65,12 @@ public class FlyCommand extends ConsulatCommand {
                     player.sendMessage(Text.FLY + "§aTu as le fly infini.");
                     return;
                 }
-                int timeLeft = player.getFlyTimeLeft();
+                int timeLeft;
+                if(player.getFlyReset() < System.currentTimeMillis()){
+                    timeLeft = player.getFlyTime();
+                } else {
+                    timeLeft = player.getFlyTimeLeft();
+                }
                 long minutes = ((timeLeft / 60) % 60);
                 long seconds = timeLeft % 60;
                 sender.sendMessage(Text.FLY + "Tu as encore ton fly pendant " + minutes + "m " + seconds + "s.");

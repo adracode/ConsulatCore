@@ -2,17 +2,18 @@ package fr.amisoz.consulatcore.commands.moderation;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
+import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
-import fr.amisoz.consulatcore.moderation.ModerationUtils;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 
 public class UnbanCommand extends ConsulatCommand {
     
     public UnbanCommand(){
-        super("/unban <Pseudo>", 1, Rank.RESPONSABLE);
+        super("unban", "/unban <Pseudo>", 1, Rank.RESPONSABLE);
+        suggest(true,
+                Arguments.word("joueur"));
     }
     
     @Override

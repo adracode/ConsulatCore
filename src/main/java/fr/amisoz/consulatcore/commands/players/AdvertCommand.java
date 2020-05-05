@@ -1,5 +1,7 @@
 package fr.amisoz.consulatcore.commands.players;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import fr.amisoz.consulatcore.moderation.MuteObject;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.ConsulatCommand;
@@ -18,7 +20,9 @@ public class AdvertCommand extends ConsulatCommand {
     private Map<UUID, Long> delay = new HashMap<>();
     
     public AdvertCommand(){
-        super("/advert <Annonce>", 1, Rank.FINANCEUR);
+        super("advert", "/advert <Annonce>", 1, Rank.FINANCEUR);
+        suggest(true,
+                RequiredArgumentBuilder.argument("annonce", StringArgumentType.greedyString()));
     }
     
     @Override

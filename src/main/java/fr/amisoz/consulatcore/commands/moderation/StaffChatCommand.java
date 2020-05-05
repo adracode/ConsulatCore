@@ -1,5 +1,7 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -7,10 +9,14 @@ import fr.leconsulat.api.ranks.Rank;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 
+import java.util.Collections;
+
 public class StaffChatCommand extends ConsulatCommand {
     
     public StaffChatCommand() {
-        super("/sc <Message>", 1, Rank.MODO);
+        super("staffchat", Collections.singletonList("sc"), "/sc <Message>", 1, Rank.MODO);
+        suggest(true,
+                RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString()));
     }
 
     @Override

@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 public class IgnoreCommand extends ConsulatCommand {
 
     public IgnoreCommand(String usage, int argsMin, Rank rankMinimum) {
-        super("/ignore <Joueur> | /ignore remove <Joueur>", 1, Rank.JOUEUR);
+        super("ignore", "/ignore <Joueur> | /ignore remove <Joueur>", 1, Rank.JOUEUR);
     }
 
     //TODO

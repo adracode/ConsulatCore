@@ -1,7 +1,7 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
-import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.amisoz.consulatcore.moderation.ModerationUtils;
+import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.GameMode;
@@ -10,7 +10,8 @@ import org.bukkit.entity.Player;
 public class GamemodeCommand extends ConsulatCommand {
     
     public GamemodeCommand(){
-        super("/gm", 0, Rank.MODO);
+        super("gm", "/gm", 0, Rank.MODO);
+        suggest(true);
     }
     
     @Override

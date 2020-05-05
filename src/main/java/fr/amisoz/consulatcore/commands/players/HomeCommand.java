@@ -1,5 +1,7 @@
 package fr.amisoz.consulatcore.commands.players;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SPlayerManager;
@@ -21,7 +23,18 @@ import java.util.Set;
 public class HomeCommand extends ConsulatCommand {
     
     public HomeCommand(){
-        super("/home <Nom du home>", 0, Rank.JOUEUR);
+        super("home", "/home <Nom du home>", 0, Rank.JOUEUR);
+        suggest(true, RequiredArgumentBuilder.argument("home", StringArgumentType.word()).suggests((context, builder) -> {
+                    SurvivalPlayer player = (SurvivalPlayer)getConsulatPlayer(context.getSource());
+                    if(player == null){
+                        return builder.buildFuture();
+                    }
+                    for(String home : player.getNameHomes()){
+                        builder.suggest(home);
+                    }
+                    return builder.buildFuture();
+                })
+        );
     }
     
     @Override

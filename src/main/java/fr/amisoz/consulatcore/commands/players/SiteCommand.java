@@ -8,14 +8,14 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.entity.Player;
 
 public class SiteCommand extends ConsulatCommand {
 
     private TextComponent site;
     
     public SiteCommand() {
-        super("/site", 0, Rank.JOUEUR);
+        super("site", "/site", 0, Rank.JOUEUR);
+        suggest(true);
         site = new TextComponent(ChatColor.GREEN + "Clique ici pour accéder au site");
         site.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://leconsulat.fr"));
         site.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GRAY + "Clique pour accéder au site").create()));

@@ -11,23 +11,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 import java.sql.SQLException;
 import java.util.Calendar;
-import java.util.HashSet;
-import java.util.Set;
 
 public class ChatListeners implements Listener {
     
-    private Set<String> forbiddenCommands = new HashSet<>();
-    
     public ChatListeners(){
-        forbiddenCommands.add("/w");
-        forbiddenCommands.add("/whisper");
-        forbiddenCommands.add("/tell");
-        forbiddenCommands.add("/me");
-        forbiddenCommands.add("/bukkit");
     }
     
     @EventHandler
@@ -58,7 +48,7 @@ public class ChatListeners implements Listener {
                 event.setCancelled(true);
                 return;
             }
-            if(ConsulatCore.getInstance().getForbiddenCustomRank().contains(message)){
+            if(ConsulatCore.getInstance().getForbiddenCustomRank().contains(message.toLowerCase())){
                 player.sendMessage("§cTu ne peux pas appeler ton grade comme cela ! Tape §ocancel §r§csi tu veux annuler.");
                 event.setCancelled(true);
                 return;
@@ -93,15 +83,6 @@ public class ChatListeners implements Listener {
         }
         if(player.hasPower(Rank.MODO)){
             event.setMessage(ChatColor.translateAlternateColorCodes('&', event.getMessage()));
-        }
-    }
-    
-    @EventHandler
-    public void PlayerCommand(PlayerCommandPreprocessEvent event){
-        int stop = event.getMessage().indexOf(' ');
-        if(forbiddenCommands.contains(event.getMessage().substring(0, stop == -1 ? event.getMessage().length() : stop))){
-            event.setCancelled(true);
-            event.getPlayer().sendMessage("§cCommande désactivée.");
         }
     }
 }
