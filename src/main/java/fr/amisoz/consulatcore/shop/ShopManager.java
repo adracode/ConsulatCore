@@ -179,7 +179,7 @@ public class ShopManager implements Listener {
     
     public void addShop(SurvivalPlayer player, Shop shop) throws SQLException{
         addShopDatabase(player.getUUID(), shop);
-        Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), ()->{
+        Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
             player.addShop(shop);
             shops.put(shop.getCoords(), shop);
             ((ShopGui)GuiManager.getInstance().getRootGui("shop")).addShop(shop);
@@ -831,7 +831,16 @@ public class ShopManager implements Listener {
             } else if(sign.getLines()[1].equalsIgnoreCase("FLY_5")){
                 if(player.hasMoney(buyPrice)){
                     if(!player.hasFly()){
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "boutique fly5 " + player.getName());
+                        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
+                            try {
+                                player.removeMoney(buyPrice);
+                                Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
+                                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "boutique fly5 " + player.getName());
+                                });
+                            } catch(SQLException e){
+                                e.printStackTrace();
+                            }
+                        });
                     } else {
                         player.sendMessage(ChatColor.RED + "Tu as déjà le fly.");
                     }
