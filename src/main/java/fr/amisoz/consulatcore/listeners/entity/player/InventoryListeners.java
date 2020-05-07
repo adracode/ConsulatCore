@@ -7,16 +7,11 @@ import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerPickupItemEvent;
-import org.bukkit.inventory.InventoryView;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-
-import java.util.UUID;
 
 public class InventoryListeners implements Listener {
     
@@ -33,17 +28,20 @@ public class InventoryListeners implements Listener {
     }
     
     @EventHandler
-    public void onPick(PlayerPickupItemEvent event){
-        Player player = event.getPlayer();
+    public void onPick(EntityPickupItemEvent event){
+        if(!(event.getEntity() instanceof Player)){
+            return;
+        }
+        Player player = (Player)event.getEntity();
         SurvivalPlayer survivalPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
-        if(survivalPlayer.isInModeration() || survivalPlayer.isLookingInventory()){
+        if(survivalPlayer == null || survivalPlayer.isInModeration() || survivalPlayer.isLookingInventory()){
             event.setCancelled(true);
         }
     }
     
     @EventHandler
     public void onDrag(InventoryDragEvent event){
-        if(!(event.getWhoClicked() instanceof Player)) {
+        if(!(event.getWhoClicked() instanceof Player)){
             return;
         }
         Player player = (Player)event.getWhoClicked();
@@ -65,49 +63,19 @@ public class InventoryListeners implements Listener {
         }
     }
     
-    //A refaire
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onClick(InventoryClickEvent event){
-        if(!(event.getWhoClicked() instanceof Player)) return;
-        
-        Player player = (Player)event.getWhoClicked();
-        
-        if(event.getClickedInventory() == null) return;
-        if(event.getCurrentItem() == null) return;
-        if(event.getCurrentItem().getItemMeta() == null) return;
-        SurvivalPlayer moderator = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
+        if(!(event.getWhoClicked() instanceof Player) ||
+                event.getClickedInventory() == null ||
+                event.getCurrentItem() == null){
+            return;
+        }
+        SurvivalPlayer moderator = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getWhoClicked().getUniqueId());
         if(!moderator.hasPower(Rank.MODO)){
             return;
         }
-        ItemStack clickedItem = event.getCurrentItem();
-        InventoryView inventoryView = event.getView();
-        String inventoryName = inventoryView.getTitle();
-        if(moderator.isLookingInventory()){
+        if(moderator.isLookingInventory() || moderator.isInModeration()){
             event.setCancelled(true);
-            return;
         }
-        String targetName = moderator.getSanctionTarget();
-        if(targetName == null){
-            return;
-        }
-        UUID uuidTarget = CPlayerManager.getInstance().getPlayerUUID(targetName);
-        if(uuidTarget == null){
-            return;
-        }
-        ItemMeta itemMeta = clickedItem.getItemMeta();
-        if(!(inventoryName.contains("Sanction")) && !(inventoryName.contains("Mute")) && !(inventoryName.contains("Bannir"))){
-            if(moderator.isInModeration()){
-                event.setCancelled(true);
-            }
-            return;
-        }
-        if(CPlayerManager.getInstance().getPlayerUUID(targetName) == null){
-            player.sendMessage("§cLe joueur ne s'est jamais connecté au serveur.");
-            return;
-        }
-        SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(targetName);
-        Long currentTime = System.currentTimeMillis();
     }
-    
-    
 }

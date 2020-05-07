@@ -54,6 +54,7 @@ public class ShopManager implements Listener {
             return;
         }
         instance = this;
+        GuiManager.getInstance().addRootGui("shop", new ShopGui());
         //Volontairement bloquant
         try {
             initShops();

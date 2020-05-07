@@ -14,7 +14,6 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
 
 import java.util.Arrays;
 
@@ -52,11 +51,10 @@ public class MpCommand extends ConsulatCommand {
         target.sendMessage(messageFormatComponent, answerComponent);
         target.setLastPrivate(sender.getUUID());
         sender.sendMessage("§7[§6MP§7] §r§6Toi §7>> §6§l" + target.getName() + "§r§7 : §f" + messageResult);
-        Bukkit.getOnlinePlayers().forEach(player -> {
-            SurvivalPlayer survivalEach = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
-            if(survivalEach.isSpying() && !survivalEach.equals(sender) && player != target){
+        for(ConsulatPlayer player : CPlayerManager.getInstance().getConsulatPlayers()){
+            if(((SurvivalPlayer)player).isSpying() && !player.equals(sender) && !player.equals(target)){
                 player.sendMessage("§2(Spy) §a" + sender.getName() + "§7 > §a" + target.getName() + "§7 : " + messageResult);
             }
-        });
+        }
     }
 }

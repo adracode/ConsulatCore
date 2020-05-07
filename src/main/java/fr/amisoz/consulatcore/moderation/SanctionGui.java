@@ -5,15 +5,18 @@ import fr.leconsulat.api.gui.events.GuiClickEvent;
 import fr.leconsulat.api.gui.events.GuiCloseEvent;
 import fr.leconsulat.api.gui.events.GuiCreateEvent;
 import fr.leconsulat.api.gui.events.GuiOpenEvent;
+import fr.leconsulat.api.player.ConsulatOffline;
 import org.bukkit.Material;
 
 public class SanctionGui extends GuiListener {
     
     public SanctionGui(){
-        super(null, String.class);
+        super(null, ConsulatOffline.class);
         addGui(null, this, "§6§lSanction §7↠ §e", 3,
                 getItem("§cBannir", 11, Material.REDSTONE_BLOCK),
                 getItem("§6Mute", 15, Material.PAPER));
+        addChild(11, new BanGui(this));
+        addChild(15, new MuteGui(this));
         setCreateOnOpen(true);
     }
     
@@ -22,7 +25,7 @@ public class SanctionGui extends GuiListener {
         if(event.getKey() == null){
             return;
         }
-        event.getGui().setName("§6§lSanction §7↠ §e" + (event.getKey()));
+        event.getGui().setName("§6§lSanction §7↠ §e" + (((ConsulatOffline)event.getKey()).getName()));
     }
     
     @Override

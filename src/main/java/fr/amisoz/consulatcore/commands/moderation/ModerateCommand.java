@@ -2,7 +2,6 @@ package fr.amisoz.consulatcore.commands.moderation;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.moderation.ModerationUtils;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.CPlayerManager;
@@ -33,14 +32,14 @@ public class ModerateCommand extends ConsulatCommand {
         player.setInModeration(!player.isInModeration());
         if(!player.isInModeration()){
             sender.sendMessage(Text.MODERATION_PREFIX + "§cTu n'es plus en mode modérateur.");
-            ModerationUtils.moderatePlayers.remove(bukkitPlayer);
-            ModerationUtils.vanishedPlayers.remove(bukkitPlayer);
             for(PotionEffect effect : bukkitPlayer.getActivePotionEffects()){
                 if(effect.getType().equals(PotionEffectType.NIGHT_VISION) || effect.getType().equals(PotionEffectType.INVISIBILITY)){
                     bukkitPlayer.removePotionEffect(effect.getType());
                 }
             }
-            Bukkit.getOnlinePlayers().forEach(onlinePlayers -> onlinePlayers.showPlayer(ConsulatCore.getInstance(), bukkitPlayer));
+            for(Player onlinePlayers : Bukkit.getOnlinePlayers()){
+                onlinePlayers.showPlayer(ConsulatCore.getInstance(), bukkitPlayer);
+            }
             bukkitPlayer.getInventory().setContents(player.getStockedInventory());
             if(bukkitPlayer.getGameMode() == GameMode.SURVIVAL){
                 bukkitPlayer.setAllowFlight(false);
@@ -48,17 +47,13 @@ public class ModerateCommand extends ConsulatCommand {
             }
         } else {
             sender.sendMessage(Text.MODERATION_PREFIX + "§aTu es désormais en mode modérateur.");
-            ModerationUtils.moderatePlayers.add(bukkitPlayer);
-            ModerationUtils.vanishedPlayers.add(bukkitPlayer);
+            player.setVanished(true);
             player.setStockedInventory(bukkitPlayer.getInventory().getContents());
-            Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
-                if(onlinePlayer != bukkitPlayer){
-                    ConsulatPlayer consulatPlayer = CPlayerManager.getInstance().getConsulatPlayer(onlinePlayer.getUniqueId());
-                    if(!consulatPlayer.hasPower(Rank.MODO)){
-                        onlinePlayer.hidePlayer(ConsulatCore.getInstance(), bukkitPlayer);
-                    }
+            for(ConsulatPlayer onlinePlayer : CPlayerManager.getInstance().getConsulatPlayers()){
+                if(!onlinePlayer.hasPower(Rank.MODO)){
+                    onlinePlayer.getPlayer().hidePlayer(ConsulatCore.getInstance(), bukkitPlayer);
                 }
-            });
+            }
             bukkitPlayer.getInventory().clear();
             bukkitPlayer.getInventory().setHelmet(null);
             bukkitPlayer.getInventory().setChestplate(null);

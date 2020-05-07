@@ -1,7 +1,6 @@
 package fr.amisoz.consulatcore.listeners.entity.player;
 
 import fr.amisoz.consulatcore.events.ChunkChangeEvent;
-import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.player.CPlayerManager;
 import org.bukkit.Bukkit;
@@ -33,13 +32,14 @@ public class MoveListeners implements Listener {
     
     @EventHandler
     public void onTeleport(PlayerTeleportEvent event){
-        SurvivalPlayer survivalPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
-        survivalPlayer.setOldLocation(event.getFrom());
-        survivalPlayer.setLastTeleport(System.currentTimeMillis());
-        
+        SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
+        if(player == null){
+            return;
+        }
+        player.setOldLocation(event.getFrom());
+        player.setLastTeleport(System.currentTimeMillis());
         Chunk chunkTo = event.getTo().getChunk();
         Chunk chunkFrom = event.getFrom().getChunk();
-        
         Bukkit.getPluginManager().callEvent(new ChunkChangeEvent(event.getPlayer(), chunkFrom, chunkTo));
     }
     

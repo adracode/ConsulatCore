@@ -23,19 +23,14 @@ import fr.amisoz.consulatcore.runnable.AFKRunnable;
 import fr.amisoz.consulatcore.runnable.MeceneRunnable;
 import fr.amisoz.consulatcore.runnable.MessageRunnable;
 import fr.amisoz.consulatcore.runnable.MonitoringRunnable;
-import fr.amisoz.consulatcore.shop.ShopGui;
 import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.events.PostInitEvent;
-import fr.leconsulat.api.gui.GuiManager;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameRule;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -89,17 +84,15 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         baltopManager = new BaltopManager();
         flyManager = new FlyManager();
         moderationDatabase = new ModerationDatabase(this);
-        GuiManager guiManager = GuiManager.getInstance();
-        guiManager.addRootGui("shop", new ShopGui());
         shopManager = new ShopManager();
         Bukkit.getScheduler().runTaskTimer(this, new AFKRunnable(), 0L, 5 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MonitoringRunnable(this), 0L, 10 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MessageRunnable(), 0L, 15 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MeceneRunnable(), 0L, 20*60*60);
         registerEvents();
-        Bukkit.getWorlds().forEach(world -> {
+        for(World world : Bukkit.getWorlds()){
             world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
-        });
+        }
         for(ChatColor color : ChatColor.values()){
             if(color == ChatColor.RED) continue;
             if(color == ChatColor.MAGIC) break;

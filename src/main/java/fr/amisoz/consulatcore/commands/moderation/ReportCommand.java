@@ -13,7 +13,6 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
 
 public class ReportCommand extends ConsulatCommand {
     
@@ -42,12 +41,11 @@ public class ReportCommand extends ConsulatCommand {
                         "\n§7§oClique pour te téléporter au joueur concerné"
                 ).create()));
         textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpmod " + target.getName()));
-        Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
-            ConsulatPlayer consulatPlayer = CPlayerManager.getInstance().getConsulatPlayer(onlinePlayer.getUniqueId());
-            if(consulatPlayer != null && consulatPlayer.hasPower(Rank.MODO)){
-                onlinePlayer.spigot().sendMessage(textComponent);
+        for(ConsulatPlayer onlinePlayer : CPlayerManager.getInstance().getConsulatPlayers()){
+            if(onlinePlayer.hasPower(Rank.MODO)){
+                onlinePlayer.sendMessage(textComponent);
             }
-        });
+        }
         sender.sendMessage("§aTu as report " + target.getName() + " pour " + reason);
     }
 }

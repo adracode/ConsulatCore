@@ -1,6 +1,5 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
-import fr.amisoz.consulatcore.moderation.ModerationUtils;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
@@ -20,7 +19,7 @@ public class TpmodCommand extends ConsulatCommand {
     @Override
     public void onCommand(ConsulatPlayer sender, String[] args){
         SurvivalPlayer survivalSender = (SurvivalPlayer)sender;
-        if(!ModerationUtils.moderatePlayers.contains(sender.getPlayer()) && !survivalSender.hasPower(Rank.ADMIN)){
+        if(!survivalSender.isInModeration() && !survivalSender.hasPower(Rank.ADMIN)){
             sender.sendMessage("§cTu dois être en mode modérateur.");
             return;
         }
