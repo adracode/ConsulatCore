@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -122,12 +123,11 @@ public class DuelListeners implements Listener {
             });
             arena.getVictoryPlayer().sendMessage("§aTu as gagné " + arena.bet * 2 + "€ !");
             Bukkit.getScheduler().runTaskLater(ConsulatCore.getInstance(), () -> {
-                arena.getVictoryPlayer().getNearbyEntities(10, 5, 10).forEach(entity -> {
+                for(Entity entity : arena.getVictoryPlayer().getNearbyEntities(10, 5, 10)){
                     if(entity instanceof Item){
                         entity.remove();
                     }
-                });
-                
+                }
                 Bukkit.broadcastMessage("§7[§b§lDuel§r§7] §cL'arène est à nouveau disponible.");
                 arena.setArenaState(ArenaState.FREE);
                 arena.setBusy(false);

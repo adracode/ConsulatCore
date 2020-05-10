@@ -4,7 +4,6 @@ import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
-import org.bukkit.Bukkit;
 
 public class StaffListCommand extends ConsulatCommand {
 
@@ -16,12 +15,11 @@ public class StaffListCommand extends ConsulatCommand {
     @Override
     public void onCommand(ConsulatPlayer sender, String[] args){
         sender.sendMessage("§6§uListe du staff en ligne : ");
-        Bukkit.getOnlinePlayers().forEach(player -> {
-            ConsulatPlayer consulatPlayer = CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
-            if(consulatPlayer.hasPower(Rank.BUILDER)){
-                Rank rank = consulatPlayer.getRank();
+        for(ConsulatPlayer player : CPlayerManager.getInstance().getConsulatPlayers()){
+            if(player.hasPower(Rank.BUILDER)){
+                Rank rank = player.getRank();
                 sender.sendMessage(rank.getRankColor() + "[" + rank.getRankName() + "] " + player.getName());
             }
-        });
+        }
     }
 }

@@ -4,6 +4,7 @@ import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.player.CPlayerManager;
+import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
 
@@ -19,8 +20,9 @@ public class MeceneRunnable implements Runnable {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        if(hour != 22) return;
-
+        if(hour != 22) {
+            return;
+        }
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), ()->{
             try {
                 giveToMecenes();
@@ -28,14 +30,11 @@ public class MeceneRunnable implements Runnable {
                 e.printStackTrace();
             }
         });
-        
-
-        Bukkit.getOnlinePlayers().forEach(player -> {
-            SurvivalPlayer consulatPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
-            if(consulatPlayer.getRank().equals(Rank.MECENE)){
-                consulatPlayer.addMoneyNoBDD(100D);
+        for(ConsulatPlayer player : CPlayerManager.getInstance().getConsulatPlayers()){
+            if(player.getRank().equals(Rank.MECENE)){
+                ((SurvivalPlayer)player).addMoneyNoBDD(100D);
             }
-        });
+        }
     }
 
     private void giveToMecenes() throws SQLException {

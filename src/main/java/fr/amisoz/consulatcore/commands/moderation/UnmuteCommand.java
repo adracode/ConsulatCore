@@ -14,7 +14,7 @@ public class UnmuteCommand extends ConsulatCommand {
     
     public UnmuteCommand(){
         super("unmute", "/unmute <Joueur>", 1, Rank.RESPONSABLE);
-        suggest(true, Arguments.word("joueur"));
+        suggest(true, Arguments.player("joueur"), Arguments.word("joueur"));
     }
     
     @Override

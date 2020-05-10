@@ -2,7 +2,6 @@ package fr.amisoz.consulatcore.listeners.entity.player;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.moderation.ModerationUtils;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -82,16 +81,16 @@ public class InteractListener implements Listener {
                 event.setCancelled(true);
             }
             if(itemMeta.getDisplayName().contains("Changer son statut d'invisibilité")){
-                if(ModerationUtils.vanishedPlayers.contains(player.getPlayer())){
+                if(player.isVanished()){
                     Bukkit.getOnlinePlayers().forEach(onlinePlayer -> onlinePlayer.showPlayer(consulatCore, player.getPlayer()));
-                    ModerationUtils.vanishedPlayers.remove(player.getPlayer());
+                    player.setVanished(false);
                     player.sendMessage("§aTu es désormais visible.");
                     for(PotionEffect effect : player.getPlayer().getActivePotionEffects()){
                         if(effect.getType().equals(PotionEffectType.INVISIBILITY))
                             player.getPlayer().removePotionEffect(effect.getType());
                     }
                 } else {
-                    ModerationUtils.vanishedPlayers.add(player.getPlayer());
+                    player.setVanished(true);
                     Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
                         if(onlinePlayer != player.getPlayer()){
                             ConsulatPlayer consulatPlayer = CPlayerManager.getInstance().getConsulatPlayer(onlinePlayer.getUniqueId());
@@ -112,17 +111,17 @@ public class InteractListener implements Listener {
         if(!(event.getRightClicked() instanceof Player)){
             return;
         }
-        Player player = event.getPlayer();
+        SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
         Player target = (Player)event.getRightClicked();
-        if(!ModerationUtils.moderatePlayers.contains(player)){
+        if(!player.isInModeration()){
             return;
         }
-        ItemStack itemStack = player.getInventory().getItemInMainHand();
+        ItemStack itemStack = player.getPlayer().getInventory().getItemInMainHand();
         if(itemStack.getItemMeta() == null) return;
         ItemMeta itemMeta = itemStack.getItemMeta();
         if(itemMeta.getDisplayName().contains("Voir l'inventaire")){
             Inventory inventory = target.getInventory();
-            player.openInventory(inventory);
+            player.getPlayer().openInventory(inventory);
         }
         if(itemMeta.getDisplayName().contains("Freeze") && event.getHand().equals(EquipmentSlot.HAND)){
             SurvivalPlayer survivalPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(target.getUniqueId());

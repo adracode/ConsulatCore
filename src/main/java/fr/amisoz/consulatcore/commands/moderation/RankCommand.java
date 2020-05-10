@@ -12,7 +12,6 @@ import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
 
 import java.sql.SQLException;
-import java.util.Arrays;
 
 public class RankCommand extends ConsulatCommand {
     
@@ -36,7 +35,9 @@ public class RankCommand extends ConsulatCommand {
         Rank newRank = Rank.byName(newRankName);
         if(newRank == null){
             sender.sendMessage("§cUne erreur s'est produite. Le nouveau rang est peut-être invalide : " + newRankName);
-            Arrays.stream(Rank.values()).forEach(rank -> sender.sendMessage(rank.getRankColor() + rank.getRankName() + " : " + rank.getRankPower()));
+            for(Rank rank : Rank.values()){
+                sender.sendMessage(rank.getRankColor() + rank.getRankName() + " : " + rank.getRankPower());
+            }
             return;
         }
         if(!sender.hasPower(newRank)){

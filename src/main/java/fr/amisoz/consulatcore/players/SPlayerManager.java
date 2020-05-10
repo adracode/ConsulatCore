@@ -5,7 +5,6 @@ import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.claims.Claim;
 import fr.amisoz.consulatcore.claims.ClaimManager;
 import fr.amisoz.consulatcore.events.SurvivalPlayerLoadedEvent;
-import fr.amisoz.consulatcore.moderation.ModerationUtils;
 import fr.amisoz.consulatcore.shop.Shop;
 import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.leconsulat.api.ConsulatAPI;
@@ -86,7 +85,11 @@ public class SPlayerManager implements Listener {
         SurvivalPlayer player = event.getPlayer();
         Rank playerRank = player.getRank();
         if(!player.hasPower(Rank.MODO)){
-            ModerationUtils.vanishedPlayers.forEach(moderator -> player.getPlayer().hidePlayer(ConsulatCore.getInstance(), moderator));
+            for(ConsulatPlayer vanished : CPlayerManager.getInstance().getConsulatPlayers()){
+                if(vanished.isVanished()){
+                    player.getPlayer().hidePlayer(ConsulatCore.getInstance(), vanished.getPlayer());
+                }
+            }
             if(player.hasCustomRank() && player.getCustomRank() != null && !player.getCustomRank().isEmpty()){
                 Bukkit.broadcastMessage("§7(§a+§7) " + ChatColor.translateAlternateColorCodes('&', player.getCustomRank()) + player.getName());
             } else {
@@ -111,18 +114,15 @@ public class SPlayerManager implements Listener {
             return;
         }
         if(player.isFrozen()){
-            Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
-                ConsulatPlayer consulatOnline = CPlayerManager.getInstance().getConsulatPlayer(onlinePlayer.getUniqueId());
-                if(consulatOnline != null && consulatOnline.hasPower(Rank.MODO)){
+            for(ConsulatPlayer onlinePlayer : CPlayerManager.getInstance().getConsulatPlayers()){
+                if(onlinePlayer.hasPower(Rank.MODO)){
                     onlinePlayer.sendMessage(Text.MODERATION_PREFIX + ChatColor.GOLD + player.getPlayer().getName() + ChatColor.RED + " s'est déconnecté en étant freeze.");
                 }
-            });
+            }
         }
         
         if(player.isInModeration()){
             Player bukkitPlayer = player.getPlayer();
-            ModerationUtils.moderatePlayers.remove(bukkitPlayer);
-            ModerationUtils.vanishedPlayers.remove(bukkitPlayer);
             for(PotionEffect effect : bukkitPlayer.getActivePotionEffects()){
                 if(effect.getType().equals(PotionEffectType.NIGHT_VISION) || effect.getType().equals(PotionEffectType.INVISIBILITY)){
                     bukkitPlayer.removePotionEffect(effect.getType());

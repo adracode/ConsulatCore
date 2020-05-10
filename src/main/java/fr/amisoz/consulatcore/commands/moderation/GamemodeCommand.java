@@ -1,6 +1,6 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
-import fr.amisoz.consulatcore.moderation.ModerationUtils;
+import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
@@ -16,7 +16,7 @@ public class GamemodeCommand extends ConsulatCommand {
     
     @Override
     public void onCommand(ConsulatPlayer sender, String[] args){
-        if(!ModerationUtils.moderatePlayers.contains(sender.getPlayer())){
+        if(!((SurvivalPlayer)sender).isInModeration()){
             sender.sendMessage("§cTu dois être en staff mode.");
             return;
         }

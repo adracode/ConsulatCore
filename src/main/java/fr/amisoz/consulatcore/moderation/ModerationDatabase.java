@@ -43,27 +43,24 @@ public class ModerationDatabase {
         if(resultSet.next()){
             long expireMute = resultSet.getLong("expire");
             if(System.currentTimeMillis() >= expireMute){
-                PreparedStatement unban = connection.prepareStatement("UPDATE antecedents SET active = '0' WHERE sanction = 'MUTE' AND playeruuid = ?");
-                unban.setString(1, player.getUniqueId().toString());
-                unban.executeUpdate();
+                PreparedStatement unmuteRequest = connection.prepareStatement("UPDATE antecedents SET active = '0' WHERE sanction = 'MUTE' AND playeruuid = ?");
+                unmuteRequest.setString(1, player.getUniqueId().toString());
+                unmuteRequest.executeUpdate();
                 
             } else {
                 SurvivalPlayer survivalPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
                 survivalPlayer.setMuted(true);
                 survivalPlayer.setMuteReason(resultSet.getString("reason"));
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTimeInMillis(expireMute);
-                calendar.add(Calendar.HOUR_OF_DAY, 2);
-                survivalPlayer.setMuteExpireMillis(calendar.getTimeInMillis());
+                survivalPlayer.setMuteExpireMillis(expireMute);
             }
         }
     }
     
     public void unmute(String playerName){
         try {
-            PreparedStatement unbanRequest = connection.prepareStatement("UPDATE antecedents SET active = '0', cancelled = '1' WHERE sanction = 'MUTE' AND playername = ? AND active = '1'");
-            unbanRequest.setString(1, playerName);
-            unbanRequest.executeUpdate();
+            PreparedStatement unmuteRequest = connection.prepareStatement("UPDATE antecedents SET active = '0', cancelled = '1' WHERE sanction = 'MUTE' AND playername = ? AND active = '1'");
+            unmuteRequest.setString(1, playerName);
+            unmuteRequest.executeUpdate();
         } catch(SQLException e){
             e.printStackTrace();
         }
