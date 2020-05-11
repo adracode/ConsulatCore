@@ -97,7 +97,11 @@ public class InfosCommand extends ConsulatCommand {
             textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GRAY + "Clique pour voir les homes !").create()));
             textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/home " + args[0] + ":"));
 
-            player.getPlayer().spigot().sendMessage(textComponent);
+            TextComponent antecedentsComponent = new TextComponent(ChatColor.GRAY + "[" + ChatColor.GOLD + "Voir les antécédents" + ChatColor.GRAY + "]");
+            antecedentsComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GRAY + "Clique pour voir les antécédents !").create()));
+            antecedentsComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/antecedents " + args[0]));
+
+            player.getPlayer().spigot().sendMessage(textComponent, antecedentsComponent);
         });
     }
 

@@ -1,7 +1,8 @@
-package fr.amisoz.consulatcore.moderation;
+package fr.amisoz.consulatcore.moderation.gui;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
+import fr.amisoz.consulatcore.moderation.MuteEnum;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.gui.Gui;
 import fr.leconsulat.api.gui.GuiItem;

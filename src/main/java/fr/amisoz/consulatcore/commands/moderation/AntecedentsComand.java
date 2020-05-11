@@ -1,7 +1,7 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.moderation.gui.SanctionGui;
+import fr.amisoz.consulatcore.moderation.gui.AntecedentsGui;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
@@ -13,14 +13,14 @@ import fr.leconsulat.api.ranks.Rank;
 
 import java.util.UUID;
 
-public class SanctionCommand extends ConsulatCommand {
-    
-    public SanctionCommand(){
-        super("sanction", "/sanction <Joueur>", 1, Rank.MODO);
+public class AntecedentsComand extends ConsulatCommand {
+
+    public AntecedentsComand() {
+        super("antecedents", "/antecedents <Joueur>", 1, Rank.RESPONSABLE);
         suggest(true, Arguments.player("joueur"));
-        GuiManager.getInstance().addRootGui("sanction", new SanctionGui());
+        GuiManager.getInstance().addRootGui("antecedents", new AntecedentsGui());
     }
-    
+
     @Override
     public void onCommand(ConsulatPlayer sender, String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
@@ -29,6 +29,7 @@ public class SanctionCommand extends ConsulatCommand {
             player.sendMessage(Text.PREFIX + "§cCe joueur ne s'est jamais connecté.");
             return;
         }
-        GuiManager.getInstance().getRootGui("sanction").open(sender, new ConsulatOffline(0, uuid, args[0], Rank.INVITE, null));
+
+        GuiManager.getInstance().getRootGui("antecedents").open(sender, new ConsulatOffline(0, uuid, args[0], Rank.INVITE, null));
     }
 }
