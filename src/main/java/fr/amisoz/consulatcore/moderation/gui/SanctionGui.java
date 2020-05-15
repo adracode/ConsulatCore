@@ -1,4 +1,4 @@
-package fr.amisoz.consulatcore.moderation;
+package fr.amisoz.consulatcore.moderation.gui;
 
 import fr.leconsulat.api.gui.GuiListener;
 import fr.leconsulat.api.gui.events.GuiClickEvent;

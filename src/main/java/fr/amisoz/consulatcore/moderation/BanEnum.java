@@ -15,7 +15,7 @@ public enum BanEnum {
     EVENT_CHEAT("Triche à un event", Material.CRAFTING_TABLE, 60*60*24L, " 1 jour"),
     PVP("PvP", Material.DIAMOND_SWORD, 60*60*2L, " 2 jours"),
     MENACE("Menace (DDos,Dox,...)", Material.SKELETON_SKULL, 60*60*24*7L, "1 semaine"),
-    OTHER("Banni", Material.LAVA_BUCKET, 60*60*24*7L, "1 semaine");
+    OTHER("Banni", Material.MAP, 60*60*24*7L, "1 semaine");
 
     private String sanctionName;
     private Material guiMaterial;

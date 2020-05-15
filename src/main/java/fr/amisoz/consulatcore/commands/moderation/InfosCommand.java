@@ -4,6 +4,7 @@ import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalOffline;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.CPlayerManager;
@@ -22,6 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Optional;
@@ -83,6 +85,7 @@ public class InfosCommand extends ConsulatCommand {
 
                     SurvivalOffline offlineTarget = offlineConsulat.get();
 
+                    sendBan(args[0], player.getPlayer());
                     player.sendMessage(ChatColor.GRAY + "Grade ⤗ " + offlineTarget.getRank().getRankColor() + offlineTarget.getRank().getRankName() + ChatColor.GRAY + " ↭ Argent ⤗ " + ChatColor.BLUE + offlineTarget.getMoney() + "€");
                 }
             } catch (SQLException e) {
@@ -94,7 +97,11 @@ public class InfosCommand extends ConsulatCommand {
             textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GRAY + "Clique pour voir les homes !").create()));
             textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/home " + args[0] + ":"));
 
-            player.getPlayer().spigot().sendMessage(textComponent);
+            TextComponent antecedentsComponent = new TextComponent(ChatColor.GRAY + "[" + ChatColor.GOLD + "Voir les antécédents" + ChatColor.GRAY + "]");
+            antecedentsComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GRAY + "Clique pour voir les antécédents !").create()));
+            antecedentsComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/antecedents " + args[0]));
+
+            player.getPlayer().spigot().sendMessage(textComponent, antecedentsComponent);
         });
     }
 
@@ -109,5 +116,28 @@ public class InfosCommand extends ConsulatCommand {
 
         resultSet.close();
         preparedStatement.close();
+    }
+
+    private void sendBan(String playerName, Player moderator) throws SQLException {
+        PreparedStatement preparedStatement = ConsulatCore.getInstance().getDatabaseConnection().prepareStatement("SELECT * FROM antecedents WHERE playername = ? AND sanction = 'BAN' AND active = '1'");
+        preparedStatement.setString(1, playerName);
+        ResultSet resultSet = preparedStatement.executeQuery();
+        if (resultSet.next()) {
+            long expireBan = resultSet.getLong("expire");
+            String reason = resultSet.getString("reason");
+
+            resultSet.close();
+            preparedStatement.close();
+            if (System.currentTimeMillis() > expireBan) {
+                moderator.sendMessage(ChatColor.GRAY + "Banni ⤗ " + ChatColor.GREEN + "Non");
+            } else {
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(expireBan);
+                String endBan = new SimpleDateFormat("dd/MM/yyyy 'à' kk:mm").format(calendar.getTime());
+                moderator.sendMessage(ChatColor.GRAY + "Banni ⤗ " + ChatColor.RED + "Oui" + ChatColor.GRAY + " • " + ChatColor.YELLOW + reason + ChatColor.GRAY + " ↭ Jusqu'au " + ChatColor.BLUE + endBan);
+            }
+        }else{
+            moderator.sendMessage(ChatColor.GRAY + "Banni ⤗ " + ChatColor.GREEN + "Non");
+        }
     }
 }

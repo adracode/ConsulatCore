@@ -5,6 +5,8 @@ import fr.amisoz.consulatcore.claims.Claim;
 import fr.amisoz.consulatcore.claims.ClaimManager;
 import fr.amisoz.consulatcore.duel.Arena;
 import fr.amisoz.consulatcore.fly.FlyManager;
+import fr.amisoz.consulatcore.moderation.BanEnum;
+import fr.amisoz.consulatcore.moderation.MuteEnum;
 import fr.amisoz.consulatcore.moderation.MuteObject;
 import fr.amisoz.consulatcore.shop.Shop;
 import fr.amisoz.consulatcore.utils.CustomEnum;
@@ -50,7 +52,9 @@ public class SurvivalPlayer extends ConsulatPlayer {
     private int limitShop;
     private Fly fly = null;
     private Set<Shop> shops = new HashSet<>();
-    
+    private HashMap<BanEnum, Integer> banHistory = new HashMap<>();
+    private HashMap<MuteEnum, Integer> muteHistory = new HashMap<>();
+
     public SurvivalPlayer(UUID uuid, String name){
         super(uuid, name);
     }
@@ -461,5 +465,13 @@ public class SurvivalPlayer extends ConsulatPlayer {
     
     public int getFlyTime(){
         return hasFly() ? fly.getFlyTime() : 0;
+    }
+
+    public HashMap<BanEnum, Integer> getBanHistory() {
+        return banHistory;
+    }
+
+    public HashMap<MuteEnum, Integer> getMuteHistory() {
+        return muteHistory;
     }
 }
