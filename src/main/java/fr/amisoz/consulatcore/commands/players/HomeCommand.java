@@ -30,7 +30,9 @@ public class HomeCommand extends ConsulatCommand {
                         return builder.buildFuture();
                     }
                     for(String home : player.getNameHomes()){
-                        builder.suggest(home);
+                        if(home.toLowerCase().startsWith(builder.getRemaining().toLowerCase())){
+                            builder.suggest(home);
+                        }
                     }
                     return builder.buildFuture();
                 })

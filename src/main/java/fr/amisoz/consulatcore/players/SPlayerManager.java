@@ -8,7 +8,8 @@ import fr.amisoz.consulatcore.events.SurvivalPlayerLoadedEvent;
 import fr.amisoz.consulatcore.shop.Shop;
 import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.leconsulat.api.ConsulatAPI;
-import fr.leconsulat.api.commands.CommandManager;
+import fr.leconsulat.api.database.SaveManager;
+import fr.leconsulat.api.database.SaveTask;
 import fr.leconsulat.api.events.ConsulatPlayerLeaveEvent;
 import fr.leconsulat.api.events.ConsulatPlayerLoadedEvent;
 import fr.leconsulat.api.player.CPlayerManager;
@@ -20,6 +21,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
@@ -47,6 +49,8 @@ public class SPlayerManager implements Listener {
         dateFormat = DateFormat.getDateTimeInstance(
                 DateFormat.SHORT,
                 DateFormat.SHORT, new Locale("FR", "fr"));
+        SaveManager saveManager = SaveManager.getInstance();
+        saveManager.addSaveTask("money", new SaveTask("players", "player_uuid", "money", SurvivalPlayer.class, "money"));
     }
     
     @EventHandler
@@ -80,9 +84,10 @@ public class SPlayerManager implements Listener {
         });
     }
     
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOW)
     public void onSurvivalPlayerLoaded(SurvivalPlayerLoadedEvent event){
         SurvivalPlayer player = event.getPlayer();
+        SaveManager.getInstance().addData("money", player);
         Rank playerRank = player.getRank();
         if(!player.hasPower(Rank.MODO)){
             for(ConsulatPlayer vanished : CPlayerManager.getInstance().getConsulatPlayers()){
@@ -102,10 +107,8 @@ public class SPlayerManager implements Listener {
                 player.addClaim(claim);
             }
         }
-        CommandManager.getInstance().sendCommands(event.getPlayer());
     }
     
-    //TODO: Liste modo
     @EventHandler
     public void onLeave(ConsulatPlayerLeaveEvent event){
         SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
@@ -139,7 +142,7 @@ public class SPlayerManager implements Listener {
                 Bukkit.broadcastMessage("§7(§c-§7)" + playerRank.getRankColor() + " [" + playerRank.getRankName() + "] " + player.getPlayer().getName());
             }
         }
-        
+        SaveManager.getInstance().removeData("money", player);
         if(player.isFlying()){
             Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
                 try {

@@ -48,6 +48,7 @@ public class ShopManager implements Listener {
     private static ShopManager instance;
     
     private Map<Long, Shop> shops = new HashMap<>();
+    private Map<ShopItemType, Set<Shop>> nonEmptyTypes = new HashMap<>();
     
     public ShopManager(){
         if(instance != null){
@@ -64,7 +65,6 @@ public class ShopManager implements Listener {
     }
     
     private void initShops() throws SQLException{
-        ShopGui gui = (ShopGui)GuiManager.getInstance().getRootGui("shop");
         PreparedStatement shops = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM shopinfo");
         ResultSet resultShops = shops.executeQuery();
         World world = Bukkit.getWorlds().get(0);
@@ -160,6 +160,7 @@ public class ShopManager implements Listener {
                     itemFrame == null
             );
             this.shops.put(shop.getCoords(), shop);
+            addType(shop);
             if(itemFrame == null){
                 if(!shop.placeItemFrame()){
                     if(shop.getSign() != null){
@@ -174,8 +175,29 @@ public class ShopManager implements Listener {
                 removeShop(shop);
                 ConsulatAPI.getConsulatAPI().logFile("Le shop " + shop + " a été détruit par il n'a pas de panneau");
             }
-            gui.addShop(shop);
+            shop.addInGui();
         }
+    }
+    
+    void addType(Shop shop){
+        for(ShopItemType type : shop.getTypes()){
+            nonEmptyTypes.computeIfAbsent(type, (k) -> new HashSet<>()).add(shop);
+        }
+    }
+    
+    void removeType(Shop shop){
+        for(ShopItemType type : shop.getTypes()){
+            Set<Shop> shops = nonEmptyTypes.get(type);
+            if(shops.size() == 1 && shops.iterator().next().equals(shop)){
+                nonEmptyTypes.remove(type);
+            } else {
+                shops.remove(shop);
+            }
+        }
+    }
+    
+    public Set<ShopItemType> getNonEmptyTypes(){
+        return nonEmptyTypes.keySet();
     }
     
     public void addShop(SurvivalPlayer player, Shop shop) throws SQLException{
@@ -183,7 +205,8 @@ public class ShopManager implements Listener {
         Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
             player.addShop(shop);
             shops.put(shop.getCoords(), shop);
-            ((ShopGui)GuiManager.getInstance().getRootGui("shop")).addShop(shop);
+            addType(shop);
+            shop.addInGui();
         });
         
     }
@@ -383,7 +406,7 @@ public class ShopManager implements Listener {
                     return;
                 }
                 if(player.getUUID().equals(shop.getOwner()) || player.hasPower(Rank.RESPONSABLE) || player.getRank() == Rank.DEVELOPPEUR){
-                    ((ShopGui)GuiManager.getInstance().getRootGui("shop")).removeShop(shop);
+                    shop.removeInGui();
                     ItemStack[] content = shop.getInventory().getContents();
                     Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
                         try {
@@ -679,6 +702,7 @@ public class ShopManager implements Listener {
     public void removeShop(Shop shop) throws SQLException{
         removeShopDatabase(shop.getOwner(), shop.getX(), shop.getY(), shop.getZ());
         this.shops.remove(shop.getCoords());
+        removeType(shop);
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(shop.getOwner());
         if(player != null){
             player.removeShop(shop);
@@ -1026,5 +1050,4 @@ public class ShopManager implements Listener {
         update.executeUpdate();
         update.close();
     }
-    
 }
