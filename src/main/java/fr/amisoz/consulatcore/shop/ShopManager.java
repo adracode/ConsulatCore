@@ -702,7 +702,6 @@ public class ShopManager implements Listener {
     public void removeShop(Shop shop) throws SQLException{
         removeShopDatabase(shop.getOwner(), shop.getX(), shop.getY(), shop.getZ());
         this.shops.remove(shop.getCoords());
-        removeType(shop);
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(shop.getOwner());
         if(player != null){
             player.removeShop(shop);

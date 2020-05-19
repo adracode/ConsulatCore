@@ -41,7 +41,13 @@ public class ShopCommand extends ConsulatCommand {
                 locate,
                 LiteralArgumentBuilder.literal("help"),
                 LiteralArgumentBuilder.literal("create")
-                        .requires((listener) -> ConsulatAPI.getConsulatAPI().isDebug() && getConsulatPlayer(listener).hasPower(Rank.MODO))
+                        .requires((listener) -> {
+                            ConsulatPlayer player = getConsulatPlayer(listener);
+                            if(player == null){
+                                return false;
+                            }
+                            return ConsulatAPI.getConsulatAPI().isDebug() && player.hasPower(Rank.MODO);
+                        })
                         .then(RequiredArgumentBuilder.argument("nombre", IntegerArgumentType.integer()))
         );
         //GuiManager.getInstance().addRootGui("shop-locate", new ShopLocateGui());
