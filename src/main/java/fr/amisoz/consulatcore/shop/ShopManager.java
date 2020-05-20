@@ -180,6 +180,9 @@ public class ShopManager implements Listener {
     }
     
     void addType(Shop shop){
+        if(shop.isEmpty()){
+            return;
+        }
         for(ShopItemType type : shop.getTypes()){
             nonEmptyTypes.computeIfAbsent(type, (k) -> new HashSet<>()).add(shop);
         }
@@ -975,37 +978,16 @@ public class ShopManager implements Listener {
                             ItemStack save = player.getPlayer().getInventory().getItemInMainHand();
                             player.getPlayer().getInventory().clear(player.getPlayer().getInventory().getHeldItemSlot());
                             player.getPlayer().updateInventory();
-                            Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                                try {
-                                    player.addMoney(sellPrice * 16);
-                                    player.sendMessage(Text.PREFIX + "Tu as vendu §e" + material.name() + " x 16 §6pour §e" + sellPrice * 16);
-                                } catch(SQLException e){
-                                    player.sendMessage(Text.PREFIX + "§cUne erreur interne est survenue");
-                                    Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
-                                        player.getPlayer().getInventory().addItem(save);
-                                    });
-                                    e.printStackTrace();
-                                }
-                            });
+                            player.addMoney(sellPrice * 16);
+                            player.sendMessage(Text.PREFIX + "Tu as vendu §e" + material.name() + " x 16 §6pour §e" + sellPrice * 16);
                         }
                     } else {
                         if(itemInHand.getAmount() == 64){
                             itemStack.setAmount(64);
-                            ItemStack save = player.getPlayer().getInventory().getItemInMainHand();
                             player.getPlayer().getInventory().clear(player.getPlayer().getInventory().getHeldItemSlot());
                             player.getPlayer().updateInventory();
-                            Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                                try {
-                                    player.addMoney(sellPrice * 64);
-                                    player.sendMessage(Text.PREFIX + "Tu as vendu §e" + material.name() + " x 64 §6pour §e" + sellPrice * 64);
-                                } catch(SQLException e){
-                                    player.sendMessage(Text.PREFIX + "§cUne erreur interne est survenue");
-                                    Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
-                                        player.getPlayer().getInventory().addItem(save);
-                                    });
-                                    e.printStackTrace();
-                                }
-                            });
+                            player.addMoney(sellPrice * 64);
+                            player.sendMessage(Text.PREFIX + "Tu as vendu §e" + material.name() + " x 64 §6pour §e" + sellPrice * 64);
                         } else {
                             player.sendMessage(Text.PREFIX + "§cTu n'as pas assez de §4" + itemStack.getType().name() + "§c pour vendre un stack.");
                         }
@@ -1019,14 +1001,8 @@ public class ShopManager implements Listener {
                         player.getPlayer().getInventory().clear(player.getPlayer().getInventory().getHeldItemSlot());
                     }
                     player.getPlayer().updateInventory();
-                    Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                        try {
-                            player.addMoney(sellPrice);
-                            player.sendMessage(Text.PREFIX + "Tu as vendu §e" + material.name() + " x 1 §6pour §e" + sellPrice);
-                        } catch(SQLException e){
-                            e.printStackTrace();
-                        }
-                    });
+                    player.addMoney(sellPrice);
+                    player.sendMessage(Text.PREFIX + "Tu as vendu §e" + material.name() + " x 1 §6pour §e" + sellPrice);
                 } else {
                     player.sendMessage(Text.PREFIX + "§cTu n'as pas de " + itemStack.getType().name());
                 }

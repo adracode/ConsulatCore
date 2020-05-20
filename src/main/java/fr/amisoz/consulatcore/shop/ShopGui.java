@@ -31,14 +31,14 @@ public class ShopGui extends GuiListener {
 
     public ShopGui(){
         super(null, ShopItemType.class);
-        int lines = 2;
-        lastPages.put(ShopItemType.DEFAULT, new AtomicInteger(0));
-        nextSlots.put(ShopItemType.DEFAULT, new AtomicInteger(0));
-        addGui(null, this, "§eListe des shops §c(0)", lines,
+        int lines = 6;
+        lastPages.put(ShopItemType.ALL, new AtomicInteger(0));
+        nextSlots.put(ShopItemType.ALL, new AtomicInteger(0));
+        addGui(null, this, "§4Shops §c(0)", lines,
                 getItem("§ePage précédente", (lines - 1) * 9, Material.ARROW),
                 getItem("§ePage suivante", lines * 9 - 1, Material.ARROW)
         );
-        addGui(ShopItemType.DEFAULT, this, "§eListe des shops §c(1)", lines,
+        addGui(ShopItemType.ALL, this, "§4Shops §c(1)", lines,
                 getItem("§ePage précédente", (lines - 1) * 9, Material.ARROW),
                 getItem("§ePage suivante", lines * 9 - 1, Material.ARROW)
         );
@@ -56,7 +56,7 @@ public class ShopGui extends GuiListener {
         }
         AtomicInteger nextSlot = nextSlots.get(key);
         AtomicInteger lastPage = lastPages.get(key);
-        if(nextSlot.get() >= 9){
+        if(nextSlot.get() >= 45){
             lastPage.incrementAndGet();
             nextSlot.set(0);
         }
@@ -106,7 +106,12 @@ public class ShopGui extends GuiListener {
             return;
         }
         Gui gui = event.getGui();
-        gui.setName("§eListe des shops §c(" + (lastPages.get(event.getKey()).get() + 1) + ")");
+        Object key = event.getKey();
+        if(key.equals(ShopItemType.ALL)){
+            gui.setName("§4Shops §8(§3" + (lastPages.get(event.getKey()).get() + 1) + "§8)");
+        } else {
+            gui.setName("§4Shops §8(§3" + key.toString() + "§8) (§3" + (lastPages.get(event.getKey()).get() + 1) + "§8)");
+        }
     }
     
     @Override
@@ -122,13 +127,13 @@ public class ShopGui extends GuiListener {
     @Override
     public void onClick(GuiClickEvent event){
         switch(event.getSlot()){
-            case 9:
+            case 45:
                 if(event.getGui().getPage() <= 0){
                     return;
                 }
                 open(event.getPlayer(), event.getGui().getKey(), event.getGui().getPage() - 1);
                 break;
-            case 17:
+            case 53:
                 if(event.getGui().getPage() == lastPages.get(event.getKey()).get()){
                     return;
                 }

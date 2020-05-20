@@ -1,6 +1,6 @@
 package fr.amisoz.consulatcore.commands.economy;
 
-import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
@@ -23,9 +23,9 @@ public class PayCommand extends ConsulatCommand {
         super("pay", "/pay <Joueur> <Montant>", 2, Rank.JOUEUR);
         suggest(true,
                 Arguments.player("joueur")
-                        .then(RequiredArgumentBuilder.argument("montant", IntegerArgumentType.integer(0))),
+                        .then(RequiredArgumentBuilder.argument("montant", DoubleArgumentType.doubleArg(0, 1_000_000))),
                 Arguments.word("joueur")
-                        .then(RequiredArgumentBuilder.argument("montant", IntegerArgumentType.integer(0))));
+                        .then(RequiredArgumentBuilder.argument("montant", DoubleArgumentType.doubleArg(0, 1_000_000))));
     }
     
     @Override
@@ -33,17 +33,17 @@ public class PayCommand extends ConsulatCommand {
         SurvivalPlayer player = (SurvivalPlayer)sender;
         double moneyToGive;
         try {
-            moneyToGive = Integer.parseInt(args[1]);
+            moneyToGive = Double.parseDouble(args[1]);
         } catch(NumberFormatException exception){
             sender.sendMessage("§c" + getUsage());
             return;
         }
-        if(!player.hasMoney(moneyToGive)){
-            sender.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent !");
+        if(moneyToGive <= 0 || moneyToGive > 1_000_000){
+            sender.sendMessage(Text.PREFIX + "§cTu ne peux pas donner " + moneyToGive + " €.");
             return;
         }
-        if(moneyToGive <= 0){
-            sender.sendMessage(Text.PREFIX + "§cTu ne peux pas donner " + moneyToGive + " €.");
+        if(!player.hasMoney(moneyToGive)){
+            sender.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent !");
             return;
         }
         if(CPlayerManager.getInstance().getPlayerUUID(args[0]) == null){

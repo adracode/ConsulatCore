@@ -6,7 +6,7 @@ import org.bukkit.potion.PotionEffectType;
 
 public class ShopItemType {
     
-    public static final ShopItemType DEFAULT = new ShopItemType();
+    public static final ShopItemType ALL = new ShopItemType();
     
     private ShopItemType(){
     }

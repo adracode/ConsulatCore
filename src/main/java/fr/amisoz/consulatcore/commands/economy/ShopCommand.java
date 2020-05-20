@@ -27,7 +27,7 @@ import org.bukkit.potion.PotionEffectType;
 public class ShopCommand extends ConsulatCommand {
     
     public ShopCommand(){
-        super("shop", "/shop list|help|locate <item>", 0, Rank.JOUEUR);
+        super("shop", "/shop list | help | locate <item>", 0, Rank.JOUEUR);
         LiteralArgumentBuilder<Object> locate = LiteralArgumentBuilder.literal("locate").then(RequiredArgumentBuilder.argument("item", StringArgumentType.word()).suggests(((context, builder) -> {
             for(ShopItemType type : ShopManager.getInstance().getNonEmptyTypes()){
                 if(type.toString().startsWith(builder.getRemaining())){
@@ -57,13 +57,14 @@ public class ShopCommand extends ConsulatCommand {
     public void onCommand(ConsulatPlayer sender, String[] args){
         if(args.length == 0){
             sender.sendMessage(Text.PREFIX + "§cListe des commandes:");
-            sender.sendMessage(Text.PREFIX + "§c- §e/shop list §cte permet de voir la liste des shops !");
             sender.sendMessage(Text.PREFIX + "§c- §e/shop help §cte permet de savoir comment créer un shop !");
+            sender.sendMessage(Text.PREFIX + "§c- §e/shop locate §cte permet de voir la liste des shops d'un certain item, enchantement ou potion !");
+            sender.sendMessage(Text.PREFIX + "§c- §e/shop list §cte permet de voir la liste des shops !");
             return;
         }
         switch(args[0].toLowerCase()){
             case "list":
-                if(!GuiManager.getInstance().getRootGui("shop").open(sender, ShopItemType.DEFAULT)){
+                if(!GuiManager.getInstance().getRootGui("shop").open(sender, ShopItemType.ALL)){
                     sender.sendMessage(Text.PREFIX + "§cIl n'y a aucun shop.");
                 }
                 return;
@@ -82,6 +83,7 @@ public class ShopCommand extends ConsulatCommand {
                     if(enchantment == null){
                         PotionEffectType effectType = PotionEffectType.getByName(itemType);
                         if(effectType == null){
+                            sender.sendMessage(Text.PREFIX + "§cItem invalide §7(" + args[1] + ")§c.");
                             return;
                         }
                         type = new ShopItemType.PotionItem(effectType);
@@ -91,7 +93,9 @@ public class ShopCommand extends ConsulatCommand {
                 } else {
                     type = new ShopItemType.MaterialItem(material);
                 }
-                GuiManager.getInstance().getRootGui("shop").open(sender, type);
+                if(!GuiManager.getInstance().getRootGui("shop").open(sender, type)){
+                    sender.sendMessage(Text.PREFIX + "§cL'item §7" + args[1] + " §cn'est pas en vente actuellement.");
+                }
                 return;
             case "create":
                 if(!ConsulatAPI.getConsulatAPI().isDebug() || !sender.hasPower(Rank.MODO)){

@@ -94,7 +94,7 @@ public class Shop {
         for(ShopItemType type : types){
             gui.addShop(this, type);
         }
-        gui.addShop(this, ShopItemType.DEFAULT);
+        gui.addShop(this, ShopItemType.ALL);
         ShopManager.getInstance().addType(this);
     }
     
@@ -103,7 +103,7 @@ public class Shop {
         for(ShopItemType type : types){
             gui.removeShop(this, type);
         }
-        gui.removeShop(this, ShopItemType.DEFAULT);
+        gui.removeShop(this, ShopItemType.ALL);
         ShopManager.getInstance().removeType(this);
     }
     
@@ -144,7 +144,11 @@ public class Shop {
             Block sign = chest.getRelative(face);
             if(sign.getType() == Material.OAK_WALL_SIGN){
                 Sign state = (Sign)sign.getState();
-                if(state.getLine(0).equals("§8[§aConsulShop§8]") && ShopManager.getInstance().getChestFromSign(sign).equals(chest.getState())){
+                Chest c = ShopManager.getInstance().getChestFromSign(sign);
+                if(c == null){
+                    continue;
+                }
+                if(state.getLine(0).equals("§8[§aConsulShop§8]") && c.equals(chest.getState())){
                     return state;
                 }
             }
