@@ -32,11 +32,16 @@ public class MeceneRunnable implements Runnable {
         });
         for(ConsulatPlayer player : CPlayerManager.getInstance().getConsulatPlayers()){
             if(player.getRank().equals(Rank.MECENE)){
-                ((SurvivalPlayer)player).addMoneyNoBDD(100D);
+                ((SurvivalPlayer)player).addMoney(100D);
             }
         }
     }
 
+    /*
+    * Si un mécène est connecté, il recevra l'argent en jeu ET en BDD,
+    * mais l'argent en jeu surpasse l'argent BDD donc il ne devrait pas
+    * y avoir de problèmes
+    */
     private void giveToMecenes() throws SQLException {
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE players SET money = money + 100 WHERE player_rank = 'Mécène'");
         preparedStatement.executeUpdate();

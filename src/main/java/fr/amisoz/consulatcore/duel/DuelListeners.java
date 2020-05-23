@@ -25,7 +25,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.projectiles.ProjectileSource;
 
-import java.sql.SQLException;
 import java.util.Random;
 
 public class DuelListeners implements Listener {
@@ -114,13 +113,7 @@ public class DuelListeners implements Listener {
                 skull.setItemMeta(skullMeta);
                 arena.getVictoryPlayer().getWorld().dropItemNaturally(arena.getVictoryPlayer().getLocation(), skull);
             }
-            Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                try {
-                    ((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(arena.getVictoryPlayer().getUniqueId())).addMoney(arena.bet * 2);
-                } catch(SQLException e){
-                    e.printStackTrace();
-                }
-            });
+            ((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(arena.getVictoryPlayer().getUniqueId())).addMoney(arena.bet * 2);
             arena.getVictoryPlayer().sendMessage("§aTu as gagné " + arena.bet * 2 + "€ !");
             Bukkit.getScheduler().runTaskLater(ConsulatCore.getInstance(), () -> {
                 for(Entity entity : arena.getVictoryPlayer().getNearbyEntities(10, 5, 10)){

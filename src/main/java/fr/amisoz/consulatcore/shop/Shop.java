@@ -8,14 +8,17 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Sign;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionEffectType;
 
-import java.util.Collection;
-import java.util.UUID;
+import java.util.*;
 
 public class Shop {
     
@@ -33,6 +36,7 @@ public class Shop {
     private UUID owner;
     private String ownerName;
     private ItemStack forSale;
+    private ShopItemType[] types;
     private double price;
     private int amount;
     private boolean open = false;
@@ -46,6 +50,25 @@ public class Shop {
         setCoords(location.getBlockX(), location.getBlockY(), location.getBlockZ());
         this.amount = legacy ? setAmountLegacy() : setAmount();
         buy(0);
+        List<ShopItemType> types = new ArrayList<>();
+        Material material = forSale.getType();
+        if(forSale.getEnchantments().size() != 0){
+            for(Enchantment enchantment : forSale.getEnchantments().keySet()){
+                types.add(new ShopItemType.EnchantmentItem(enchantment));
+            }
+        }
+        if(forSale.getItemMeta() instanceof EnchantmentStorageMeta){
+            for(Enchantment enchantment : ((EnchantmentStorageMeta)forSale.getItemMeta()).getStoredEnchants().keySet()){
+                types.add(new ShopItemType.EnchantmentItem(enchantment));
+            }
+        } else if(forSale.getItemMeta() instanceof PotionMeta){
+            PotionEffectType effectType = ((PotionMeta)forSale.getItemMeta()).getBasePotionData().getType().getEffectType();
+            if(effectType != null){
+                types.add(new ShopItemType.PotionItem(effectType));
+            }
+        }
+        types.add(new ShopItemType.MaterialItem(material));
+        this.types = types.toArray(new ShopItemType[0]);
     }
     
     public boolean isOpen(){
@@ -59,11 +82,29 @@ public class Shop {
             amount = setAmount();
             buy(0);
             if(wasEmpty && !isEmpty()){
-                ((ShopGui)GuiManager.getInstance().getRootGui("shop")).addShop(this);
+                addInGui();
             } else if(!wasEmpty && isEmpty()){
-                ((ShopGui)GuiManager.getInstance().getRootGui("shop")).removeShop(this);
+                removeInGui();
             }
         }
+    }
+    
+    void addInGui(){
+        ShopGui gui = ((ShopGui)GuiManager.getInstance().getRootGui("shop"));
+        for(ShopItemType type : types){
+            gui.addShop(this, type);
+        }
+        gui.addShop(this, ShopItemType.ALL);
+        ShopManager.getInstance().addType(this);
+    }
+    
+    void removeInGui(){
+        ShopGui gui = ((ShopGui)GuiManager.getInstance().getRootGui("shop"));
+        for(ShopItemType type : types){
+            gui.removeShop(this, type);
+        }
+        gui.removeShop(this, ShopItemType.ALL);
+        ShopManager.getInstance().removeType(this);
     }
     
     public boolean isItemAccepted(ItemStack item){
@@ -103,7 +144,11 @@ public class Shop {
             Block sign = chest.getRelative(face);
             if(sign.getType() == Material.OAK_WALL_SIGN){
                 Sign state = (Sign)sign.getState();
-                if(state.getLine(0).equals("§8[§aConsulShop§8]") && ShopManager.getInstance().getChestFromSign(sign).equals(chest.getState())){
+                Chest c = ShopManager.getInstance().getChestFromSign(sign);
+                if(c == null){
+                    continue;
+                }
+                if(state.getLine(0).equals("§8[§aConsulShop§8]") && c.equals(chest.getState())){
                     return state;
                 }
             }
@@ -225,12 +270,16 @@ public class Shop {
             ++index;
         }
         if(isEmpty()){
-            ((ShopGui)GuiManager.getInstance().getRootGui("shop")).removeShop(this);
+            removeInGui();
         }
     }
     
     public boolean isEmpty(){
         return amount == 0;
+    }
+    
+    public List<ShopItemType> getTypes(){
+        return Collections.unmodifiableList(Arrays.asList(types));
     }
     
     @Override

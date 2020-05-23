@@ -48,6 +48,7 @@ public class ShopManager implements Listener {
     private static ShopManager instance;
     
     private Map<Long, Shop> shops = new HashMap<>();
+    private Map<ShopItemType, Set<Shop>> nonEmptyTypes = new HashMap<>();
     
     public ShopManager(){
         if(instance != null){
@@ -64,7 +65,6 @@ public class ShopManager implements Listener {
     }
     
     private void initShops() throws SQLException{
-        ShopGui gui = (ShopGui)GuiManager.getInstance().getRootGui("shop");
         PreparedStatement shops = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM shopinfo");
         ResultSet resultShops = shops.executeQuery();
         World world = Bukkit.getWorlds().get(0);
@@ -174,8 +174,32 @@ public class ShopManager implements Listener {
                 removeShop(shop);
                 ConsulatAPI.getConsulatAPI().logFile("Le shop " + shop + " a été détruit par il n'a pas de panneau");
             }
-            gui.addShop(shop);
+            shop.addInGui();
         }
+    }
+    
+    void addType(Shop shop){
+        if(shop.isEmpty()){
+            return;
+        }
+        for(ShopItemType type : shop.getTypes()){
+            nonEmptyTypes.computeIfAbsent(type, (k) -> new HashSet<>()).add(shop);
+        }
+    }
+    
+    void removeType(Shop shop){
+        for(ShopItemType type : shop.getTypes()){
+            Set<Shop> shops = nonEmptyTypes.get(type);
+            if(shops.size() == 1 && shops.iterator().next().equals(shop)){
+                nonEmptyTypes.remove(type);
+            } else {
+                shops.remove(shop);
+            }
+        }
+    }
+    
+    public Set<ShopItemType> getNonEmptyTypes(){
+        return nonEmptyTypes.keySet();
     }
     
     public void addShop(SurvivalPlayer player, Shop shop) throws SQLException{
@@ -183,7 +207,7 @@ public class ShopManager implements Listener {
         Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
             player.addShop(shop);
             shops.put(shop.getCoords(), shop);
-            ((ShopGui)GuiManager.getInstance().getRootGui("shop")).addShop(shop);
+            shop.addInGui();
         });
         
     }
@@ -383,7 +407,7 @@ public class ShopManager implements Listener {
                     return;
                 }
                 if(player.getUUID().equals(shop.getOwner()) || player.hasPower(Rank.RESPONSABLE) || player.getRank() == Rank.DEVELOPPEUR){
-                    ((ShopGui)GuiManager.getInstance().getRootGui("shop")).removeShop(shop);
+                    shop.removeInGui();
                     ItemStack[] content = shop.getInventory().getContents();
                     Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
                         try {
@@ -952,37 +976,16 @@ public class ShopManager implements Listener {
                             ItemStack save = player.getPlayer().getInventory().getItemInMainHand();
                             player.getPlayer().getInventory().clear(player.getPlayer().getInventory().getHeldItemSlot());
                             player.getPlayer().updateInventory();
-                            Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                                try {
-                                    player.addMoney(sellPrice * 16);
-                                    player.sendMessage(Text.PREFIX + "Tu as vendu §e" + material.name() + " x 16 §6pour §e" + sellPrice * 16);
-                                } catch(SQLException e){
-                                    player.sendMessage(Text.PREFIX + "§cUne erreur interne est survenue");
-                                    Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
-                                        player.getPlayer().getInventory().addItem(save);
-                                    });
-                                    e.printStackTrace();
-                                }
-                            });
+                            player.addMoney(sellPrice * 16);
+                            player.sendMessage(Text.PREFIX + "Tu as vendu §e" + material.name() + " x 16 §6pour §e" + sellPrice * 16);
                         }
                     } else {
                         if(itemInHand.getAmount() == 64){
                             itemStack.setAmount(64);
-                            ItemStack save = player.getPlayer().getInventory().getItemInMainHand();
                             player.getPlayer().getInventory().clear(player.getPlayer().getInventory().getHeldItemSlot());
                             player.getPlayer().updateInventory();
-                            Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                                try {
-                                    player.addMoney(sellPrice * 64);
-                                    player.sendMessage(Text.PREFIX + "Tu as vendu §e" + material.name() + " x 64 §6pour §e" + sellPrice * 64);
-                                } catch(SQLException e){
-                                    player.sendMessage(Text.PREFIX + "§cUne erreur interne est survenue");
-                                    Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
-                                        player.getPlayer().getInventory().addItem(save);
-                                    });
-                                    e.printStackTrace();
-                                }
-                            });
+                            player.addMoney(sellPrice * 64);
+                            player.sendMessage(Text.PREFIX + "Tu as vendu §e" + material.name() + " x 64 §6pour §e" + sellPrice * 64);
                         } else {
                             player.sendMessage(Text.PREFIX + "§cTu n'as pas assez de §4" + itemStack.getType().name() + "§c pour vendre un stack.");
                         }
@@ -996,14 +999,8 @@ public class ShopManager implements Listener {
                         player.getPlayer().getInventory().clear(player.getPlayer().getInventory().getHeldItemSlot());
                     }
                     player.getPlayer().updateInventory();
-                    Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                        try {
-                            player.addMoney(sellPrice);
-                            player.sendMessage(Text.PREFIX + "Tu as vendu §e" + material.name() + " x 1 §6pour §e" + sellPrice);
-                        } catch(SQLException e){
-                            e.printStackTrace();
-                        }
-                    });
+                    player.addMoney(sellPrice);
+                    player.sendMessage(Text.PREFIX + "Tu as vendu §e" + material.name() + " x 1 §6pour §e" + sellPrice);
                 } else {
                     player.sendMessage(Text.PREFIX + "§cTu n'as pas de " + itemStack.getType().name());
                 }
@@ -1026,5 +1023,4 @@ public class ShopManager implements Listener {
         update.executeUpdate();
         update.close();
     }
-    
 }
