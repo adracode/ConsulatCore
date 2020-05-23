@@ -164,6 +164,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         new UnbanCommand();
         new UnmuteCommand();
         new UnclaimCommand();
+        new AntecedentsComand();
     }
     
     private void registerEvents(){
