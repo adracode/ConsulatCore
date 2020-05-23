@@ -135,6 +135,9 @@ public class SPlayerManager implements Listener {
                     bukkitPlayer.removePotionEffect(effect.getType());
                 }
             }
+
+            Bukkit.getOnlinePlayers().forEach(onlinePlayer -> onlinePlayer.showPlayer(ConsulatCore.getInstance(), player.getPlayer()));
+
             bukkitPlayer.getInventory().setContents(player.getStockedInventory());
         }
 
