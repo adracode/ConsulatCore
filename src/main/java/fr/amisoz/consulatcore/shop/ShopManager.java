@@ -160,7 +160,6 @@ public class ShopManager implements Listener {
                     itemFrame == null
             );
             this.shops.put(shop.getCoords(), shop);
-            addType(shop);
             if(itemFrame == null){
                 if(!shop.placeItemFrame()){
                     if(shop.getSign() != null){
@@ -208,7 +207,6 @@ public class ShopManager implements Listener {
         Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
             player.addShop(shop);
             shops.put(shop.getCoords(), shop);
-            addType(shop);
             shop.addInGui();
         });
         

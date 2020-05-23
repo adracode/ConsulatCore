@@ -8,6 +8,7 @@ import fr.amisoz.consulatcore.events.SurvivalPlayerLoadedEvent;
 import fr.amisoz.consulatcore.shop.Shop;
 import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.leconsulat.api.ConsulatAPI;
+import fr.leconsulat.api.commands.CommandManager;
 import fr.leconsulat.api.database.SaveManager;
 import fr.leconsulat.api.database.SaveTask;
 import fr.leconsulat.api.events.ConsulatPlayerLeaveEvent;
@@ -107,6 +108,7 @@ public class SPlayerManager implements Listener {
                 player.addClaim(claim);
             }
         }
+        CommandManager.getInstance().sendCommands(event.getPlayer());
     }
     
     @EventHandler

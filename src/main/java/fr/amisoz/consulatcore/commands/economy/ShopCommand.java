@@ -42,11 +42,11 @@ public class ShopCommand extends ConsulatCommand {
                 LiteralArgumentBuilder.literal("help"),
                 LiteralArgumentBuilder.literal("create")
                         .requires((listener) -> {
-                            ConsulatPlayer player = getConsulatPlayer(listener);
-                            if(player == null){
+                            if(!ConsulatAPI.getConsulatAPI().isDebug()){
                                 return false;
                             }
-                            return ConsulatAPI.getConsulatAPI().isDebug() && player.hasPower(Rank.MODO);
+                            ConsulatPlayer player = getConsulatPlayer(listener);
+                            return player != null && player.hasPower(Rank.MODO);
                         })
                         .then(RequiredArgumentBuilder.argument("nombre", IntegerArgumentType.integer()))
         );
