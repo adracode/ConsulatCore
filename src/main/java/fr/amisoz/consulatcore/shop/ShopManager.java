@@ -407,7 +407,9 @@ public class ShopManager implements Listener {
                     return;
                 }
                 if(player.getUUID().equals(shop.getOwner()) || player.hasPower(Rank.RESPONSABLE) || player.getRank() == Rank.DEVELOPPEUR){
-                    shop.removeInGui();
+                    if(!shop.isEmpty()){
+                        shop.removeInGui();
+                    }
                     ItemStack[] content = shop.getInventory().getContents();
                     Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
                         try {
