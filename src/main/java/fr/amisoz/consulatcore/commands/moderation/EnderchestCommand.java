@@ -14,7 +14,7 @@ public class EnderchestCommand extends ConsulatCommand {
     public EnderchestCommand() {
         super("enderchest", Collections.singletonList("ec"), "/ec <Joueur>", 1, Rank.MODPLUS);
         suggest(true,
-                Arguments.player("joueur"));
+                Arguments.playerList("joueur"));
     }
 
     @Override

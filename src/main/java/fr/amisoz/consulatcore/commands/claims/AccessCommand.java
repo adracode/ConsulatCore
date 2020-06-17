@@ -3,125 +3,115 @@ package fr.amisoz.consulatcore.commands.claims;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.claims.Claim;
-import fr.amisoz.consulatcore.claims.ClaimManager;
-import fr.amisoz.consulatcore.players.SPlayerManager;
-import fr.amisoz.consulatcore.players.SurvivalOffline;
+import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.amisoz.consulatcore.zones.Zone;
+import fr.amisoz.consulatcore.zones.claims.Claim;
+import fr.amisoz.consulatcore.zones.claims.ClaimManager;
 import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
 
-import java.sql.SQLException;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 public class AccessCommand extends ConsulatCommand {
-    
+
     public AccessCommand(){
         super("access", "/access [add <Joueur>, remove <Joueur>, list, addall <Joueur>, removeall <Joueur>]", 1, Rank.JOUEUR);
         suggest(true,
                 LiteralArgumentBuilder.literal("list"),
                 LiteralArgumentBuilder.literal("add")
-                        .then(Arguments.player("player"))
+                        .then(Arguments.playerList("player"))
                         .then(Arguments.word("player")),
                 LiteralArgumentBuilder.literal("addall")
-                        .then(Arguments.player("player"))
+                        .then(Arguments.playerList("player"))
                         .then(Arguments.word("player")),
                 LiteralArgumentBuilder.literal("remove")
-                        .then(Arguments.player("player"))
+                        .then(Arguments.playerList("player"))
                         .then(Arguments.word("player")),
                 LiteralArgumentBuilder.literal("removeall")
-                        .then(Arguments.player("player"))
+                        .then(Arguments.playerList("player"))
                         .then(Arguments.word("player"))
         );
     }
-    
+
     @Override
     public void onCommand(ConsulatPlayer sender, String[] args){
         ClaimManager claimManager = ClaimManager.getInstance();
+        SurvivalPlayer player = (SurvivalPlayer)sender;
         switch(args[0].toLowerCase()){
-            case "addall":
+            case "addall":{
                 if(args.length == 1){
                     sender.sendMessage("§c" + getUsage());
                     return;
                 }
-                if(!claimManager.hasClaim(sender.getUUID())){
+                Zone zone = player.getZone();
+                if(zone == null){
                     sender.sendMessage(Text.PREFIX + "§cTu n'a pas de claims.");
                     return;
                 }
-                Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                    try {
-                        Optional<SurvivalOffline> result = SPlayerManager.getInstance().fetchOffline(args[1]);
-                        if(!result.isPresent()){
-                            sender.sendMessage(Text.PREFIX + "§cLe joueur spécifié n'existe pas.");
-                            return;
-                        }
-                        SurvivalOffline target = result.get();
-                        claimManager.giveAccesses(sender.getUUID(), target.getUUID());
-                        sender.sendMessage(Text.PREFIX + "§aLe joueur a été ajouté à tes claims : §2" + target.getName());
-                    } catch(SQLException e){
-                        sender.sendMessage(Text.PREFIX + "§cUne erreur interne est survenue.");
-                        e.printStackTrace();
-                    }
-                });
-                break;
-            case "removeall":
+                UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(args[1]);
+                if(targetUUID == null){
+                    sender.sendMessage(Text.PREFIX + "§cLe joueur spécifié n'existe pas.");
+                    return;
+                }
+                if(targetUUID.equals(player.getUUID()) || !player.getZone().addPlayer(targetUUID)){
+                    sender.sendMessage("§cCe joueur a déjà accès à tout tes claims.");
+                    return;
+                }
+                sender.sendMessage(Text.PREFIX + "§aLe joueur a été ajouté à tes claims : §2" + args[1]);
+            }
+            break;
+            case "removeall":{
                 if(args.length == 1){
                     sender.sendMessage("§c" + getUsage());
                     return;
                 }
-                if(!claimManager.hasClaim(sender.getUUID())){
+                Zone zone = player.getZone();
+                if(zone == null){
                     sender.sendMessage(Text.PREFIX + "§cTu n'a pas de claims.");
                     return;
                 }
-                Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                    try {
-                        Optional<SurvivalOffline> result = SPlayerManager.getInstance().fetchOffline(args[1]);
-                        if(!result.isPresent()){
-                            sender.sendMessage(Text.PREFIX + "§cLe joueur spécifié n'existe pas.");
-                            return;
-                        }
-                        SurvivalOffline target = result.get();
-                        claimManager.removeAccesses(sender.getUUID(), target.getUUID());
-                        sender.sendMessage(Text.PREFIX + "§aLe joueur a été retiré de tes claims : §2" + target.getName());
-                    } catch(SQLException e){
-                        sender.sendMessage(Text.PREFIX + "§cUne erreur interne est survenue.");
-                        e.printStackTrace();
-                    }
-                });
-                break;
+                UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(args[1]);
+                if(targetUUID == null){
+                    sender.sendMessage(Text.PREFIX + "§cLe joueur spécifié n'existe pas.");
+                    return;
+                }
+                if(targetUUID.equals(player.getUUID())){
+                    sender.sendMessage(Text.PREFIX + "§cTu ne peux pas te retirer tes accès.");
+                    return;
+                }
+                if(!player.getZone().removePlayer(targetUUID)){
+                    sender.sendMessage("§cCe joueur n'a aucun accès sur tes claims.");
+                    return;
+                }
+                sender.sendMessage(Text.PREFIX + "§aLe joueur a été retiré de tes claims : §2" + args[2]);
+            }
+            break;
             case "add":{
                 if(args.length == 1){
                     sender.sendMessage("§c" + getUsage());
                     return;
                 }
-                Claim claim = claimManager.getClaim(sender.getPlayer().getLocation().getChunk());
-                if(claim == null || !claim.isOwner(sender)){
+                Claim claim = player.getClaim();
+                if(claim == null || !claim.isOwner(sender.getUUID())){
                     sender.sendMessage(Text.PREFIX + "§cTu dois être dans un claim t'appartenant pour ajouter un joueur.");
                     return;
                 }
-                Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                    try {
-                        Optional<SurvivalOffline> result = SPlayerManager.getInstance().fetchOffline(args[1]);
-                        if(!result.isPresent()){
-                            sender.sendMessage(Text.PREFIX + "§cLe joueur spécifié n'existe pas.");
-                            return;
-                        }
-                        SurvivalOffline target = result.get();
-                        if(claim.isAllowed(target.getUUID())){
-                            sender.sendMessage("§cCe joueur a déjà accès à ce claim.");
-                            return;
-                        }
-                        claimManager.giveAccess(claim, target.getUUID());
-                        sender.sendMessage(Text.PREFIX + "§aLe joueur a été ajouté à ton claim : §2" + target.getName());
-                    } catch(SQLException e){
-                        sender.sendMessage(Text.PREFIX + "§cUne erreur interne est survenue.");
-                        e.printStackTrace();
-                    }
-                });
+                UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(args[1]);
+                if(targetUUID == null){
+                    sender.sendMessage(Text.PREFIX + "§cLe joueur spécifié n'existe pas.");
+                    return;
+                }
+                if(targetUUID.equals(player.getUUID()) || !claim.addPlayer(targetUUID)){
+                    sender.sendMessage("§cCe joueur a déjà accès à ce claim.");
+                    return;
+                }
+                sender.sendMessage(Text.PREFIX + "§aLe joueur a été ajouté à ton claim : §2" + args[1]);
+                sender.sendMessage(Text.PREFIX + "Il n'a aucune permissions pour l'instant. Fais /claim permissions pour en ajouter.");
             }
             break;
             case "remove":{
@@ -130,37 +120,33 @@ public class AccessCommand extends ConsulatCommand {
                     return;
                 }
                 Claim claim = claimManager.getClaim(sender.getPlayer().getLocation().getChunk());
-                if(claim == null || !claim.isOwner(sender)){
+                if(claim == null || !claim.isOwner(sender.getUUID())){
                     sender.sendMessage(Text.PREFIX + "§cTu dois être dans un claim t'appartenant pour enlever un joueur.");
                     return;
                 }
-                Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                    try {
-                        Optional<SurvivalOffline> result = SPlayerManager.getInstance().fetchOffline(args[1]);
-                        if(!result.isPresent()){
-                            sender.sendMessage(Text.PREFIX + "§cLe joueur spécifié n'existe pas.");
-                            return;
-                        }
-                        SurvivalOffline target = result.get();
-                        if(!claim.isAllowed(target.getUUID())){
-                            sender.sendMessage("§cLe joueur n'est pas dans ton claim.");
-                            return;
-                        }
-                        claimManager.removeAccess(claim, target.getUUID());
-                        sender.sendMessage(Text.PREFIX + "§2" + args[1] + "§a a été retiré de ton claim.");
-                    } catch(SQLException e){
-                        sender.sendMessage(Text.PREFIX + "§cUne erreur interne est survenue");
-                    }
-                });
+                UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(args[1]);
+                if(targetUUID == null){
+                    sender.sendMessage(Text.PREFIX + "§cLe joueur spécifié n'existe pas.");
+                    return;
+                }
+                if(targetUUID.equals(player.getUUID())){
+                    sender.sendMessage(Text.PREFIX + "§cTu ne peux pas te retirer tes accès.");
+                    return;
+                }
+                if(!claim.removePlayer(targetUUID)){
+                    sender.sendMessage("§cLe joueur n'est pas dans ton claim.");
+                    return;
+                }
+                sender.sendMessage(Text.PREFIX + "§2" + args[1] + "§a a été retiré de ton claim.");
             }
             break;
             case "list":{
                 Claim claim = claimManager.getClaim(sender.getPlayer().getLocation().getChunk());
-                if(claim == null || !claim.isOwner(sender)){
+                if(claim == null || !claim.isOwner(sender.getUUID())){
                     sender.sendMessage(Text.PREFIX + "§cTu dois être dans un claim t'appartenant pour voir la liste des joueurs ayant accès à ton claim.");
                     return;
                 }
-                Set<UUID> accesses = claim.getAllowedPlayers();
+                Set<UUID> accesses = claim.getPlayers();
                 if(accesses.size() == 0){
                     sender.sendMessage("§cAucun joueur n'a accès à ton claim.");
                     return;
@@ -179,5 +165,5 @@ public class AccessCommand extends ConsulatCommand {
                 sender.sendMessage("§c" + getUsage());
         }
     }
-    
+
 }

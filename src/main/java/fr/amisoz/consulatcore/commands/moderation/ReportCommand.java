@@ -18,7 +18,7 @@ public class ReportCommand extends ConsulatCommand {
     
     public ReportCommand(){
         super("report", "/report <Joueur> <Raison>", 2, Rank.JOUEUR);
-        suggest(true, Arguments.player("joueur")
+        suggest(true, Arguments.playerList("joueur")
                         .then(RequiredArgumentBuilder.argument("raison", StringArgumentType.greedyString())));
     }
     

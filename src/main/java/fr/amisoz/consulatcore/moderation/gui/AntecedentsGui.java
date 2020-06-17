@@ -4,16 +4,12 @@ import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.moderation.SanctionObject;
 import fr.amisoz.consulatcore.moderation.SanctionType;
 import fr.leconsulat.api.ConsulatAPI;
-import fr.leconsulat.api.gui.Gui;
+import fr.leconsulat.api.gui.GuiContainer;
 import fr.leconsulat.api.gui.GuiItem;
-import fr.leconsulat.api.gui.GuiListener;
-import fr.leconsulat.api.gui.events.GuiClickEvent;
-import fr.leconsulat.api.gui.events.GuiCloseEvent;
-import fr.leconsulat.api.gui.events.GuiCreateEvent;
 import fr.leconsulat.api.gui.events.GuiOpenEvent;
+import fr.leconsulat.api.gui.events.PagedGuiCreateEvent;
 import fr.leconsulat.api.player.ConsulatOffline;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import java.sql.PreparedStatement;
@@ -24,30 +20,23 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class AntecedentsGui extends GuiListener {
+public class AntecedentsGui extends GuiContainer<ConsulatOffline> {
 
     public AntecedentsGui() {
-        super(null, ConsulatOffline.class);
-        addGui(null, this, "§6§lAntécédents §7↠ §e", 3);
-        setCreateOnOpen(true);
+        super(3);
+        setTemplate("§6§lAntécédents §7↠ §e");
     }
 
     @Override
-    public void onCreate(GuiCreateEvent event) {
-        if (event.getKey() == null) {
-            return;
-        }
-
-        ConsulatOffline consulatOffline = (ConsulatOffline) event.getKey();
-
-        event.getGui().setName(event.getGui().getName() + consulatOffline.getName());
+    public void onPageCreate(PagedGuiCreateEvent<ConsulatOffline> event) {
+        ConsulatOffline consulatOffline = event.getData();
+        event.getPagedGui().setName(event.getGui().getName() + consulatOffline.getName());
     }
 
     @Override
-    public void onOpen(GuiOpenEvent event) {
-        ConsulatOffline consulatOffline = (ConsulatOffline) event.getKey();
+    public void onOpen(GuiOpenEvent<ConsulatOffline> event) {
+        ConsulatOffline consulatOffline = event.getData();
         Player player = event.getPlayer().getPlayer();
-
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
                 List<SanctionObject> sanctions = getAntecedents(consulatOffline.getUUID().toString());
@@ -69,7 +58,7 @@ public class AntecedentsGui extends GuiListener {
                                 "§6Annulé : §e" + (sanctionObject.isCancelled() ? "Oui" : "Non"),
                                 "§6Actif : §e" + (sanctionObject.isActive() ? "Oui" : "Non"));
 
-                        event.getGui().setItem(item);
+                        event.getPagedGui().setItem(item);
                     }
                 });
             } catch (SQLException e) {
@@ -80,16 +69,6 @@ public class AntecedentsGui extends GuiListener {
                 });
             }
         });
-    }
-
-    @Override
-    public void onClose(GuiCloseEvent guiCloseEvent) {
-
-    }
-
-    @Override
-    public void onClick(GuiClickEvent guiClickEvent) {
-
     }
 
     private List<SanctionObject> getAntecedents(String uuid) throws SQLException {

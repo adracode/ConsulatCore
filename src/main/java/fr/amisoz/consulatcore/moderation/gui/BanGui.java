@@ -3,18 +3,14 @@ package fr.amisoz.consulatcore.moderation.gui;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.moderation.BanEnum;
-import fr.amisoz.consulatcore.moderation.MuteEnum;
-import fr.amisoz.consulatcore.moderation.SanctionType;
-import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.ConsulatAPI;
-import fr.leconsulat.api.gui.Gui;
 import fr.leconsulat.api.gui.GuiItem;
 import fr.leconsulat.api.gui.GuiListener;
 import fr.leconsulat.api.gui.events.GuiClickEvent;
 import fr.leconsulat.api.gui.events.GuiCloseEvent;
-import fr.leconsulat.api.gui.events.GuiCreateEvent;
 import fr.leconsulat.api.gui.events.GuiOpenEvent;
+import fr.leconsulat.api.gui.events.PagedGuiCreateEvent;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatOffline;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -31,32 +27,25 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
-public class BanGui extends GuiListener {
+public class BanGui extends GuiListener<ConsulatOffline> {
 
-    public BanGui(GuiListener father) {
-        super(father, ConsulatOffline.class);
-        addGui(null, this, "§c§lBannir§7 §7↠ §4", 3);
-        setCreateOnOpen(true);
+    public BanGui() {
+        super(3);
+        setTemplate("§c§lBannir§7 §7↠ §4");
     }
 
     @Override
-    public void onCreate(GuiCreateEvent event) {
-        if (event.getKey() == null) {
-            return;
-        }
-
-        event.getGui().setName("§c§lBannir§7 §7↠ §4" + ((ConsulatOffline) event.getKey()).getName());
+    public void onPageCreate(PagedGuiCreateEvent<ConsulatOffline> event) {
+        event.getPagedGui().setName("§c§lBannir§7 §7↠ §4" + event.getData().getName());
     }
 
     @Override
-    public void onOpen(GuiOpenEvent event) {
-        if (event.getKey() == null) {
+    public void onOpen(GuiOpenEvent<ConsulatOffline> event) {
+        if (event.getData() == null) {
             return;
         }
 
-        event.getGui().setName("§c§lBannir§7 §7↠ §4" + ((ConsulatOffline) event.getKey()).getName());
-
-        ConsulatOffline consulatOffline = (ConsulatOffline) event.getKey();
+        ConsulatOffline consulatOffline = event.getData();
         Player target = Bukkit.getPlayer(consulatOffline.getUUID());
         Player moderator = event.getPlayer().getPlayer();
 
@@ -87,19 +76,19 @@ public class BanGui extends GuiListener {
 
                 item.setDescription("§cDurée : §4" + ban.getFormatDuration(), "§7Récidive : " + (banHistory.containsKey(ban) ? banHistory.get(ban) : "0"));
                 item.setAttachedObject(ban);
-                event.getGui().setItem(i, item);
+                event.getPagedGui().setItem(i, item);
             }
         });
     }
 
     @Override
-    public void onClose(GuiCloseEvent event) {
+    public void onClose(GuiCloseEvent<ConsulatOffline> event) {
         event.setOpenFatherGui(false);
     }
 
     @Override
-    public void onClick(GuiClickEvent event) {
-        GuiItem item = event.getGui().getItem(event.getSlot());
+    public void onClick(GuiClickEvent<ConsulatOffline> event) {
+        GuiItem item = event.getPagedGui().getItem(event.getSlot());
         List<String> description = item.getDescription();
         String recidive = description.get(1).split(":")[1].trim();
         int recidiveNumber = Integer.parseInt(recidive);
@@ -108,11 +97,11 @@ public class BanGui extends GuiListener {
         if (multiply == 0) multiply = 1;
 
         long currentTime = System.currentTimeMillis();
-        BanEnum ban = (BanEnum) event.getGui().getItem(event.getSlot()).getAttachedObject();
+        BanEnum ban = (BanEnum) event.getPagedGui().getItem(event.getSlot()).getAttachedObject();
         double durationBan = (ban.getDurationSanction() * 1000) * multiply;
         long resultTime = currentTime + Math.round(durationBan);
         ConsulatPlayer banner = event.getPlayer();
-        ConsulatOffline offlineTarget = (ConsulatOffline) event.getGui().getKey();
+        ConsulatOffline offlineTarget = event.getData();
 
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {

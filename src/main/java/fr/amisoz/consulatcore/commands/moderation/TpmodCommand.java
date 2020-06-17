@@ -12,8 +12,8 @@ public class TpmodCommand extends ConsulatCommand {
     public TpmodCommand(){
         super("tpmod", "/tpmod <Joueur>", 1, Rank.MODO);
         suggest(true,
-                Arguments.player("joueur"),
-                Arguments.player("joueur").then(Arguments.player("joueur")));
+                Arguments.playerList("joueur"),
+                Arguments.playerList("joueur").then(Arguments.playerList("joueur")));
     }
     
     @Override

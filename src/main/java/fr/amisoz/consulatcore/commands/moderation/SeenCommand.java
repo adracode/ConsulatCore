@@ -16,7 +16,7 @@ public class SeenCommand extends ConsulatCommand {
     public SeenCommand(){
         super("seen", "/seen <Pseudo>", 1, Rank.ADMIN);
         suggest(true,
-                Arguments.player("joueur"),
+                Arguments.playerList("joueur"),
                 Arguments.word("joueur"));
     }
     

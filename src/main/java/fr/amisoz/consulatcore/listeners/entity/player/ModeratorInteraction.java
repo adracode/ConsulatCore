@@ -1,6 +1,5 @@
 package fr.amisoz.consulatcore.listeners.entity.player;
 
-import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.player.CPlayerManager;
 import org.bukkit.ChatColor;

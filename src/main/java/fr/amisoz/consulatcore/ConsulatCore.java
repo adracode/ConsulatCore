@@ -1,7 +1,7 @@
 package fr.amisoz.consulatcore;
 
 
-import fr.amisoz.consulatcore.claims.ClaimManager;
+import fr.amisoz.consulatcore.commands.cities.CityCommand;
 import fr.amisoz.consulatcore.commands.claims.AccessCommand;
 import fr.amisoz.consulatcore.commands.claims.ClaimCommand;
 import fr.amisoz.consulatcore.commands.claims.UnclaimCommand;
@@ -24,6 +24,8 @@ import fr.amisoz.consulatcore.runnable.MeceneRunnable;
 import fr.amisoz.consulatcore.runnable.MessageRunnable;
 import fr.amisoz.consulatcore.runnable.MonitoringRunnable;
 import fr.amisoz.consulatcore.shop.ShopManager;
+import fr.amisoz.consulatcore.zones.ZoneManager;
+import fr.amisoz.consulatcore.zones.claims.ClaimManager;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.events.PostInitEvent;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -43,6 +45,29 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
 
+//TODO: add BDD
+/**
+ *
+ * CREATE TABLE cities (
+ *     id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+ *     uuid CHAR(36) NOT NULL,
+ *     name VARCHAR(255) NOT NULL,
+ *     money DOUBLE NOT NULL,
+ *     spawn_x DOUBLE,
+ *     spawn_y DOUBLE,
+ *     spawn_z DOUBLE,
+ *     yam FLOAT,
+ *     pitch FLOAT
+ * );
+ * CREATE TABLE zones (
+ *     id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+ *     uuid CHAR(36) NOT NULL,
+ *     name VARCHAR(255) NOT NULL,
+ * );
+ * ALTER TABLE players ADD FOREIGN KEY (city) REFERENCES cities(id);
+ * ALTER TABLE claims ADD type VARCHAR(16)
+ *
+ * */
 public class ConsulatCore extends JavaPlugin implements Listener {
     
     private static ConsulatCore instance;
@@ -79,7 +104,13 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         spawn = new Location(Bukkit.getWorlds().get(0), 330, 65, -438, -145, 0);
         new DuelManager();
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
-        claimManager = new ClaimManager();
+        new ZoneManager();
+        try {
+            claimManager = new ClaimManager();
+        } catch(UnsupportedOperationException e){
+            e.printStackTrace();
+            Bukkit.shutdown();
+        }
         playerManager = new SPlayerManager();
         baltopManager = new BaltopManager();
         flyManager = new FlyManager();
@@ -112,6 +143,12 @@ public class ConsulatCore extends JavaPlugin implements Listener {
             }
         }
         ConsulatAPI.getConsulatAPI().log(Level.FINE, "ConsulatCore loaded in " + (System.currentTimeMillis() - startLoading) + " ms.");
+    }
+    
+    @Override
+    public void onDisable(){
+        ZoneManager.getInstance().saveZones();
+        ClaimManager.getInstance().saveClaims();
     }
     
     @EventHandler(priority = EventPriority.HIGH)
@@ -165,6 +202,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         new UnmuteCommand();
         new UnclaimCommand();
         new AntecedentsComand();
+        new CityCommand();
     }
     
     private void registerEvents(){

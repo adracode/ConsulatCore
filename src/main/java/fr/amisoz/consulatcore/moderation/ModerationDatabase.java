@@ -1,7 +1,6 @@
 package fr.amisoz.consulatcore.moderation;
 
 import fr.amisoz.consulatcore.ConsulatCore;
-import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.player.CPlayerManager;
 import org.bukkit.entity.Player;
@@ -10,7 +9,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Calendar;
 import java.util.UUID;
 
 public class ModerationDatabase {

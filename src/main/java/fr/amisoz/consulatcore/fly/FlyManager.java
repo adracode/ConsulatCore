@@ -7,8 +7,6 @@ import fr.amisoz.consulatcore.utils.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 
 import java.sql.SQLException;
 import java.util.HashSet;

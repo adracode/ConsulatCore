@@ -1,8 +1,8 @@
 package fr.amisoz.consulatcore.commands.players;
 
 import fr.amisoz.consulatcore.ConsulatCore;
-import fr.amisoz.consulatcore.claims.Claim;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -29,7 +29,7 @@ public class SetHomeCommand extends ConsulatCommand {
             return;
         }
         SurvivalPlayer survivalPlayer = (SurvivalPlayer)sender;
-        Claim claim = survivalPlayer.getClaimLocation();
+        Claim claim = survivalPlayer.getClaim();
         if(claim == null){
             if(!survivalPlayer.hasPower(Rank.MECENE)){
                 sender.sendMessage("§cTu dois être dans un claim pour définir ton home.");
@@ -37,7 +37,7 @@ public class SetHomeCommand extends ConsulatCommand {
             }
         } else {
             //TODO: enlever les homes lorsque l'accès est supprimé ???
-            if(!claim.isAllowed(sender.getUUID())){
+            if(!claim.canInteract((SurvivalPlayer)sender)){
                 sender.sendMessage("§cTu dois être dans un claim t'appartenant pour définir ton home.");
                 return;
             }

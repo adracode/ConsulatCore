@@ -15,7 +15,7 @@ public class KickCommand extends ConsulatCommand {
 
     public KickCommand() {
         super("kick", Collections.emptyList(), "/kick <Joueur> <Raison>", 2, Rank.MODO);
-        suggest(true, Arguments.player("joueur")
+        suggest(true, Arguments.playerList("joueur")
                         .then(RequiredArgumentBuilder.argument("raison", StringArgumentType.greedyString())));
     }
 

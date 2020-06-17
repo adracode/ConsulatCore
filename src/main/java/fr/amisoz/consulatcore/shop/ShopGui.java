@@ -1,47 +1,34 @@
 package fr.amisoz.consulatcore.shop;
 
-import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.gui.Gui;
+import fr.leconsulat.api.gui.GuiContainer;
 import fr.leconsulat.api.gui.GuiItem;
-import fr.leconsulat.api.gui.GuiListener;
+import fr.leconsulat.api.gui.PagedGui;
 import fr.leconsulat.api.gui.events.GuiClickEvent;
-import fr.leconsulat.api.gui.events.GuiCloseEvent;
-import fr.leconsulat.api.gui.events.GuiCreateEvent;
-import fr.leconsulat.api.gui.events.GuiOpenEvent;
-import org.bukkit.Bukkit;
+import fr.leconsulat.api.gui.events.PagedGuiCreateEvent;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
 
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Iterator;
 import java.util.logging.Level;
 
-public class ShopGui extends GuiListener {
+public class ShopGui extends GuiContainer<ShopItemType> {
     
-    private Map<ShopItemType, AtomicInteger> lastPages = new HashMap<>();
-    private Map<ShopItemType, AtomicInteger> nextSlots = new HashMap<>();
-
     public ShopGui(){
-        super(null, ShopItemType.class);
+        super(6);
         int lines = 6;
-        lastPages.put(ShopItemType.ALL, new AtomicInteger(0));
-        nextSlots.put(ShopItemType.ALL, new AtomicInteger(0));
-        addGui(null, this, "§4Shops §c(0)", lines,
+        setTemplate("§4Shops §c(0)",
                 getItem("§ePage précédente", (lines - 1) * 9, Material.ARROW),
                 getItem("§ePage suivante", lines * 9 - 1, Material.ARROW)
         );
-        addGui(ShopItemType.ALL, this, "§4Shops §c(1)", lines,
-                getItem("§ePage précédente", (lines - 1) * 9, Material.ARROW),
-                getItem("§ePage suivante", lines * 9 - 1, Material.ARROW)
-        );
+        setMoveableItemsRange(0, 45);
+        addGui(createGui(ShopItemType.ALL));
         setCreateOnOpen(false);
     }
     
@@ -49,98 +36,60 @@ public class ShopGui extends GuiListener {
         if(shop.isEmpty()){
             return;
         }
-        if(getGui(key) == null){
-            lastPages.put(key, new AtomicInteger(0));
-            nextSlots.put(key, new AtomicInteger(0));
-            create(key);
-        }
-        AtomicInteger nextSlot = nextSlots.get(key);
-        AtomicInteger lastPage = lastPages.get(key);
-        if(nextSlot.get() >= 45){
-            lastPage.incrementAndGet();
-            nextSlot.set(0);
-        }
-        Gui gui = getGui(key, lastPage.get());
-        GuiItem item = new GuiItem(shop.getItem(), nextSlot.getAndIncrement());
+        GuiItem item = new GuiItem(shop.getItem(), 0);
         item.setDescription("§eVendu par: §c" + shop.getOwnerName(),
                 "§ePrix unitaire: §c" + shop.getPrice() + "§e€.",
                 "§eCoordonnées: X: §c" + shop.getX() + "§e Y: §c" + shop.getY() + "§e Z: §c" + shop.getZ(),
                 "§eTéléportation pour: §c10§e€.");
         item.setAttachedObject(shop);
-        gui.setItem(item);
+        Gui<ShopItemType> pagedGui = getGui(key);
+        if(pagedGui != null){
+            pagedGui.addItem(item);
+        }
     }
     
     public void removeShop(Shop shop, ShopItemType key){
-        AtomicInteger nextSlot = nextSlots.get(key);
-        AtomicInteger lastPage = lastPages.get(key);
-        for(Gui gui : getGuis().get(key)){
-            for(int i = 0; i < (gui.getLines() - 1) * 9; ++i){
-                GuiItem item = gui.getItem(i);
-                if(item != null){
-                    if(shop.equals(item.getAttachedObject())){
-                        gui.removeItem(i);
-                        if(i != nextSlot.get() - 1 || gui.getPage() != lastPage.get()){
-                            Gui lastGui = getGui(key, lastPage.get());
-                            lastGui.moveItem(nextSlot.get() - 1, gui, i);
-                        }
-                        if(nextSlot.get() <= 1){
-                            if(lastPage.get() > 0){
-                                lastPage.decrementAndGet();
-                                nextSlot.set((gui.getLines() - 1) * 9);
-                            } else {
-                                nextSlot.set(0);
-                            }
-                        } else {
-                            nextSlot.decrementAndGet();
-                        }
-                        return;
-                    }
-                }
+        Gui<ShopItemType> pagedGui = getGui(key);
+        if(pagedGui == null){
+            return;
+        }
+        for(Iterator<GuiItem> iterator = pagedGui.iterator(); iterator.hasNext(); ){
+            GuiItem item = iterator.next();
+            if(item != null && shop.equals(item.getAttachedObject())){
+                iterator.remove();
+                return;
             }
         }
     }
     
     @Override
-    public void onCreate(GuiCreateEvent event){
-        if(event.getKey() == null){
-            return;
-        }
-        Gui gui = event.getGui();
-        Object key = event.getKey();
+    public void onPageCreate(PagedGuiCreateEvent<ShopItemType> event){
+        PagedGui<ShopItemType> gui = event.getPagedGui();
+        Object key = event.getData();
         if(key.equals(ShopItemType.ALL)){
-            gui.setName("§4Shops §8(§3" + (lastPages.get(event.getKey()).get() + 1) + "§8)");
+            gui.setName("§4Shops §8(§3" + (event.getPage() + 1) + "§8)");
         } else {
-            gui.setName("§4Shops §8(§3" + key.toString() + "§8) (§3" + (lastPages.get(event.getKey()).get() + 1) + "§8)");
+            gui.setName("§4Shops §8(§3" + key.toString() + "§8) (§3" + (event.getPage() + 1) + "§8)");
         }
     }
     
     @Override
-    public void onOpen(GuiOpenEvent event){
-    
-    }
-    
-    @Override
-    public void onClose(GuiCloseEvent event){
-    
-    }
-    
-    @Override
-    public void onClick(GuiClickEvent event){
+    public void onClick(GuiClickEvent<ShopItemType> event){
         switch(event.getSlot()){
             case 45:
-                if(event.getGui().getPage() <= 0){
+                if(event.getPage() <= 0){
                     return;
                 }
-                open(event.getPlayer(), event.getGui().getKey(), event.getGui().getPage() - 1);
+                event.getGui().open(event.getPlayer(), event.getPage() - 1);
                 break;
             case 53:
-                if(event.getGui().getPage() == lastPages.get(event.getKey()).get()){
+                if(event.getPage() == event.getGui().getCurrentPage()){
                     return;
                 }
-                open(event.getPlayer(), event.getGui().getKey(), event.getGui().getPage() + 1);
+                event.getGui().open(event.getPlayer(), event.getPage() + 1);
                 break;
             default:
-                Shop shop = (Shop)event.getGui().getItem(event.getSlot()).getAttachedObject();
+                Shop shop = (Shop)event.getPagedGui().getItem(event.getSlot()).getAttachedObject();
                 SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
                 player.getPlayer().closeInventory();
                 if(player.hasMoney(10.0)){
@@ -160,21 +109,15 @@ public class ShopGui extends GuiListener {
                             }
                         } else {
                             player.sendMessage(Text.PREFIX + "§cCe shop n'a pas été trouvé");
-                            ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Shop not found in list: " + event.getGui().getItem(event.getSlot()));
-                            ConsulatAPI.getConsulatAPI().logFile("Shop not found in list: " + event.getGui().getItem(event.getSlot()));
+                            ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Shop not found in list: " + event.getPagedGui().getItem(event.getSlot()));
+                            ConsulatAPI.getConsulatAPI().logFile("Shop not found in list: " + event.getPagedGui().getItem(event.getSlot()));
                         }
                     } catch(NullPointerException e){
                         player.sendMessage("Erreur lors de la téléportation");
                         return;
                     }
                     player.sendMessage(ChatColor.YELLOW + "Téléportation réussie pour " + ChatColor.RED + "10.0" + ChatColor.YELLOW + "€.");
-                    Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                        try {
-                            player.removeMoney(10.0);
-                        } catch(SQLException e){
-                            e.printStackTrace();
-                        }
-                    });
+                    player.removeMoney(10.0);
                 } else {
                     player.sendMessage(Text.PREFIX + "§cVous n'avez pas assez d'argent.");
                 }

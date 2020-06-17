@@ -31,7 +31,7 @@ dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.14.4-R0.1-SNAPSHOT'
     implementation files('libs/ConsulatAPI.jar')
     compile 'com.mojang:brigadier:1.0.17'
-
+    compile 'org.jetbrains:annotations:16.0.2'
 }
 
 processResources {

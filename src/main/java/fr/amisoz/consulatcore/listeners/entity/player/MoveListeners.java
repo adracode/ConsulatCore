@@ -1,12 +1,10 @@
 package fr.amisoz.consulatcore.listeners.entity.player;
 
-import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.events.ChunkChangeEvent;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.player.CPlayerManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
-import org.bukkit.Keyed;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

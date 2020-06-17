@@ -14,7 +14,7 @@ public class InvseeCommand extends ConsulatCommand {
     public InvseeCommand(){
         super("invsee", Collections.emptyList(), "/invsee <Joueur>", 1, Rank.MODO);
         suggest(true,
-               Arguments.player("joueur"));
+               Arguments.playerList("joueur"));
     }
     
     @Override

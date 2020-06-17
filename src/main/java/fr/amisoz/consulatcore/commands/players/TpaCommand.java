@@ -1,7 +1,6 @@
 package fr.amisoz.consulatcore.commands.players;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.Arguments;
@@ -9,22 +8,32 @@ import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
-import org.bukkit.Bukkit;
 
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class TpaCommand extends ConsulatCommand {
     
+    //Celui qui fait la requête, celui qui l'accepte
     private Map<UUID, UUID> request = new HashMap<>();
     
     public TpaCommand(){
         super("tpa", "/tpa <Joueur> | /tpa accept", 1, Rank.JOUEUR);
         suggest(true, LiteralArgumentBuilder.literal("accept")
-                        .then(Arguments.player("joueur", request.keySet())),
-                Arguments.player("joueur")
+                        .then(Arguments.player("joueur").suggests(((context, builder) -> {
+                            List<ConsulatPlayer> playersToAcceptTp = new ArrayList<>();
+                            ConsulatPlayer player = CPlayerManager.getInstance().getConsulatPlayerFromContextSource(context.getSource());
+                            if(player == null){
+                                return builder.buildFuture();
+                            }
+                            for(Map.Entry<UUID, UUID> request : request.entrySet()){
+                                if(request.getValue().equals(player.getUUID())){
+                                    playersToAcceptTp.add(CPlayerManager.getInstance().getConsulatPlayer(request.getKey()));
+                                }
+                            }
+                            Arguments.suggest(playersToAcceptTp, ConsulatPlayer::getName, (p) -> true, builder);
+                            return builder.buildFuture();
+                        }))),
+                Arguments.playerList("joueur")
         );
     }
     
@@ -63,17 +72,9 @@ public class TpaCommand extends ConsulatCommand {
                 }
                 if(!target.hasPower(Rank.MECENE)){
                     request.remove(target.getUUID());
-                    Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                        try {
-                            target.removeMoney(10D);
-                            Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
-                                target.getPlayer().teleport(sender.getPlayer());
-                                target.sendMessage("§aTu as été téléporté à " + sender.getName() + " pour 10 €.");
-                            });
-                        } catch(SQLException e){
-                            e.printStackTrace();
-                        }
-                    });
+                    target.removeMoney(10D);
+                    target.getPlayer().teleport(sender.getPlayer());
+                    target.sendMessage("§aTu as été téléporté à " + sender.getName() + " pour 10 €.");
                 } else {
                     target.getPlayer().teleport(sender.getPlayer());
                     request.remove(target.getUUID());

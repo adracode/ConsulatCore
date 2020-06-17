@@ -3,7 +3,6 @@ package fr.amisoz.consulatcore.commands.players;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
-import org.bukkit.entity.Player;
 
 public class IgnoreCommand extends ConsulatCommand {
 

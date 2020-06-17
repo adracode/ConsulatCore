@@ -11,7 +11,6 @@ import fr.amisoz.consulatcore.shop.ShopItemType;
 import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.commands.ConsulatCommand;
-import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
@@ -64,9 +63,10 @@ public class ShopCommand extends ConsulatCommand {
         }
         switch(args[0].toLowerCase()){
             case "list":
-                if(!GuiManager.getInstance().getRootGui("shop").open(sender, ShopItemType.ALL)){
+                /*if(!){
                     sender.sendMessage(Text.PREFIX + "§cIl n'y a aucun shop.");
-                }
+                }*/
+                ShopManager.getInstance().getShopGui().getGui(ShopItemType.ALL).open(sender);
                 return;
             case "help":
                 ShopManager.getInstance().tutorial((SurvivalPlayer)sender);
@@ -79,6 +79,7 @@ public class ShopCommand extends ConsulatCommand {
                 String itemType = args[1];
                 Material material = Material.getMaterial(itemType.toUpperCase());
                 if(material == null){
+                    itemType = itemType.toLowerCase();
                     Enchantment enchantment = Enchantment.getByKey(NamespacedKey.minecraft(itemType));
                     if(enchantment == null){
                         PotionEffectType effectType = PotionEffectType.getByName(itemType);
@@ -93,9 +94,10 @@ public class ShopCommand extends ConsulatCommand {
                 } else {
                     type = new ShopItemType.MaterialItem(material);
                 }
-                if(!GuiManager.getInstance().getRootGui("shop").open(sender, type)){
+                /*if(!GuiManager.getInstance().getRootGui("shop").open(sender, type)){
                     sender.sendMessage(Text.PREFIX + "§cL'item §7" + args[1] + " §cn'est pas en vente actuellement.");
-                }
+                }*/
+                ShopManager.getInstance().getShopGui().getGui(type).open(sender);
                 return;
             case "create":
                 if(!ConsulatAPI.getConsulatAPI().isDebug() || !sender.hasPower(Rank.MODO)){

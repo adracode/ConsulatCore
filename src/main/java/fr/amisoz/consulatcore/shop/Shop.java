@@ -1,6 +1,6 @@
 package fr.amisoz.consulatcore.shop;
 
-import fr.leconsulat.api.gui.GuiManager;
+import fr.amisoz.consulatcore.utils.CoordinatesUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -22,13 +22,6 @@ import java.util.*;
 
 public class Shop {
     
-    private static final int SHIFT = 25; //Max coordonnées MC
-    private static final int SHIFT_Y = 8; //Max y MC
-    private static final int LIMIT_X = 1 << SHIFT; //33 554 432 > 30 000 000
-    private static final int LIMIT_Y = 1 << SHIFT_Y; //256 > 255
-    private static final int LIMIT_Z = 1 << SHIFT; //33 554 432 > 30 000 000
-    private static final long CONVERT_Y = ((long)1 << SHIFT + SHIFT_Y + 1) - 1;
-    private static final int CONVERT_X = (1 << SHIFT + 1) - 1;
     
     private static BlockFace[] chestFaces = new BlockFace[]{BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
     
@@ -47,7 +40,7 @@ public class Shop {
         this.forSale = new ItemStack(forSale);
         this.forSale.setAmount(1);
         this.price = price;
-        setCoords(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        this.coords = CoordinatesUtils.convertCoordinates(location);
         this.amount = legacy ? setAmountLegacy() : setAmount();
         buy(0);
         List<ShopItemType> types = new ArrayList<>();
@@ -90,7 +83,7 @@ public class Shop {
     }
     
     void addInGui(){
-        ShopGui gui = ((ShopGui)GuiManager.getInstance().getRootGui("shop"));
+        ShopGui gui = ShopManager.getInstance().getShopGui();
         for(ShopItemType type : types){
             gui.addShop(this, type);
         }
@@ -99,7 +92,7 @@ public class Shop {
     }
     
     void removeInGui(){
-        ShopGui gui = ((ShopGui)GuiManager.getInstance().getRootGui("shop"));
+        ShopGui gui = ShopManager.getInstance().getShopGui();
         for(ShopItemType type : types){
             gui.removeShop(this, type);
         }
@@ -156,40 +149,26 @@ public class Shop {
         return null;
     }
     
-    private void setCoords(int x, int y, int z){
-        if(x < -LIMIT_X || x > LIMIT_X || y < 0 || y > LIMIT_Y || z < -LIMIT_Z || z > LIMIT_Z){
-            throw new IllegalArgumentException("Les coordonnées d'un shop ne peuvent dépasse les limites");
-        }
-        this.coords = convertCoordinates(x, y, z);
-    }
-    
     public long getCoords(){
         return coords;
     }
     
     public int getX(){
-        return (int)((coords & CONVERT_X) - LIMIT_X);
+        return CoordinatesUtils.getX(coords);
     }
     
     public int getY(){
-        return (int)((coords & CONVERT_Y) >> SHIFT + 1);
+        return CoordinatesUtils.getY(coords);
     }
     
     public int getZ(){
-        return (int)((coords >> SHIFT + 1 + SHIFT_Y + 1) - LIMIT_Z);
+        return CoordinatesUtils.getZ(coords);
     }
     
     public Location getLocation(){
         return new Location(Bukkit.getWorlds().get(0), getX(), getY(), getZ());
     }
     
-    public static long convertCoordinates(Location location){
-        return convertCoordinates(location.getBlockX(), location.getBlockY(), location.getBlockZ());
-    }
-    
-    public static long convertCoordinates(int x, int y, int z){
-        return (((long)z + LIMIT_Z) << SHIFT + 1 + SHIFT_Y + 1) | ((long)y << SHIFT + 1) | (x + LIMIT_X);
-    }
     
     public Material getItemType(){
         return forSale.getType();

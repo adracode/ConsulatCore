@@ -21,7 +21,7 @@ public class MpCommand extends ConsulatCommand {
     
     public MpCommand(){
         super("msg", Arrays.asList("mp", "whisper", "tell"), "/msg <Joueur> <Message>", 2, Rank.JOUEUR);
-        suggest(true, Arguments.player("joueur")
+        suggest(true, Arguments.playerList("joueur")
                         .then(RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString()))
         );
     }

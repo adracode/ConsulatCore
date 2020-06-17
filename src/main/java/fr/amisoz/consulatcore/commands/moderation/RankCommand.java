@@ -17,7 +17,7 @@ public class RankCommand extends ConsulatCommand {
     
     public RankCommand(){
         super("rank", "/rank <Joueur> <Rang>", 2, Rank.RESPONSABLE);
-        RequiredArgumentBuilder<Object, ?> playerRequired = Arguments.player("joueur");
+        RequiredArgumentBuilder<Object, ?> playerRequired = Arguments.playerList("joueur");
         for(Rank rank : Rank.values()){
             playerRequired.then(LiteralArgumentBuilder.literal(rank.getRankName()));
         }

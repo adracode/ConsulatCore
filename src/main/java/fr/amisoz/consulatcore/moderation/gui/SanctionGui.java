@@ -1,49 +1,39 @@
 package fr.amisoz.consulatcore.moderation.gui;
 
-import fr.leconsulat.api.gui.GuiListener;
+import fr.leconsulat.api.gui.GuiContainer;
 import fr.leconsulat.api.gui.events.GuiClickEvent;
-import fr.leconsulat.api.gui.events.GuiCloseEvent;
-import fr.leconsulat.api.gui.events.GuiCreateEvent;
-import fr.leconsulat.api.gui.events.GuiOpenEvent;
+import fr.leconsulat.api.gui.events.PagedGuiCreateEvent;
 import fr.leconsulat.api.player.ConsulatOffline;
 import org.bukkit.Material;
 
-public class SanctionGui extends GuiListener {
+public class SanctionGui extends GuiContainer<ConsulatOffline> {
+    
+    private BanGui banGui = new BanGui();
+    private MuteGui muteGui = new MuteGui();
     
     public SanctionGui(){
-        super(null, ConsulatOffline.class);
-        addGui(null, this, "§6§lSanction §7↠ §e", 3,
+        super(3);
+        setTemplate("§6§lSanction §7↠ §e",
                 getItem("§cBannir", 11, Material.REDSTONE_BLOCK),
                 getItem("§6Mute", 15, Material.PAPER));
-        addChild(11, new BanGui(this));
-        addChild(15, new MuteGui(this));
-        setCreateOnOpen(true);
     }
     
     @Override
-    public void onCreate(GuiCreateEvent event){
-        if(event.getKey() == null){
-            return;
-        }
-        event.getGui().setName("§6§lSanction §7↠ §e" + (((ConsulatOffline)event.getKey()).getName()));
+    public void onPageCreate(PagedGuiCreateEvent<ConsulatOffline> event){
+        event.getPagedGui().setName("§6§lSanction §7↠ §e" + event.getData().getName());
+        event.getGui().prepareChild(banGui, () -> banGui.createGui(event.getData(), event.getGui()));
+        event.getGui().prepareChild(muteGui, () -> muteGui.createGui(event.getData(), event.getGui()));
     }
     
     @Override
-    public void onOpen(GuiOpenEvent event){
-    
-    }
-    
-    @Override
-    public void onClose(GuiCloseEvent event){
-    
-    }
-    
-    @Override
-    public void onClick(GuiClickEvent event){
+    public void onClick(GuiClickEvent<ConsulatOffline> event){
         switch(event.getSlot()){
             case 11:
+                event.getGui().getChild(banGui).open(event.getPlayer());
+                break;
             case 15:
-                getChild(event.getSlot()).open(event.getPlayer(), event.getGui().getKey());
+                event.getGui().getChild(muteGui).open(event.getPlayer());
+                break;
         }
     }
     

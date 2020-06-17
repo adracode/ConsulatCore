@@ -1,15 +1,15 @@
 package fr.amisoz.consulatcore.economy;
 
 import fr.amisoz.consulatcore.ConsulatCore;
-import fr.amisoz.consulatcore.players.SurvivalOffline;
 import fr.leconsulat.api.ConsulatAPI;
-import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collections;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 
 //TODO: si un joueur passe admin, il sera affiché dans le baltop s'il n'y a pas eu d'update
@@ -68,7 +68,7 @@ public class BaltopManager {
         return instance;
     }
     
-    public class MoneyOwner implements Comparable<MoneyOwner>{
+    public static class MoneyOwner implements Comparable<MoneyOwner>{
     
         private final double money;
         private final String name;

@@ -2,7 +2,6 @@ package fr.amisoz.consulatcore.commands.moderation;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.fly.FlyManager;
 import fr.amisoz.consulatcore.players.Fly;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.player.CPlayerManager;

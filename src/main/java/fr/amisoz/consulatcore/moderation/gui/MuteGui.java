@@ -2,17 +2,15 @@ package fr.amisoz.consulatcore.moderation.gui;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.moderation.BanEnum;
 import fr.amisoz.consulatcore.moderation.MuteEnum;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.ConsulatAPI;
-import fr.leconsulat.api.gui.Gui;
 import fr.leconsulat.api.gui.GuiItem;
 import fr.leconsulat.api.gui.GuiListener;
 import fr.leconsulat.api.gui.events.GuiClickEvent;
 import fr.leconsulat.api.gui.events.GuiCloseEvent;
-import fr.leconsulat.api.gui.events.GuiCreateEvent;
 import fr.leconsulat.api.gui.events.GuiOpenEvent;
+import fr.leconsulat.api.gui.events.PagedGuiCreateEvent;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatOffline;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -23,7 +21,6 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,30 +29,24 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-public class MuteGui extends GuiListener {
+public class MuteGui extends GuiListener<ConsulatOffline> {
 
-    public MuteGui(GuiListener father) {
-        super(father, ConsulatOffline.class);
-        addGui(null, this, "§6§lMute§7 ↠ §e", 3);
-        setCreateOnOpen(true);
+    public MuteGui() {
+        super(3);
+        setTemplate("§6§lMute§7 ↠ §e");
     }
 
     @Override
-    public void onCreate(GuiCreateEvent event) {
-        if (event.getKey() == null) {
-            return;
-        }
-
-        event.getGui().setName("§6§lMute§7 ↠ §e" + ((ConsulatOffline) event.getKey()).getName());
+    public void onPageCreate(PagedGuiCreateEvent<ConsulatOffline> event) {
+        event.getPagedGui().setName("§6§lMute§7 ↠ §e" + event.getData().getName());
     }
 
     @Override
-    public void onOpen(GuiOpenEvent event) {
-        if (event.getKey() == null) {
+    public void onOpen(GuiOpenEvent<ConsulatOffline> event) {
+        if (event.getData() == null) {
             return;
         }
-
-        ConsulatOffline consulatOffline = (ConsulatOffline) event.getKey();
+        ConsulatOffline consulatOffline = event.getData();
         Player target = Bukkit.getPlayer(consulatOffline.getUUID());
         Player moderator = event.getPlayer().getPlayer();
 
@@ -78,7 +69,6 @@ public class MuteGui extends GuiListener {
                 muteHistory = survivalPlayer.getMuteHistory();
             }
 
-
             MuteEnum[] values = MuteEnum.values();
             for (int i = 0; i < values.length; ++i) {
                 MuteEnum mute = values[i];
@@ -86,19 +76,19 @@ public class MuteGui extends GuiListener {
 
                 item.setDescription("§eDurée : §6" + mute.getFormatDuration(), "§7Récidive : " + (muteHistory.containsKey(mute) ? muteHistory.get(mute) : "0"));
                 item.setAttachedObject(mute);
-                event.getGui().setItem(i, item);
+                event.getPagedGui().setItem(i, item);
             }
         });
     }
 
     @Override
-    public void onClose(GuiCloseEvent event) {
+    public void onClose(GuiCloseEvent<ConsulatOffline> event) {
         event.setOpenFatherGui(false);
     }
 
     @Override
-    public void onClick(GuiClickEvent event) {
-        ConsulatOffline offlineTarget = (ConsulatOffline) event.getGui().getKey();
+    public void onClick(GuiClickEvent<ConsulatOffline> event) {
+        ConsulatOffline offlineTarget = event.getData();
         SurvivalPlayer target = (SurvivalPlayer) CPlayerManager.getInstance().getConsulatPlayer(offlineTarget.getUUID());
         ConsulatPlayer muter = event.getPlayer();
 
@@ -108,7 +98,7 @@ public class MuteGui extends GuiListener {
             return;
         }
 
-        GuiItem item = event.getGui().getItem(event.getSlot());
+        GuiItem item = event.getPagedGui().getItem(event.getSlot());
         List<String> description = item.getDescription();
         String recidive = description.get(1).split(":")[1].trim();
         int recidiveNumber = Integer.parseInt(recidive);
@@ -117,7 +107,7 @@ public class MuteGui extends GuiListener {
         if (multiply == 0) multiply = 1;
 
         long currentTime = System.currentTimeMillis();
-        MuteEnum muteReason = (MuteEnum) event.getGui().getItem(event.getSlot()).getAttachedObject();
+        MuteEnum muteReason = (MuteEnum) event.getPagedGui().getItem(event.getSlot()).getAttachedObject();
         double durationMute = (muteReason.getDurationSanction() * 1000) * multiply;
         long resultTime = currentTime + Math.round(durationMute);
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
