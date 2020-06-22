@@ -15,11 +15,11 @@ import java.util.UUID;
 
 public class AccessPermissionsGui extends GuiListener<UUID> {
     
-    private static final byte INTERACT_DOOR_SLOT = 19;
-    private static final byte BREAK_SLOT = 20;
-    private static final byte PLACE_SLOT = 21;
-    private static final byte CONTAINER_SLOT = 22;
-    private static final byte REDSTONE_SLOT = 23;
+    private static final byte INTERACT_DOOR_SLOT = 29;
+    private static final byte BREAK_SLOT = 30;
+    private static final byte PLACE_SLOT = 31;
+    private static final byte CONTAINER_SLOT = 32;
+    private static final byte REDSTONE_SLOT = 33;
     private static final byte GIVE_ALL_SLOT = 1;
     private static final byte REMOVE_ALL_SLOT = 2;
     private static final byte KICK_SLOT = 7;
@@ -127,8 +127,6 @@ public class AccessPermissionsGui extends GuiListener<UUID> {
                 break;
             case KICK_SLOT:
                 claim.removePlayer(event.getData());
-                Gui<?> father = event.getGui().getFather();
-                father.removeChild(event.getData());
                 event.getPlayer().getPlayer().closeInventory();
                 break;
             case INTERACT_DOOR_SLOT:

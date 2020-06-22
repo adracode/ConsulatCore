@@ -1,4 +1,4 @@
-package fr.amisoz.consulatcore.moderation.gui;
+package fr.amisoz.consulatcore.guis.moderation;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.moderation.SanctionObject;

@@ -2,6 +2,7 @@ package fr.amisoz.consulatcore.shop;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
+import fr.amisoz.consulatcore.guis.shop.ShopGui;
 import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.utils.ChestUtils;
@@ -796,16 +797,9 @@ public class ShopManager implements Listener {
                         player.sendMessage(Text.PREFIX + "Tu ne peux pas acheter ce grade !");
                         return;
                     }
-                    Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                        try {
-                            player.removeMoney(buyPrice);
-                            player.setRank(Rank.TOURISTE);
-                            player.sendMessage(Text.PREFIX + "Tu es désormais touriste !");
-                        } catch(SQLException e){
-                            e.printStackTrace();
-                            player.sendMessage(Text.PREFIX + "Il y a eu une erreur durant l'achat de votre grade !");
-                        }
-                    });
+                    player.removeMoney(buyPrice);
+                    player.setRank(Rank.TOURISTE);
+                    player.sendMessage(Text.PREFIX + "Tu es désormais touriste !");
                 } else {
                     player.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent");
                 }

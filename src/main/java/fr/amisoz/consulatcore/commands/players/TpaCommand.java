@@ -73,10 +73,10 @@ public class TpaCommand extends ConsulatCommand {
                 if(!target.hasPower(Rank.MECENE)){
                     request.remove(target.getUUID());
                     target.removeMoney(10D);
-                    target.getPlayer().teleport(sender.getPlayer());
+                    target.getPlayer().teleportAsync(sender.getPlayer().getLocation());
                     target.sendMessage("§aTu as été téléporté à " + sender.getName() + " pour 10 €.");
                 } else {
-                    target.getPlayer().teleport(sender.getPlayer());
+                    target.getPlayer().teleportAsync(sender.getPlayer().getLocation());
                     request.remove(target.getUUID());
                     target.sendMessage("§aTu as été téléporté à " + sender.getName() + ".");
                 }

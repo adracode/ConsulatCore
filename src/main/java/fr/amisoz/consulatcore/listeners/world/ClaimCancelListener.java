@@ -62,8 +62,17 @@ public class ClaimCancelListener implements Listener {
             }
         }
     }
-
-    //BlockBurntEvent -> Bloc est détruit par le feu
+    
+    @EventHandler
+    public void onBurn(BlockBurnEvent event){
+        if(event.getIgnitingBlock() == null){
+            return;
+        }
+        if(!isInteractionAuthorized(event.getIgnitingBlock().getChunk(), event.getBlock().getChunk())){
+            event.setCancelled(true);
+        }
+    }
+    
     /*
     @EventHandler
     public void onCanBuild(BlockCanBuildEvent event){
@@ -149,6 +158,7 @@ public class ClaimCancelListener implements Listener {
         if(event.getIgnitingBlock() != null){
             if(!isInteractionAuthorized(event.getBlock().getChunk(), event.getIgnitingBlock().getChunk())){
                 event.setCancelled(true);
+                return;
             }
         }
         if(event.getPlayer() != null){
@@ -231,7 +241,6 @@ public class ClaimCancelListener implements Listener {
         }
     }
 
-    //TODO: à test
     @EventHandler
     public void onSpread(BlockSpreadEvent event){
         if(!isInteractionAuthorized(event.getSource().getChunk(), event.getBlock().getChunk())){
@@ -350,14 +359,6 @@ public class ClaimCancelListener implements Listener {
                 return;
             }
         }
-        //Un joueur tape un itemFrame
-        //TODO: CHECK si c'est pas déjà pris en compte au dessus
-        if(entity instanceof ItemFrame && event.getDamager() instanceof Player){
-            if(!entityClaim.canInteract((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getDamager().getUniqueId()))){
-                event.setCancelled(true);
-                return;
-            }
-        }
         if(!(event.getDamager() instanceof Projectile)){
             return;
         }
@@ -393,8 +394,10 @@ public class ClaimCancelListener implements Listener {
     }
 
     //EntityInteractEvent
-    public void onPickupArrow(EntityPickupItemEvent event){
-        System.out.println(event.getItem());
+    
+    //https://hub.spigotmc.org/jira/browse/SPIGOT-5243?jql=labels%20%3D%20Arrow
+    //@EventHandler
+    public void onPickupArrow(PlayerPickupArrowEvent event){
         /*Claim arrowClaim = ClaimManager.getInstance().getClaim(event.getArrow().getChunk());
         if(arrowClaim != null && !arrowClaim.canInteract((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId()))){
             event.setCancelled(true);
@@ -948,7 +951,6 @@ public class ClaimCancelListener implements Listener {
         }
     }
 
-    TODO: Faire un canceler spécifique pour régler le bug du manger
     @EventHandler(priority = EventPriority.LOW)
     public void onInteract(PlayerInteractEvent event){
         Player player = event.getPlayer();

@@ -8,31 +8,27 @@ import fr.leconsulat.api.gui.GuiListener;
 import fr.leconsulat.api.gui.PagedGui;
 import fr.leconsulat.api.gui.events.GuiClickEvent;
 import fr.leconsulat.api.gui.events.PagedGuiCreateEvent;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 
 import java.util.UUID;
 
-public class MemberPermission extends GuiListener<UUID> {
+public class MemberPermissionGui extends GuiListener<UUID> {
     
-    private static final byte MEMBER_SLOT = 21;
+    private static final byte MEMBER_SLOT = 20;
     private static final byte CLAIM_SLOT = 22;
-    private static final byte ACCESS_SLOT = 23;
-    private static final byte GIVE_ALL_SLOT = 24;
-    private static final byte REMOVE_ALL_SLOT = 33;
+    private static final byte ACCESS_SLOT = 24;
     
-    public MemberPermission(){
-        super(6);
+    public MemberPermissionGui(){
+        super(5);
         GuiItem deactivate = new GuiItem("§cDésactivé", (byte)-1, Material.RED_CONCRETE);
         setTemplate("Permissions de ville",
-                getItem("§7Membres", MEMBER_SLOT, Material.PLAYER_HEAD, "§7Inviter", "§7Kick"),
+                getItem("§eMembres", MEMBER_SLOT, Material.PLAYER_HEAD, "", "§7Inviter un joueur", "§7Kick un membre"),
                 getItem(deactivate, MEMBER_SLOT + 9),
-                getItem("§7Claims", CLAIM_SLOT, Material.FILLED_MAP, "§7Claim", "§7Unclaim"),
+                getItem("§eClaims", CLAIM_SLOT, Material.FILLED_MAP, "", "§7Claim un chunk", "§7Unclaim un chunk"),
                 getItem(deactivate, CLAIM_SLOT + 9),
-                getItem("§7Accès", ACCESS_SLOT, Material.BARRIER, "§7Gérer les accès aux chunks"),
+                getItem("§eAccès", ACCESS_SLOT, Material.BARRIER, "", "§7Gérer les accès aux chunks"),
                 getItem(deactivate, ACCESS_SLOT + 9))
-                .setDeco(Material.BLACK_STAINED_GLASS_PANE, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53)
-                .setDeco(Material.RED_STAINED_GLASS_PANE, 0, 1, 2, 3, 4, 5, 6, 7, 8);
+                .setDeco(Material.BLACK_STAINED_GLASS_PANE, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44);
     }
     
     private byte getSlotPermission(CityPermission permission){
@@ -73,7 +69,6 @@ public class MemberPermission extends GuiListener<UUID> {
     public void onPageCreate(PagedGuiCreateEvent<UUID> event){
         PagedGui<UUID> gui = event.getPagedGui();
         UUID uuid = event.getData();
-        gui.setName(Bukkit.getOfflinePlayer(uuid).getName());
         City city = getPlayerCity(event.getGui());
         for(CityPermission permission : CityPermission.values()){
             byte slot = getSlotPermission(permission);

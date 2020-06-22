@@ -99,7 +99,7 @@ public class ClaimCommand extends ConsulatCommand {
                     sender.sendMessage(Text.PREFIX + "§cTu ne peux pas kick ce joueur.");
                     return;
                 }
-                target.getPlayer().teleport(ConsulatCore.getInstance().getSpawn());
+                target.getPlayer().teleportAsync(ConsulatCore.getInstance().getSpawn());
                 sender.sendMessage(Text.PREFIX + "§aTu as kick §e" + target.getName() + "§a de tes claims.");
                 target.sendMessage(Text.PREFIX + "§e" + sender.getName() + "§c t'a kick du claim dans lequel tu te trouvais. Tu as été téléporté au spawn.");
                 return;
@@ -156,7 +156,7 @@ public class ClaimCommand extends ConsulatCommand {
                 } else {
                     target = args[1];
                 }
-                SPlayerManager.getInstance().fetchOffline(args[1], survivalOffline -> {
+                SPlayerManager.getInstance().fetchOffline(target, survivalOffline -> {
                     if(survivalOffline == null){
                         sender.sendMessage(Text.PREFIX + "§cLe joueur " + target + " ne s'est jamais connecté");
                         return;

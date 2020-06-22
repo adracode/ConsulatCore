@@ -22,6 +22,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -60,10 +61,6 @@ public class SurvivalPlayer extends ConsulatPlayer {
     
     public SurvivalPlayer(UUID uuid, String name){
         super(uuid, name);
-    }
-    
-    public boolean isSurvivalInitialized(){
-        return initialized;
     }
     
     private int setExtraHomes(){
@@ -119,7 +116,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
         return shops.size() < limitShop || ConsulatAPI.getConsulatAPI().isDebug();
     }
     
-    public Claim getClaim(){
+    public @Nullable Claim getClaim(){
         return ClaimManager.getInstance().getClaim(this.getPlayer().getChunk());
     }
     

@@ -9,11 +9,11 @@ import fr.leconsulat.api.gui.events.GuiClickEvent;
 import fr.leconsulat.api.gui.events.PagedGuiCreateEvent;
 import org.bukkit.Material;
 
-public class CityPublicPermissions extends GuiListener<City> {
+public class PublicPermissionsGui extends GuiListener<City> {
     
     private static final byte DOOR_SLOT = 22;
     
-    public CityPublicPermissions(){
+    public PublicPermissionsGui(){
         super(6);
         GuiItem deactivate = getItem("§cDésactivé", -1, Material.RED_CONCRETE);
         setTemplate("Publiques",
@@ -41,7 +41,7 @@ public class CityPublicPermissions extends GuiListener<City> {
             if(slot == -1){
                 return;
             }
-            if(city.hasPermission(permission)){
+            if(city.hasPublicPermission(permission)){
                 gui.setGlowing(slot, true);
                 gui.setType(slot + 9, Material.GREEN_CONCRETE);
                 gui.setDisplayName(slot + 9, "§aActivé");
@@ -54,7 +54,7 @@ public class CityPublicPermissions extends GuiListener<City> {
     }
     
     private void switchPermission(City city, PagedGui<City> gui, ClaimPermission permission){
-        setPermission(city, gui, !city.hasPermission(permission), permission);
+        setPermission(city, gui, !city.hasPublicPermission(permission), permission);
     }
     
     private void setPermission(City city, PagedGui<City> gui, boolean activate, ClaimPermission permission){
@@ -63,12 +63,12 @@ public class CityPublicPermissions extends GuiListener<City> {
             return;
         }
         if(activate){
-            city.addPermission(permission);
+            city.addPublicPermission(permission);
             gui.setGlowing(slot, true);
             gui.setType(slot + 9, Material.GREEN_CONCRETE);
             gui.setDisplayName(slot + 9, "§aActivé");
         } else {
-            city.removePermission(permission);
+            city.removePublicPermission(permission);
             gui.setGlowing(slot, false);
             gui.setType(slot + 9, Material.RED_CONCRETE);
             gui.setDisplayName(slot + 9, "§cDésactivé");

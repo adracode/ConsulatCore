@@ -18,7 +18,6 @@ public class ChangeHomeGui extends GuiListener<City> {
                 getItem("§aConfirmer", 24, Material.GREEN_CONCRETE))
                 .setDeco(Material.BLACK_STAINED_GLASS_PANE, 9, 17, 18, 26, 27, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44)
                 .setDeco(Material.RED_STAINED_GLASS_PANE, 0, 1, 2, 3, 4, 5, 6, 7, 8);
-        setCreateOnOpen(true);
         setDestroyOnClose(true);
     }
     

@@ -37,15 +37,8 @@ public class ShopCommand implements CommandExecutor {
                 if(rank.equalsIgnoreCase("financeur") ||
                         rank.equalsIgnoreCase("mécène")){
                     Rank newRank = Rank.byName(rank);
-                    Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                        try {
-                            target.setRank(newRank);
-                            target.sendMessage("§7Suite à ton achat, tu es désormais " + newRank.getRankColor() + newRank.getRankName());
-                        } catch(SQLException e){
-                            target.sendMessage("§cUne erreur s'est produite lors de l'achat de ton grade " + rank + ", préviens un administrateur !");
-                            e.printStackTrace();
-                        }
-                    });
+                    target.setRank(newRank);
+                    target.sendMessage("§7Suite à ton achat, tu es désormais " + newRank.getRankColor() + newRank.getRankName());
                 }
                 break;
             case "announce":

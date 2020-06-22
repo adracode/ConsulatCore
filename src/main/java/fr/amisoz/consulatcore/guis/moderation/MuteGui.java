@@ -1,4 +1,4 @@
-package fr.amisoz.consulatcore.moderation.gui;
+package fr.amisoz.consulatcore.guis.moderation;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
@@ -33,12 +33,12 @@ public class MuteGui extends GuiListener<ConsulatOffline> {
 
     public MuteGui() {
         super(3);
-        setTemplate("§6§lMute§7 ↠ §e");
+        setTemplate("§6§lMute");
     }
 
     @Override
     public void onPageCreate(PagedGuiCreateEvent<ConsulatOffline> event) {
-        event.getPagedGui().setName("§6§lMute§7 ↠ §e" + event.getData().getName());
+        event.getPagedGui().setName("§6§lMute" + event.getData().getName());
     }
 
     @Override

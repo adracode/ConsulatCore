@@ -50,7 +50,7 @@ public class InteractListener implements Listener {
                         int y = Integer.parseInt(lines[2]);
                         int z = Integer.parseInt(lines[3]);
                         Location result = new Location(Bukkit.getWorlds().get(0), x, y, z);
-                        player.getPlayer().teleport(result);
+                        player.getPlayer().teleportAsync(result);
                         player.sendMessage("§aTu as été téléporté à la zone.");
                     } catch(NumberFormatException e){
                         player.sendMessage("§cErreur de coordonnées");
@@ -76,7 +76,7 @@ public class InteractListener implements Listener {
                 if(resultedPlayer.getUniqueId().equals(player.getUUID())){
                     resultedPlayer = random == 0 ? online.get(1) : online.get(random - 1);
                 }
-                player.getPlayer().teleport(resultedPlayer);
+                player.getPlayer().teleportAsync(resultedPlayer.getLocation());
                 player.sendMessage(ChatColor.GREEN + "Tu as été téléporté à : " + resultedPlayer.getName());
                 event.setCancelled(true);
             }

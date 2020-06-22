@@ -4,9 +4,11 @@ import org.jetbrains.annotations.NotNull;
 
 public class CityRank {
 
+    private final int id;
     @NotNull private String rankName;
 
-    public CityRank(@NotNull String rankName){
+    public CityRank(int id, @NotNull String rankName){
+        this.id = id;
         this.rankName = rankName;
     }
 
@@ -17,5 +19,9 @@ public class CityRank {
 
     public void setRankName(@NotNull String rankName){
         this.rankName = rankName;
+    }
+    
+    public int getId(){
+        return id;
     }
 }

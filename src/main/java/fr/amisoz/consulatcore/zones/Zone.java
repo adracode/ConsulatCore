@@ -2,27 +2,19 @@ package fr.amisoz.consulatcore.zones;
 
 import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.amisoz.consulatcore.zones.claims.ClaimPermission;
-import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.database.Saveable;
-import fr.leconsulat.api.utils.FileUtils;
-import fr.leconsulat.api.utils.NBTUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jnbt.*;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.*;
 
+@SuppressWarnings({"UnusedReturnValue", "BooleanMethodIsAlwaysInverted", "unused"})
 public class Zone implements Saveable {
     
     @NotNull private final UUID uuid;
     @NotNull private final UUID owner;
+    @NotNull private final Set<Claim> claims;
     @NotNull private String name;
-    @NotNull private Set<Claim> claims;
-    @NotNull private final Set<String> publicPermissions = new HashSet<>();
     
     public Zone(@NotNull UUID uuid, @Nullable String name, @NotNull UUID owner){
         this(uuid, name == null || name.isEmpty() ? "null" : name, owner, new HashSet<>());
@@ -36,11 +28,43 @@ public class Zone implements Saveable {
         addPermission(owner, ClaimPermission.values());
     }
     
-    public boolean isOwner(UUID uuid){
-        return owner.equals(uuid);
+    public boolean addPlayer(@NotNull UUID uuid){
+        boolean result = false;
+        for(Claim claim : claims){
+            result |= claim.addPlayer(uuid);
+        }
+        return result;
     }
     
-    public boolean isClaim(Claim claim){
+    public boolean removePlayer(@NotNull UUID uuid){
+        boolean result = false;
+        for(Claim claim : claims){
+            result |= claim.removePlayer(uuid);
+        }
+        return result;
+    }
+    
+    public boolean hasPublicPermission(@Nullable ClaimPermission permission){
+        return false;
+    }
+    
+    public boolean addPermission(@NotNull UUID uuid, @NotNull ClaimPermission... permission){
+        boolean result = false;
+        for(Claim claim : claims){
+            result |= claim.addPermission(uuid, permission);
+        }
+        return result;
+    }
+    
+    public boolean removePermission(@NotNull UUID uuid, @NotNull ClaimPermission... permission){
+        boolean result = false;
+        for(Claim claim : claims){
+            result |= claim.removePermission(uuid, permission);
+        }
+        return result;
+    }
+    
+    public boolean isClaim(@Nullable Claim claim){
         if(claim == null){
             return false;
         }
@@ -51,56 +75,88 @@ public class Zone implements Saveable {
         return !claims.isEmpty();
     }
     
-    public boolean addPlayer(UUID uuid){
-        boolean result = false;
-        for(Claim claim : claims){
-            result |= claim.addPlayer(uuid);
+    public void addClaim(@NotNull Claim claim){
+        if(!this.equals(claim.getOwner())){
+            throw new IllegalArgumentException("Cannot add claim to zone " + name + ", claim is owned by " + claim.getOwner().getName());
         }
-        return result;
-    }
-    
-    public boolean removePlayer(UUID uuid){
-        boolean result = false;
-        for(Claim claim : claims){
-             result |= claim.removePlayer(uuid);
-        }
-        return result;
-    }
-    
-    public boolean hasPermission(ClaimPermission permission){
-        return false;
-    }
-    
-    public boolean addPermission(UUID uuid, ClaimPermission... permission){
-        boolean result = false;
-        for(Claim claim : claims){
-            result |= claim.addPermission(uuid, permission);
-        }
-        return result;
-    }
-    
-    public boolean removePermission(UUID uuid, ClaimPermission... permission){
-        boolean result = false;
-        for(Claim claim : claims){
-            result |= claim.removePermission(uuid, permission);
-        }
-        return result;
-    }
-    
-    public void addClaim(Claim claim){
         claims.add(claim);
     }
     
-    public void removeClaim(Claim claim){
+    public void removeClaim(@Nullable Claim claim){
+        if(claim == null){
+            return;
+        }
         claims.remove(claim);
     }
     
-    public UUID getUUID(){
+    public void rename(@NotNull String name){
+        if(name.isEmpty()){
+            throw new IllegalArgumentException("Name cannot be empty");
+        }
+        this.name = name;
+    }
+    
+    public @NotNull UUID getUniqueId(){
         return uuid;
     }
     
+    public @NotNull UUID getOwner(){
+        return owner;
+    }
+    
+    public boolean isOwner(@Nullable UUID uuid){
+        return owner.equals(uuid);
+    }
+    
+    protected @NotNull Set<Claim> getClaims(){
+        return claims;
+    }
+    
+    public @NotNull Set<Claim> getZoneClaims(){
+        return Collections.unmodifiableSet(claims);
+    }
+    
+    public @NotNull String getName(){
+        return name;
+    }
+    
+    public @NotNull String getType(){
+        return "PLAYER";
+    }
+    
+    public void loadNBT(){
+        /*try {
+            File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "zones/" + uuid + ".dat");
+            if(!file.exists()){
+                return;
+            }
+            NBTInputStream is = new NBTInputStream(new FileInputStream(file));
+            Map<String, Tag> zoneMap = ((CompoundTag)is.readTag()).getValue();
+            is.close();
+        } catch(IOException e){
+            e.printStackTrace();
+        }*/
+    }
+    
+    public void saveNBT(){
+        /*try {
+            File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "zones/" + uuid + ".dat");
+            Map<String, Tag> zone = new HashMap<>();
+            if(!file.exists()){
+                if(!file.createNewFile()){
+                    throw new IOException("Couldn't create file.");
+                }
+            }
+            NBTOutputStream os = new NBTOutputStream(new FileOutputStream(file));
+            os.writeTag(new CompoundTag("City", zone));
+            os.close();
+        } catch(IOException e){
+            e.printStackTrace();
+        }*/
+    }
+    
     @Override
-    public boolean equals(Object o){
+    public boolean equals(@Nullable Object o){
         if(this == o){
             return true;
         }
@@ -115,64 +171,14 @@ public class Zone implements Saveable {
         return uuid.hashCode();
     }
     
-    @NotNull
-    public UUID getOwner(){
-        return owner;
-    }
-    
-    @NotNull
-    protected Set<Claim> getClaims(){
-        return claims;
-    }
-    
-    @NotNull
-    public Set<Claim> getZoneClaims(){
-        return Collections.unmodifiableSet(claims);
-    }
-    
-    public void rename(String name){
-        this.name = name;
-    }
-    
-    @NotNull
-    public String getName(){
-        return name;
-    }
-    
-    public String getType(){
-        return "PLAYER";
-    }
-    
-    public void loadNBT(){
-        try {
-            File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "zones/" + uuid + ".dat");
-            if(!file.exists()){
-                return;
-            }
-            NBTInputStream is = new NBTInputStream(new FileInputStream(file));
-            Map<String, Tag> zoneMap = ((CompoundTag)is.readTag()).getValue();
-            is.close();
-            this.name = NBTUtils.getChildTag(zoneMap, "Name", StringTag.class).getValue();
-        } catch(IOException e){
-            e.printStackTrace();
-        }
-    }
-    
-    public void saveNBT(){
-        try {
-            File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "zones/" + uuid + ".dat");
-            Map<String, Tag> zone = new HashMap<>();
-            if(!file.exists()){
-                if(!file.createNewFile()){
-                    throw new IOException("Couldn't create file.");
-                }
-            }
-            zone.put("name", new StringTag("Name", name));
-            NBTOutputStream os = new NBTOutputStream(new FileOutputStream(file));
-            os.writeTag(new CompoundTag("City", zone));
-            os.close();
-        } catch(IOException e){
-            e.printStackTrace();
-        }
+    @Override
+    public String toString(){
+        return getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(this)) +
+                '{' +
+                "uuid=" + uuid +
+                ", owner=" + owner +
+                ", claims=" + claims +
+                ", name='" + name + '\'' +
+                '}';
     }
 }

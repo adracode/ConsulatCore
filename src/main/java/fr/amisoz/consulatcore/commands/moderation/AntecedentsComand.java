@@ -1,7 +1,7 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.moderation.gui.AntecedentsGui;
+import fr.amisoz.consulatcore.guis.moderation.AntecedentsGui;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;

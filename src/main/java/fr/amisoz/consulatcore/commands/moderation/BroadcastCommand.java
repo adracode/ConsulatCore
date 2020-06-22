@@ -6,9 +6,7 @@ import fr.amisoz.consulatcore.Text;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 
 import java.util.Arrays;
 
@@ -23,8 +21,11 @@ public class BroadcastCommand extends ConsulatCommand {
     
     @Override
     public void onCommand(ConsulatPlayer sender, String[] args){
-        //TODO -> Stringbuilder
-        String message = StringUtils.join(args, " ");
-        Bukkit.broadcastMessage(Text.BROADCAST_PREFIX + ChatColor.DARK_RED + sender.getName() + ChatColor.GRAY + " : §r" + ChatColor.AQUA + message);
+        StringBuilder builder = new StringBuilder(args[0]);
+        for(int i = 1; i < args.length; ++i){
+            builder.append(" ").append(args[i]);
+        }
+        String message = builder.toString();
+        Bukkit.broadcastMessage(Text.BROADCAST_PREFIX + "§4" + sender.getName() + "§7 : §b" + message);
     }
 }

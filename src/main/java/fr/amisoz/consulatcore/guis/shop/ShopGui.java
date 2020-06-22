@@ -1,7 +1,9 @@
-package fr.amisoz.consulatcore.shop;
+package fr.amisoz.consulatcore.guis.shop;
 
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.amisoz.consulatcore.shop.Shop;
+import fr.amisoz.consulatcore.shop.ShopItemType;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.gui.Gui;
 import fr.leconsulat.api.gui.GuiContainer;
@@ -98,14 +100,14 @@ public class ShopGui extends GuiContainer<ShopItemType> {
                             Sign sign = shop.getSign();
                             Location shopLocation = shop.getLocation();
                             if(sign == null){
-                                player.getPlayer().teleport(shopLocation.clone().add(0, 1, 0));
+                                player.getPlayer().teleportAsync(shopLocation.clone().add(0, 1, 0));
                             } else {
                                 Location block = sign.getLocation().clone().add(0.5, 0, 0.5);
                                 block.setDirection(block.toBlockLocation().subtract(shopLocation).multiply(-1).toVector());
                                 if(block.getBlock().getRelative(BlockFace.UP).getType() != Material.AIR){
                                     block.add(0, -1, 0);
                                 }
-                                player.getPlayer().teleport(block);
+                                player.getPlayer().teleportAsync(block);
                             }
                         } else {
                             player.sendMessage(Text.PREFIX + "§cCe shop n'a pas été trouvé");

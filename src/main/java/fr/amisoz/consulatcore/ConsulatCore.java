@@ -13,6 +13,7 @@ import fr.amisoz.consulatcore.commands.players.*;
 import fr.amisoz.consulatcore.duel.DuelManager;
 import fr.amisoz.consulatcore.economy.BaltopManager;
 import fr.amisoz.consulatcore.fly.FlyManager;
+import fr.amisoz.consulatcore.guis.GuiListenerStorage;
 import fr.amisoz.consulatcore.listeners.entity.MobListeners;
 import fr.amisoz.consulatcore.listeners.entity.player.*;
 import fr.amisoz.consulatcore.listeners.world.ClaimCancelListener;
@@ -45,39 +46,27 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
 
-//TODO: add BDD
 /**
  *
- * CREATE TABLE cities (
- *     id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
- *     uuid CHAR(36) NOT NULL,
- *     name VARCHAR(255) NOT NULL,
- *     money DOUBLE NOT NULL,
- *     spawn_x DOUBLE,
- *     spawn_y DOUBLE,
- *     spawn_z DOUBLE,
- *     yam FLOAT,
- *     pitch FLOAT
- * );
- * CREATE TABLE zones (
- *     id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
- *     uuid CHAR(36) NOT NULL,
- *     name VARCHAR(255) NOT NULL,
- * );
- * ALTER TABLE players ADD FOREIGN KEY (city) REFERENCES cities(id);
- * ALTER TABLE claims ADD type VARCHAR(16)
+ CREATE TABLE cities (
+ id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+ uuid CHAR(36) NOT NULL,
+ name VARCHAR(255) NOT NULL,
+ money DOUBLE NOT NULL
+ );
+ CREATE TABLE zones (
+ id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+ uuid CHAR(36) NOT NULL,
+ name VARCHAR(255) NOT NULL,
+ owner CHAR(36) NOT NULL
+ );
+ ALTER TABLE players ADD city CHAR(36);
  *
  * */
 public class ConsulatCore extends JavaPlugin implements Listener {
     
     private static ConsulatCore instance;
     private static Random random;
-    
-    private ClaimManager claimManager;
-    private SPlayerManager playerManager;
-    private BaltopManager baltopManager;
-    private FlyManager flyManager;
-    private ShopManager shopManager;
     
     private Location spawn;
     
@@ -102,20 +91,21 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         random = new Random();
         long startLoading = System.currentTimeMillis();
         spawn = new Location(Bukkit.getWorlds().get(0), 330, 65, -438, -145, 0);
+        new GuiListenerStorage();
         new DuelManager();
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         new ZoneManager();
         try {
-            claimManager = new ClaimManager();
+            new ClaimManager();
         } catch(UnsupportedOperationException e){
             e.printStackTrace();
             Bukkit.shutdown();
         }
-        playerManager = new SPlayerManager();
-        baltopManager = new BaltopManager();
-        flyManager = new FlyManager();
+        new SPlayerManager();
+        new BaltopManager();
+        new FlyManager();
         moderationDatabase = new ModerationDatabase(this);
-        shopManager = new ShopManager();
+        new ShopManager();
         Bukkit.getScheduler().runTaskTimer(this, new AFKRunnable(), 0L, 5 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MonitoringRunnable(this), 0L, 10 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MessageRunnable(), 0L, 15 * 60 * 20);
@@ -182,7 +172,6 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         new MpCommand();
         new PayCommand();
         new PersoCommand();
-        new RankCommand();
         new ReportCommand();
         new SanctionCommand();
         new SeenCommand();
@@ -220,9 +209,9 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         //Bukkit.getPluginManager().registerEvents(new DuelListeners(), this);
         Bukkit.getPluginManager().registerEvents(new ChunkChangeListener(), this);
         Bukkit.getPluginManager().registerEvents(new ClaimCancelListener(), this);
-        Bukkit.getPluginManager().registerEvents(claimManager, this);
-        Bukkit.getPluginManager().registerEvents(playerManager, this);
-        Bukkit.getPluginManager().registerEvents(shopManager, this);
+        Bukkit.getPluginManager().registerEvents(ClaimManager.getInstance(), this);
+        Bukkit.getPluginManager().registerEvents(SPlayerManager.getInstance(), this);
+        Bukkit.getPluginManager().registerEvents(ShopManager.getInstance(), this);
     }
     
     public Connection getDatabaseConnection(){
@@ -257,8 +246,8 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         this.spawn = spawn;
     }
     
-    public Set<String> getForbiddenCustomRank(){
-        return forbiddenPerso;
+    public boolean isCustomRankForbidden(String rank){
+        return forbiddenPerso.contains(rank.toLowerCase());
     }
     
     public static Random getRandom(){

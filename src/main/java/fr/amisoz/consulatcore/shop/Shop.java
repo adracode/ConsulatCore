@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.shop;
 
+import fr.amisoz.consulatcore.guis.shop.ShopGui;
 import fr.amisoz.consulatcore.utils.CoordinatesUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

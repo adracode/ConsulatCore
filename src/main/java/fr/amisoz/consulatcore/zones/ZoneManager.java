@@ -13,59 +13,49 @@ import fr.leconsulat.api.database.tasks.SaveTask;
 import fr.leconsulat.api.utils.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.*;
 
 public class ZoneManager {
     
     private static ZoneManager instance;
     
-    private Map<String, Zone> zonesByName = new HashMap<>();
-    private Map<UUID, Zone> zones = new HashMap<>();
-    private Map<UUID, Set<City>> invitedPlayers = new HashMap<>();
+    private final @NotNull Map<UUID, Zone> zones = new HashMap<>();
+    private final @NotNull Map<String, City> citiesByName = new HashMap<>();
+    private final @NotNull Map<UUID, Set<City>> invitedPlayers = new HashMap<>();
     
-    private ManageClaimGui manageClaimGui;
-    private CityGui cityGui;
-    private CityInfo cityInfoGui;
-    private DisbandGui disbandCityGui;
+    private final @NotNull ManageClaimGui manageClaimGui;
+    private final @NotNull CityGui cityGui;
+    private final @NotNull CityInfo cityInfoGui;
+    private final @NotNull DisbandGui disbandCityGui;
     
     public ZoneManager(){
         if(instance != null){
-            return;
+            throw new IllegalStateException("ZoneManager is already instantiated");
         }
         instance = this;
         SaveManager saveManager = SaveManager.getInstance();
         saveManager.addSaveTask("city-money", new SaveTask<>(
-                "UPDATE cities SET money = ? WHERE uuid = ?;",
+                "UPDATE cities SET money = ? WHERE uuid = ?",
                 (statement, city) -> {
                     statement.setDouble(1, city.getMoney());
-                    statement.setString(2, city.getUUID().toString());
+                    statement.setString(2, city.getUniqueId().toString());
                 },
                 City::getMoney
         ));
         saveManager.addSaveTask("city-name", new SaveTask<>(
-                "UPDATE cities SET name = ? WHERE uuid = ?;",
+                "UPDATE cities SET name = ? WHERE uuid = ?",
                 (statement, city) -> {
                     statement.setString(1, city.getName());
-                    statement.setString(2, city.getUUID().toString());
+                    statement.setString(2, city.getUniqueId().toString());
                 },
                 City::getName
-        ));
-        saveManager.addSaveTask("city-home", new SaveTask<>(
-                "UPDATE cities SET spawn_x = ?, spawn_y = ?, spawn_z = ?, yaw = ?, pitch = ? WHERE uuid = ?;",
-                (statement, city) -> {
-                    Location home = city.getHome();
-                    statement.setDouble(1, home.getX());
-                    statement.setDouble(2, home.getY());
-                    statement.setDouble(3, home.getZ());
-                    statement.setFloat(4, home.getYaw());
-                    statement.setFloat(5, home.getPitch());
-                    statement.setString(6, city.getUUID().toString());
-                },
-                City::getHome
         ));
         manageClaimGui = new ManageClaimGui();
         cityGui = new CityGui();
@@ -76,44 +66,33 @@ public class ZoneManager {
             initCities();
         } catch(SQLException e){
             e.printStackTrace();
+            Bukkit.shutdown();
         }
     }
     
-    private void initZones(){
-        try {
-            PreparedStatement fetchZones = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM zones;");
-            ResultSet result = fetchZones.executeQuery();
-            while(result.next()){
-                Zone zone = new Zone(
-                        UUID.fromString(result.getString("uuid")),
-                        result.getString("name"),
-                        UUID.fromString(result.getString("owner"))
-                );
-                zone.loadNBT();
-                addZone(zone);
-            }
-        } catch(SQLException e){
-            e.printStackTrace();
+    private void initZones() throws SQLException{
+        PreparedStatement fetchZones = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM zones");
+        ResultSet result = fetchZones.executeQuery();
+        while(result.next()){
+            Zone zone = new Zone(
+                    UUID.fromString(result.getString("uuid")),
+                    result.getString("name"),
+                    UUID.fromString(result.getString("owner"))
+            );
+            zone.loadNBT();
+            addZone(zone);
         }
     }
     
     private void initCities() throws SQLException{
-        PreparedStatement fetchCities = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM cities;");
+        PreparedStatement fetchCities = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM cities");
         ResultSet result = fetchCities.executeQuery();
         while(result.next()){
-            double x = result.getDouble("spawn_x");
-            Location spawn = result.wasNull() ? null : new Location(Bukkit.getWorlds().get(0),
-                    x,
-                    result.getDouble("spawn_y"),
-                    result.getDouble("spawn_z"),
-                    result.getFloat("yaw"),
-                    result.getFloat("pitch"));
             City city = new City(
                     UUID.fromString(result.getString("uuid")),
                     result.getString("name"),
                     UUID.fromString(result.getString("owner")),
-                    result.getDouble("money"),
-                    spawn
+                    result.getDouble("money")
             );
             city.loadNBT();
             addCity(city);
@@ -121,22 +100,22 @@ public class ZoneManager {
     }
     
     public void addZone(Zone zone){
-        zones.put(zone.getUUID(), zone);
-        zonesByName.put(zone.getName().toLowerCase(), zone);
+        zones.put(zone.getUniqueId(), zone);
     }
     
     private void addCity(City city){
+        citiesByName.put(city.getName().toLowerCase(), city);
         cityInfoGui.addGui(cityInfoGui.createGui(city));
         SaveManager.getInstance().addData("city-money", city);
         addZone(city);
     }
     
     public void removeZone(Zone zone){
-        zones.remove(zone.getUUID());
-        zonesByName.remove(zone.getName().toLowerCase());
+        zones.remove(zone.getUniqueId());
     }
     
     public void removeCity(City city){
+        citiesByName.remove(city.getName().toLowerCase());
         SaveManager.getInstance().removeData("city-money", city, false);
         removeZone(city);
     }
@@ -149,26 +128,27 @@ public class ZoneManager {
         return invitedPlayers.computeIfAbsent(uuid, (k) -> new HashSet<>()).add(city);
     }
     
-    public void renameCity(City city, String oldName, String newName){
+    public void renameCity(City city, String newName){
+        citiesByName.remove(city.getName().toLowerCase());
         city.rename(newName);
-        zonesByName.remove(oldName);
-        zonesByName.put(newName.toLowerCase(), city);
+        citiesByName.put(newName.toLowerCase(), city);
         SaveManager.getInstance().saveOnce("city-name", city);
-        cityGui.setCityName(city);
+        cityGui.updateName(city);
+        cityInfoGui.updateName(city);
     }
     
     public void setHome(City city, Location location){
         city.setHome(location);
-        SaveManager.getInstance().saveOnce("city-home", city);
-        cityGui.setHome(city, true);
+        cityGui.updateHome(city, true);
+        cityInfoGui.updateHome(city);
     }
     
     public Set<City> getInvitations(UUID uuid){
         return invitedPlayers.get(uuid);
     }
     
-    public Zone getZone(String name){
-        return zonesByName.get(name.toLowerCase());
+    public @Nullable City getCity(String name){
+        return citiesByName.get(name.toLowerCase());
     }
     
     public Zone getZone(UUID uuid){
@@ -190,7 +170,7 @@ public class ZoneManager {
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
                 PreparedStatement statement = ConsulatAPI.getDatabase().prepareStatement("INSERT INTO cities (uuid, name, owner) VALUES (?, ?, ?)");
-                statement.setString(1, city.getUUID().toString());
+                statement.setString(1, city.getUniqueId().toString());
                 statement.setString(2, city.getName());
                 statement.setString(3, city.getOwner().toString());
                 statement.executeUpdate();
@@ -203,19 +183,19 @@ public class ZoneManager {
     
     public void deleteCity(City city){
         city.disband();
+        removeCity(city);
         ClaimManager.getInstance().removeClaim(city);
         cityGui.removeGui(city);
         cityInfoGui.removeGui(city);
-        removeCity(city);
-        FileUtils.deleteFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "cities/" + city.getUUID() + ".dat");
+        FileUtils.deleteFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "cities/" + city.getUniqueId() + ".dat");
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
                 PreparedStatement statement = ConsulatAPI.getDatabase().prepareStatement("DELETE FROM cities WHERE uuid = ?");
-                statement.setString(1, city.getUUID().toString());
+                statement.setString(1, city.getUniqueId().toString());
                 statement.executeUpdate();
                 statement.close();
                 statement = ConsulatAPI.getDatabase().prepareStatement("DELETE FROM claims WHERE player_uuid = ?");
-                statement.setString(1, city.getUUID().toString());
+                statement.setString(1, city.getUniqueId().toString());
                 statement.executeUpdate();
                 statement.close();
             } catch(SQLException e){
@@ -244,5 +224,23 @@ public class ZoneManager {
     
     public ManageClaimGui getManageClaimGui(){
         return manageClaimGui;
+    }
+    
+    public void setPlayerCity(@NotNull UUID uuid, @Nullable City city){
+        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
+            try {
+                PreparedStatement statement = ConsulatAPI.getDatabase().prepareStatement("UPDATE players SET city = ? WHERE player_uuid = ?");
+                if(city == null){
+                    statement.setNull(1, Types.CHAR);
+                } else {
+                    statement.setString(1, city.getUniqueId().toString());
+                }
+                statement.setString(2, uuid.toString());
+                statement.executeUpdate();
+                statement.close();
+            } catch(SQLException e){
+                e.printStackTrace();
+            }
+        });
     }
 }

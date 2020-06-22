@@ -1,9 +1,10 @@
 package fr.amisoz.consulatcore.zones.claims;
 
 import fr.amisoz.consulatcore.guis.city.CityGui;
+import fr.amisoz.consulatcore.guis.city.claimlist.ClaimsGui;
 import fr.amisoz.consulatcore.guis.city.claimlist.claims.ManageClaimGui;
 import fr.amisoz.consulatcore.guis.city.members.member.MemberGui;
-import fr.amisoz.consulatcore.guis.city.members.member.claims.AccessibleClaim;
+import fr.amisoz.consulatcore.guis.city.members.member.claims.AccessibleClaimGui;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.utils.CoordinatesUtils;
 import fr.amisoz.consulatcore.zones.Zone;
@@ -90,11 +91,10 @@ public class Claim implements Comparable<Claim> {
         if(added){
             addPermission(uuid, ClaimPermission.values());
             if(owner instanceof City){
-                ((City)owner).getCityPlayer(uuid).addAccessClaims(1);
                 CityGui cityGui = ZoneManager.getInstance().getCityGui();
-                Gui<UUID> access = cityGui.getGui(false, (City)owner, cityGui.getMembersGui(), uuid, MemberGui.CLAIM);
+                Gui<UUID> access = cityGui.getGui(false, (City)owner, CityGui.MEMBERS, uuid, MemberGui.CLAIM);
                 if(access != null){
-                    ((AccessibleClaim)access.getListener()).addItemClaim(access, this);
+                    ((AccessibleClaimGui)access.getListener()).addItemClaim(access, this);
                 }
             }
             if(manageClaim != null){
@@ -108,11 +108,10 @@ public class Claim implements Comparable<Claim> {
         boolean removed = this.permissions.remove(uuid) != null;
         if(removed){
             if(owner instanceof City){
-                ((City)owner).getCityPlayer(uuid).addAccessClaims(-1);
                 CityGui cityGui = ZoneManager.getInstance().getCityGui();
-                Gui<UUID> access = cityGui.getGui(false, (City)owner, cityGui.getMembersGui(), uuid, MemberGui.CLAIM);
+                Gui<UUID> access = cityGui.getGui(false, (City)owner, CityGui.MEMBERS, uuid, MemberGui.CLAIM);
                 if(access != null){
-                    ((AccessibleClaim)access.getListener()).removeItemClaim(access, this);
+                    ((AccessibleClaimGui)access.getListener()).removeItemClaim(access, this);
                 }
             }
             if(manageClaim != null){
@@ -138,7 +137,7 @@ public class Claim implements Comparable<Claim> {
             return true;
         }
         return player.hasPower(Rank.MODPLUS) ||
-                owner.hasPermission(permission) ||
+                owner.hasPublicPermission(permission) ||
                 canInteract(player.getUUID(), permission);
     }
     
@@ -249,7 +248,7 @@ public class Claim implements Comparable<Claim> {
             if(owner instanceof City){
                 CityGui gui = ZoneManager.getInstance().getCityGui();
                 Gui<City> cityGui = gui.getGui((City)owner);
-                manageClaim.setFather(cityGui.getChild(gui.getListCityClaimsGui()));
+                manageClaim.setFather(cityGui.getChild(CityGui.CLAIMS));
                 addClaimToList();
             } else {
                 manageClaim.setFather(null);
@@ -261,7 +260,10 @@ public class Claim implements Comparable<Claim> {
     
     void addClaimToList(){
         if(owner instanceof City){
-            ZoneManager.getInstance().getCityGui().addClaimToList((City)owner, this);
+            Gui<City> claimGui = ZoneManager.getInstance().getCityGui().getGui(false, (City)owner, CityGui.CLAIMS);
+            if(claimGui != null){
+                ((ClaimsGui)claimGui.getListener()).addItemClaim(claimGui, this);
+            }
         }
     }
     
@@ -272,7 +274,7 @@ public class Claim implements Comparable<Claim> {
     private Gui<Claim> createGui(){
         CityGui cityGui = ZoneManager.getInstance().getCityGui();
         return manageClaim = ZoneManager.getInstance().getManageClaimGui().createGui(this,
-                owner instanceof City ? cityGui.getGui(true, (City)owner, cityGui.getListCityClaimsGui()) : null);
+                owner instanceof City ? cityGui.getGui(true, (City)owner, CityGui.CLAIMS) : null);
     }
     
     @Nullable
@@ -376,7 +378,7 @@ public class Claim implements Comparable<Claim> {
         return "Claim{" +
                 "coords=" + coords +
                 ", description='" + description + '\'' +
-                ", owner=" + owner +
+                ", owner=" + owner.getName() +
                 ", permissions=" + permissions +
                 ", manageClaim=" + manageClaim +
                 ", protectedContainers=" + protectedContainers +

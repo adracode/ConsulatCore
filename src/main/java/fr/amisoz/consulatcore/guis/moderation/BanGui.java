@@ -1,4 +1,4 @@
-package fr.amisoz.consulatcore.moderation.gui;
+package fr.amisoz.consulatcore.guis.moderation;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
@@ -31,12 +31,12 @@ public class BanGui extends GuiListener<ConsulatOffline> {
 
     public BanGui() {
         super(3);
-        setTemplate("§c§lBannir§7 §7↠ §4");
+        setTemplate("§c§lBannir");
     }
 
     @Override
     public void onPageCreate(PagedGuiCreateEvent<ConsulatOffline> event) {
-        event.getPagedGui().setName("§c§lBannir§7 §7↠ §4" + event.getData().getName());
+        event.getPagedGui().setName("§c§lBannir" + event.getData().getName());
     }
 
     @Override

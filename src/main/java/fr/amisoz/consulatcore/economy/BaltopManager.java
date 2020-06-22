@@ -3,6 +3,7 @@ package fr.amisoz.consulatcore.economy;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.leconsulat.api.ConsulatAPI;
 import org.bukkit.Bukkit;
+import org.bukkit.event.Listener;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,7 +14,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 
 //TODO: si un joueur passe admin, il sera affiché dans le baltop s'il n'y a pas eu d'update
-public class BaltopManager {
+public class BaltopManager implements Listener {
     
     private static BaltopManager instance;
     
@@ -27,6 +28,7 @@ public class BaltopManager {
             return;
         }
         instance = this;
+        Bukkit.getPluginManager().registerEvents(this, ConsulatCore.getInstance());
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), this::updateBaltop);
     }
     

@@ -46,7 +46,6 @@ public class SetHomeCommand extends ConsulatCommand {
             sender.sendMessage("§cTu as atteint ta limite de homes, définis la position d'un home existant ou supprime en un.");
             return;
         }
-        //TODO: Ajouter pitch et yaw ?
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
                 survivalPlayer.addNewHome(args[0], sender.getPlayer().getLocation());

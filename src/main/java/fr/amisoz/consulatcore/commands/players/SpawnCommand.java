@@ -18,7 +18,7 @@ public class SpawnCommand extends ConsulatCommand {
             ConsulatCore.getInstance().setSpawn(sender.getPlayer().getLocation());
             sender.sendMessage("§aLocation définie.");
         } else {
-            sender.getPlayer().teleport(ConsulatCore.getInstance().getSpawn());
+            sender.getPlayer().teleportAsync(ConsulatCore.getInstance().getSpawn());
         }
     }
 }

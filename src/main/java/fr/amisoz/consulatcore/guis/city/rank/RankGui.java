@@ -11,6 +11,7 @@ import fr.leconsulat.api.gui.events.GuiClickEvent;
 import fr.leconsulat.api.gui.events.PagedGuiCreateEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.jetbrains.annotations.Nullable;
 
 public class RankGui extends GuiListener<City> {
     
@@ -21,29 +22,35 @@ public class RankGui extends GuiListener<City> {
     public RankGui(){
         super(5);
         setTemplate("Grades",
-                getItem("grade1", RANK1_SLOT, Material.DIAMOND),
-                getItem("grade2", RANK2_SLOT, Material.GOLD_INGOT),
-                getItem("grade3", RANK3_SLOT, Material.IRON_INGOT)
+                getItem("grade1", RANK1_SLOT, Material.DIAMOND, "", "§aCliquez §7pour changer",  "§7le nom du grade"),
+                getItem("grade2", RANK2_SLOT, Material.GOLD_INGOT, "", "§aCliquez §7pour changer",  "§7le nom du grade"),
+                getItem("grade3", RANK3_SLOT, Material.IRON_INGOT, "", "§aCliquez §7pour changer",  "§7le nom du grade")
         ).setDeco(Material.BLACK_STAINED_GLASS_PANE, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44);
     }
     
     @Override
     public void onPageCreate(PagedGuiCreateEvent<City> event){
-        PagedGui<City> current = event.getPagedGui();
+        Gui<City> current = event.getGui();
         setRank(current, 0);
         setRank(current, 1);
         setRank(current, 2);
     }
     
-    public void setRank(PagedGui<City> gui, int index){
-        City city = gui.getGui().getData();
+    public void setRank(@Nullable Gui<City> gui, int index){
+        if(gui == null){
+            return;
+        }
+        City city = gui.getData();
         switch(index){
             case 0:
-                gui.setDisplayName(RANK1_SLOT, "§b" + city.getRank(0));
+                gui.getPage().setDisplayName(RANK1_SLOT, "§b" + city.getRankName(0));
+                break;
             case 1:
-                gui.setDisplayName(RANK2_SLOT, "§e" + city.getRank(1));
+                gui.getPage().setDisplayName(RANK2_SLOT, "§e" + city.getRankName(1));
+                break;
             case 2:
-                gui.setDisplayName(RANK3_SLOT, "§7" + city.getRank(2));
+                gui.getPage().setDisplayName(RANK3_SLOT, "§7" + city.getRankName(2));
+                break;
         }
     }
     
@@ -62,7 +69,7 @@ public class RankGui extends GuiListener<City> {
                                 player.sendMessage("§cLe grade entré n'est pas valide.");
                                 return;
                             }
-                            city.setRank(event.getSlot() - 20 - ((event.getSlot() - 20) >> 1), input);
+                            city.setRankName(event.getSlot() - 20 - ((event.getSlot() - 20) >> 1), input);
                             Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
                                 current.open(player);
                             });
@@ -70,14 +77,5 @@ public class RankGui extends GuiListener<City> {
                         new String[]{"", "^^^^^^^^^^^^^^", "Entrez le", "nom du grade"}, 0);
                 break;
         }
-    }
-    
-    public void setRanks(Gui<City> gui){
-        if(gui == null){
-            return;
-        }
-        setRank(gui.getPage(), 0);
-        setRank(gui.getPage(), 1);
-        setRank(gui.getPage(), 2);
     }
 }

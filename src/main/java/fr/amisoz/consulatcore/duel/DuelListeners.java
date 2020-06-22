@@ -124,7 +124,7 @@ public class DuelListeners implements Listener {
                 Bukkit.broadcastMessage("§7[§b§lDuel§r§7] §cL'arène est à nouveau disponible.");
                 arena.setArenaState(ArenaState.FREE);
                 arena.setBusy(false);
-                arena.getVictoryPlayer().teleport(arena.winLocation);
+                arena.getVictoryPlayer().teleportAsync(arena.winLocation);
                 ((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(arena.getVictoryPlayer().getUniqueId())).setFighting(false);
                 // Retrait du /back qui téléporterait à nouveau dans l'arène
                 ((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(arena.getVictoryPlayer().getUniqueId())).setOldLocation(arena.winLocation);

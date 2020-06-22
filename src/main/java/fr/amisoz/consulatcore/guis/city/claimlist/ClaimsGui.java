@@ -16,15 +16,14 @@ import org.bukkit.Material;
 
 import java.util.Iterator;
 
-//TODO: enlever les flèches lors de la suppression
-public class ListCityClaimsGui extends GuiListener<City> {
+public class ClaimsGui extends GuiListener<City> {
     
     private static final byte PREVIOUS = 47;
     private static final byte NEXT = 51;
     
     private ManageClaimGui listAccessGui;
     
-    public ListCityClaimsGui(){
+    public ClaimsGui(){
         super(6);
         setTemplate("Claims",
                 getItem("§eClaims", 4, Material.FILLED_MAP,
@@ -54,7 +53,6 @@ public class ListCityClaimsGui extends GuiListener<City> {
     
     @Override
     public void onRemove(PagedGuiRemoveEvent<City> event){
-        System.out.println(event.getPage());
         int page = event.getPage();
         if(page != 0){
             event.getGui().getPage(page - 1).setDeco(Material.BLACK_STAINED_GLASS_PANE, NEXT);

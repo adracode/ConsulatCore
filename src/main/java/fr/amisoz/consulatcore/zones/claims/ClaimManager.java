@@ -3,6 +3,8 @@ package fr.amisoz.consulatcore.zones.claims;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.events.ChunkChangeEvent;
+import fr.amisoz.consulatcore.guis.city.CityGui;
+import fr.amisoz.consulatcore.guis.city.claimlist.ClaimsGui;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.amisoz.consulatcore.utils.ChestUtils;
@@ -12,6 +14,7 @@ import fr.amisoz.consulatcore.zones.ZoneManager;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.events.PlayerClickBlockEvent;
+import fr.leconsulat.api.gui.Gui;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.utils.FileUtils;
 import fr.leconsulat.api.utils.NBTUtils;
@@ -143,8 +146,7 @@ public class ClaimManager implements Listener {
     }
     
     public void removeClaim(Zone claimOwner){
-        Set<Claim> removedClaims = claimOwner.getZoneClaims();
-        for(Claim claim : removedClaims){
+        for(Claim claim : new ArrayList<>(claimOwner.getZoneClaims())){
             removeClaim(claim);
         }
     }
@@ -152,7 +154,10 @@ public class ClaimManager implements Listener {
     private void removeClaim(Claim claim){
         this.claims.remove(claim.getCoordinates());
         claim.getOwner().removeClaim(claim);
-        ZoneManager.getInstance().getCityGui().removeClaimFromList((City)claim.getOwner(), claim);
+        Gui<City> claimGui = ZoneManager.getInstance().getCityGui().getGui(false, (City)claim.getOwner(), CityGui.CLAIMS);
+        if(claimGui != null){
+            ((ClaimsGui)claimGui.getListener()).removeItemClaim(claimGui, claim);
+        }
     }
     
     public Claim playerClaim(int x, int z, Zone zone){
@@ -222,7 +227,11 @@ public class ClaimManager implements Listener {
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
         Claim claim = getClaim(event.getBlock());
         if(claim == null || !player.belongsToCity() || !player.getCity().equals(claim.getOwner())){
-            event.getPlayer().sendActionBar("§cTu n'appartiens pas à ce claim");
+            event.getPlayer().sendActionBar("§cCe claim n'appartiens pas à ta ville");
+            return;
+        }
+        if(!claim.canInteract(player, ClaimPermission.OPEN_CONTAINER)){
+            event.getPlayer().sendActionBar("§cTu ne peux pas mettre un coffre en privé ici");
             return;
         }
         if(ShopManager.getInstance().getShop(event.getBlock().getLocation()) != null){
@@ -267,7 +276,7 @@ public class ClaimManager implements Listener {
                 PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("INSERT INTO claims (claim_x, claim_z, player_uuid, type) VALUES (?, ?, ?, ?);");
                 preparedStatement.setInt(1, x);
                 preparedStatement.setInt(2, z);
-                preparedStatement.setString(3, owner.getUUID().toString());
+                preparedStatement.setString(3, owner.getUniqueId().toString());
                 preparedStatement.setString(4, owner.getType());
                 preparedStatement.executeUpdate();
                 preparedStatement.close();
@@ -288,7 +297,7 @@ public class ClaimManager implements Listener {
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
                 PreparedStatement statement = ConsulatAPI.getDatabase().prepareStatement("UPDATE claims SET player_uuid = ? WHERE claim_x = ? AND claim_z = ?;");
-                statement.setString(1, claim.getOwner().getUUID().toString());
+                statement.setString(1, claim.getOwner().getUniqueId().toString());
                 statement.setInt(2, x);
                 statement.setInt(3, z);
                 statement.executeUpdate();

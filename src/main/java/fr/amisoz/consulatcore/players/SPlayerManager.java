@@ -70,7 +70,7 @@ public class SPlayerManager implements Listener {
                     if(!player.belongsToCity()){
                         statement.setNull(1, Types.CHAR);
                     } else {
-                        statement.setString(1, player.getCity().getUUID().toString());
+                        statement.setString(1, player.getCity().getUniqueId().toString());
                     }
                     statement.setString(2, player.getUUID().toString());
                 },

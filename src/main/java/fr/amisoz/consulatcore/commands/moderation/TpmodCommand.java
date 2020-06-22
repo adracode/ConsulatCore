@@ -34,11 +34,11 @@ public class TpmodCommand extends ConsulatCommand {
                 sender.sendMessage("§cCe joueur n'est pas connecté.");
                 return;
             }
-            target.getPlayer().teleport(to.getPlayer());
+            target.getPlayer().teleportAsync(to.getPlayer().getLocation());
             sender.sendMessage("§aTu as téléporté " + target.getName() + " à " + to.getName());
             return;
         }
-        sender.getPlayer().teleport(target.getPlayer());
+        sender.getPlayer().teleportAsync(target.getPlayer().getLocation());
         sender.sendMessage("§aTu t'es téléporté à " + args[0] + ".");
     }
 }

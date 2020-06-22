@@ -21,7 +21,7 @@ public class BackCommand extends ConsulatCommand {
             return;
         }
         Bukkit.getWorlds().get(0).getChunkAt(player.getOldLocation()).load(true);
-        sender.getPlayer().teleport(player.getOldLocation());
+        sender.getPlayer().teleportAsync(player.getOldLocation());
         sender.sendMessage("§aTu as été téléporté ! ");
     }
 }

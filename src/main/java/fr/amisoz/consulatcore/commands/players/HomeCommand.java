@@ -90,7 +90,7 @@ public class HomeCommand extends ConsulatCommand {
         Location home = survivalPlayer.getHome(homeName);
         if(home != null){
             survivalPlayer.setOldLocation(sender.getPlayer().getLocation());
-            sender.getPlayer().teleport(home);
+            sender.getPlayer().teleportAsync(home);
             sender.sendMessage(Text.PREFIX + "§aTu as bien été téléporté à ton home : §2" + homeName);
         } else {
             Set<String> names = survivalPlayer.getNameHomes();

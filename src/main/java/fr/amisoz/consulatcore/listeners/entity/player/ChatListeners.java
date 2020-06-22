@@ -48,7 +48,7 @@ public class ChatListeners implements Listener {
                 event.setCancelled(true);
                 return;
             }
-            if(ConsulatCore.getInstance().getForbiddenCustomRank().contains(message.toLowerCase())){
+            if(ConsulatCore.getInstance().isCustomRankForbidden(event.getMessage())){
                 player.sendMessage("§cTu ne peux pas appeler ton grade comme cela ! Tape §ocancel §r§csi tu veux annuler.");
                 event.setCancelled(true);
                 return;
