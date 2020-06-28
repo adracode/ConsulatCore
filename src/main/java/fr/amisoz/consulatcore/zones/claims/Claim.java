@@ -1,24 +1,20 @@
 package fr.amisoz.consulatcore.zones.claims;
 
 import fr.amisoz.consulatcore.guis.city.CityGui;
-import fr.amisoz.consulatcore.guis.city.claimlist.ClaimsGui;
-import fr.amisoz.consulatcore.guis.city.claimlist.claims.ManageClaimGui;
 import fr.amisoz.consulatcore.guis.city.members.member.MemberGui;
 import fr.amisoz.consulatcore.guis.city.members.member.claims.AccessibleClaimGui;
+import fr.amisoz.consulatcore.guis.claims.ManageClaimGui;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.utils.CoordinatesUtils;
 import fr.amisoz.consulatcore.zones.Zone;
-import fr.amisoz.consulatcore.zones.ZoneManager;
 import fr.amisoz.consulatcore.zones.cities.City;
-import fr.leconsulat.api.gui.Gui;
-import fr.leconsulat.api.player.ConsulatPlayer;
+import fr.leconsulat.api.gui.GuiManager;
+import fr.leconsulat.api.gui.gui.IGui;
 import fr.leconsulat.api.player.Permission;
 import fr.leconsulat.api.ranks.Rank;
 import fr.leconsulat.api.utils.NBTUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jnbt.*;
 
 import java.sql.SQLException;
@@ -39,7 +35,6 @@ public class Claim implements Comparable<Claim> {
     private String description;
     private Zone owner;
     private Map<UUID, Set<String>> permissions = new HashMap<>();
-    private Gui<Claim> manageClaim = null;
     
     Claim(int x, int z, Zone owner, String description){
         setOwner(owner);
@@ -91,14 +86,14 @@ public class Claim implements Comparable<Claim> {
         if(added){
             addPermission(uuid, ClaimPermission.values());
             if(owner instanceof City){
-                CityGui cityGui = ZoneManager.getInstance().getCityGui();
-                Gui<UUID> access = cityGui.getGui(false, (City)owner, CityGui.MEMBERS, uuid, MemberGui.CLAIM);
+                IGui access = GuiManager.getInstance().getContainer("city").getGui(false, owner, CityGui.MEMBERS, uuid, MemberGui.CLAIM);
                 if(access != null){
-                    ((AccessibleClaimGui)access.getListener()).addItemClaim(access, this);
+                    ((AccessibleClaimGui)access).addItemClaim(this);
                 }
             }
+            IGui manageClaim = GuiManager.getInstance().getContainer("claim").getGui(false, this, uuid);
             if(manageClaim != null){
-                ((ManageClaimGui)manageClaim.getListener()).addPlayerToClaim(manageClaim, uuid, Bukkit.getOfflinePlayer(uuid).getName());
+                ((AccessibleClaimGui)manageClaim).addItemClaim(this);
             }
         }
         return added;
@@ -108,14 +103,14 @@ public class Claim implements Comparable<Claim> {
         boolean removed = this.permissions.remove(uuid) != null;
         if(removed){
             if(owner instanceof City){
-                CityGui cityGui = ZoneManager.getInstance().getCityGui();
-                Gui<UUID> access = cityGui.getGui(false, (City)owner, CityGui.MEMBERS, uuid, MemberGui.CLAIM);
+                IGui access = GuiManager.getInstance().getContainer("city").getGui(false, owner, CityGui.MEMBERS, uuid, MemberGui.CLAIM);
                 if(access != null){
-                    ((AccessibleClaimGui)access.getListener()).removeItemClaim(access, this);
+                    ((AccessibleClaimGui)access).removeItemClaim(this);
                 }
             }
+            IGui manageClaim = GuiManager.getInstance().getContainer("claim").getGui(this);
             if(manageClaim != null){
-                ((ManageClaimGui)manageClaim.getListener()).removePlayerFromClaim(manageClaim, uuid);
+                ((ManageClaimGui)manageClaim).removePlayerFromClaim(uuid);
             }
         }
         return removed;
@@ -244,42 +239,12 @@ public class Claim implements Comparable<Claim> {
     }
     
     void setOwner(Zone owner){
-        if(manageClaim != null){
-            if(owner instanceof City){
-                CityGui gui = ZoneManager.getInstance().getCityGui();
-                Gui<City> cityGui = gui.getGui((City)owner);
-                manageClaim.setFather(cityGui.getChild(CityGui.CLAIMS));
-                addClaimToList();
-            } else {
-                manageClaim.setFather(null);
-            }
-        }
         this.owner = owner;
         permissions.clear();
-    }
-    
-    void addClaimToList(){
-        if(owner instanceof City){
-            Gui<City> claimGui = ZoneManager.getInstance().getCityGui().getGui(false, (City)owner, CityGui.CLAIMS);
-            if(claimGui != null){
-                ((ClaimsGui)claimGui.getListener()).addItemClaim(claimGui, this);
-            }
+        IGui iClaimGui = GuiManager.getInstance().getContainer("claim").getGui(false, this);
+        if(iClaimGui != null){
+            ((ManageClaimGui)iClaimGui).applyFather();
         }
-    }
-    
-    public void openManageClaim(ConsulatPlayer player){
-        getGui(true).open(player);
-    }
-    
-    private Gui<Claim> createGui(){
-        CityGui cityGui = ZoneManager.getInstance().getCityGui();
-        return manageClaim = ZoneManager.getInstance().getManageClaimGui().createGui(this,
-                owner instanceof City ? cityGui.getGui(true, (City)owner, CityGui.CLAIMS) : null);
-    }
-    
-    @Nullable
-    public Gui<Claim> getGui(boolean create){
-        return manageClaim == null ? create ? createGui() : null : manageClaim;
     }
     
     private final Map<Long, UUID> protectedContainers = new HashMap<>();
@@ -380,7 +345,6 @@ public class Claim implements Comparable<Claim> {
                 ", description='" + description + '\'' +
                 ", owner=" + owner.getName() +
                 ", permissions=" + permissions +
-                ", manageClaim=" + manageClaim +
                 ", protectedContainers=" + protectedContainers +
                 '}';
     }
@@ -388,4 +352,9 @@ public class Claim implements Comparable<Claim> {
     public boolean hasAccess(UUID uuid){
         return permissions.containsKey(uuid);
     }
+    
+    public boolean canManageAccesses(UUID uuid){
+        return isOwner(uuid) || owner instanceof City && ((City)owner).canManageAccesses(uuid);
+    }
+    
 }

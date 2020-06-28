@@ -1,8 +1,8 @@
 package fr.amisoz.consulatcore.zones.cities;
 
 import fr.amisoz.consulatcore.ConsulatCore;
-import fr.amisoz.consulatcore.guis.GuiListenerStorage;
 import fr.amisoz.consulatcore.guis.city.CityGui;
+import fr.amisoz.consulatcore.guis.city.CityInfo;
 import fr.amisoz.consulatcore.guis.city.members.MembersGui;
 import fr.amisoz.consulatcore.guis.city.rank.RankGui;
 import fr.amisoz.consulatcore.players.CityPermission;
@@ -13,7 +13,8 @@ import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.amisoz.consulatcore.zones.claims.ClaimPermission;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.graph.Graph;
-import fr.leconsulat.api.gui.Gui;
+import fr.leconsulat.api.gui.GuiManager;
+import fr.leconsulat.api.gui.gui.IGui;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.Permission;
 import fr.leconsulat.api.utils.FileUtils;
@@ -56,8 +57,9 @@ public class City extends Zone {
         this.channel = new CityChannel();
         this.ranks = Arrays.asList(
                 new CityRank(0, "Maire"),
-                new CityRank(1, "Député"),
-                new CityRank(2, "Citoyen"));
+                new CityRank(1, "Adjoint"),
+                new CityRank(2, "Député"),
+                new CityRank(3, "Citoyen"));
     }
     
     public boolean addPlayer(@NotNull UUID uuid, CityPermission... permissions){
@@ -70,15 +72,19 @@ public class City extends Zone {
         } else {
             ZoneManager.getInstance().setPlayerCity(uuid, this);
         }
-        CityPlayer cityPlayer = new CityPlayer(ranks.get(ranks.size() - 1));
+        CityPlayer cityPlayer = new CityPlayer(uuid, ranks.get(ranks.size() - 1));
         members.put(uuid, cityPlayer);
         for(CityPermission permission : permissions){
             cityPlayer.addPermission(permission.getPermission());
         }
-        Gui<City> membersGui = ZoneManager.getInstance().getCityGui().getGui(false, this, CityGui.MEMBERS);
-        if(membersGui != null){
+        IGui iMembersGui = GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS);
+        if(iMembersGui != null){
             String name = player == null ? Bukkit.getOfflinePlayer(uuid).getName() : player.getName();
-            ((MembersGui)membersGui.getListener()).addPlayer(membersGui, uuid, name == null ? "Pseudo" : name);
+            ((MembersGui)iMembersGui).addPlayer(uuid, name == null ? "Pseudo" : name);
+        }
+        IGui iCityInfo = GuiManager.getInstance().getContainer("city-info").getGui(false, this);
+        if(iCityInfo != null){
+            ((CityInfo)iCityInfo).addPlayer(uuid);
         }
         return true;
     }
@@ -99,9 +105,14 @@ public class City extends Zone {
         } else {
             ZoneManager.getInstance().setPlayerCity(uuid, null);
         }
-        Gui<City> membersGui = ZoneManager.getInstance().getCityGui().getGui(false, this, CityGui.MEMBERS);
-        if(membersGui != null){
-            ((MembersGui)membersGui.getListener()).removePlayer(membersGui, uuid);
+        removeAccess(uuid);
+        IGui iMembersGui = GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS);
+        if(iMembersGui != null){
+            ((MembersGui)iMembersGui).removePlayer(uuid);
+        }
+        IGui iCityInfo = GuiManager.getInstance().getContainer("city-info").getGui(false, this);
+        if(iCityInfo != null){
+            ((CityInfo)iCityInfo).removePlayer(uuid);
         }
         return true;
     }
@@ -221,6 +232,10 @@ public class City extends Zone {
         return hasPermission(uuid, CityPermission.MANAGE_ACCESS);
     }
     
+    public boolean canWithdraw(UUID uuid){
+        return hasPermission(uuid, CityPermission.MANAGE_BANK);
+    }
+    
     public boolean addPublicPermission(@NotNull ClaimPermission permission){
         return this.publicPermissions.add(permission.getPermission());
     }
@@ -258,7 +273,10 @@ public class City extends Zone {
     
     public void addMoney(double amount){
         bank += amount;
-        ZoneManager.getInstance().getCityGui().updateBank(this);
+        IGui iCityGui = GuiManager.getInstance().getContainer("city").getGui(false, this);
+        if(iCityGui != null){
+            ((CityGui)iCityGui).updateBank();
+        }
     }
     
     public void removeMoney(double amount){
@@ -316,9 +334,19 @@ public class City extends Zone {
             return false;
         }
         this.ranks.get(index).setRankName(rank);
-        CityGui cityGui = ZoneManager.getInstance().getCityGui();
-        cityGui.updateRank(this);
-        ((RankGui)GuiListenerStorage.getInstance().getListener(CityGui.RANKS)).setRank(cityGui.getGui(false, this, CityGui.RANKS), index);
+        IGui iCityGui = GuiManager.getInstance().getContainer("city").getGui(false, this);
+        if(iCityGui != null){
+            CityGui cityGui = (CityGui)iCityGui;
+            cityGui.updateRank();
+            IGui iRankGui = cityGui.getLegacyChild(CityGui.RANKS);
+            if(iRankGui != null){
+                ((RankGui)iRankGui).setRank(index);
+            }
+        }
+        IGui iCityInfo = GuiManager.getInstance().getContainer("city-info").getGui(false, this);
+        if(iCityInfo != null){
+            ((CityInfo)iCityInfo).updateRanks();
+        }
         return true;
     }
     
@@ -373,11 +401,12 @@ public class City extends Zone {
                 Map<String, Tag> member = ((CompoundTag)memberTag).getValue();
                 int rankIndex = NBTUtils.getChildTag(member, "Rank", IntTag.class).getValue();
                 Set<String> perms = new HashSet<>();
-                CityPlayer cityPlayer = new CityPlayer(perms, rankIndex == -1 ? null : this.ranks.get(rankIndex));
+                UUID uuid = UUID.fromString(NBTUtils.getChildTag(member, "UUID", StringTag.class).getValue());
+                CityPlayer cityPlayer = new CityPlayer(uuid, perms, this.ranks.get(rankIndex));
                 for(Tag permissionTag : NBTUtils.getChildTag(member, "Permissions", ListTag.class).getValue()){
                     perms.add(((StringTag)permissionTag).getValue());
                 }
-                this.members.put(UUID.fromString(NBTUtils.getChildTag(member, "UUID", StringTag.class).getValue()), cityPlayer);
+                this.members.put(uuid, cityPlayer);
             }
             if(city.containsKey("Home")){
                 Map<String, Tag> home = NBTUtils.getChildTag(city, "Home", CompoundTag.class).getValue();

@@ -2,33 +2,52 @@ package fr.amisoz.consulatcore.guis.city.members.member.permissions;
 
 import fr.amisoz.consulatcore.players.CityPermission;
 import fr.amisoz.consulatcore.zones.cities.City;
-import fr.leconsulat.api.gui.Gui;
-import fr.leconsulat.api.gui.GuiItem;
-import fr.leconsulat.api.gui.GuiListener;
-import fr.leconsulat.api.gui.PagedGui;
-import fr.leconsulat.api.gui.events.GuiClickEvent;
-import fr.leconsulat.api.gui.events.PagedGuiCreateEvent;
+import fr.leconsulat.api.gui.event.GuiClickEvent;
+import fr.leconsulat.api.gui.gui.IGui;
+import fr.leconsulat.api.gui.gui.module.api.Datable;
+import fr.leconsulat.api.gui.gui.template.DataRelatGui;
 import org.bukkit.Material;
 
 import java.util.UUID;
 
-public class MemberPermissionGui extends GuiListener<UUID> {
+public class MemberPermissionGui extends DataRelatGui<UUID> {
     
-    private static final byte MEMBER_SLOT = 20;
-    private static final byte CLAIM_SLOT = 22;
-    private static final byte ACCESS_SLOT = 24;
+    private static final byte MEMBER_SLOT = 19;
+    private static final byte CLAIM_SLOT = 21;
+    private static final byte ACCESS_SLOT = 23;
+    private static final byte BANK_SLOT = 25;
     
-    public MemberPermissionGui(){
-        super(5);
-        GuiItem deactivate = new GuiItem("§cDésactivé", (byte)-1, Material.RED_CONCRETE);
-        setTemplate("Permissions de ville",
-                getItem("§eMembres", MEMBER_SLOT, Material.PLAYER_HEAD, "", "§7Inviter un joueur", "§7Kick un membre"),
-                getItem(deactivate, MEMBER_SLOT + 9),
-                getItem("§eClaims", CLAIM_SLOT, Material.FILLED_MAP, "", "§7Claim un chunk", "§7Unclaim un chunk"),
-                getItem(deactivate, CLAIM_SLOT + 9),
-                getItem("§eAccès", ACCESS_SLOT, Material.BARRIER, "", "§7Gérer les accès aux chunks"),
-                getItem(deactivate, ACCESS_SLOT + 9))
-                .setDeco(Material.BLACK_STAINED_GLASS_PANE, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44);
+    public MemberPermissionGui(UUID uuid){
+        super(uuid, "Permissions de ville", 5,
+                IGui.getItem("§eMembres", MEMBER_SLOT, Material.PLAYER_HEAD, "", "§7Inviter un joueur", "§7Kick un membre"),
+                IGui.getItem("§cDésactivé", MEMBER_SLOT + 9, Material.RED_CONCRETE),
+                IGui.getItem("§eClaims", CLAIM_SLOT, Material.FILLED_MAP, "", "§7Claim un chunk", "§7Unclaim un chunk"),
+                IGui.getItem("§cDésactivé", CLAIM_SLOT + 9, Material.RED_CONCRETE),
+                IGui.getItem("§eAccès", ACCESS_SLOT, Material.BARRIER, "", "§7Gérer les accès aux chunks"),
+                IGui.getItem("§cDésactivé", ACCESS_SLOT + 9, Material.RED_CONCRETE),
+                IGui.getItem("§eBanque", BANK_SLOT, Material.SUNFLOWER, "", "§7Gérer la banque"),
+                IGui.getItem("§cDésactivé", BANK_SLOT + 9, Material.RED_CONCRETE));
+        setDeco(Material.BLACK_STAINED_GLASS_PANE, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 37, 38, 39, 40, 41, 42, 43, 44);
+    }
+    
+    @Override
+    public void onCreate(){
+        City city = getPlayerCity();
+        for(CityPermission permission : CityPermission.values()){
+            byte slot = getSlotPermission(permission);
+            if(slot == -1){
+                continue;
+            }
+            if(city.hasPermission(getData(), permission)){
+                setGlowing(slot, true);
+                setType(slot + 9, Material.GREEN_CONCRETE);
+                setDisplayName(slot + 9, "§aActivé");
+            } else {
+                setGlowing(slot, false);
+                setType(slot + 9, Material.RED_CONCRETE);
+                setDisplayName(slot + 9, "§cDésactivé");
+            }
+        }
     }
     
     private byte getSlotPermission(CityPermission permission){
@@ -39,58 +58,39 @@ public class MemberPermissionGui extends GuiListener<UUID> {
                 return CLAIM_SLOT;
             case MANAGE_ACCESS:
                 return ACCESS_SLOT;
+            case MANAGE_BANK:
+                return BANK_SLOT;
         }
         return -1;
     }
     
-    private void switchPermission(City city, UUID uuid, PagedGui<UUID> gui, CityPermission permission){
-        setPermission(city, uuid, gui, !city.hasPermission(uuid, permission), permission);
+    private void switchPermission(CityPermission permission){
+        setPermission(!getPlayerCity().hasPermission(getData(), permission), permission);
     }
     
-    private void setPermission(City city, UUID uuid, PagedGui<UUID> gui, boolean activate, CityPermission permission){
+    private void setPermission(boolean activate, CityPermission permission){
         byte slot = getSlotPermission(permission);
         if(slot == -1){
             return;
         }
+        City city = getPlayerCity();
         if(activate){
-            city.addPermission(uuid, permission);
-            gui.setGlowing(slot, true);
-            gui.setType(slot + 9, Material.GREEN_CONCRETE);
-            gui.setDisplayName(slot + 9, "§aActivé");
+            city.addPermission(getData(), permission);
+            setGlowing(slot, true);
+            setType(slot + 9, Material.GREEN_CONCRETE);
+            setDisplayName(slot + 9, "§aActivé");
         } else {
-            city.removePermission(uuid, permission);
-            gui.setGlowing(slot, false);
-            gui.setType(slot + 9, Material.RED_CONCRETE);
-            gui.setDisplayName(slot + 9, "§cDésactivé");
+            city.removePermission(getData(), permission);
+            setGlowing(slot, false);
+            setType(slot + 9, Material.RED_CONCRETE);
+            setDisplayName(slot + 9, "§cDésactivé");
         }
     }
     
     @Override
-    public void onPageCreate(PagedGuiCreateEvent<UUID> event){
-        PagedGui<UUID> gui = event.getPagedGui();
-        UUID uuid = event.getData();
-        City city = getPlayerCity(event.getGui());
-        for(CityPermission permission : CityPermission.values()){
-            byte slot = getSlotPermission(permission);
-            if(slot == -1){
-                continue;
-            }
-            if(city.hasPermission(uuid, permission)){
-                gui.setGlowing(slot, true);
-                gui.setType(slot + 9, Material.GREEN_CONCRETE);
-                gui.setDisplayName(slot + 9, "§aActivé");
-            } else {
-                gui.setGlowing(slot, false);
-                gui.setType(slot + 9, Material.RED_CONCRETE);
-                gui.setDisplayName(slot + 9, "§cDésactivé");
-            }
-        }
-    }
-    
-    @Override
-    public void onClick(GuiClickEvent<UUID> event){
-        City city = getPlayerCity(event.getGui());
-        UUID uuid = event.getData();
+    public void onClick(GuiClickEvent event){
+        City city = getPlayerCity();
+        UUID uuid = getData();
         CityPermission permission = null;
         switch(event.getSlot()){
             case MEMBER_SLOT:
@@ -105,15 +105,20 @@ public class MemberPermissionGui extends GuiListener<UUID> {
             case ACCESS_SLOT + 9:
                 permission = CityPermission.MANAGE_ACCESS;
                 break;
+            case BANK_SLOT:
+            case BANK_SLOT + 9:
+                permission = CityPermission.MANAGE_BANK;
+                break;
         }
         if(permission == null){
             return;
         }
-        switchPermission(city, uuid, event.getPagedGui(), permission);
+        switchPermission(permission);
     }
     
-    private City getPlayerCity(Gui<UUID> current){
-        return (City)current.getFather().getFather().getData();
+    @SuppressWarnings("unchecked")
+    private City getPlayerCity(){
+        return ((Datable<City>)getFather().getFather()).getData();
     }
     
 }

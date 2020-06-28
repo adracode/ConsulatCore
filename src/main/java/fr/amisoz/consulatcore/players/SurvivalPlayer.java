@@ -12,6 +12,7 @@ import fr.amisoz.consulatcore.zones.Zone;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.amisoz.consulatcore.zones.claims.ClaimManager;
+import fr.amisoz.consulatcore.zones.claims.ClaimPermission;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import org.bukkit.Bukkit;
@@ -294,7 +295,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
         if(claim == null){
             return false;
         }
-        return claim.canInteract(this);
+        return claim.canInteract(this, ClaimPermission.FLY);
     }
     
     public boolean hasInfiniteFly(){

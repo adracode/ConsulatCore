@@ -1,10 +1,11 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.guis.moderation.AntecedentsGui;
+import fr.amisoz.consulatcore.guis.moderation.AntecedentsGuiContainer;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatOffline;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -14,12 +15,10 @@ import java.util.UUID;
 
 public class AntecedentsComand extends ConsulatCommand {
 
-    private AntecedentsGui antecedentsGui;
-    
     public AntecedentsComand() {
         super("antecedents", "/antecedents <Joueur>", 1, Rank.RESPONSABLE);
         suggest(true, Arguments.playerList("joueur"));
-        antecedentsGui = new AntecedentsGui();
+        new AntecedentsGuiContainer();
     }
 
     @Override
@@ -30,7 +29,6 @@ public class AntecedentsComand extends ConsulatCommand {
             player.sendMessage(Text.PREFIX + "§cCe joueur ne s'est jamais connecté.");
             return;
         }
-    
-        antecedentsGui.getGui(new ConsulatOffline(0, uuid, args[0], Rank.INVITE, null)).open(sender);
+        GuiManager.getInstance().getContainer("antecedents").getGui(new ConsulatOffline(0, uuid, args[0], Rank.INVITE, null)).open(sender);
     }
 }

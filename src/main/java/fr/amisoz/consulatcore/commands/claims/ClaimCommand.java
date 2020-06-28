@@ -13,6 +13,7 @@ import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.amisoz.consulatcore.zones.claims.ClaimManager;
 import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
@@ -32,6 +33,7 @@ public class ClaimCommand extends ConsulatCommand {
                 LiteralArgumentBuilder.literal("desc")
                         .then(RequiredArgumentBuilder.argument("description", StringArgumentType.greedyString())),
                 LiteralArgumentBuilder.literal("list"),
+                LiteralArgumentBuilder.literal("options"),
                 LiteralArgumentBuilder.literal("info")
                         .requires((t) -> {
                             ConsulatPlayer player = getConsulatPlayer(t);
@@ -187,7 +189,7 @@ public class ClaimCommand extends ConsulatCommand {
                     player.sendMessage("§cTu dois être dans un de tes claims pour effectuer cette commande.");
                     return;
                 }
-                claim.openManageClaim(player);
+                GuiManager.getInstance().getContainer("claim").getGui(claim).open(player);
             }
             break;
         }

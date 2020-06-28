@@ -2,21 +2,20 @@ package fr.amisoz.consulatcore.zones.cities;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class CityPlayer {
     
+    @NotNull private UUID uuid;
     @NotNull private Set<String> permissions;
     @NotNull private CityRank rank;
     
-    public CityPlayer(@NotNull CityRank rank){
-        this(new HashSet<>(), rank);
+    public CityPlayer(@NotNull UUID uuid, @NotNull CityRank rank){
+        this(uuid, new HashSet<>(), rank);
     }
     
-    CityPlayer(@NotNull Set<String> permissions, @NotNull CityRank rank){
+    CityPlayer(@NotNull UUID uuid, @NotNull Set<String> permissions, @NotNull CityRank rank){
+        this.uuid = uuid;
         this.permissions = permissions;
         this.rank = rank;
     }
@@ -45,4 +44,7 @@ public class CityPlayer {
         return Collections.unmodifiableSet(permissions);
     }
     
+    public UUID getUUID(){
+        return uuid;
+    }
 }

@@ -6,11 +6,11 @@ import fr.amisoz.consulatcore.moderation.MuteEnum;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.gui.GuiItem;
-import fr.leconsulat.api.gui.GuiListener;
-import fr.leconsulat.api.gui.events.GuiClickEvent;
-import fr.leconsulat.api.gui.events.GuiCloseEvent;
-import fr.leconsulat.api.gui.events.GuiOpenEvent;
-import fr.leconsulat.api.gui.events.PagedGuiCreateEvent;
+import fr.leconsulat.api.gui.event.GuiClickEvent;
+import fr.leconsulat.api.gui.event.GuiCloseEvent;
+import fr.leconsulat.api.gui.event.GuiOpenEvent;
+import fr.leconsulat.api.gui.gui.IGui;
+import fr.leconsulat.api.gui.gui.template.DataRelatGui;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatOffline;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -29,24 +29,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-public class MuteGui extends GuiListener<ConsulatOffline> {
+public class MuteGui extends DataRelatGui<ConsulatOffline> {
 
-    public MuteGui() {
-        super(3);
-        setTemplate("§6§lMute");
+    public MuteGui(ConsulatOffline player) {
+        super(player, "§6§lMute", 3);
     }
 
     @Override
-    public void onPageCreate(PagedGuiCreateEvent<ConsulatOffline> event) {
-        event.getPagedGui().setName("§6§lMute" + event.getData().getName());
-    }
-
-    @Override
-    public void onOpen(GuiOpenEvent<ConsulatOffline> event) {
-        if (event.getData() == null) {
-            return;
-        }
-        ConsulatOffline consulatOffline = event.getData();
+    public void onOpen(GuiOpenEvent event) {
+       
+        ConsulatOffline consulatOffline = getData();
         Player target = Bukkit.getPlayer(consulatOffline.getUUID());
         Player moderator = event.getPlayer().getPlayer();
 
@@ -72,23 +64,23 @@ public class MuteGui extends GuiListener<ConsulatOffline> {
             MuteEnum[] values = MuteEnum.values();
             for (int i = 0; i < values.length; ++i) {
                 MuteEnum mute = values[i];
-                GuiItem item = getItem("§e" + mute.getSanctionName(), i, mute.getGuiMaterial());
+                GuiItem item = IGui.getItem("§e" + mute.getSanctionName(), i, mute.getGuiMaterial());
 
                 item.setDescription("§eDurée : §6" + mute.getFormatDuration(), "§7Récidive : " + (muteHistory.containsKey(mute) ? muteHistory.get(mute) : "0"));
                 item.setAttachedObject(mute);
-                event.getPagedGui().setItem(i, item);
+                setItem(i, item);
             }
         });
     }
 
     @Override
-    public void onClose(GuiCloseEvent<ConsulatOffline> event) {
+    public void onClose(GuiCloseEvent event) {
         event.setOpenFatherGui(false);
     }
 
     @Override
-    public void onClick(GuiClickEvent<ConsulatOffline> event) {
-        ConsulatOffline offlineTarget = event.getData();
+    public void onClick(GuiClickEvent event) {
+        ConsulatOffline offlineTarget = getData();
         SurvivalPlayer target = (SurvivalPlayer) CPlayerManager.getInstance().getConsulatPlayer(offlineTarget.getUUID());
         ConsulatPlayer muter = event.getPlayer();
 
@@ -98,7 +90,7 @@ public class MuteGui extends GuiListener<ConsulatOffline> {
             return;
         }
 
-        GuiItem item = event.getPagedGui().getItem(event.getSlot());
+        GuiItem item = getItem(event.getSlot());
         List<String> description = item.getDescription();
         String recidive = description.get(1).split(":")[1].trim();
         int recidiveNumber = Integer.parseInt(recidive);
@@ -107,7 +99,7 @@ public class MuteGui extends GuiListener<ConsulatOffline> {
         if (multiply == 0) multiply = 1;
 
         long currentTime = System.currentTimeMillis();
-        MuteEnum muteReason = (MuteEnum) event.getPagedGui().getItem(event.getSlot()).getAttachedObject();
+        MuteEnum muteReason = (MuteEnum) getItem(event.getSlot()).getAttachedObject();
         double durationMute = (muteReason.getDurationSanction() * 1000) * multiply;
         long resultTime = currentTime + Math.round(durationMute);
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {

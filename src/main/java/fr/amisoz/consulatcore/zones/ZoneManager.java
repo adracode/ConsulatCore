@@ -3,13 +3,14 @@ package fr.amisoz.consulatcore.zones;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.guis.city.CityGui;
 import fr.amisoz.consulatcore.guis.city.CityInfo;
-import fr.amisoz.consulatcore.guis.city.DisbandGui;
-import fr.amisoz.consulatcore.guis.city.claimlist.claims.ManageClaimGui;
+import fr.amisoz.consulatcore.guis.city.DisbandGuiContainer;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.amisoz.consulatcore.zones.claims.ClaimManager;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.database.SaveManager;
 import fr.leconsulat.api.database.tasks.SaveTask;
+import fr.leconsulat.api.gui.GuiManager;
+import fr.leconsulat.api.gui.gui.IGui;
 import fr.leconsulat.api.utils.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -29,11 +30,6 @@ public class ZoneManager {
     private final @NotNull Map<UUID, Zone> zones = new HashMap<>();
     private final @NotNull Map<String, City> citiesByName = new HashMap<>();
     private final @NotNull Map<UUID, Set<City>> invitedPlayers = new HashMap<>();
-    
-    private final @NotNull ManageClaimGui manageClaimGui;
-    private final @NotNull CityGui cityGui;
-    private final @NotNull CityInfo cityInfoGui;
-    private final @NotNull DisbandGui disbandCityGui;
     
     public ZoneManager(){
         if(instance != null){
@@ -57,10 +53,9 @@ public class ZoneManager {
                 },
                 City::getName
         ));
-        manageClaimGui = new ManageClaimGui();
-        cityGui = new CityGui();
-        cityInfoGui = new CityInfo();
-        disbandCityGui = new DisbandGui();
+        new CityGui.Container();
+        new CityInfo.Container();
+        new DisbandGuiContainer();
         try {
             initZones();
             initCities();
@@ -105,7 +100,6 @@ public class ZoneManager {
     
     private void addCity(City city){
         citiesByName.put(city.getName().toLowerCase(), city);
-        cityInfoGui.addGui(cityInfoGui.createGui(city));
         SaveManager.getInstance().addData("city-money", city);
         addZone(city);
     }
@@ -133,14 +127,26 @@ public class ZoneManager {
         city.rename(newName);
         citiesByName.put(newName.toLowerCase(), city);
         SaveManager.getInstance().saveOnce("city-name", city);
-        cityGui.updateName(city);
-        cityInfoGui.updateName(city);
+        IGui cityGui = GuiManager.getInstance().getContainer("city").getGui(false, city);
+        if(cityGui != null){
+            ((CityGui)cityGui).updateName();
+        }
+        IGui cityInfoGui = GuiManager.getInstance().getContainer("city-info").getGui(false, city);
+        if(cityInfoGui != null){
+            ((CityInfo)cityInfoGui).updateName();
+        }
     }
     
     public void setHome(City city, Location location){
         city.setHome(location);
-        cityGui.updateHome(city, true);
-        cityInfoGui.updateHome(city);
+        IGui cityGui = GuiManager.getInstance().getContainer("city").getGui(false, city);
+        if(cityGui != null){
+            ((CityGui)cityGui).updateHome(true);
+        }
+        IGui cityInfoGui = GuiManager.getInstance().getContainer("city-info").getGui(false, city);
+        if(cityInfoGui != null){
+            ((CityInfo)cityInfoGui).updateHome();
+        }
     }
     
     public Set<City> getInvitations(UUID uuid){
@@ -185,8 +191,8 @@ public class ZoneManager {
         city.disband();
         removeCity(city);
         ClaimManager.getInstance().removeClaim(city);
-        cityGui.removeGui(city);
-        cityInfoGui.removeGui(city);
+        GuiManager.getInstance().getContainer("city").removeGui(city);
+        GuiManager.getInstance().getContainer("city-info").removeGui(city);
         FileUtils.deleteFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "cities/" + city.getUniqueId() + ".dat");
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
@@ -208,22 +214,6 @@ public class ZoneManager {
         for(Zone zone : zones.values()){
             zone.saveNBT();
         }
-    }
-    
-    public CityGui getCityGui(){
-        return cityGui;
-    }
-    
-    public CityInfo getCityInfoGui(){
-        return cityInfoGui;
-    }
-    
-    public DisbandGui getDisbandCityGui(){
-        return disbandCityGui;
-    }
-    
-    public ManageClaimGui getManageClaimGui(){
-        return manageClaimGui;
     }
     
     public void setPlayerCity(@NotNull UUID uuid, @Nullable City city){

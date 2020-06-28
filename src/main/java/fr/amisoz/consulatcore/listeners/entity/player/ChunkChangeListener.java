@@ -2,9 +2,8 @@ package fr.amisoz.consulatcore.listeners.entity.player;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.events.ChunkChangeEvent;
+import fr.amisoz.consulatcore.events.ClaimChangeEvent;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
-import fr.leconsulat.api.player.CPlayerManager;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,10 +13,10 @@ import java.sql.SQLException;
 public class ChunkChangeListener implements Listener {
     
     @EventHandler
-    public void onChunkChangeEvent(ChunkChangeEvent event){
-        SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
+    public void onChunkChangeEvent(ClaimChangeEvent event){
+        SurvivalPlayer player = event.getPlayer();
         if(player.isFlying()){
-            if(!player.canFlyHere(event.getChunkTo())){
+            if(!player.canFlyHere(event.getClaimTo())){
                 Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
                     try {
                         player.disableFly();

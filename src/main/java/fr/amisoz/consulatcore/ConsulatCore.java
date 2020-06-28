@@ -13,7 +13,6 @@ import fr.amisoz.consulatcore.commands.players.*;
 import fr.amisoz.consulatcore.duel.DuelManager;
 import fr.amisoz.consulatcore.economy.BaltopManager;
 import fr.amisoz.consulatcore.fly.FlyManager;
-import fr.amisoz.consulatcore.guis.GuiListenerStorage;
 import fr.amisoz.consulatcore.listeners.entity.MobListeners;
 import fr.amisoz.consulatcore.listeners.entity.player.*;
 import fr.amisoz.consulatcore.listeners.world.ClaimCancelListener;
@@ -47,22 +46,21 @@ import java.util.*;
 import java.util.logging.Level;
 
 /**
- *
- CREATE TABLE cities (
- id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
- uuid CHAR(36) NOT NULL,
- name VARCHAR(255) NOT NULL,
- money DOUBLE NOT NULL
- );
- CREATE TABLE zones (
- id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
- uuid CHAR(36) NOT NULL,
- name VARCHAR(255) NOT NULL,
- owner CHAR(36) NOT NULL
- );
- ALTER TABLE players ADD city CHAR(36);
- *
- * */
+ * CREATE TABLE cities (
+ * id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+ * uuid CHAR(36) NOT NULL,
+ * name VARCHAR(255) NOT NULL,
+ * money DOUBLE NOT NULL DEFAULT 0,
+ * owner CHAR(36) NOT NULL
+ * );
+ * CREATE TABLE zones (
+ * id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+ * uuid CHAR(36) NOT NULL,
+ * name VARCHAR(255) NOT NULL,
+ * owner CHAR(36) NOT NULL
+ * );
+ * ALTER TABLE players ADD city CHAR(36);
+ */
 public class ConsulatCore extends JavaPlugin implements Listener {
     
     private static ConsulatCore instance;
@@ -91,7 +89,6 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         random = new Random();
         long startLoading = System.currentTimeMillis();
         spawn = new Location(Bukkit.getWorlds().get(0), 330, 65, -438, -145, 0);
-        new GuiListenerStorage();
         new DuelManager();
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         new ZoneManager();
@@ -109,7 +106,11 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         Bukkit.getScheduler().runTaskTimer(this, new AFKRunnable(), 0L, 5 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MonitoringRunnable(this), 0L, 10 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MessageRunnable(), 0L, 15 * 60 * 20);
-        Bukkit.getScheduler().runTaskTimer(this, new MeceneRunnable(), 0L, 20*60*60);
+        Bukkit.getScheduler().runTaskTimer(this, new MeceneRunnable(), 0L, 20 * 60 * 60);
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
+            ZoneManager.getInstance().saveZones();
+            ClaimManager.getInstance().saveClaims();
+        }, 60 * 60 * 20, 60 * 60 * 20);
         registerEvents();
         for(World world : Bukkit.getWorlds()){
             world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);

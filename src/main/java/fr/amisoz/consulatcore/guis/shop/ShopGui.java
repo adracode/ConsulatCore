@@ -5,12 +5,12 @@ import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.shop.Shop;
 import fr.amisoz.consulatcore.shop.ShopItemType;
 import fr.leconsulat.api.ConsulatAPI;
-import fr.leconsulat.api.gui.Gui;
-import fr.leconsulat.api.gui.GuiContainer;
 import fr.leconsulat.api.gui.GuiItem;
-import fr.leconsulat.api.gui.PagedGui;
-import fr.leconsulat.api.gui.events.GuiClickEvent;
-import fr.leconsulat.api.gui.events.PagedGuiCreateEvent;
+import fr.leconsulat.api.gui.event.GuiClickEvent;
+import fr.leconsulat.api.gui.event.GuiCreateEvent;
+import fr.leconsulat.api.gui.gui.IGui;
+import fr.leconsulat.api.gui.gui.module.api.Pageable;
+import fr.leconsulat.api.gui.gui.template.DataPagedGui;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -20,21 +20,16 @@ import org.bukkit.block.Sign;
 import java.util.Iterator;
 import java.util.logging.Level;
 
-public class ShopGui extends GuiContainer<ShopItemType> {
+public class ShopGui extends DataPagedGui<ShopItemType> {
     
-    public ShopGui(){
-        super(6);
-        int lines = 6;
-        setTemplate("§4Shops §c(0)",
-                getItem("§ePage précédente", (lines - 1) * 9, Material.ARROW),
-                getItem("§ePage suivante", lines * 9 - 1, Material.ARROW)
-        );
-        setMoveableItemsRange(0, 45);
-        addGui(createGui(ShopItemType.ALL));
-        setCreateOnOpen(false);
+    public ShopGui(ShopItemType itemType){
+        super(itemType, "§4Shops §c(0)", 6,
+                IGui.getItem("§ePage précédente", (6 - 1) * 9, Material.ARROW),
+                IGui.getItem("§ePage suivante", 6 * 9 - 1, Material.ARROW));
+        setDynamicItemsRange(0, 45);
     }
     
-    public void addShop(Shop shop, ShopItemType key){
+    public void addShop(Shop shop){
         if(shop.isEmpty()){
             return;
         }
@@ -44,18 +39,11 @@ public class ShopGui extends GuiContainer<ShopItemType> {
                 "§eCoordonnées: X: §c" + shop.getX() + "§e Y: §c" + shop.getY() + "§e Z: §c" + shop.getZ(),
                 "§eTéléportation pour: §c10§e€.");
         item.setAttachedObject(shop);
-        Gui<ShopItemType> pagedGui = getGui(key);
-        if(pagedGui != null){
-            pagedGui.addItem(item);
-        }
+        addItem(item);
     }
     
-    public void removeShop(Shop shop, ShopItemType key){
-        Gui<ShopItemType> pagedGui = getGui(key);
-        if(pagedGui == null){
-            return;
-        }
-        for(Iterator<GuiItem> iterator = pagedGui.iterator(); iterator.hasNext(); ){
+    public void removeShop(Shop shop){
+        for(Iterator<GuiItem> iterator = iterator(); iterator.hasNext(); ){
             GuiItem item = iterator.next();
             if(item != null && shop.equals(item.getAttachedObject())){
                 iterator.remove();
@@ -65,33 +53,31 @@ public class ShopGui extends GuiContainer<ShopItemType> {
     }
     
     @Override
-    public void onPageCreate(PagedGuiCreateEvent<ShopItemType> event){
-        PagedGui<ShopItemType> gui = event.getPagedGui();
-        Object key = event.getData();
-        if(key.equals(ShopItemType.ALL)){
-            gui.setName("§4Shops §8(§3" + (event.getPage() + 1) + "§8)");
+    public void onPageCreated(GuiCreateEvent event, Pageable pageGui){
+        if(getData().equals(ShopItemType.ALL)){
+            pageGui.setName("§4Shops §8(§3" + (pageGui.getPage() + 1) + "§8)");
         } else {
-            gui.setName("§4Shops §8(§3" + key.toString() + "§8) (§3" + (event.getPage() + 1) + "§8)");
+            pageGui.setName("§4Shops §8(§3" + getData().toString() + "§8) (§3" + (pageGui.getPage() + 1) + "§8)");
         }
     }
     
     @Override
-    public void onClick(GuiClickEvent<ShopItemType> event){
+    public void onPageClick(GuiClickEvent event, Pageable pageGui){
         switch(event.getSlot()){
             case 45:
-                if(event.getPage() <= 0){
+                if(pageGui.getPage() <= 0){
                     return;
                 }
-                event.getGui().open(event.getPlayer(), event.getPage() - 1);
+                getPage(pageGui.getPage() - 1).open(event.getPlayer());
                 break;
             case 53:
-                if(event.getPage() == event.getGui().getCurrentPage()){
+                if(pageGui.getPage() == getCurrentPage()){
                     return;
                 }
-                event.getGui().open(event.getPlayer(), event.getPage() + 1);
+                getPage(pageGui.getPage() + 1).open(event.getPlayer());
                 break;
             default:
-                Shop shop = (Shop)event.getPagedGui().getItem(event.getSlot()).getAttachedObject();
+                Shop shop = (Shop)pageGui.getItem(event.getSlot()).getAttachedObject();
                 SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
                 player.getPlayer().closeInventory();
                 if(player.hasMoney(10.0)){
@@ -111,8 +97,8 @@ public class ShopGui extends GuiContainer<ShopItemType> {
                             }
                         } else {
                             player.sendMessage(Text.PREFIX + "§cCe shop n'a pas été trouvé");
-                            ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Shop not found in list: " + event.getPagedGui().getItem(event.getSlot()));
-                            ConsulatAPI.getConsulatAPI().logFile("Shop not found in list: " + event.getPagedGui().getItem(event.getSlot()));
+                            ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Shop not found in list: " + getItem(event.getSlot()));
+                            ConsulatAPI.getConsulatAPI().logFile("Shop not found in list: " + getItem(event.getSlot()));
                         }
                     } catch(NullPointerException e){
                         player.sendMessage("Erreur lors de la téléportation");

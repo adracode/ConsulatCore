@@ -1,6 +1,5 @@
 package fr.amisoz.consulatcore.guis.city;
 
-import fr.amisoz.consulatcore.guis.GuiListenerStorage;
 import fr.amisoz.consulatcore.guis.city.changehome.ChangeHomeGui;
 import fr.amisoz.consulatcore.guis.city.claimlist.ClaimsGui;
 import fr.amisoz.consulatcore.guis.city.members.MembersGui;
@@ -9,22 +8,21 @@ import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.zones.ZoneManager;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.amisoz.consulatcore.zones.claims.Claim;
-import fr.leconsulat.api.gui.Gui;
 import fr.leconsulat.api.gui.GuiContainer;
-import fr.leconsulat.api.gui.PagedGui;
-import fr.leconsulat.api.gui.events.GuiClickEvent;
-import fr.leconsulat.api.gui.events.GuiCreateEvent;
-import fr.leconsulat.api.gui.events.GuiOpenEvent;
+import fr.leconsulat.api.gui.GuiManager;
+import fr.leconsulat.api.gui.event.GuiClickEvent;
+import fr.leconsulat.api.gui.event.GuiOpenEvent;
+import fr.leconsulat.api.gui.gui.IGui;
+import fr.leconsulat.api.gui.gui.module.api.Datable;
+import fr.leconsulat.api.gui.gui.module.api.Relationnable;
+import fr.leconsulat.api.gui.gui.template.DataRelatGui;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.UUID;
-
-public class CityGui extends GuiContainer<City> {
+public class CityGui extends DataRelatGui<City> {
     
     private static final byte CITY_SLOT = 4;
     private static final byte CLAIM_BUTTON = 19;
@@ -38,62 +36,61 @@ public class CityGui extends GuiContainer<City> {
     public static final String MEMBERS = "city.members";
     public static final String RANKS = "city.ranks";
     
-    private ClaimsGui claims = new ClaimsGui();
-    private ChangeHomeGui home = new ChangeHomeGui();
-    private MembersGui members = new MembersGui();
-    private RankGui ranks = new RankGui();
-    
-    public CityGui(){
-        super(6);
-        setTemplate("<ville>",
-                getItem("§e<nom>", CITY_SLOT, Material.PAPER),
-                getItem("§eClaims", CLAIM_BUTTON, Material.FILLED_MAP, "", "§7Gérer les claims", "§7de la ville"),
-                getItem("§eHome", HOME_BUTTON, Material.COMPASS),
-                getItem("§eBanque", BANK_BUTTON, Material.SUNFLOWER),
-                getItem("§eGrades", RANK_BUTTON, Material.OAK_SIGN),
-                getItem("§ePermissions", PERMISSION_SLOT, Material.PLAYER_HEAD, "", "§7Gérer les membres", "§7de la ville"))
-                .setDeco(Material.BLACK_STAINED_GLASS_PANE, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53)
-                .setDeco(Material.RED_STAINED_GLASS_PANE, 0, 1, 2, 3, 5, 6, 7, 8);
-        GuiListenerStorage storage = GuiListenerStorage.getInstance();
-        storage.addListener(CLAIMS, claims);
-        storage.addListener(MEMBERS, members);
-        storage.addListener(HOME, home);
-        storage.addListener(RANKS, ranks);
+    public CityGui(City city){
+        super(city, "<ville>", 6,
+                IGui.getItem("§e<nom>", CITY_SLOT, Material.PAPER),
+                IGui.getItem("§eClaims", CLAIM_BUTTON, Material.FILLED_MAP, "", "§7Gérer les claims", "§7de la ville"),
+                IGui.getItem("§eHome", HOME_BUTTON, Material.COMPASS),
+                IGui.getItem("§eBanque", BANK_BUTTON, Material.SUNFLOWER),
+                IGui.getItem("§eGrades", RANK_BUTTON, Material.OAK_SIGN),
+                IGui.getItem("§eMembres", PERMISSION_SLOT, Material.PLAYER_HEAD, "", "§7Gérer les membres", "§7de la ville"));
+        setDeco(Material.BLACK_STAINED_GLASS_PANE, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53);
+        setDeco(Material.RED_STAINED_GLASS_PANE, 0, 1, 2, 3, 5, 6, 7, 8);
     }
     
     @Override
-    public void onCreate(GuiCreateEvent<City> event){
-        Gui<City> gui = event.getGui();
-        City city = event.getData();
-        updateName(gui);
-        gui.getPage().setDescription(CITY_SLOT, "§7Propriétaire: §a" + Bukkit.getOfflinePlayer(city.getOwner()).getName());
-        updateHome(gui, false);
-        updateBank(gui);
-        updateRank(gui);
-        gui.prepareChild(CLAIMS, () -> claims.createGui(city, gui));
-        gui.prepareChild(MEMBERS, () -> members.createGui(city, gui));
-        gui.prepareChild(HOME, () -> home.createGui(city, gui));
-        gui.prepareChild(RANKS, () -> ranks.createGui(city, gui));
+    public void onCreate(){
+        updateName();
+        setDescription(CITY_SLOT, "§7Propriétaire: §a" + Bukkit.getOfflinePlayer(getData().getOwner()).getName());
+        updateHome(false);
+        updateBank();
+        updateRank();
     }
     
     @Override
-    public void onOpen(GuiOpenEvent<City> event){
-        SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
-        Claim claim = player.getClaim();
-        City city = event.getData();
-        updateHome(event.getGui(), claim != null && city.isClaim(claim));
+    public Relationnable createChild(@Nullable Object key){
+        if(!(key instanceof String)){
+            throw new IllegalArgumentException();
+        }
+        switch((String)key){
+            case CLAIMS:
+                return new ClaimsGui(getData());
+            case HOME:
+                return new ChangeHomeGui(getData());
+            case MEMBERS:
+                return new MembersGui(getData());
+            case RANKS:
+                return new RankGui(getData());
+        }
+        throw new IllegalArgumentException();
     }
     
     @Override
-    public void onClick(GuiClickEvent<City> event){
-        Gui<City> current = event.getGui();
+    public void onOpen(GuiOpenEvent event){
+        Claim claim = ((SurvivalPlayer)event.getPlayer()).getClaim();
+        City city = getData();
+        updateHome(claim != null && city.isClaim(claim));
+    }
+    
+    @Override
+    public void onClick(GuiClickEvent event){
         switch(event.getSlot()){
             case CLAIM_BUTTON:{
-                current.getChild(CLAIMS).open(event.getPlayer());
+                getChild(CLAIMS).open(event.getPlayer());
             }
             break;
             case HOME_BUTTON:{
-                City city = event.getData();
+                City city = getData();
                 SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
                 Claim claim = player.getClaim();
                 if(claim == null || !city.isClaim(claim)){
@@ -103,111 +100,83 @@ public class CityGui extends GuiContainer<City> {
                     ZoneManager.getInstance().setHome(city, player.getPlayer().getLocation());
                     player.sendMessage("§aTu as déplacé le home de ta ville.");
                 } else {
-                    confirmSethome(event.getGui(), player);
+                    confirmSethome(player);
                 }
             }
             break;
             case RANK_BUTTON:{
-                current.getChild(RANKS).open(event.getPlayer());
+                getChild(RANKS).open(event.getPlayer());
             }
             break;
             case PERMISSION_SLOT:{
-                current.getChild(MEMBERS).open(event.getPlayer());
+                getChild(MEMBERS).open(event.getPlayer());
             }
             break;
         }
     }
     
-    public void updateName(@NotNull City city){
-        updateName(getGui(city));
+    public void updateName(){
+        City city = getData();
+        setName("§2" + city.getName() + "§8");
+        setDisplayName(CITY_SLOT, "§e" + city.getName());
     }
     
-    private void updateName(@NotNull Gui<City> gui){
-        PagedGui<City> current = gui.getPage();
-        City city = gui.getData();
-        current.setName("§2" + city.getName() + "§8");
-        current.setDisplayName(CITY_SLOT, "§e" + city.getName());
+    public void confirmSethome(ConsulatPlayer player){
+        getChild(HOME).open(player);
     }
     
-    /**
-     * Enlève l'item représentant un claim à la liste des claims d'une ville
-     *
-     * @param city  La ville où l'on retire le claim
-     * @param claim Le claim à retirer du PagedGui
-     */
-    public void removeClaimFromList(City city, Claim claim){
-        Gui<City> cityGui = getGui(city);
-        if(cityGui == null){
-            return;
-        }
-        claims.removeItemClaim(cityGui.getChild(CLAIMS), claim);
-    }
-    
-    public void removePlayerCityPermissions(City city, UUID uuid){
-        Gui<City> cityGui = getGui(false, city);
-        if(cityGui == null){
-            return;
-        }
-        members.removePlayer(cityGui.getChild(MEMBERS), uuid);
-    }
-    
-    public void confirmSethome(City city, ConsulatPlayer player){
-        confirmSethome(getGui(city), player);
-    }
-    
-    private void confirmSethome(Gui<City> current, ConsulatPlayer player){
-        current.getChild(HOME).open(player);
-    }
-    
-    public void updateHome(@NotNull City city, boolean allow){
-        updateHome(getGui(city), allow);
-    }
-    
-    private void updateHome(@NotNull Gui<City> gui, boolean allow){
-        PagedGui<City> current = gui.getPage();
-        City city = gui.getData();
+    public void updateHome(boolean allow){
+        City city = getData();
         if(!city.hasHome()){
             if(allow){
-                current.setDescription(HOME_BUTTON, "§7Aucun home défini", "",
+                setDescription(HOME_BUTTON, "§7Aucun home défini", "",
                         "§7§oDéfinir le home", "§7§o/ville sethome", "",
                         "§7Ou §acliquez §7pour", "§7définir le home §aici");
             } else {
-                current.setDescription(HOME_BUTTON, "§7Aucun home défini");
+                setDescription(HOME_BUTTON, "§7Aucun home défini");
             }
         } else {
             Location home = city.getHome();
             if(allow){
-                current.setDescription(HOME_BUTTON, "§7x: " + home.getBlockX(), "§7y: " + home.getBlockY(), "§7z: " + home.getBlockZ(), "",
+                setDescription(HOME_BUTTON, "§7x: " + home.getBlockX(), "§7y: " + home.getBlockY(), "§7z: " + home.getBlockZ(), "",
                         "§7§oChanger le home", "§7§o/ville sethome", "",
                         "§7Ou §acliquez §7pour", "§7définir le home §aici");
             } else {
-                current.setDescription(HOME_BUTTON, "§7x: " + home.getBlockX(), "§7y: " + home.getBlockY(), "§7z: " + home.getBlockZ());
+                setDescription(HOME_BUTTON, "§7x: " + home.getBlockX(), "§7y: " + home.getBlockY(), "§7z: " + home.getBlockZ());
             }
         }
     }
     
-    public void updateBank(@NotNull City city){
-        updateBank(getGui(city));
+    public void updateBank(){
+        City city = getData();
+        setDescription(BANK_BUTTON, "§e" + city.getMoney(), "", "§7§oAjouter de l'argent", "§7§o/ville banque add <montant>");
     }
     
-    private void updateBank(@NotNull Gui<City> gui){
-        City city = gui.getData();
-        gui.getPage().setDescription(BANK_BUTTON, "§e" + city.getMoney(), "", "§7§oAjouter de l'argent", "§7§o/ville banque add <montant>");
-    }
-    
-    public void updateRank(@NotNull City city){
-        updateRank(getGui(false, city));
-    }
-    
-    private void updateRank(@Nullable Gui<City> gui){
-        if(gui == null){
-            return;
-        }
-        City city = gui.getData();
-        gui.getPage().setDescription(RANK_BUTTON,"",
+    public void updateRank(){
+        City city = getData();
+        setDescription(RANK_BUTTON, "",
                 "§b" + city.getRankName(0),
                 "§e" + city.getRankName(1),
                 "§7" + city.getRankName(2), "",
                 "§7Pour définir les", "§7grades, §acliquez §7ici");
     }
+    
+    public static class Container extends GuiContainer<City> {
+        
+        private static Container instance;
+        
+        public Container(){
+            if(instance != null){
+                throw new IllegalStateException();
+            }
+            instance = this;
+            GuiManager.getInstance().addContainer("city", this);
+        }
+        
+        @Override
+        public Datable<City> createGui(City city){
+            return new CityGui(city);
+        }
+    }
+    
 }

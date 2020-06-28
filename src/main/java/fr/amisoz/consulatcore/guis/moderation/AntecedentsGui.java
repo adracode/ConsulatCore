@@ -4,10 +4,10 @@ import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.moderation.SanctionObject;
 import fr.amisoz.consulatcore.moderation.SanctionType;
 import fr.leconsulat.api.ConsulatAPI;
-import fr.leconsulat.api.gui.GuiContainer;
 import fr.leconsulat.api.gui.GuiItem;
-import fr.leconsulat.api.gui.events.GuiOpenEvent;
-import fr.leconsulat.api.gui.events.PagedGuiCreateEvent;
+import fr.leconsulat.api.gui.event.GuiOpenEvent;
+import fr.leconsulat.api.gui.gui.IGui;
+import fr.leconsulat.api.gui.gui.template.DataGui;
 import fr.leconsulat.api.player.ConsulatOffline;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -20,22 +20,15 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class AntecedentsGui extends GuiContainer<ConsulatOffline> {
+public class AntecedentsGui extends DataGui<ConsulatOffline> {
 
-    public AntecedentsGui() {
-        super(3);
-        setTemplate("§6§lAntécédents §7↠ §e");
+    public AntecedentsGui(ConsulatOffline player) {
+        super(player, "§6§lAntécédents §7↠ §e" + player.getName(), 3);
     }
-
+    
     @Override
-    public void onPageCreate(PagedGuiCreateEvent<ConsulatOffline> event) {
-        ConsulatOffline consulatOffline = event.getData();
-        event.getPagedGui().setName(event.getGui().getName() + consulatOffline.getName());
-    }
-
-    @Override
-    public void onOpen(GuiOpenEvent<ConsulatOffline> event) {
-        ConsulatOffline consulatOffline = event.getData();
+    public void onOpen(GuiOpenEvent event) {
+        ConsulatOffline consulatOffline = getData();
         Player player = event.getPlayer().getPlayer();
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
@@ -47,10 +40,9 @@ public class AntecedentsGui extends GuiContainer<ConsulatOffline> {
                         player.sendMessage("§cCe joueur n'a pas d'antécédents.");
                         return;
                     }
-
                     for (int i = 0; i < sanctions.size(); i++) {
                         SanctionObject sanctionObject = sanctions.get(i);
-                        GuiItem item = getItem("§cSANCTION", i, sanctionObject.getSanctionType().getMaterial(),
+                        GuiItem item = IGui.getItem("§cSANCTION", i, sanctionObject.getSanctionType().getMaterial(),
                                 "§6Le : §e" + sanctionObject.getSanctionAt(),
                                 "§6Jusqu'au : §e" + sanctionObject.getExpire(),
                                 "§6Motif : §e" + sanctionObject.getSanctionName(),
@@ -58,7 +50,7 @@ public class AntecedentsGui extends GuiContainer<ConsulatOffline> {
                                 "§6Annulé : §e" + (sanctionObject.isCancelled() ? "Oui" : "Non"),
                                 "§6Actif : §e" + (sanctionObject.isActive() ? "Oui" : "Non"));
 
-                        event.getPagedGui().setItem(item);
+                        setItem(item);
                     }
                 });
             } catch (SQLException e) {

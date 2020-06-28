@@ -6,11 +6,11 @@ import fr.amisoz.consulatcore.moderation.BanEnum;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.gui.GuiItem;
-import fr.leconsulat.api.gui.GuiListener;
-import fr.leconsulat.api.gui.events.GuiClickEvent;
-import fr.leconsulat.api.gui.events.GuiCloseEvent;
-import fr.leconsulat.api.gui.events.GuiOpenEvent;
-import fr.leconsulat.api.gui.events.PagedGuiCreateEvent;
+import fr.leconsulat.api.gui.event.GuiClickEvent;
+import fr.leconsulat.api.gui.event.GuiCloseEvent;
+import fr.leconsulat.api.gui.event.GuiOpenEvent;
+import fr.leconsulat.api.gui.gui.IGui;
+import fr.leconsulat.api.gui.gui.template.DataRelatGui;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatOffline;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -27,25 +27,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
-public class BanGui extends GuiListener<ConsulatOffline> {
+public class BanGui extends DataRelatGui<ConsulatOffline> {
 
-    public BanGui() {
-        super(3);
-        setTemplate("§c§lBannir");
+    public BanGui(ConsulatOffline player) {
+        super(player, "§c§lBannir", 3);
     }
 
     @Override
-    public void onPageCreate(PagedGuiCreateEvent<ConsulatOffline> event) {
-        event.getPagedGui().setName("§c§lBannir" + event.getData().getName());
-    }
-
-    @Override
-    public void onOpen(GuiOpenEvent<ConsulatOffline> event) {
-        if (event.getData() == null) {
-            return;
-        }
-
-        ConsulatOffline consulatOffline = event.getData();
+    public void onOpen(GuiOpenEvent event) {
+        ConsulatOffline consulatOffline = getData();
         Player target = Bukkit.getPlayer(consulatOffline.getUUID());
         Player moderator = event.getPlayer().getPlayer();
 
@@ -72,23 +62,23 @@ public class BanGui extends GuiListener<ConsulatOffline> {
             BanEnum[] values = BanEnum.values();
             for (int i = 0; i < values.length; ++i) {
                 BanEnum ban = values[i];
-                GuiItem item = getItem("§c" + ban.getSanctionName(), i, ban.getGuiMaterial());
+                GuiItem item = IGui.getItem("§c" + ban.getSanctionName(), i, ban.getGuiMaterial());
 
                 item.setDescription("§cDurée : §4" + ban.getFormatDuration(), "§7Récidive : " + (banHistory.containsKey(ban) ? banHistory.get(ban) : "0"));
                 item.setAttachedObject(ban);
-                event.getPagedGui().setItem(i, item);
+                setItem(i, item);
             }
         });
     }
 
     @Override
-    public void onClose(GuiCloseEvent<ConsulatOffline> event) {
+    public void onClose(GuiCloseEvent event) {
         event.setOpenFatherGui(false);
     }
 
     @Override
-    public void onClick(GuiClickEvent<ConsulatOffline> event) {
-        GuiItem item = event.getPagedGui().getItem(event.getSlot());
+    public void onClick(GuiClickEvent event) {
+        GuiItem item = getItem(event.getSlot());
         List<String> description = item.getDescription();
         String recidive = description.get(1).split(":")[1].trim();
         int recidiveNumber = Integer.parseInt(recidive);
@@ -97,11 +87,11 @@ public class BanGui extends GuiListener<ConsulatOffline> {
         if (multiply == 0) multiply = 1;
 
         long currentTime = System.currentTimeMillis();
-        BanEnum ban = (BanEnum) event.getPagedGui().getItem(event.getSlot()).getAttachedObject();
+        BanEnum ban = (BanEnum) getItem(event.getSlot()).getAttachedObject();
         double durationBan = (ban.getDurationSanction() * 1000) * multiply;
         long resultTime = currentTime + Math.round(durationBan);
         ConsulatPlayer banner = event.getPlayer();
-        ConsulatOffline offlineTarget = event.getData();
+        ConsulatOffline offlineTarget = getData();
 
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {

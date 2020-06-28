@@ -2,6 +2,8 @@ package fr.amisoz.consulatcore.shop;
 
 import fr.amisoz.consulatcore.guis.shop.ShopGui;
 import fr.amisoz.consulatcore.utils.CoordinatesUtils;
+import fr.leconsulat.api.gui.GuiContainer;
+import fr.leconsulat.api.gui.GuiManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -84,20 +86,20 @@ public class Shop {
     }
     
     void addInGui(){
-        ShopGui gui = ShopManager.getInstance().getShopGui();
+        GuiContainer<ShopItemType> container = GuiManager.getInstance().getContainer("shop");
         for(ShopItemType type : types){
-            gui.addShop(this, type);
+            ((ShopGui)container.getGui(type)).addShop(this);
         }
-        gui.addShop(this, ShopItemType.ALL);
+        ((ShopGui)container.getGui(ShopItemType.ALL)).addShop(this);
         ShopManager.getInstance().addType(this);
     }
     
     void removeInGui(){
-        ShopGui gui = ShopManager.getInstance().getShopGui();
+        GuiContainer<ShopItemType> container = GuiManager.getInstance().getContainer("shop");
         for(ShopItemType type : types){
-            gui.removeShop(this, type);
+            ((ShopGui)container.getGui(type)).removeShop(this);
         }
-        gui.removeShop(this, ShopItemType.ALL);
+        ((ShopGui)container.getGui(ShopItemType.ALL)).removeShop(this);
         ShopManager.getInstance().removeType(this);
     }
     

@@ -7,6 +7,7 @@ public enum CityPermission implements Permission {
     MANAGE_PLAYER("consulat.core.city.manage-player"),
     MANAGE_CLAIM("consulat.core.city.manage-claim"),
     MANAGE_ACCESS("consulat.core.city.manage-access"),
+    MANAGE_BANK("consulat.core.city.manage-bank"),
     INTERACT("consulat.core.city.interact");
     
     private String permission;

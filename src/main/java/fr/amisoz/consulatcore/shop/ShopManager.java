@@ -2,7 +2,7 @@ package fr.amisoz.consulatcore.shop;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.guis.shop.ShopGui;
+import fr.amisoz.consulatcore.guis.shop.ShopGuiContainer;
 import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.utils.ChestUtils;
@@ -54,14 +54,13 @@ public class ShopManager implements Listener {
     private Map<Long, Shop> shops = new HashMap<>();
     private Map<ShopItemType, Set<Shop>> nonEmptyTypes = new HashMap<>();
     
-    private ShopGui shopGui;
-    
     public ShopManager(){
         if(instance != null){
             return;
         }
         instance = this;
-        shopGui = new ShopGui();
+        ShopGuiContainer container = new ShopGuiContainer();
+        container.getGui(ShopItemType.ALL);
         //Volontairement bloquant
         try {
             ConsulatAPI.getConsulatAPI().log(Level.INFO, "Loading shops...");
@@ -947,9 +946,5 @@ public class ShopManager implements Listener {
         update.setInt(6, old.getBlockZ());
         update.executeUpdate();
         update.close();
-    }
-    
-    public ShopGui getShopGui(){
-        return shopGui;
     }
 }

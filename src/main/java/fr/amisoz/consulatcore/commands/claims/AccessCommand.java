@@ -59,7 +59,7 @@ public class AccessCommand extends ConsulatCommand {
                     return;
                 }
                 if(targetUUID.equals(player.getUUID()) || !player.getZone().addPlayer(targetUUID)){
-                    sender.sendMessage("§cCe joueur a déjà accès à tout tes claims.");
+                    sender.sendMessage("§cCe joueur a déjà accès à tes claims.");
                     return;
                 }
                 sender.sendMessage(Text.PREFIX + "§aLe joueur a été ajouté à tes claims : §2" + args[1]);
@@ -97,7 +97,7 @@ public class AccessCommand extends ConsulatCommand {
                     return;
                 }
                 Claim claim = player.getClaim();
-                if(claim == null || !claim.isOwner(sender.getUUID())){
+                if(claim == null || !claim.canManageAccesses(sender.getUUID())){
                     sender.sendMessage(Text.PREFIX + "§cTu dois être dans un claim t'appartenant pour ajouter un joueur.");
                     return;
                 }
@@ -111,7 +111,6 @@ public class AccessCommand extends ConsulatCommand {
                     return;
                 }
                 sender.sendMessage(Text.PREFIX + "§aLe joueur a été ajouté à ton claim : §2" + args[1]);
-                sender.sendMessage(Text.PREFIX + "Il n'a aucune permissions pour l'instant. Fais /claim permissions pour en ajouter.");
             }
             break;
             case "remove":{
@@ -120,7 +119,7 @@ public class AccessCommand extends ConsulatCommand {
                     return;
                 }
                 Claim claim = claimManager.getClaim(sender.getPlayer().getLocation().getChunk());
-                if(claim == null || !claim.isOwner(sender.getUUID())){
+                if(claim == null || !claim.canManageAccesses(sender.getUUID())){
                     sender.sendMessage(Text.PREFIX + "§cTu dois être dans un claim t'appartenant pour enlever un joueur.");
                     return;
                 }
@@ -142,7 +141,7 @@ public class AccessCommand extends ConsulatCommand {
             break;
             case "list":{
                 Claim claim = claimManager.getClaim(sender.getPlayer().getLocation().getChunk());
-                if(claim == null || !claim.isOwner(sender.getUUID())){
+                if(claim == null || !claim.canManageAccesses(sender.getUUID())){
                     sender.sendMessage(Text.PREFIX + "§cTu dois être dans un claim t'appartenant pour voir la liste des joueurs ayant accès à ton claim.");
                     return;
                 }

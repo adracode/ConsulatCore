@@ -1,10 +1,11 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.guis.moderation.SanctionGui;
+import fr.amisoz.consulatcore.guis.moderation.SanctionsGuiContainer;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatOffline;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -14,12 +15,11 @@ import java.util.UUID;
 
 public class SanctionCommand extends ConsulatCommand {
     
-    private SanctionGui sanctionGui;
     
     public SanctionCommand(){
         super("sanction", "/sanction <Joueur>", 1, Rank.MODO);
         suggest(true, Arguments.playerList("joueur"));
-        sanctionGui = new SanctionGui();
+        new SanctionsGuiContainer();
     }
     
     @Override
@@ -30,6 +30,6 @@ public class SanctionCommand extends ConsulatCommand {
             player.sendMessage(Text.PREFIX + "§cCe joueur ne s'est jamais connecté.");
             return;
         }
-        sanctionGui.getGui(new ConsulatOffline(0, uuid, args[0], Rank.INVITE, null)).open(player);
+        GuiManager.getInstance().getContainer("sanctions").getGui(new ConsulatOffline(0, uuid, args[0], Rank.INVITE, null)).open(player);
     }
 }

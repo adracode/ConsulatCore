@@ -1,38 +1,46 @@
 package fr.amisoz.consulatcore.guis.moderation;
 
-import fr.leconsulat.api.gui.GuiContainer;
-import fr.leconsulat.api.gui.events.GuiClickEvent;
-import fr.leconsulat.api.gui.events.PagedGuiCreateEvent;
+import fr.leconsulat.api.gui.event.GuiClickEvent;
+import fr.leconsulat.api.gui.gui.IGui;
+import fr.leconsulat.api.gui.gui.module.api.Relationnable;
+import fr.leconsulat.api.gui.gui.template.DataRelatGui;
 import fr.leconsulat.api.player.ConsulatOffline;
 import org.bukkit.Material;
+import org.jetbrains.annotations.Nullable;
 
-public class SanctionGui extends GuiContainer<ConsulatOffline> {
+public class SanctionGui extends DataRelatGui<ConsulatOffline> {
     
-    private BanGui banGui = new BanGui();
-    private MuteGui muteGui = new MuteGui();
+    public static final String BAN = "ban";
+    public static final String MUTE = "mute";
     
-    public SanctionGui(){
-        super(3);
-        setTemplate("§6§lSanction §7↠ §e",
-                getItem("§cBannir", 11, Material.REDSTONE_BLOCK),
-                getItem("§6Mute", 15, Material.PAPER));
+    public SanctionGui(ConsulatOffline player){
+        super(player, "§6§lSanction §7↠ §e" + player.getName(), 3,
+                IGui.getItem("§cBannir", 11, Material.REDSTONE_BLOCK),
+                IGui.getItem("§6Mute", 15, Material.PAPER));
     }
     
     @Override
-    public void onPageCreate(PagedGuiCreateEvent<ConsulatOffline> event){
-        event.getPagedGui().setName("§6§lSanction §7↠ §e" + event.getData().getName());
-        event.getGui().prepareChild(banGui, () -> banGui.createGui(event.getData(), event.getGui()));
-        event.getGui().prepareChild(muteGui, () -> muteGui.createGui(event.getData(), event.getGui()));
+    public Relationnable createChild(@Nullable Object key){
+        if(!(key instanceof String)){
+            throw new IllegalArgumentException();
+        }
+        switch((String)key){
+            case BAN:
+                return new BanGui(getData());
+            case MUTE:
+                return new MuteGui(getData());
+        }
+        throw new IllegalArgumentException();
     }
     
     @Override
-    public void onClick(GuiClickEvent<ConsulatOffline> event){
+    public void onClick(GuiClickEvent event){
         switch(event.getSlot()){
             case 11:
-                event.getGui().getChild(banGui).open(event.getPlayer());
+                getChild(BAN).open(event.getPlayer());
                 break;
             case 15:
-                event.getGui().getChild(muteGui).open(event.getPlayer());
+                getChild(MUTE).open(event.getPlayer());
                 break;
         }
     }

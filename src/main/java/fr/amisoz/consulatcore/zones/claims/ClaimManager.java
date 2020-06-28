@@ -2,9 +2,10 @@ package fr.amisoz.consulatcore.zones.claims;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.events.ChunkChangeEvent;
+import fr.amisoz.consulatcore.events.ClaimChangeEvent;
 import fr.amisoz.consulatcore.guis.city.CityGui;
 import fr.amisoz.consulatcore.guis.city.claimlist.ClaimsGui;
+import fr.amisoz.consulatcore.guis.claims.ManageClaimGui;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.amisoz.consulatcore.utils.ChestUtils;
@@ -14,7 +15,8 @@ import fr.amisoz.consulatcore.zones.ZoneManager;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.events.PlayerClickBlockEvent;
-import fr.leconsulat.api.gui.Gui;
+import fr.leconsulat.api.gui.GuiManager;
+import fr.leconsulat.api.gui.gui.IGui;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.utils.FileUtils;
 import fr.leconsulat.api.utils.NBTUtils;
@@ -28,6 +30,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 import org.jnbt.*;
 
 import java.io.File;
@@ -55,6 +58,7 @@ public class ClaimManager implements Listener {
             throw new IllegalStateException();
         }
         instance = this;
+        new ManageClaimGui.Container();
         loadClaims();
     }
     
@@ -102,7 +106,9 @@ public class ClaimManager implements Listener {
                             for(Tag tag : NBTUtils.getChildTag(regionMap, "Claims", ListTag.class).getValue()){
                                 CompoundTag claimTag = (CompoundTag)tag;
                                 Claim claim = claims.get(NBTUtils.getChildTag(claimTag.getValue(), "Coords", LongTag.class).getValue());
-                                claim.loadNBT(claimTag);
+                                if(claim != null){
+                                    claim.loadNBT(claimTag);
+                                }
                             }
                         } catch(IOException e){
                             e.printStackTrace();
@@ -153,11 +159,15 @@ public class ClaimManager implements Listener {
     
     private void removeClaim(Claim claim){
         this.claims.remove(claim.getCoordinates());
-        claim.getOwner().removeClaim(claim);
-        Gui<City> claimGui = ZoneManager.getInstance().getCityGui().getGui(false, (City)claim.getOwner(), CityGui.CLAIMS);
-        if(claimGui != null){
-            ((ClaimsGui)claimGui.getListener()).removeItemClaim(claimGui, claim);
+        Zone owner = claim.getOwner();
+        owner.removeClaim(claim);
+        if(owner instanceof City){
+            IGui iClaimsGui = GuiManager.getInstance().getContainer("city").getGui(false, owner, CityGui.CLAIMS);
+            if(iClaimsGui != null){
+                ((ClaimsGui)iClaimsGui).removeItemClaim(claim);
+            }
         }
+        GuiManager.getInstance().getContainer("claim").removeGui(claim);
     }
     
     public Claim playerClaim(int x, int z, Zone zone){
@@ -171,12 +181,15 @@ public class ClaimManager implements Listener {
             changeOwner(x, z, claim);
             return claim;
         }
+        IGui iClaimsGui = GuiManager.getInstance().getContainer("city").getGui(false, city, CityGui.CLAIMS);
+        if(iClaimsGui != null){
+            ((ClaimsGui)iClaimsGui).addItemClaim(claim);
+        }
         return claim(x, z, city);
     }
     
     private Claim claim(int x, int z, Zone owner){
         Claim claim = addClaim(x, z, owner, null);
-        claim.addClaimToList();
         addClaimDatabase(x, z, owner);
         return claim;
     }
@@ -195,32 +208,32 @@ public class ClaimManager implements Listener {
         return getClaim(chunk) != null;
     }
     
-    public Claim getClaim(Block block){
+    public @Nullable Claim getClaim(Block block){
         return getClaim(block.getChunk());
     }
     
-    public Claim getClaim(Chunk chunk){
+    public @Nullable Claim getClaim(Chunk chunk){
         if(chunk.getWorld() != Bukkit.getWorlds().get(0)){
             return null;
         }
         return getClaim(chunk.getX(), chunk.getZ());
     }
     
-    public Claim getClaim(int x, int z){
+    public @Nullable Claim getClaim(int x, int z){
         return getClaim(Claim.convert(x, z));
     }
     
-    public Claim getClaim(long coords){
+    public @Nullable Claim getClaim(long coords){
         return this.claims.get(coords);
     }
     
     @EventHandler
     public void setChestPrivate(PlayerClickBlockEvent event){
-        if(!protectable.contains(event.getBlock().getType())){
-            return;
-        }
         ItemStack itemInHand = event.getItemInHand();
         if(itemInHand.getType() != Material.NAME_TAG || !itemInHand.hasItemMeta() || !itemInHand.getItemMeta().hasDisplayName() || !itemInHand.getItemMeta().getDisplayName().equalsIgnoreCase("clé")){
+            return;
+        }
+        if(!protectable.contains(event.getBlock().getType())){
             return;
         }
         event.setCancelled(true);
@@ -273,11 +286,10 @@ public class ClaimManager implements Listener {
     private void addClaimDatabase(final int x, final int z, final Zone owner, final Runnable onError){
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
-                PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("INSERT INTO claims (claim_x, claim_z, player_uuid, type) VALUES (?, ?, ?, ?);");
+                PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("INSERT INTO claims (claim_x, claim_z, player_uuid) VALUES (?, ?, ?);");
                 preparedStatement.setInt(1, x);
                 preparedStatement.setInt(2, z);
                 preparedStatement.setString(3, owner.getUniqueId().toString());
-                preparedStatement.setString(4, owner.getType());
                 preparedStatement.executeUpdate();
                 preparedStatement.close();
             } catch(SQLException e){
@@ -347,15 +359,15 @@ public class ClaimManager implements Listener {
         Chunk chunkFrom = event.getFrom().getChunk();
         Chunk chunkTo = event.getTo().getChunk();
         if(chunkFrom != chunkTo){
-            Bukkit.getPluginManager().callEvent(new ChunkChangeEvent(player, chunkFrom, chunkTo));
+            Bukkit.getPluginManager().callEvent(new ClaimChangeEvent((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId()), getClaim(chunkFrom), getClaim(chunkTo)));
         }
     }
     
     @EventHandler
-    public void chunkChangeEvent(ChunkChangeEvent event){
-        Player player = event.getPlayer();
-        Claim claimFrom = getClaim(event.getChunkFrom());
-        Claim claimTo = getClaim(event.getChunkTo());
+    public void chunkChangeEvent(ClaimChangeEvent event){
+        SurvivalPlayer player = event.getPlayer();
+        Claim claimFrom = event.getClaimFrom();
+        Claim claimTo = event.getClaimTo();
         if(claimTo == null && claimFrom != null){
             player.sendMessage(Text.PREFIX + "§cTu sors de la zone de §l" + claimFrom.getOwnerName() + ".");
             return;

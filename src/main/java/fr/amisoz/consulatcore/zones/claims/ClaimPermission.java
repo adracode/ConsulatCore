@@ -8,7 +8,9 @@ public enum ClaimPermission implements Permission {
     PLACE_BLOCK("consulat.core.claim.place-block"),
     BREAK_BLOCK("consulat.core.claim.break-block"),
     OPEN_CONTAINER("consulat.core.claim.open-container"),
-    INTERACT_REDSTONE("consulat.core.claim.interact-redstone");
+    INTERACT_REDSTONE("consulat.core.claim.interact-redstone"),
+    FLY("consulat.core.claim.fly"),
+    COLLIDE("consulat.core.claim.collide");
     
     private String permission;
     

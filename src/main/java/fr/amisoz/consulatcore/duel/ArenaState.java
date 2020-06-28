@@ -6,7 +6,7 @@ public enum ArenaState {
     DUEL_ASKED(),
     DUEL_ACCEPTED(),
     IN_FIGHT(),
-    AFTER_FIGHT();
-
-
+    AFTER_FIGHT()
+    
+    
 }
