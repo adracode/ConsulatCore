@@ -13,6 +13,7 @@ import fr.leconsulat.api.gui.gui.IGui;
 import fr.leconsulat.api.player.Permission;
 import fr.leconsulat.api.ranks.Rank;
 import fr.leconsulat.api.utils.NBTUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 import org.jnbt.*;
@@ -91,9 +92,9 @@ public class Claim implements Comparable<Claim> {
                     ((AccessibleClaimGui)access).addItemClaim(this);
                 }
             }
-            IGui manageClaim = GuiManager.getInstance().getContainer("claim").getGui(false, this, uuid);
+            IGui manageClaim = GuiManager.getInstance().getContainer("claim").getGui(false, this);
             if(manageClaim != null){
-                ((AccessibleClaimGui)manageClaim).addItemClaim(this);
+                ((ManageClaimGui)manageClaim).addPlayerToClaim(uuid, Bukkit.getOfflinePlayer(uuid).getName());
             }
         }
         return added;
@@ -108,7 +109,7 @@ public class Claim implements Comparable<Claim> {
                     ((AccessibleClaimGui)access).removeItemClaim(this);
                 }
             }
-            IGui manageClaim = GuiManager.getInstance().getContainer("claim").getGui(this);
+            IGui manageClaim = GuiManager.getInstance().getContainer("claim").getGui(false, this);
             if(manageClaim != null){
                 ((ManageClaimGui)manageClaim).removePlayerFromClaim(uuid);
             }

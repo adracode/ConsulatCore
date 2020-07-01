@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.zones;
 
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.amisoz.consulatcore.zones.claims.ClaimPermission;
 import fr.leconsulat.api.database.Saveable;
@@ -122,6 +123,14 @@ public class Zone implements Saveable {
     
     public @NotNull String getType(){
         return "PLAYER";
+    }
+    
+    public @NotNull String getEnterMessage(){
+        return Text.PREFIX + "§cTu entres dans la zone de §l" + getName() + ".";
+    }
+    
+    public @NotNull String getLeaveMessage(){
+        return Text.PREFIX + "§cTu sors de la zone de §l" + getName() + ".";
     }
     
     public void loadNBT(){

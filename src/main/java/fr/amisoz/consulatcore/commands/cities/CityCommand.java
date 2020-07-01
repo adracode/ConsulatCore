@@ -30,25 +30,26 @@ import java.util.UUID;
 public class CityCommand extends ConsulatCommand {
     
     private String help =
-            "/ville create <nom> - Créer sa ville\n" +
-                    "/ville rename <nom> - Renommer sa ville\n" +
-                    "/ville disband - Détruire sa ville\n" +
-                    "/ville leave - Quitter la ville\n" +
-                    "/ville kick <joueur> - Éjecter un membre\n" +
-                    "/ville invite <joueur> - Inviter un joueur\n" +
-                    "/ville accept <ville> - Rejoindre une ville (si invitation)\n" +
-                    "/ville claim - Claim un chunk pour la ville\n" +
-                    "/ville unclaim - Unclaim un chunk de la ville\n" +
-                    "/ville sethome - Définir le point de spawn de la ville\n" +
-                    "/ville [home|h] - Se téléporter au spawn de la ville\n" +
-                    "/ville banque info - Voir le montant de la banque de ville\n" +
-                    "/ville banque add - Ajouter de l'argent à la banque de ville\n" +
-                    "/ville banque withdraw - Retirer de l'argent de la banque de ville\n" +
-                    "/ville access [add|remove|list] <joueur> - Gérer les accès aux claims\n" +
-                    "/ville info <joueur> - Voir la ville d'un joueur\n" +
-                    "/ville [chat|c] <message> - Envoyer un message au chat de ville\n" +
-                    "/ville options - Gérer sa ville\n" +
-                    "/ville help - Affiche ce menu";
+            "§6/ville create <nom> §7- §eCréer une ville.\n" +
+            "§6/ville rename <nom> §7- §eChanger le nom de ta ville.\n" +
+            "§6/ville disband <nom> §7- §eSupprimer ta ville (C’est définitif fais attention).\n" +
+            "§6/ville invite <pseudo> §7- §eInviter une personne dans ta ville.\n" +
+            "§6/ville kick <pseudo> §7- §eExclure une personne de ta ville.\n" +
+            "§6/ville accept <nom de la ville> §7- §eAccepter la demande d’invitation d'une ville.\n" +
+            "§6/ville leave §7- §eQuitter la ville dans laquelle tu es.\n"+
+            "§6/ville claim §7- §eClaim un chunk pour 180 € au nom de ta ville (Assure toi d’avoir de l’argent dans la banque de ville). Tu peux claim le chunk d’un de tes membres.\n" +
+            "§6/ville unclaim §7- §eSupprimer un claim de ta ville.\n" +
+            "§6/ville sethome §7- §eCréer le point d’apparition de ta ville.\n" +
+            "§6/ville home §7- §eTe téléporter au point d’apparition de ta ville. Tu peux utiliser l’abréviation /ville h\n" +
+            "§6/ville banque add <montant> §7- §eDéposer de l’argent dans la banque de ville pour pouvoir claim des chunks.\n" +
+            "§6/ville banque info §7- §eMontre combien d’argent il reste dans la banque de ville.\n" +
+            "§6/ville access <joueur> §7- §eDonner l’accès d’un claim en particulier à un joueur.\n" +
+            "§6/ville access remove <joueur> §7- §eEnlever l’accès d’un joueur d'un claim.\n" +
+            "§6/ville access list §7- §eLister les accès du claim où tu es.\n" +
+            "§6/ville options §7- §eDonne des informations complètes sur ta ville et te permets aussi de la gérer (permissions, claim, grade). Seulement pour le propriétaire\n" +
+            "§6/ville chat <message> §7- §eTe permets de parler dans un tchat accessibles seulement aux membres de ta ville. Tu peux utiliser l’abréviation /ville c. \n" +
+            "§6/ville info <joueur> §7- §eTe donne les informations globales sur la ville d’un joueur.\n" +
+            "§6/ville help §7- §eAffiche toutes les commandes utiles pour ta ville. C’est ce que tu lis ;).";
     
     public CityCommand(){
         super("ville", Collections.singletonList("city"), "/ville help", 1, Rank.JOUEUR);
@@ -505,6 +506,10 @@ public class CityCommand extends ConsulatCommand {
                         UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(args[2]);
                         if(targetUUID == null){
                             player.sendMessage("§cCe joueur n'existe pas.");
+                            return;
+                        }
+                        if(!city.isMember(targetUUID)){
+                            player.sendMessage("§cCe joueur n'est pas membre de la ville");
                             return;
                         }
                         if(targetUUID.equals(player.getUUID()) || targetUUID.equals(city.getOwner())){

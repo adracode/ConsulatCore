@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.guis.city.members.member.claims.permissions;
 
+import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.leconsulat.api.gui.GuiItem;
 import fr.leconsulat.api.gui.event.GuiClickEvent;
 import fr.leconsulat.api.gui.gui.IGui;
@@ -7,7 +8,7 @@ import fr.leconsulat.api.gui.gui.template.DataRelatGui;
 
 import java.util.UUID;
 
-public class AccessPermissionsGui extends DataRelatGui<UUID> {
+public class AccessPermissionsGui extends DataRelatGui<Claim> {
     
     private IGui link;
     
@@ -19,8 +20,8 @@ public class AccessPermissionsGui extends DataRelatGui<UUID> {
         this.link = link;
     }
     
-    public AccessPermissionsGui(DataRelatGui<UUID> link){
-        super(link.getData(), link.getName(), link.getLine());
+    public AccessPermissionsGui(DataRelatGui<UUID> link, Claim claim){
+        super(claim, (claim.getX() << 4) + " " + (claim.getZ() << 4), link.getLine());
         setLink(link);
         ((fr.amisoz.consulatcore.guis.claims.permissions.AccessPermissionsGui)link).setLink(this);
     }

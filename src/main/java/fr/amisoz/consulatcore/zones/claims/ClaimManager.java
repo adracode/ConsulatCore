@@ -369,12 +369,12 @@ public class ClaimManager implements Listener {
         Claim claimFrom = event.getClaimFrom();
         Claim claimTo = event.getClaimTo();
         if(claimTo == null && claimFrom != null){
-            player.sendMessage(Text.PREFIX + "§cTu sors de la zone de §l" + claimFrom.getOwnerName() + ".");
+            player.sendMessage(claimFrom.getOwner().getLeaveMessage());
             return;
         }
         if(claimTo != null){
             if(claimFrom == null || !claimFrom.isOwner(claimTo.getOwner())){
-                player.sendMessage(Text.PREFIX + "§cTu entres dans la zone de §l" + claimTo.getOwnerName() + ".");
+                player.sendMessage(claimTo.getOwner().getEnterMessage());
             }
             String description = claimTo.getDescription();
             if(description != null){

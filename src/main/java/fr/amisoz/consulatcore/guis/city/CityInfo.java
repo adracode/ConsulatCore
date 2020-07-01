@@ -122,7 +122,7 @@ public class CityInfo extends DataPagedGui<City> {
         
         @Override
         public Datable<City> createGui(City city){
-            return new CityGui(city);
+            return new CityInfo(city);
         }
     }
     

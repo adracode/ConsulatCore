@@ -94,7 +94,7 @@ public class AccessibleClaimGui extends DataRelatPagedGui<UUID> {
             Claim claim = (Claim)key;
             return new AccessPermissionsGui(
                     (fr.amisoz.consulatcore.guis.claims.permissions.AccessPermissionsGui)
-                            (IGui)Objects.requireNonNull(GuiManager.getInstance().getContainer("claim").getGui(true, claim, getData()))
+                            (IGui)Objects.requireNonNull(GuiManager.getInstance().getContainer("claim").getGui(true, claim, getData())), claim
             );
         }
         return super.createChild(key);

@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.guis.city;
 
+import fr.amisoz.consulatcore.guis.city.bank.BankGui;
 import fr.amisoz.consulatcore.guis.city.changehome.ChangeHomeGui;
 import fr.amisoz.consulatcore.guis.city.claimlist.ClaimsGui;
 import fr.amisoz.consulatcore.guis.city.members.MembersGui;
@@ -30,11 +31,13 @@ public class CityGui extends DataRelatGui<City> {
     private static final byte BANK_BUTTON = 23;
     private static final byte RANK_BUTTON = 25;
     private static final byte PERMISSION_SLOT = 40;
+    private static final byte DISBAND_SLOT = 43;
     
     public static final String CLAIMS = "city.claims";
     public static final String HOME = "city.home";
     public static final String MEMBERS = "city.members";
     public static final String RANKS = "city.ranks";
+    public static final String BANK = "city.bank";
     
     public CityGui(City city){
         super(city, "<ville>", 6,
@@ -43,7 +46,8 @@ public class CityGui extends DataRelatGui<City> {
                 IGui.getItem("§eHome", HOME_BUTTON, Material.COMPASS),
                 IGui.getItem("§eBanque", BANK_BUTTON, Material.SUNFLOWER),
                 IGui.getItem("§eGrades", RANK_BUTTON, Material.OAK_SIGN),
-                IGui.getItem("§eMembres", PERMISSION_SLOT, Material.PLAYER_HEAD, "", "§7Gérer les membres", "§7de la ville"));
+                IGui.getItem("§eMembres", PERMISSION_SLOT, Material.PLAYER_HEAD, "", "§7Gérer les membres", "§7de la ville"),
+                IGui.getItem("§eDestruction", DISBAND_SLOT, Material.BARRIER, "", "§cDétruire la ville"));
         setDeco(Material.BLACK_STAINED_GLASS_PANE, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53);
         setDeco(Material.RED_STAINED_GLASS_PANE, 0, 1, 2, 3, 5, 6, 7, 8);
     }
@@ -51,7 +55,8 @@ public class CityGui extends DataRelatGui<City> {
     @Override
     public void onCreate(){
         updateName();
-        setDescription(CITY_SLOT, "§7Propriétaire: §a" + Bukkit.getOfflinePlayer(getData().getOwner()).getName());
+        setDescription(CITY_SLOT, "", "§7Propriétaire: §a" + Bukkit.getOfflinePlayer(getData().getOwner()).getName(),
+                 "", "§7§oCliquez pour renommer", "§7§ovotre ville");
         updateHome(false);
         updateBank();
         updateRank();
@@ -59,20 +64,22 @@ public class CityGui extends DataRelatGui<City> {
     
     @Override
     public Relationnable createChild(@Nullable Object key){
-        if(!(key instanceof String)){
+        if(key instanceof String){
+            switch((String)key){
+                case CLAIMS:
+                    return new ClaimsGui(getData());
+                case HOME:
+                    return new ChangeHomeGui(getData());
+                case MEMBERS:
+                    return new MembersGui(getData());
+                case RANKS:
+                    return new RankGui(getData());
+                case BANK:
+                    return new BankGui(getData());
+            }
             throw new IllegalArgumentException();
         }
-        switch((String)key){
-            case CLAIMS:
-                return new ClaimsGui(getData());
-            case HOME:
-                return new ChangeHomeGui(getData());
-            case MEMBERS:
-                return new MembersGui(getData());
-            case RANKS:
-                return new RankGui(getData());
-        }
-        throw new IllegalArgumentException();
+        return super.createChild(key);
     }
     
     @Override
@@ -112,6 +119,35 @@ public class CityGui extends DataRelatGui<City> {
                 getChild(MEMBERS).open(event.getPlayer());
             }
             break;
+            case BANK_BUTTON:{
+                getChild(BANK).open(event.getPlayer());
+            }
+            break;
+            case CITY_SLOT:{
+                GuiManager.getInstance().userInput(event.getPlayer().getPlayer(), (input) -> {
+                    SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
+                    if(input.length() > City.MAX_LENGTH_NAME){
+                        player.sendMessage("§cLe nouveau nom est trop long.");
+                        return;
+                    }
+                    if(input.indexOf(' ') != -1){
+                        player.sendMessage("§cLe nom de ville ne peut pas contenir d'espaces.");
+                        return;
+                    }
+                    if(ZoneManager.getInstance().getCity(input) != null){
+                        player.sendMessage("§cIl existe déjà une ville portant ce nom.");
+                        return;
+                    }
+                    City city = player.getCity();
+                    player.sendMessage("§7Tu as renommé la ville §a" + input + " §7! §8(§7Ancien nom: §e" + city.getName() + "§8)§7.");
+                    ZoneManager.getInstance().renameCity(city, input);
+                }, new String[]{"", "", "^^^^^^^^^^^^^^", "Nouveau nom"}, 0, 1);
+            }
+            break;
+            case DISBAND_SLOT:{
+                GuiManager.getInstance().getContainer("city-disband").getGui(getData()).open(event.getPlayer());
+            }
+            break;
         }
     }
     
@@ -149,15 +185,16 @@ public class CityGui extends DataRelatGui<City> {
     
     public void updateBank(){
         City city = getData();
-        setDescription(BANK_BUTTON, "§e" + city.getMoney(), "", "§7§oAjouter de l'argent", "§7§o/ville banque add <montant>");
+        setDescription(BANK_BUTTON, "", "§a" + city.getMoney() + " €", "", "§7Gérer la banque");
     }
     
     public void updateRank(){
         City city = getData();
         setDescription(RANK_BUTTON, "",
-                "§b" + city.getRankName(0),
-                "§e" + city.getRankName(1),
-                "§7" + city.getRankName(2), "",
+                "§c" + city.getRankName(0),
+                "§b" + city.getRankName(1),
+                "§e" + city.getRankName(2),
+                "§7" + city.getRankName(3), "",
                 "§7Pour définir les", "§7grades, §acliquez §7ici");
     }
     

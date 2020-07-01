@@ -37,20 +37,16 @@ public class AccessPermissionsGui extends DataRelatGui<UUID> {
     
     @Override
     public @NotNull IGui setItem(@NotNull GuiItem item){
-        System.out.println("Ouais");
         if(link != null){
             link.setItem(item);
-            System.out.println("Oduais");
         }
         return super.setItem(item);
     }
     
     @Override
     public @NotNull IGui setItem(int slot, @Nullable GuiItem item){
-        System.out.println("Ouais");
         if(link != null){
             link.setItem(slot, item);
-            System.out.println("Oduais");
         }
         return super.setItem(slot, item);
     }

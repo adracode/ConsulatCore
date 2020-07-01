@@ -1,6 +1,7 @@
 package fr.amisoz.consulatcore.zones.cities;
 
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.guis.city.CityGui;
 import fr.amisoz.consulatcore.guis.city.CityInfo;
 import fr.amisoz.consulatcore.guis.city.members.MembersGui;
@@ -377,6 +378,16 @@ public class City extends Zone {
     
     public @NotNull Set<UUID> getMembers(){
         return Collections.unmodifiableSet(members.keySet());
+    }
+    
+    @Override
+    public @NotNull String getEnterMessage(){
+        return Text.PREFIX + "§cTu entres dans la ville §l" + getName() + ".";
+    }
+    
+    @Override
+    public @NotNull String getLeaveMessage(){
+        return Text.PREFIX + "§cTu sors de la ville §l" + getName() + ".";
     }
     
     @Override

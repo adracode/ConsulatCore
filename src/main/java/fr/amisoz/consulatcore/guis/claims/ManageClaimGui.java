@@ -3,6 +3,7 @@ package fr.amisoz.consulatcore.guis.claims;
 import fr.amisoz.consulatcore.guis.city.CityGui;
 import fr.amisoz.consulatcore.guis.city.claimlist.ClaimsGui;
 import fr.amisoz.consulatcore.guis.claims.permissions.AccessPermissionsGui;
+import fr.amisoz.consulatcore.zones.Zone;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.leconsulat.api.gui.GuiContainer;
@@ -16,6 +17,7 @@ import fr.leconsulat.api.gui.gui.module.api.Datable;
 import fr.leconsulat.api.gui.gui.module.api.Pageable;
 import fr.leconsulat.api.gui.gui.module.api.Relationnable;
 import fr.leconsulat.api.gui.gui.template.DataRelatPagedGui;
+import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -27,12 +29,15 @@ import java.util.UUID;
 public class ManageClaimGui extends DataRelatPagedGui<Claim> {
     
     private static final byte INFO_SLOT = 4;
+    private static final byte ADD_SLOT = 6;
     
     public ManageClaimGui(Claim claim){
         super(claim, "<position>", 6,
-                IGui.getItem("§eAccès", INFO_SLOT, Material.PAPER));
+                IGui.getItem("§eAccès", INFO_SLOT, Material.PAPER),
+                IGui.getItem("§eAjouter un joueur", ADD_SLOT, Material.PLAYER_HEAD)
+        );
         setDeco(Material.BLACK_STAINED_GLASS_PANE, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 26, 27, 35, 36, 44, 46, 47, 48, 49, 50, 51, 52, 53);
-        setDeco(Material.RED_STAINED_GLASS_PANE, 0, 1, 2, 3, 5, 6, 7, 8);
+        setDeco(Material.RED_STAINED_GLASS_PANE, 0, 1, 2, 3, 5, 7, 8);
         setDynamicItems(19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43);
     }
     
@@ -75,6 +80,29 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
                 if(clickedItem.getType() == Material.ARROW){
                     getPage(page.getPage() + 1).open(player);
                 }
+                return;
+            case ADD_SLOT:
+                GuiManager.getInstance().userInput(event.getPlayer().getPlayer(), (input) -> {
+                    UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(input);
+                    if(targetUUID == null){
+                        player.sendMessage("§cCe joueur n'existe pas.");
+                        return;
+                    }
+                    Zone zone = getData().getOwner();
+                    if(zone instanceof City && !((City)zone).isMember(targetUUID)){
+                        player.sendMessage("§cCe joueur n'est pas membre de la ville");
+                        return;
+                    }
+                    if(targetUUID.equals(player.getUUID()) || targetUUID.equals(zone.getOwner())){
+                        player.sendMessage("§cTu ne peux pas modifier l'accès de ce joueur.");
+                        return;
+                    }
+                    if(!getData().addPlayer(targetUUID)){
+                        player.sendMessage("§cCe joueur a déjà accès à ce claim.");
+                        return;
+                    }
+                    player.sendMessage("§aTu as ajouté " + input + " à ce claim");
+                }, new String[]{"", "^^^^^^^^^^^^^^", "Entrez le joueur", "à ajouter"}, 0);
                 return;
         }
         if(event.getSlot() >= 19 && event.getSlot() <= 44 && clickedItem.getType() == Material.PLAYER_HEAD){
