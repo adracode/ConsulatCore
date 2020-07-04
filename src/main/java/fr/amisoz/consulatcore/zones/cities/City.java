@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.logging.Level;
 
 @SuppressWarnings({"UnusedReturnValue", "BooleanMethodIsAlwaysInverted"})
 public class City extends Zone {
@@ -64,7 +65,13 @@ public class City extends Zone {
     }
     
     public boolean addPlayer(@NotNull UUID uuid, CityPermission... permissions){
+        if(ConsulatAPI.getConsulatAPI().isDebug()){
+            ConsulatAPI.getConsulatAPI().log(Level.INFO, "Add player " + uuid + " to city " + getName());
+        }
         if(members.containsKey(uuid)){
+            if(ConsulatAPI.getConsulatAPI().isDebug()){
+                ConsulatAPI.getConsulatAPI().log(Level.INFO, "Can't add player");
+            }
             return false;
         }
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(uuid);
@@ -97,7 +104,13 @@ public class City extends Zone {
     
     @Override
     public boolean removePlayer(@NotNull UUID uuid){
+        if(ConsulatAPI.getConsulatAPI().isDebug()){
+            ConsulatAPI.getConsulatAPI().log(Level.INFO, "Player " + uuid + " left the city " + getName());
+        }
         if(members.remove(uuid) == null){
+            if(ConsulatAPI.getConsulatAPI().isDebug()){
+                ConsulatAPI.getConsulatAPI().log(Level.INFO, "Couldn't remove player");
+            }
             return false;
         }
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(uuid);
@@ -355,6 +368,10 @@ public class City extends Zone {
         return ranks.get(index).getRankName();
     }
     
+    public void sendMessage(@NotNull SurvivalPlayer player, @NotNull String message){
+        this.channel.sendMessage(player, message);
+    }
+    
     public void sendMessage(@Nullable String message){
         this.channel.sendMessage(message);
     }
@@ -486,5 +503,17 @@ public class City extends Zone {
         }
     }
     
-    
+    @Override
+    public String toString(){
+        return super.toString() +
+                " City{" +
+                "bank=" + bank +
+                ", home=" + home +
+                ", description='" + description + '\'' +
+                ", members=" + members +
+                ", channel=" + channel +
+                ", publicPermissions=" + publicPermissions +
+                ", ranks=" + ranks +
+                '}';
+    }
 }

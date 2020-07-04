@@ -13,6 +13,7 @@ import fr.amisoz.consulatcore.zones.ZoneManager;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.amisoz.consulatcore.zones.claims.ClaimManager;
+import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.gui.GuiManager;
@@ -20,36 +21,42 @@ import fr.leconsulat.api.gui.gui.IGui;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class CityCommand extends ConsulatCommand {
     
     private String help =
             "§6/ville create <nom> §7- §eCréer une ville.\n" +
-            "§6/ville rename <nom> §7- §eChanger le nom de ta ville.\n" +
-            "§6/ville disband <nom> §7- §eSupprimer ta ville (C’est définitif fais attention).\n" +
-            "§6/ville invite <pseudo> §7- §eInviter une personne dans ta ville.\n" +
-            "§6/ville kick <pseudo> §7- §eExclure une personne de ta ville.\n" +
-            "§6/ville accept <nom de la ville> §7- §eAccepter la demande d’invitation d'une ville.\n" +
-            "§6/ville leave §7- §eQuitter la ville dans laquelle tu es.\n"+
-            "§6/ville claim §7- §eClaim un chunk pour 180 € au nom de ta ville (Assure toi d’avoir de l’argent dans la banque de ville). Tu peux claim le chunk d’un de tes membres.\n" +
-            "§6/ville unclaim §7- §eSupprimer un claim de ta ville.\n" +
-            "§6/ville sethome §7- §eCréer le point d’apparition de ta ville.\n" +
-            "§6/ville home §7- §eTe téléporter au point d’apparition de ta ville. Tu peux utiliser l’abréviation /ville h\n" +
-            "§6/ville banque add <montant> §7- §eDéposer de l’argent dans la banque de ville pour pouvoir claim des chunks.\n" +
-            "§6/ville banque info §7- §eMontre combien d’argent il reste dans la banque de ville.\n" +
-            "§6/ville access <joueur> §7- §eDonner l’accès d’un claim en particulier à un joueur.\n" +
-            "§6/ville access remove <joueur> §7- §eEnlever l’accès d’un joueur d'un claim.\n" +
-            "§6/ville access list §7- §eLister les accès du claim où tu es.\n" +
-            "§6/ville options §7- §eDonne des informations complètes sur ta ville et te permets aussi de la gérer (permissions, claim, grade). Seulement pour le propriétaire\n" +
-            "§6/ville chat <message> §7- §eTe permets de parler dans un tchat accessibles seulement aux membres de ta ville. Tu peux utiliser l’abréviation /ville c. \n" +
-            "§6/ville info <joueur> §7- §eTe donne les informations globales sur la ville d’un joueur.\n" +
-            "§6/ville help §7- §eAffiche toutes les commandes utiles pour ta ville. C’est ce que tu lis ;).";
+                    "§6/ville rename <nom> §7- §eChanger le nom de ta ville.\n" +
+                    "§6/ville disband <nom> §7- §eSupprimer ta ville (C’est définitif fais attention).\n" +
+                    "§6/ville invite <pseudo> §7- §eInviter une personne dans ta ville.\n" +
+                    "§6/ville kick <pseudo> §7- §eExclure une personne de ta ville.\n" +
+                    "§6/ville accept <nom de la ville> §7- §eAccepter la demande d’invitation d'une ville.\n" +
+                    "§6/ville leave §7- §eQuitter la ville dans laquelle tu es.\n" +
+                    "§6/ville claim §7- §eClaim un chunk pour 180 € au nom de ta ville (Assure toi d’avoir de l’argent dans la banque de ville). Tu peux claim le chunk d’un de tes membres.\n" +
+                    "§6/ville unclaim §7- §eSupprimer un claim de ta ville.\n" +
+                    "§6/ville sethome §7- §eCréer le point d’apparition de ta ville.\n" +
+                    "§6/ville home §7- §eTe téléporter au point d’apparition de ta ville. Tu peux utiliser l’abréviation /ville h\n" +
+                    "§6/ville banque add <montant> §7- §eDéposer de l’argent dans la banque de ville pour pouvoir claim des chunks.\n" +
+                    "§6/ville banque info §7- §eMontre combien d’argent il reste dans la banque de ville.\n" +
+                    "§6/ville access <joueur> §7- §eDonner l’accès d’un claim en particulier à un joueur.\n" +
+                    "§6/ville access remove <joueur> §7- §eEnlever l’accès d’un joueur d'un claim.\n" +
+                    "§6/ville access list §7- §eLister les accès du claim où tu es.\n" +
+                    "§6/ville options §7- §eDonne des informations complètes sur ta ville et te permets aussi de la gérer (permissions, claim, grade). Seulement pour le propriétaire\n" +
+                    "§6/ville chat §7- §e\n" +
+                    "§6/ville chat <message> §7- §eTe permets de parler dans un tchat accessibles seulement aux membres de ta ville. Tu peux utiliser l’abréviation /ville c. \n" +
+                    "§6/ville info <joueur> §7- §eTe donne les informations globales sur la ville d’un joueur.\n" +
+                    "§6/ville help §7- §eAffiche toutes les commandes utiles pour ta ville. C’est ce que tu lis ;).";
     
     public CityCommand(){
         super("ville", Collections.singletonList("city"), "/ville help", 1, Rank.JOUEUR);
@@ -265,8 +272,11 @@ public class CityCommand extends ConsulatCommand {
                     return;
                 }
                 player.sendMessage("§aTu as invité §7" + target.getName() + " §a à rejoindre la ville §7" + city.getName() + "§a.");
-                target.sendMessage("§aTu as été invité à rejoindre la ville §7" + city.getName() + "§a par §7" + player.getName() + "§a.");
                 city.sendMessage("§a" + player.getName() + "§7 a invité §a" + target.getName() + "§7.");
+                TextComponent message = new TextComponent("§aTu as été invité à rejoindre la ville §7" + city.getName() + "§a par §7" + player.getName() + "§a.");
+                message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§aClique pour rejoindre " + city.getName()).create()));
+                message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/city accept " + city.getName()));
+                target.sendMessage(message);
             }
             break;
             case "accept":{
@@ -287,7 +297,13 @@ public class CityCommand extends ConsulatCommand {
                 }
                 manager.removeInvitation(player.getUUID());
                 city.sendMessage("§a" + player.getName() + " §7a rejoint la ville !");
-                city.addPlayer(player.getUUID());
+                if(!city.addPlayer(player.getUUID())){
+                    player.sendMessage("§cUne erreur est survenue");
+                    ConsulatAPI.getConsulatAPI().log(Level.WARNING,
+                            player + " " + city
+                            );
+                    return;
+                }
                 player.sendMessage("§aTu as rejoint §7" + city.getName() + "§a.");
             }
             break;
@@ -595,16 +611,25 @@ public class CityCommand extends ConsulatCommand {
                     return;
                 }
                 if(args.length < 2){
-                    player.sendMessage("§cMerci de spécifier le message à envoyer.");
+                    if(player.getCurrentChannel() == null) {
+                        player.setCurrentChannel(player.getCity().getChannel());
+                        player.sendMessage("§aTu parles maintenant dans le chat de ville.");
+                    }
+                    else {
+                        player.setCurrentChannel(null);
+                        player.sendMessage("§aTu parles maintenant dans le chat global.");
+                    }
                     return;
                 }
-                StringBuilder builder = new StringBuilder("§8[§d").append(player.getCity().getName()).append("§8] ")
-                        .append("§7(§d").append(player.getCity().getCityPlayer(player.getUUID()).getRank().getRankName()).append("§7) §a")
-                        .append(player.getName()).append("§7 > §e").append(args[1]);
+                StringBuilder builder = new StringBuilder(args[1]);
                 for(int i = 2; i < args.length; i++){
                     builder.append(' ').append(args[i]);
                 }
-                player.getCity().sendMessage(builder.toString());
+                String chat = player.chat(builder.toString());
+                if(chat == null){
+                    return;
+                }
+                player.getCity().sendMessage(player, chat);
             }
             break;
             case "options":{

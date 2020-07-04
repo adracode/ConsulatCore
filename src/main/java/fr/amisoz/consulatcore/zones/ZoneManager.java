@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.*;
+import java.util.logging.Level;
 
 public class ZoneManager {
     
@@ -119,10 +120,16 @@ public class ZoneManager {
     }
     
     public boolean invitePlayer(City city, UUID uuid){
+        if(ConsulatAPI.getConsulatAPI().isDebug()){
+            ConsulatAPI.getConsulatAPI().log(Level.INFO, "Player " + uuid + " is invited to " + city.getName());
+        }
         return invitedPlayers.computeIfAbsent(uuid, (k) -> new HashSet<>()).add(city);
     }
     
     public void renameCity(City city, String newName){
+        if(ConsulatAPI.getConsulatAPI().isDebug()){
+            ConsulatAPI.getConsulatAPI().log(Level.INFO, "Renaming city " + city.getName() + " to " + newName);
+        }
         citiesByName.remove(city.getName().toLowerCase());
         city.rename(newName);
         citiesByName.put(newName.toLowerCase(), city);
@@ -188,6 +195,9 @@ public class ZoneManager {
     }
     
     public void deleteCity(City city){
+        if(ConsulatAPI.getConsulatAPI().isDebug()){
+            ConsulatAPI.getConsulatAPI().log(Level.INFO, "Deleting city " + city.getName());
+        }
         city.disband();
         removeCity(city);
         ClaimManager.getInstance().removeClaim(city);

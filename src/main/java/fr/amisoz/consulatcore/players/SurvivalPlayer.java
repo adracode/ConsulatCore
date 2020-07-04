@@ -15,7 +15,10 @@ import fr.amisoz.consulatcore.zones.claims.ClaimManager;
 import fr.amisoz.consulatcore.zones.claims.ClaimPermission;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.player.ConsulatPlayer;
+import fr.leconsulat.api.ranks.Rank;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -504,5 +507,103 @@ public class SurvivalPlayer extends ConsulatPlayer {
         if(belongsToCity()){
             city.getChannel().removePlayer(this);
         }
+    }
+    
+    public String chat(String message){
+        boolean cancel = false;
+        if(getCurrentChannel() == null){
+            if(!ConsulatCore.getInstance().isChatActivated() && !hasPower(Rank.RESPONSABLE)){
+                sendMessage("§cChat coupé.");
+                cancel = true;
+            }
+        }
+        if(getPersoState() == CustomEnum.PREFIX){
+            if(message.equalsIgnoreCase("cancel")){
+                Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
+                    try {
+                        resetCustomRank();
+                    } catch(SQLException e){
+                        e.printStackTrace();
+                    }
+                });
+                setPersoState(CustomEnum.START);
+                sendMessage("§aChangement de grade annulé.");
+                return null;
+            }
+            if(message.length() > 10){
+                sendMessage("§cTon grade doit faire 10 caractères maximum ! Tape §ocancel §r§csi tu veux annuler.");
+                return null;
+            }
+            if(ConsulatCore.getInstance().isCustomRankForbidden(message)){
+                sendMessage("§cTu ne peux pas appeler ton grade comme cela ! Tape §ocancel §r§csi tu veux annuler.");
+                return null;
+            }
+            if(!message.matches("^[a-zA-Z]+$")){
+                sendMessage("§cTu dois utiliser uniquement des lettres dans ton grade.");
+                return null;
+            }
+            setPrefix(message);
+            setPersoState(CustomEnum.NAME_COLOR);
+            sendMessage("§6Voici ton grade : " + ChatColor.translateAlternateColorCodes('&', getCustomPrefix()));
+            sendMessage("§7Maintenant, choisis la couleur de ton pseudo :");
+            TextComponent[] textComponents = ConsulatCore.getInstance().getTextPerso().toArray(new TextComponent[0]);
+            sendMessage(textComponents);
+            return null;
+        }
+        if(isMuted() && System.currentTimeMillis() < getMuteExpireMillis()){
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(getMuteExpireMillis());
+            String resultDate = ConsulatCore.getInstance().DATE_FORMAT.format(calendar.getTime());
+            String reason = getMuteReason();
+            sendMessage("§cTu es actuellement mute.\n§4Raison : §c" + reason + "\n§4Jusqu'au : §c" + resultDate);
+            return null;
+        }
+        if(cancel){
+            return null;
+        }
+        if(getCurrentChannel() == null){
+            if(hasPower(Rank.MODO)){
+                return ChatColor.translateAlternateColorCodes('&', message);
+            }
+        } else {
+            getCurrentChannel().sendMessage(this, message);
+            return null;
+        }
+        return message;
+    }
+    
+    @Override
+    public String toString(){
+        return super.toString() +
+                " SurvivalPlayer{" +
+                "initialized=" + initialized +
+                ", lastTeleport=" + lastTeleport +
+                ", arena=" + arena +
+                ", isFighting=" + isFighting +
+                ", homes=" + homes +
+                ", oldLocation=" + oldLocation +
+                ", limitHomes=" + limitHomes +
+                ", money=" + money +
+                ", lastMove=" + lastMove +
+                ", perkTop=" + perkTop +
+                ", isFrozen=" + isFrozen +
+                ", inModeration=" + inModeration +
+                ", stockedInventory=" + Arrays.toString(stockedInventory) +
+                ", lookingInventory=" + lookingInventory +
+                ", sanctionTarget='" + sanctionTarget + '\'' +
+                ", spying=" + spying +
+                ", isMuted=" + isMuted +
+                ", muteExpireMillis=" + muteExpireMillis +
+                ", muteReason='" + muteReason + '\'' +
+                ", lastPrivate=" + lastPrivate +
+                ", persoState=" + persoState +
+                ", limitShop=" + limitShop +
+                ", fly=" + fly +
+                ", shops=" + shops +
+                ", zone=" + zone +
+                ", city=" + city +
+                ", banHistory=" + banHistory +
+                ", muteHistory=" + muteHistory +
+                '}';
     }
 }
