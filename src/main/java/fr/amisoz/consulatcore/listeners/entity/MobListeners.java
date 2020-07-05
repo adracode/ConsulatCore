@@ -36,39 +36,43 @@ public class MobListeners implements Listener {
                 EntityType.PIG,
                 EntityType.SHEEP,
                 EntityType.CHICKEN,
-                EntityType.SHULKER
+                EntityType.SHULKER,
+                EntityType.VILLAGER
         );
         spawnReasonAllowed = EnumSet.of(
-                CreatureSpawnEvent.SpawnReason.EGG,
-                CreatureSpawnEvent.SpawnReason.SPAWNER_EGG,
-                CreatureSpawnEvent.SpawnReason.LIGHTNING,
-                CreatureSpawnEvent.SpawnReason.BUILD_SNOWMAN,
-                CreatureSpawnEvent.SpawnReason.BUILD_IRONGOLEM,
-                CreatureSpawnEvent.SpawnReason.BUILD_WITHER,
-                CreatureSpawnEvent.SpawnReason.VILLAGE_DEFENSE,
                 CreatureSpawnEvent.SpawnReason.BREEDING,
+                CreatureSpawnEvent.SpawnReason.BUILD_IRONGOLEM,
+                CreatureSpawnEvent.SpawnReason.BUILD_SNOWMAN,
+                CreatureSpawnEvent.SpawnReason.BUILD_WITHER,
+                CreatureSpawnEvent.SpawnReason.CURED,
+                CreatureSpawnEvent.SpawnReason.CUSTOM,
+                CreatureSpawnEvent.SpawnReason.DEFAULT,
                 CreatureSpawnEvent.SpawnReason.DISPENSE_EGG,
-                CreatureSpawnEvent.SpawnReason.SILVERFISH_BLOCK,
-                CreatureSpawnEvent.SpawnReason.TRAP,
+                CreatureSpawnEvent.SpawnReason.EGG,
                 CreatureSpawnEvent.SpawnReason.ENDER_PEARL,
-                CreatureSpawnEvent.SpawnReason.SHOULDER_ENTITY,
-                CreatureSpawnEvent.SpawnReason.SHEARED,
                 CreatureSpawnEvent.SpawnReason.EXPLOSION,
-                CreatureSpawnEvent.SpawnReason.RAID,
+                CreatureSpawnEvent.SpawnReason.INFECTION,
+                CreatureSpawnEvent.SpawnReason.LIGHTNING,
                 CreatureSpawnEvent.SpawnReason.PATROL,
-                CreatureSpawnEvent.SpawnReason.CUSTOM
+                CreatureSpawnEvent.SpawnReason.RAID,
+                CreatureSpawnEvent.SpawnReason.SHEARED,
+                CreatureSpawnEvent.SpawnReason.SHOULDER_ENTITY,
+                CreatureSpawnEvent.SpawnReason.SILVERFISH_BLOCK,
+                CreatureSpawnEvent.SpawnReason.SPAWNER_EGG,
+                CreatureSpawnEvent.SpawnReason.TRAP,
+                CreatureSpawnEvent.SpawnReason.VILLAGE_DEFENSE
         );
     }
     
     @EventHandler
     public void onSpawn(CreatureSpawnEvent event){
         EntityType entityType = event.getEntityType();
-        if(!spawnReasonAllowed.contains(event.getSpawnReason()) || !canNaturallySpawn.contains(entityType)){
+        CreatureSpawnEvent.SpawnReason spawnReason = event.getSpawnReason();
+        if(!spawnReasonAllowed.contains(spawnReason) || !canNaturallySpawn.contains(entityType)){
             event.setCancelled(true);
             return;
         }
-        CreatureSpawnEvent.SpawnReason spawnReason = event.getSpawnReason();
-        if(spawnReason.equals(CreatureSpawnEvent.SpawnReason.SPAWNER)) {
+        if(spawnReason == CreatureSpawnEvent.SpawnReason.SPAWNER){
             return;
         }
         if(!mobsToEnable.contains(entityType)){
@@ -78,10 +82,10 @@ public class MobListeners implements Listener {
     
     @EventHandler
     public void onDamage(EntityDamageByEntityEvent event){
-        if(!(event.getEntity() instanceof LivingEntity)) return;
-        
+        if(!(event.getEntity() instanceof LivingEntity)){
+            return;
+        }
         LivingEntity entity = (LivingEntity)event.getEntity();
-        
         if(!mobsToEnable.contains(entity.getType())){
             entity.setAI(true);
         }
@@ -90,12 +94,9 @@ public class MobListeners implements Listener {
     @EventHandler
     public void onInteract(PlayerInteractAtEntityEvent event){
         if(!(event.getRightClicked() instanceof LivingEntity)) return;
-        
         LivingEntity entity = (LivingEntity)event.getRightClicked();
         if(!mobsToEnable.contains(entity.getType())){
             entity.setAI(true);
         }
     }
-    
-    
 }
