@@ -10,13 +10,15 @@ import fr.amisoz.consulatcore.zones.Zone;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.gui.gui.IGui;
+import fr.leconsulat.api.nbt.CompoundTag;
+import fr.leconsulat.api.nbt.ListTag;
+import fr.leconsulat.api.nbt.NBTType;
+import fr.leconsulat.api.nbt.StringTag;
 import fr.leconsulat.api.player.Permission;
 import fr.leconsulat.api.ranks.Rank;
-import fr.leconsulat.api.utils.NBTUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
-import org.jnbt.*;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -271,63 +273,58 @@ public class Claim implements Comparable<Claim> {
     }
     
     protected CompoundTag saveMember(UUID uuid){
-        Map<String, Tag> member = new HashMap<>();
-        List<Tag> permissions = new ArrayList<>();
+        CompoundTag member = new CompoundTag();
+        ListTag<StringTag> permissions = new ListTag<>(NBTType.STRING);
         for(String permission : this.permissions.get(uuid)){
-            permissions.add(new StringTag("", permission));
+            permissions.addTag(new StringTag(permission));
         }
-        member.put("uuid", new StringTag("UUID", uuid.toString()));
-        member.put("permissions", new ListTag("Permissions", StringTag.class, permissions));
-        return new CompoundTag("", member);
+        member.putUUID("UUID", uuid);
+        member.put("Permissions", permissions);
+        return member;
     }
     
-    public void loadNBT(CompoundTag root){
-        Map<String, Tag> claimMap = root.getValue();
-        if(claimMap.containsKey("Description")){
-            this.description = NBTUtils.getChildTag(claimMap, "Description", StringTag.class).getValue();
+    public void loadNBT(CompoundTag claim){
+        if(claim.has("Description")){
+            this.description = claim.getString("Description");
         }
-        List<Tag> membersList = NBTUtils.getChildTag(claimMap, "Members", ListTag.class).getValue();
-        for(Tag tag : membersList){
-            Map<String, Tag> memberMap = ((CompoundTag)tag).getValue();
+        List<CompoundTag> members = claim.getList("Members", CompoundTag.class);
+        for(CompoundTag member : members){
             Set<String> permissions = new HashSet<>();
-            for(Tag permissionTag : NBTUtils.getChildTag(memberMap, "Permissions", ListTag.class).getValue()){
-                permissions.add(((StringTag)permissionTag).getValue());
+            for(StringTag permission : member.getList("Permissions", StringTag.class)){
+                permissions.add(permission.getValue());
             }
-            this.permissions.put(
-                    UUID.fromString(NBTUtils.getChildTag(memberMap, "UUID", StringTag.class).getValue()),
-                    permissions);
+            this.permissions.put(member.getUUID("UUID"), permissions);
         }
-        if(claimMap.containsKey("ProtectedContainers")){
-            List<Tag> protectedList = NBTUtils.getChildTag(claimMap, "ProtectedContainers", ListTag.class).getValue();
-            for(Tag tag : protectedList){
-                Map<String, Tag> protectedContainer = ((CompoundTag)tag).getValue();
-                protectedContainers.put(
-                        NBTUtils.getChildTag(protectedContainer, "Coords", LongTag.class).getValue(),
-                        UUID.fromString(NBTUtils.getChildTag(protectedContainer, "Owner", StringTag.class).getValue()));
+        if(claim.has("ProtectedContainers")){
+            List<CompoundTag> protectedContainers = claim.getList("ProtectedContainers", CompoundTag.class);
+            for(CompoundTag protectedContainer : protectedContainers){
+                this.protectedContainers.put(
+                        protectedContainer.getLong("Coords"),
+                        protectedContainer.getUUID("Owner"));
             }
         }
     }
     
     public CompoundTag saveNBT(){
-        Map<String, Tag> claim = new HashMap<>();
-        claim.put("coords", new LongTag("Coords", coords));
+        CompoundTag claim = new CompoundTag();
+        claim.putLong("Coords", coords);
         if(description != null){
-            claim.put("description", new StringTag("Description", description));
+            claim.putString("Description", description);
         }
-        List<Tag> members = new ArrayList<>();
+        ListTag<CompoundTag> members = new ListTag<>(NBTType.COMPOUND);
         for(Map.Entry<UUID, Set<String>> member : this.permissions.entrySet()){
-            members.add(saveMember(member.getKey()));
+            members.addTag(saveMember(member.getKey()));
         }
-        claim.put("members", new ListTag("Members", CompoundTag.class, members));
-        List<Tag> containersTag = new ArrayList<>();
+        claim.put("Members", members);
+        ListTag<CompoundTag> containersTag = new ListTag<>(NBTType.COMPOUND);
         for(Map.Entry<Long, UUID> container : protectedContainers.entrySet()){
-            Map<String, Tag> containerMap = new HashMap<>();
-            containerMap.put("coords", new LongTag("Coords", container.getKey()));
-            containerMap.put("owner", new StringTag("Owner", container.getValue().toString()));
-            containersTag.add(new CompoundTag("", containerMap));
+            CompoundTag containerTag = new CompoundTag();
+            containerTag.putLong("Coords", container.getKey());
+            containerTag.putUUID("Owner", container.getValue());
+            containersTag.addTag(containerTag);
         }
-        claim.put("containers", new ListTag("ProtectedContainers", CompoundTag.class, containersTag));
-        return new CompoundTag("", claim);
+        claim.put("Containers", containersTag);
+        return claim;
     }
     
     @Override

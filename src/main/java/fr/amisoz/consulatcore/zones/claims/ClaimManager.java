@@ -17,9 +17,9 @@ import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.events.PlayerClickBlockEvent;
 import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.gui.gui.IGui;
+import fr.leconsulat.api.nbt.*;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.utils.FileUtils;
-import fr.leconsulat.api.utils.NBTUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
@@ -31,11 +31,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
-import org.jnbt.*;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -100,12 +97,11 @@ public class ClaimManager implements Listener {
                             if(!file.exists()){
                                 return;
                             }
-                            NBTInputStream is = new NBTInputStream(new FileInputStream(file));
-                            Map<String, Tag> regionMap = ((CompoundTag)is.readTag()).getValue();
+                            NBTInputStream is = new NBTInputStream(file);
+                            CompoundTag regionMap = is.read();
                             is.close();
-                            for(Tag tag : NBTUtils.getChildTag(regionMap, "Claims", ListTag.class).getValue()){
-                                CompoundTag claimTag = (CompoundTag)tag;
-                                Claim claim = claims.get(NBTUtils.getChildTag(claimTag.getValue(), "Coords", LongTag.class).getValue());
+                            for(CompoundTag claimTag : regionMap.getList("Claims", CompoundTag.class)){
+                                Claim claim = claims.get(claimTag.getLong("Coords"));
                                 if(claim != null){
                                     claim.loadNBT(claimTag);
                                 }
@@ -387,13 +383,16 @@ public class ClaimManager implements Listener {
         try {
             Map<Integer, Map<Integer, Set<Claim>>> orderedClaims = new HashMap<>();
             for(Claim claim : claims.values()){
-                orderedClaims.computeIfAbsent(claim.getX() >> SHIFT_CLAIMS, v -> new HashMap<>()).computeIfAbsent(claim.getZ() >> SHIFT_CLAIMS, v -> new TreeSet<>()).add(claim);
+                orderedClaims.computeIfAbsent(
+                        claim.getX() >> SHIFT_CLAIMS,
+                        v -> new HashMap<>()).computeIfAbsent(claim.getZ() >> SHIFT_CLAIMS,
+                        v -> new TreeSet<>()).add(claim);
             }
             for(Map.Entry<Integer, Map<Integer, Set<Claim>>> claimX : orderedClaims.entrySet()){
                 for(Map.Entry<Integer, Set<Claim>> claimZ : claimX.getValue().entrySet()){
-                    List<Tag> claimsList = new ArrayList<>();
+                    ListTag<CompoundTag> claimsList = new ListTag<>(NBTType.COMPOUND);
                     for(Claim claim : claimZ.getValue()){
-                        claimsList.add(claim.saveNBT());
+                        claimsList.addTag(claim.saveNBT());
                     }
                     File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "claims/" + claimX.getKey() + "." + claimZ.getKey() + ".dat");
                     if(!file.exists()){
@@ -401,12 +400,11 @@ public class ClaimManager implements Listener {
                             throw new IOException("Couldn't create file.");
                         }
                     }
-                    NBTOutputStream os = new NBTOutputStream(new FileOutputStream(file));
-                    Map<String, Tag> claims = new HashMap<>();
-                    claims.put("claims", new ListTag("Claims", CompoundTag.class, claimsList));
-                    os.writeTag(new CompoundTag("", claims));
+                    CompoundTag claims = new CompoundTag();
+                    claims.put("Claims", claimsList);
+                    NBTOutputStream os = new NBTOutputStream(file, claims);
+                    os.write("Claim");
                     os.close();
-                    claimsList.clear();
                 }
             }
         } catch(IOException e){

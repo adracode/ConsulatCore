@@ -16,20 +16,18 @@ import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.graph.Graph;
 import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.gui.gui.IGui;
+import fr.leconsulat.api.nbt.*;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.Permission;
 import fr.leconsulat.api.utils.FileUtils;
-import fr.leconsulat.api.utils.NBTUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jnbt.*;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -415,36 +413,36 @@ public class City extends Zone {
                 return;
             }
             NBTInputStream is = new NBTInputStream(new FileInputStream(file));
-            Map<String, Tag> city = ((CompoundTag)is.readTag()).getValue();
+            CompoundTag city = is.read();
             is.close();
-            List<Tag> ranks = NBTUtils.getChildTag(city, "Ranks", ListTag.class).getValue();
+            System.out.println(city);
+            List<StringTag> ranks = city.getList("Ranks", StringTag.class);
             for(int i = 0; i < ranks.size(); i++){
-                this.ranks.get(i).setRankName(((StringTag)ranks.get(i)).getValue());
+                this.ranks.get(i).setRankName(ranks.get(i).getValue());
             }
-            List<Tag> publicPermissions = NBTUtils.getChildTag(city, "PublicPermissions", ListTag.class).getValue();
-            for(Tag publicPermission : publicPermissions){
-                this.publicPermissions.add(((StringTag)publicPermission).getValue());
+            List<StringTag> publicPermissions = city.getList("PublicPermissions", StringTag.class);
+            for(StringTag publicPermission : publicPermissions){
+                this.publicPermissions.add(publicPermission.getValue());
             }
-            for(Tag memberTag : NBTUtils.getChildTag(city, "Members", ListTag.class).getValue()){
-                Map<String, Tag> member = ((CompoundTag)memberTag).getValue();
-                int rankIndex = NBTUtils.getChildTag(member, "Rank", IntTag.class).getValue();
+            for(CompoundTag member : city.getList("Members", CompoundTag.class)){
+                int rankIndex = member.getInt("Rank");
                 Set<String> perms = new HashSet<>();
-                UUID uuid = UUID.fromString(NBTUtils.getChildTag(member, "UUID", StringTag.class).getValue());
+                UUID uuid = member.getUUID("UUID");
                 CityPlayer cityPlayer = new CityPlayer(uuid, perms, this.ranks.get(rankIndex));
-                for(Tag permissionTag : NBTUtils.getChildTag(member, "Permissions", ListTag.class).getValue()){
-                    perms.add(((StringTag)permissionTag).getValue());
+                for(StringTag permission : member.getList("Permissions", StringTag.class)){
+                    perms.add(permission.getValue());
                 }
                 this.members.put(uuid, cityPlayer);
             }
-            if(city.containsKey("Home")){
-                Map<String, Tag> home = NBTUtils.getChildTag(city, "Home", CompoundTag.class).getValue();
+            if(city.has("Home")){
+                CompoundTag home = city.getCompound("Home");
                 this.home = new Location(
                         Bukkit.getWorlds().get(0),
-                        NBTUtils.getChildTag(home, "x", DoubleTag.class).getValue(),
-                        NBTUtils.getChildTag(home, "y", DoubleTag.class).getValue(),
-                        NBTUtils.getChildTag(home, "z", DoubleTag.class).getValue(),
-                        NBTUtils.getChildTag(home, "yaw", FloatTag.class).getValue(),
-                        NBTUtils.getChildTag(home, "pitch", FloatTag.class).getValue()
+                        home.getDouble("x"),
+                        home.getDouble("y"),
+                        home.getDouble("z"),
+                        home.getFloat("yaw"),
+                        home.getFloat("pitch")
                 );
             }
         } catch(IOException e){
@@ -456,47 +454,47 @@ public class City extends Zone {
     public void saveNBT(){
         try {
             File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "cities/" + getUniqueId() + ".dat");
-            Map<String, Tag> city = new HashMap<>();
+            CompoundTag city = new CompoundTag();
             if(!file.exists()){
                 if(!file.createNewFile()){
                     throw new IOException("Couldn't create file.");
                 }
             }
-            List<Tag> membersTag = new ArrayList<>();
+            ListTag<CompoundTag> members = new ListTag<>(NBTType.COMPOUND);
             for(Map.Entry<UUID, CityPlayer> memberEntry : this.members.entrySet()){
                 CityPlayer member = memberEntry.getValue();
-                Map<String, Tag> membersData = new HashMap<>();
-                List<Tag> permissionsTag = new ArrayList<>();
+                CompoundTag memberData = new CompoundTag();
+                ListTag<StringTag> permissions = new ListTag<>(NBTType.STRING);
                 for(String permission : memberEntry.getValue().getPermissions()){
-                    permissionsTag.add(new StringTag("", permission));
+                    permissions.addTag(new StringTag(permission));
                 }
-                membersData.put("uuid", new StringTag("UUID", memberEntry.getKey().toString()));
-                membersData.put("rank", new IntTag("Rank", getRank(member.getRank().getRankName())));
-                membersData.put("permissions", new ListTag("Permissions", StringTag.class, permissionsTag));
-                membersTag.add(new CompoundTag("", membersData));
+                memberData.putUUID("UUID", memberEntry.getKey());
+                memberData.putInt("Rank", getRank(member.getRank().getRankName()));
+                memberData.put("Permissions", permissions);
+                members.addTag(memberData);
             }
-            city.put("members", new ListTag("Members", CompoundTag.class, membersTag));
-            List<Tag> ranksTag = new ArrayList<>();
+            city.put("Members", members);
+            ListTag<StringTag> ranks = new ListTag<>(NBTType.STRING);
             for(CityRank rank : this.ranks){
-                ranksTag.add(new StringTag("", rank.getRankName()));
+                ranks.addTag(new StringTag(rank.getRankName()));
             }
-            city.put("ranks", new ListTag("Ranks", StringTag.class, ranksTag));
-            List<Tag> publicPermissionsTag = new ArrayList<>();
+            city.put("Ranks", ranks);
+            ListTag<StringTag> publicPermissions = new ListTag<>(NBTType.STRING);
             for(String publicPermission : this.publicPermissions){
-                publicPermissionsTag.add(new StringTag("", publicPermission));
+                publicPermissions.addTag(new StringTag(publicPermission));
             }
-            city.put("public", new ListTag("PublicPermissions", StringTag.class, publicPermissionsTag));
+            city.put("PublicPermissions", publicPermissions);
             if(home != null){
-                Map<String, Tag> home = new HashMap<>();
-                home.put("x", new DoubleTag("x", this.home.getX()));
-                home.put("y", new DoubleTag("y", this.home.getY()));
-                home.put("z", new DoubleTag("z", this.home.getZ()));
-                home.put("yaw", new FloatTag("yaw", this.home.getYaw()));
-                home.put("pitch", new FloatTag("pitch", this.home.getPitch()));
-                city.put("home", new CompoundTag("Home", home));
+                CompoundTag home = new CompoundTag();
+                home.putDouble("x", this.home.getX());
+                home.putDouble("y", this.home.getY());
+                home.putDouble("z", this.home.getZ());
+                home.putFloat("yaw", this.home.getYaw());
+                home.putFloat("pitch", this.home.getPitch());
+                city.put("home", home);
             }
-            NBTOutputStream os = new NBTOutputStream(new FileOutputStream(file));
-            os.writeTag(new CompoundTag("City", city));
+            NBTOutputStream os = new NBTOutputStream(file, city);
+            os.write("City");
             os.close();
         } catch(IOException e){
             e.printStackTrace();
