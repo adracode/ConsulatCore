@@ -19,6 +19,7 @@ import fr.leconsulat.api.events.ConsulatPlayerLoadedEvent;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
+import fr.leconsulat.api.redis.RedisManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -76,7 +77,12 @@ public class SPlayerManager implements Listener {
                 },
                 (SurvivalPlayer::getCity)
         ));
-
+        RedisManager.getInstance().register("LoadPlayerDataSurvie", byte[].class, (channel, data) -> {
+            CPlayerManager.getInstance().loadPlayerData(data);
+        });
+        RedisManager.getInstance().register("SavePlayerDataSurvie", byte[].class, (channel, data) -> {
+            CPlayerManager.getInstance().savePlayerData(data);
+        });
     }
 
     @EventHandler
