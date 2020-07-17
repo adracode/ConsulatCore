@@ -1,7 +1,10 @@
 package fr.amisoz.consulatcore.players;
 
+import com.destroystokyo.paper.event.player.PlayerArmorChangeEvent;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
+import fr.amisoz.consulatcore.enchantments.CEnchantedItem;
+import fr.amisoz.consulatcore.enchantments.CEnchantment;
 import fr.amisoz.consulatcore.events.SurvivalPlayerLoadedEvent;
 import fr.amisoz.consulatcore.moderation.BanEnum;
 import fr.amisoz.consulatcore.moderation.MuteEnum;
@@ -28,6 +31,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -43,11 +47,11 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 
 public class SPlayerManager implements Listener {
-
+    
     private static SPlayerManager instance;
-
+    
     private DateFormat dateFormat;
-
+    
     public SPlayerManager(){
         if(instance != null){
             return;
@@ -84,7 +88,7 @@ public class SPlayerManager implements Listener {
             CPlayerManager.getInstance().savePlayerData(data);
         });
     }
-
+    
     @EventHandler
     public void onJoin(PlayerJoinEvent event){
         event.setJoinMessage(null);
@@ -94,7 +98,7 @@ public class SPlayerManager implements Listener {
             player.getInventory().addItem(new ItemStack(Material.BREAD, 32));
         }
     }
-
+    
     @EventHandler
     public void onPlayerLoaded(ConsulatPlayerLoadedEvent event){
         SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
@@ -116,7 +120,7 @@ public class SPlayerManager implements Listener {
             }
         });
     }
-
+    
     @EventHandler(priority = EventPriority.LOW)
     public void onSurvivalPlayerLoaded(SurvivalPlayerLoadedEvent event){
         SurvivalPlayer player = event.getPlayer();
@@ -138,7 +142,7 @@ public class SPlayerManager implements Listener {
         CommandManager.getInstance().sendCommands(event.getPlayer());
         player.setInitialized(true);
     }
-
+    
     @EventHandler
     public void onLeave(ConsulatPlayerLeaveEvent event){
         SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
@@ -153,7 +157,7 @@ public class SPlayerManager implements Listener {
                 }
             }
         }
-
+        
         if(player.isInModeration()){
             Player bukkitPlayer = player.getPlayer();
             for(PotionEffect effect : bukkitPlayer.getActivePotionEffects()){
@@ -161,12 +165,12 @@ public class SPlayerManager implements Listener {
                     bukkitPlayer.removePotionEffect(effect.getType());
                 }
             }
-
+            
             Bukkit.getOnlinePlayers().forEach(onlinePlayer -> onlinePlayer.showPlayer(ConsulatCore.getInstance(), player.getPlayer()));
-
+            
             bukkitPlayer.getInventory().setContents(player.getStockedInventory());
         }
-
+        
         if(!player.hasPower(Rank.MODO)){
             if(player.hasCustomRank() && player.getCustomRank() != null && !player.getCustomRank().isEmpty()){
                 Bukkit.broadcastMessage("§7(§c-§7) " + ChatColor.translateAlternateColorCodes('&', player.getCustomRank()) + player.getPlayer().getName());
@@ -188,19 +192,106 @@ public class SPlayerManager implements Listener {
         player.removeFromChannels();
         saveOnLeave(player);
     }
-
+    
+    @EventHandler
+    public void onArmorChange(PlayerArmorChangeEvent event){
+        SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
+        PlayerArmorChangeEvent.SlotType slot = event.getSlotType();
+        CEnchantedItem oldArmor = player.getArmor(slot);
+        ItemStack old = event.getOldItem();
+        if(old != null && old.getType() == Material.AIR){
+            old = null;
+        }
+        if(oldArmor != null && old == null || oldArmor == null && old != null || oldArmor != null && !oldArmor.getHandle().equals(old)){
+            ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Armors doesn't correspond (" + old + "§f / " + oldArmor + ")");
+            return;
+        }
+        ItemStack equipped = event.getNewItem();
+        if(equipped == null && oldArmor == null){
+            ConsulatAPI.getConsulatAPI().log(Level.INFO, "Armor are not enchanted");
+            return;
+        }
+        player.setArmor(slot, event.getNewItem());
+        CEnchantedItem newArmor = player.getArmor(slot);
+        Player bukkitPlayer = player.getPlayer();
+        if(oldArmor != null){
+            CEnchantment[] armorEnchants = oldArmor.getEnchants();
+            for(CEnchantment enchant : armorEnchants){
+                boolean removeEnchant = true;
+                for(int i = 0; i < 4; ++i){
+                    if(i != slot.ordinal()){
+                        CEnchantedItem armorPart = player.getArmor(i);
+                        if(armorPart != null && armorPart.isEnchantedWith(enchant.getEnchantment())){
+                            removeEnchant = false;
+                            break;
+                        }
+                    }
+                }
+                if(removeEnchant){
+                    PotionEffectType effect = enchant.getEnchantment().getEffect();
+                    PotionEffect currentEffect = bukkitPlayer.getPotionEffect(effect);
+                    if(currentEffect == null || currentEffect.getAmplifier() <= enchant.getLevel()){
+                        bukkitPlayer.removePotionEffect(enchant.getEnchantment().getEffect());
+                    }
+                }
+            }
+        }
+        if(newArmor != null){
+            applyCEnchantment(player, newArmor.getEnchants());
+        }
+    }
+    
+    public void applyCEnchantment(SurvivalPlayer player, CEnchantment[] armorEnchants){
+        Player bukkitPlayer = player.getPlayer();
+        for(CEnchantment enchant : armorEnchants){
+            PotionEffectType effect = enchant.getEnchantment().getEffect();
+            PotionEffect currentEffect = bukkitPlayer.getPotionEffect(effect);
+            if(currentEffect != null && currentEffect.getAmplifier() > enchant.getLevel()){
+                continue;
+            }
+            bukkitPlayer.addPotionEffect(new PotionEffect(enchant.getEnchantment().getEffect(), Integer.MAX_VALUE, enchant.getLevel() - 1, false, false));
+        }
+    }
+    
+    @EventHandler
+    public void applyCEnchantment(EntityPotionEffectEvent event){
+        if(!(event.getEntity() instanceof Player)){
+            return;
+        }
+        PotionEffect oldEffect = event.getOldEffect();
+        if(oldEffect == null || oldEffect.getAmplifier() == 0){
+            return;
+        }
+        SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getEntity().getUniqueId());
+        for(int i = 0; i < 4; ++i){
+            CEnchantedItem armorPart = player.getArmor(i);
+            if(armorPart == null){
+                continue;
+            }
+            for(CEnchantment enchantment : armorPart.getEnchants()){
+                System.out.println(oldEffect.getType() + " " + enchantment.getEnchantment().getEffect());
+                if(oldEffect.getType().equals(enchantment.getEnchantment().getEffect())){
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), ()-> {
+                        player.getPlayer().addPotionEffect(new PotionEffect(enchantment.getEnchantment().getEffect(), Integer.MAX_VALUE, enchantment.getLevel() - 1, false, false));
+                    });
+                    break;
+                }
+            }
+        }
+    }
+    
     private void saveOnJoin(SurvivalPlayer player){
         SaveManager saveManager = SaveManager.getInstance();
         saveManager.addData("player-money", player);
         saveManager.addData("player-city", player);
     }
-
+    
     private void saveOnLeave(SurvivalPlayer player){
         SaveManager saveManager = SaveManager.getInstance();
         saveManager.removeData("player-money", player, true);
         saveManager.removeData("player-city", player, true);
     }
-
+    
     public void fetchPlayer(SurvivalPlayer player) throws SQLException{
         Map<String, Location> homes = getHomes(player.getName(), true);
         Fly fly = getFly(player.getUUID());
@@ -238,7 +329,7 @@ public class SPlayerManager implements Listener {
         result.close();
         preparedStatement.close();
     }
-
+    
     private void saveConnection(ConsulatPlayer player) throws SQLException{
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("INSERT INTO connections(player_name, player_id, player_ip, connection_date) VALUES(?, ?, ?, ?)");
         preparedStatement.setString(1, player.getName());
@@ -248,7 +339,7 @@ public class SPlayerManager implements Listener {
         preparedStatement.executeUpdate();
         preparedStatement.close();
     }
-
+    
     public Map<String, Location> getHomes(String player, boolean getLocations) throws SQLException{
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM homes INNER JOIN players ON players.id = homes.idplayer WHERE players.player_name = ?");
         preparedStatement.setString(1, player);
@@ -270,7 +361,7 @@ public class SPlayerManager implements Listener {
         preparedStatement.close();
         return result;
     }
-
+    
     public void addHome(SurvivalPlayer player, String homeName, Location location) throws SQLException{
         PreparedStatement preparedStatement =
                 player.getHome(homeName) == null ?
@@ -286,7 +377,7 @@ public class SPlayerManager implements Listener {
         preparedStatement.executeUpdate();
         preparedStatement.close();
     }
-
+    
     public boolean removeHome(String name, String home) throws SQLException{
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("DELETE homes FROM homes INNER JOIN players ON players.id = homes.idplayer WHERE player_name = ? AND home_name = ?");
         preparedStatement.setString(1, name);
@@ -295,7 +386,7 @@ public class SPlayerManager implements Listener {
         preparedStatement.close();
         return result != 0;
     }
-
+    
     public boolean removeHome(UUID uuid, String home) throws SQLException{
         ConsulatPlayer player = CPlayerManager.getInstance().getConsulatPlayer(uuid);
         PreparedStatement preparedStatement;
@@ -312,7 +403,7 @@ public class SPlayerManager implements Listener {
         preparedStatement.close();
         return result != 0;
     }
-
+    
     public void addMoney(UUID uuid, double amount){
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
@@ -326,7 +417,7 @@ public class SPlayerManager implements Listener {
             }
         });
     }
-
+    
     @Deprecated
     public Optional<SurvivalOffline> fetchOffline(String playerName) throws SQLException{
         PreparedStatement request = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM players WHERE player_name = ?");
@@ -372,7 +463,7 @@ public class SPlayerManager implements Listener {
         lastConnection.close();
         return Optional.of(offline);
     }
-
+    
     public void fetchOffline(String playerName, Consumer<SurvivalOffline> consumer){
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
@@ -404,7 +495,7 @@ public class SPlayerManager implements Listener {
                             resultSet.getDouble("money"),
                             (City)(cityUUID == null ? null : ZoneManager.getInstance().getZone(UUID.fromString(cityUUID))));
                 } else {
-                    Bukkit.getScheduler().runTask(ConsulatAPI.getConsulatAPI(), ()->{
+                    Bukkit.getScheduler().runTask(ConsulatAPI.getConsulatAPI(), () -> {
                         consumer.accept(null);
                     });
                     return;
@@ -420,23 +511,23 @@ public class SPlayerManager implements Listener {
                 }
                 resultLastConnection.close();
                 lastConnection.close();
-                Bukkit.getScheduler().runTask(ConsulatAPI.getConsulatAPI(), ()->{
+                Bukkit.getScheduler().runTask(ConsulatAPI.getConsulatAPI(), () -> {
                     consumer.accept(survivalOffline);
                 });
             } catch(SQLException e){
                 e.printStackTrace();
-                Bukkit.getScheduler().runTask(ConsulatAPI.getConsulatAPI(), ()->{
+                Bukkit.getScheduler().runTask(ConsulatAPI.getConsulatAPI(), () -> {
                     consumer.accept(null);
                 });
             }
         });
     }
-
+    
     private void setAntecedents(SurvivalPlayer player) throws SQLException{
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("SELECT sanction, reason FROM antecedents WHERE playeruuid = ? AND cancelled = 0");
         preparedStatement.setString(1, player.getUUID().toString());
         ResultSet resultSet = preparedStatement.executeQuery();
-
+        
         while(resultSet.next()){
             SanctionType sanctionType = SanctionType.valueOf(resultSet.getString("sanction"));
             String reason = resultSet.getString("reason");
@@ -463,7 +554,7 @@ public class SPlayerManager implements Listener {
             }
         }
     }
-
+    
     public void setPerkUp(UUID uuid, boolean perkTop) throws SQLException{
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE players SET canUp = ? WHERE player_uuid = ?");
         preparedStatement.setBoolean(1, perkTop);
@@ -471,14 +562,14 @@ public class SPlayerManager implements Listener {
         preparedStatement.executeUpdate();
         preparedStatement.close();
     }
-
+    
     public void incrementLimitHome(UUID uuid) throws SQLException{
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE players SET moreHomes = moreHomes + 1 WHERE player_uuid = ?");
         preparedStatement.setString(1, uuid.toString());
         preparedStatement.executeUpdate();
         preparedStatement.close();
     }
-
+    
     public Fly getFly(UUID uuid) throws SQLException{
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM fly WHERE uuid = ?");
         preparedStatement.setString(1, uuid.toString());
@@ -500,7 +591,7 @@ public class SPlayerManager implements Listener {
         preparedStatement.close();
         return fly.getFlyTime() == 0 ? null : fly;
     }
-
+    
     public void setFly(UUID uuid, Fly fly) throws SQLException{
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE fly SET flyTime = ?, lastTime = ?, timeLeft = ? WHERE uuid = ?");
         preparedStatement.setLong(1, fly.getFlyTime());
@@ -510,11 +601,11 @@ public class SPlayerManager implements Listener {
         preparedStatement.executeUpdate();
         preparedStatement.close();
     }
-
+    
     public static SPlayerManager getInstance(){
         return instance;
     }
-
+    
     public boolean hasAccount(String playerName) throws SQLException{
         PreparedStatement request = ConsulatAPI.getDatabase().prepareStatement("SELECT id FROM players WHERE player_name = ?");
         request.setString(1, playerName);
@@ -524,5 +615,5 @@ public class SPlayerManager implements Listener {
         request.close();
         return present;
     }
-
+    
 }

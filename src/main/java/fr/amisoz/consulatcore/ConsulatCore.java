@@ -8,6 +8,7 @@ import fr.amisoz.consulatcore.commands.claims.UnclaimCommand;
 import fr.amisoz.consulatcore.commands.economy.BaltopCommand;
 import fr.amisoz.consulatcore.commands.economy.MoneyCommand;
 import fr.amisoz.consulatcore.commands.economy.PayCommand;
+import fr.amisoz.consulatcore.commands.enchantments.CEnchantCommand;
 import fr.amisoz.consulatcore.commands.moderation.*;
 import fr.amisoz.consulatcore.commands.players.*;
 import fr.amisoz.consulatcore.duel.DuelManager;
@@ -155,6 +156,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         new BackCommand();
         new BaltopCommand();
         new BroadcastCommand();
+        new CEnchantCommand();
         new ClaimCommand();
         new DelHomeCommand();
         new DiscordCommand();

@@ -37,6 +37,7 @@ public class MobListeners implements Listener {
                 EntityType.SHEEP,
                 EntityType.CHICKEN,
                 EntityType.SHULKER,
+                EntityType.ARMOR_STAND,
                 EntityType.VILLAGER
         );
         spawnReasonAllowed = EnumSet.of(
@@ -68,7 +69,7 @@ public class MobListeners implements Listener {
     public void onSpawn(CreatureSpawnEvent event){
         EntityType entityType = event.getEntityType();
         CreatureSpawnEvent.SpawnReason spawnReason = event.getSpawnReason();
-        if(!spawnReasonAllowed.contains(spawnReason) || !canNaturallySpawn.contains(entityType)){
+        if(!spawnReasonAllowed.contains(spawnReason) && !canNaturallySpawn.contains(entityType)){
             event.setCancelled(true);
             return;
         }

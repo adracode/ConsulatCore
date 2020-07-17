@@ -10,8 +10,12 @@ import fr.amisoz.consulatcore.zones.claims.ClaimManager;
 import fr.amisoz.consulatcore.zones.claims.ClaimPermission;
 import fr.leconsulat.api.events.blocks.*;
 import fr.leconsulat.api.events.entities.PlayerInteractWithEntityEvent;
+import fr.leconsulat.api.events.items.PlayerPlaceItemEvent;
 import fr.leconsulat.api.player.CPlayerManager;
+import org.bukkit.Art;
 import org.bukkit.Chunk;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -31,6 +35,7 @@ import org.bukkit.event.raid.RaidTriggerEvent;
 import org.bukkit.event.vehicle.VehicleDamageEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
+import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.inventory.BlockInventoryHolder;
 import org.bukkit.projectiles.BlockProjectileSource;
 
@@ -44,6 +49,7 @@ import java.util.UUID;
 //TODO: on peut pousser les mobs -> à test
 //TODO: on peut pecher les mobs
 //TODO: on peut jeter des items dans les hoppers
+@SuppressWarnings("Java8CollectionRemoveIf")
 public class ClaimCancelListener implements Listener {
     
     //Bloc est détruit par un joueur
@@ -159,7 +165,13 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    //BlockGrowEvent -> Cactus, canne à sucre, citrouille... qui pousse
+    //TODO
+    @EventHandler
+    public void onGrow(BlockGrowEvent event){
+        if(event.getBlock().getType() != Material.MELON_STEM && event.getBlock().getType() != Material.PUMPKIN_STEM){
+            return;
+        }
+    }
     
     //Bloc prend feu
     @EventHandler
@@ -183,7 +195,25 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    //BlockMultiPlaceEvent
+    @EventHandler
+    public void onPlaceMulti(BlockMultiPlaceEvent event){
+        if(event.getReplacedBlockStates().size() == 0){
+            return;
+        }
+        for(BlockState block : event.getReplacedBlockStates()){
+            if(!isInteractionAuthorized(event.getBlock().getChunk(), block.getChunk())){
+                event.setCancelled(true);
+                break;
+            }
+        }
+        Claim blockClaim = ClaimManager.getInstance().getClaim(event.getBlock().getChunk());
+        if(blockClaim != null && !blockClaim.canInteract(
+                (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId()),
+                ClaimPermission.PLACE_BLOCK)){
+            event.setCancelled(true);
+        }
+    }
+    
     //BlockPhysicsEvent
     //BlockPistonEvent -> Retract ou Push
     
@@ -339,6 +369,17 @@ public class ClaimCancelListener implements Listener {
         Entity entity = event.getEntity();
         if(entity instanceof Ravager || entity instanceof Wither){
             event.setCancelled(true);
+            return;
+        }
+        if(entity.getType() == EntityType.FALLING_BLOCK && entity.isDead()){
+            Entity fallingBlock = event.getEntity();
+            Location from = fallingBlock.getOrigin();
+            if(from == null){
+                return;
+            }
+            if(!isInteractionAuthorized(from.getChunk(), fallingBlock.getChunk())){
+                event.setCancelled(true);
+            }
         }
     }
     
@@ -391,7 +432,9 @@ public class ClaimCancelListener implements Listener {
     }
     
     //EntityDamageEvent
+    
     //EntityDeathEvent
+    
     //EntityDropItemEvent
     
     @EventHandler(priority = EventPriority.LOW)
@@ -564,7 +607,12 @@ public class ClaimCancelListener implements Listener {
         if(event.getPlayer() == null){
             return;
         }
-        Claim hangingClaim = ClaimManager.getInstance().getClaim(event.getEntity().getChunk());
+        Hanging hanging = event.getEntity();
+        Location hangingPosition = hanging.getLocation();
+        if(hanging instanceof Painting){
+            Art art = ((Painting)hanging).getArt();
+        }
+        Claim hangingClaim = ClaimManager.getInstance().getClaim(hanging.getChunk());
         if(hangingClaim != null && !hangingClaim.canInteract((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId()))){
             event.setCancelled(true);
         }
@@ -797,6 +845,19 @@ public class ClaimCancelListener implements Listener {
     //VehicleUpdateEvent
     
     @EventHandler
+    public void onStructureGrow(StructureGrowEvent event){
+        if(event.getBlocks().size() == 0){
+            return;
+        }
+        Location source = event.getLocation();
+        for(Iterator<BlockState> iterator = event.getBlocks().iterator(); iterator.hasNext(); ){
+            if(!isInteractionAuthorized(iterator.next().getChunk(), source.getChunk())){
+                iterator.remove();
+            }
+        }
+    }
+    
+    @EventHandler
     public void onBell(PlayerInteractBellEvent event){
         onBlockInteract(event);
     }
@@ -936,6 +997,15 @@ public class ClaimCancelListener implements Listener {
     public void onEntityInteract(PlayerInteractWithEntityEvent event){
         Claim entityClaim = ClaimManager.getInstance().getClaim(event.getEntity().getChunk());
         if(entityClaim != null && !entityClaim.canInteract((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId()))){
+            event.setCancelled(true);
+        }
+    }
+    
+    @EventHandler
+    public void onPlayerPlaceItem(PlayerPlaceItemEvent event){
+        System.out.println(event.getClickedLocation() + " " + event.getItem());
+        Claim clicked = ClaimManager.getInstance().getClaim(event.getClickedLocation().getChunk());
+        if(clicked != null && !clicked.canInteract((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId()))){
             event.setCancelled(true);
         }
     }

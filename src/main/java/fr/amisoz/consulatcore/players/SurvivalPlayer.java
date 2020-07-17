@@ -1,7 +1,9 @@
 package fr.amisoz.consulatcore.players;
 
+import com.destroystokyo.paper.event.player.PlayerArmorChangeEvent;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.duel.Arena;
+import fr.amisoz.consulatcore.enchantments.CEnchantedItem;
 import fr.amisoz.consulatcore.fly.FlyManager;
 import fr.amisoz.consulatcore.moderation.BanEnum;
 import fr.amisoz.consulatcore.moderation.MuteEnum;
@@ -60,11 +62,22 @@ public class SurvivalPlayer extends ConsulatPlayer {
     private Set<Shop> shops = new HashSet<>();
     private Zone zone;
     private City city;
+    private CEnchantedItem[] enchantedArmor;
     private HashMap<BanEnum, Integer> banHistory = new HashMap<>();
     private HashMap<MuteEnum, Integer> muteHistory = new HashMap<>();
     
     public SurvivalPlayer(UUID uuid, String name){
         super(uuid, name);
+        ItemStack[] currentArmor = getPlayer().getInventory().getArmorContents();
+        this.enchantedArmor = new CEnchantedItem[4];
+        for(int i = 0; i < currentArmor.length; i++){
+            ItemStack armor = currentArmor[i];
+            if(CEnchantedItem.isEnchanted(armor)){
+                CEnchantedItem enchantedItem = new CEnchantedItem(armor);
+                this.enchantedArmor[3 - i] = enchantedItem;
+                SPlayerManager.getInstance().applyCEnchantment(this, enchantedItem.getEnchants());
+            }
+        }
     }
     
     private int setExtraHomes(){
@@ -495,6 +508,22 @@ public class SurvivalPlayer extends ConsulatPlayer {
     
     public City getCity(){
         return city;
+    }
+    
+    public void setArmor(PlayerArmorChangeEvent.SlotType slotType, @Nullable ItemStack item){
+        setArmor(slotType.ordinal(), item);
+    }
+    
+    public void setArmor(int i, @Nullable ItemStack item){
+        this.enchantedArmor[i] = CEnchantedItem.isEnchanted(item) ? new CEnchantedItem(item) : null;
+    }
+    
+    public @Nullable CEnchantedItem getArmor(PlayerArmorChangeEvent.SlotType slotType){
+        return getArmor(slotType.ordinal());
+    }
+    
+    public CEnchantedItem getArmor(int i){
+        return enchantedArmor[i];
     }
     
     public void initChannels(){
