@@ -4,6 +4,7 @@ import com.destroystokyo.paper.event.player.PlayerArmorChangeEvent;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.duel.Arena;
 import fr.amisoz.consulatcore.enchantments.CEnchantedItem;
+import fr.amisoz.consulatcore.enchantments.EnchantmentManager;
 import fr.amisoz.consulatcore.fly.FlyManager;
 import fr.amisoz.consulatcore.moderation.BanEnum;
 import fr.amisoz.consulatcore.moderation.MuteEnum;
@@ -75,7 +76,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
             if(CEnchantedItem.isEnchanted(armor)){
                 CEnchantedItem enchantedItem = new CEnchantedItem(armor);
                 this.enchantedArmor[3 - i] = enchantedItem;
-                SPlayerManager.getInstance().applyCEnchantment(this, enchantedItem.getEnchants());
+                EnchantmentManager.getInstance().applyCEnchantment(this, enchantedItem.getEnchants());
             }
         }
     }

@@ -415,7 +415,6 @@ public class City extends Zone {
             NBTInputStream is = new NBTInputStream(new FileInputStream(file));
             CompoundTag city = is.read();
             is.close();
-            System.out.println(city);
             List<StringTag> ranks = city.getList("Ranks", StringTag.class);
             for(int i = 0; i < ranks.size(); i++){
                 this.ranks.get(i).setRankName(ranks.get(i).getValue());

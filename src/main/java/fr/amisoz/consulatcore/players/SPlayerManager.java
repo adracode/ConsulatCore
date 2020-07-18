@@ -1,10 +1,7 @@
 package fr.amisoz.consulatcore.players;
 
-import com.destroystokyo.paper.event.player.PlayerArmorChangeEvent;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.enchantments.CEnchantedItem;
-import fr.amisoz.consulatcore.enchantments.CEnchantment;
 import fr.amisoz.consulatcore.events.SurvivalPlayerLoadedEvent;
 import fr.amisoz.consulatcore.moderation.BanEnum;
 import fr.amisoz.consulatcore.moderation.MuteEnum;
@@ -31,7 +28,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -191,93 +187,6 @@ public class SPlayerManager implements Listener {
         }
         player.removeFromChannels();
         saveOnLeave(player);
-    }
-    
-    @EventHandler
-    public void onArmorChange(PlayerArmorChangeEvent event){
-        SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
-        PlayerArmorChangeEvent.SlotType slot = event.getSlotType();
-        CEnchantedItem oldArmor = player.getArmor(slot);
-        ItemStack old = CEnchantedItem.isEnchanted(event.getOldItem()) ? event.getOldItem() : null;
-        if(old != null && old.getType() == Material.AIR){
-            old = null;
-        }
-        if(oldArmor != null && old == null || oldArmor == null && old != null || oldArmor != null && !oldArmor.getHandle().equals(old)){
-            ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Armors doesn't correspond (" + old + "§f / " + oldArmor + ")");
-            return;
-        }
-        ItemStack equipped = event.getNewItem();
-        if(equipped == null && oldArmor == null){
-            ConsulatAPI.getConsulatAPI().log(Level.INFO, "Armor are not enchanted");
-            return;
-        }
-        player.setArmor(slot, event.getNewItem());
-        CEnchantedItem newArmor = player.getArmor(slot);
-        Player bukkitPlayer = player.getPlayer();
-        if(oldArmor != null){
-            CEnchantment[] armorEnchants = oldArmor.getEnchants();
-            for(CEnchantment enchant : armorEnchants){
-                boolean removeEnchant = true;
-                for(int i = 0; i < 4; ++i){
-                    if(i != slot.ordinal()){
-                        CEnchantedItem armorPart = player.getArmor(i);
-                        if(armorPart != null && armorPart.isEnchantedWith(enchant.getEnchantment())){
-                            removeEnchant = false;
-                            break;
-                        }
-                    }
-                }
-                if(removeEnchant){
-                    PotionEffectType effect = enchant.getEnchantment().getEffect();
-                    PotionEffect currentEffect = bukkitPlayer.getPotionEffect(effect);
-                    if(currentEffect == null || currentEffect.getAmplifier() <= enchant.getLevel()){
-                        bukkitPlayer.removePotionEffect(enchant.getEnchantment().getEffect());
-                    }
-                }
-            }
-        }
-        if(newArmor != null){
-            applyCEnchantment(player, newArmor.getEnchants());
-        }
-    }
-    
-    public void applyCEnchantment(SurvivalPlayer player, CEnchantment... armorEnchants){
-        Player bukkitPlayer = player.getPlayer();
-        for(CEnchantment enchant : armorEnchants){
-            PotionEffectType effect = enchant.getEnchantment().getEffect();
-            PotionEffect currentEffect = bukkitPlayer.getPotionEffect(effect);
-            if(currentEffect != null && currentEffect.getAmplifier() > enchant.getLevel()){
-                continue;
-            }
-            bukkitPlayer.addPotionEffect(new PotionEffect(enchant.getEnchantment().getEffect(), Integer.MAX_VALUE, enchant.getLevel() - 1, false, false));
-        }
-    }
-    
-    @EventHandler
-    public void applyCEnchantment(EntityPotionEffectEvent event){
-        if(!(event.getEntity() instanceof Player)){
-            return;
-        }
-        PotionEffect oldEffect = event.getOldEffect();
-        if(oldEffect == null || oldEffect.getAmplifier() == 0){
-            return;
-        }
-        SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getEntity().getUniqueId());
-        for(int i = 0; i < 4; ++i){
-            CEnchantedItem armorPart = player.getArmor(i);
-            if(armorPart == null){
-                continue;
-            }
-            for(CEnchantment enchantment : armorPart.getEnchants()){
-                System.out.println(oldEffect.getType() + " " + enchantment.getEnchantment().getEffect());
-                if(oldEffect.getType().equals(enchantment.getEnchantment().getEffect())){
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
-                        player.getPlayer().addPotionEffect(new PotionEffect(enchantment.getEnchantment().getEffect(), Integer.MAX_VALUE, enchantment.getLevel() - 1, false, false));
-                    });
-                    break;
-                }
-            }
-        }
     }
     
     private void saveOnJoin(SurvivalPlayer player){

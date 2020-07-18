@@ -2,27 +2,49 @@ package fr.amisoz.consulatcore.enchantments;
 
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 public class CEnchantment {
     
     private final int level;
-    private final Type enchantment;
+    private final @NotNull Type enchantment;
     
-    CEnchantment(Type enchantment){
+    public CEnchantment(Type enchantment){
         this(enchantment, 1);
     }
     
-    public CEnchantment(Type enchantment, int level){
+    public CEnchantment(@NotNull Type enchantment, int level){
+        this.enchantment = Objects.requireNonNull(enchantment);
         this.level = level;
-        this.enchantment = enchantment;
     }
     
     public int getLevel(){
         return level;
     }
     
+    @NotNull
     public Type getEnchantment(){
         return enchantment;
+    }
+    
+    @Override
+    public boolean equals(Object o){
+        if(this == o) {
+            return true;
+        }
+        if(!(o instanceof CEnchantment)){
+            return false;
+        }
+        CEnchantment that = (CEnchantment)o;
+        return level == that.level &&
+                enchantment == that.enchantment;
+    }
+    
+    @Override
+    public int hashCode(){
+        return Objects.hash(level, enchantment);
     }
     
     public enum Type {
@@ -114,5 +136,7 @@ public class CEnchantment {
             return maxLevel;
         }
     }
+    
+    
 
 }

@@ -1003,7 +1003,6 @@ public class ClaimCancelListener implements Listener {
     
     @EventHandler
     public void onPlayerPlaceItem(PlayerPlaceItemEvent event){
-        System.out.println(event.getClickedLocation() + " " + event.getItem());
         Claim clicked = ClaimManager.getInstance().getClaim(event.getClickedLocation().getChunk());
         if(clicked != null && !clicked.canInteract((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId()))){
             event.setCancelled(true);

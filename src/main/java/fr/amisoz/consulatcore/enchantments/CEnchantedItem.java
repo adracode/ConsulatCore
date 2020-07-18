@@ -99,8 +99,6 @@ public class CEnchantedItem {
         if(numberOfEnchantments == MAX_ENCHANTS && index == -1){
             return false;
         }
-        
-        System.out.println("index = " + index);
         if(index >= Byte.MAX_VALUE){
             ++level;
             index -= Byte.MAX_VALUE;
@@ -158,6 +156,18 @@ public class CEnchantedItem {
         return false;
     }
     
+    public boolean isEnchantedWith(CEnchantment.Type enchant, int level){
+        PersistentDataContainer tag = getTag();
+        byte size = getNumberOfEnchant(tag);
+        for(byte i = 0; i < size; ++i){
+            CEnchantment enchantment = tag.get(getKey(i), DATA_TYPE);
+            if(enchantment.getEnchantment() == enchant && enchantment.getLevel() == level){
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private PersistentDataContainer getTag(){
         ItemMeta meta = handle.getItemMeta();
         PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
@@ -171,7 +181,6 @@ public class CEnchantedItem {
     }
     
     private void addEnchantment(PersistentDataContainer tag, byte index, CEnchantment.Type type, int level){
-        System.out.println("level = " + level);
         tag.set(getKey(index), DATA_TYPE, new CEnchantment(type, level));
     }
     
