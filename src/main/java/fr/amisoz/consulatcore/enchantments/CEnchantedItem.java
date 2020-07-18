@@ -3,7 +3,9 @@ package fr.amisoz.consulatcore.enchantments;
 import fr.amisoz.consulatcore.ConsulatCore;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -41,11 +43,11 @@ public class CEnchantedItem {
             Material.DIAMOND_BOOTS
     );
     
-    private static final String[] roman = new String[]{"0", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"};
+    private static final String[] ROMAN = new String[]{"0", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"};
     
     private static final byte MAX_ENCHANTS = 2;
     
-    private static final EnchantmentDataType dataType = new EnchantmentDataType();
+    private static final EnchantmentDataType DATA_TYPE = new EnchantmentDataType();
     
     private static final NamespacedKey KEY_ENCHANT = new NamespacedKey(ConsulatCore.getInstance(), "enchantments");
     private static final NamespacedKey NB_ENCHANT = new NamespacedKey(ConsulatCore.getInstance(), "cardinality");
@@ -77,38 +79,57 @@ public class CEnchantedItem {
     
     public boolean addEnchantment(@NotNull CEnchantment.Type enchantment, int level){
         if(!enchantment.canApply(getSlot(handle.getType()))){
-            throw new IllegalArgumentException("Enchantment " + enchantment + " cannot be applied to this armor");
+            return false;
         }
         PersistentDataContainer tag = getTag();
         byte numberOfEnchantments = getNumberOfEnchant(tag);
-        if(numberOfEnchantments == MAX_ENCHANTS){
-            return false;
-        }
-        byte index = -1;
+        short index = -1;
         CEnchantment[] currentEnchants = getEnchants();
         for(byte i = 0; i < currentEnchants.length; i++){
             CEnchantment currentEnchant = currentEnchants[i];
             if(currentEnchant.getEnchantment() == enchantment){
-                if(currentEnchant.getLevel() >= level){
+                if(currentEnchant.getLevel() > level){
                     return false;
                 } else {
-                    index = i;
+                    index = currentEnchant.getLevel() == level ? (short)(i + Byte.MAX_VALUE) : i;
                 }
                 break;
             }
         }
-        addEnchantment(tag, index != -1 ? index : numberOfEnchantments, enchantment, level);
-        tag.set(NB_ENCHANT, PersistentDataType.BYTE, ++numberOfEnchantments);
+        if(numberOfEnchantments == MAX_ENCHANTS && index == -1){
+            return false;
+        }
+        
+        System.out.println("index = " + index);
+        if(index >= Byte.MAX_VALUE){
+            ++level;
+            index -= Byte.MAX_VALUE;
+        }
+        if(level > enchantment.getMaxLevel()){
+            return false;
+        }
+        addEnchantment(tag, index != -1 ? (byte)(index) : numberOfEnchantments, enchantment, level);
+        if(index == -1){
+            tag.set(NB_ENCHANT, PersistentDataType.BYTE, ++numberOfEnchantments);
+        }
         ItemMeta meta = handle.getItemMeta();
+        if(handle.getType() != Material.ENCHANTED_BOOK && !meta.hasEnchants()){
+            if(!meta.hasItemFlag(ItemFlag.HIDE_ENCHANTS)){
+                meta.addEnchant(Enchantment.ARROW_INFINITE, 0, true);
+                meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+            }
+        } else if(meta.hasItemFlag(ItemFlag.HIDE_ENCHANTS)){
+            meta.removeEnchant(Enchantment.ARROW_INFINITE);
+            meta.removeItemFlags(ItemFlag.HIDE_ENCHANTS);
+        }
         List<String> description = meta.getLore();
         if(description == null){
             description = new ArrayList<>();
-            description.add("");
         }
         if(index != -1 && index < description.size()){
-            description.set(numberOfEnchantments, "§3" + enchantment.getDisplay() + " " + roman[level]);
+            description.set(index, "§7" + enchantment.getDisplay() + " " + ROMAN[level]);
         } else {
-            description.add(numberOfEnchantments, "§3" + enchantment.getDisplay() + " " + roman[level]);
+            description.add(numberOfEnchantments - 1, "§7" + enchantment.getDisplay() + " " + (level <= 10 ? ROMAN[level] : level));
         }
         meta.setLore(description);
         meta.getPersistentDataContainer().set(KEY_ENCHANT, PersistentDataType.TAG_CONTAINER, tag);
@@ -121,7 +142,7 @@ public class CEnchantedItem {
         byte size = getNumberOfEnchant(tag);
         CEnchantment[] enchants = new CEnchantment[size];
         for(byte i = 0; i < size; ++i){
-            enchants[i] = tag.get(getKey(i), dataType);
+            enchants[i] = tag.get(getKey(i), DATA_TYPE);
         }
         return enchants;
     }
@@ -130,7 +151,7 @@ public class CEnchantedItem {
         PersistentDataContainer tag = getTag();
         byte size = getNumberOfEnchant(tag);
         for(byte i = 0; i < size; ++i){
-            if(tag.get(getKey(i), dataType).getEnchantment() == enchant){
+            if(tag.get(getKey(i), DATA_TYPE).getEnchantment() == enchant){
                 return true;
             }
         }
@@ -150,7 +171,8 @@ public class CEnchantedItem {
     }
     
     private void addEnchantment(PersistentDataContainer tag, byte index, CEnchantment.Type type, int level){
-        tag.set(getKey(index), dataType, new CEnchantment(type, level));
+        System.out.println("level = " + level);
+        tag.set(getKey(index), DATA_TYPE, new CEnchantment(type, level));
     }
     
     private @NotNull EquipmentSlot getSlot(Material material){

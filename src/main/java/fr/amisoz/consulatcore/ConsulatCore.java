@@ -13,6 +13,7 @@ import fr.amisoz.consulatcore.commands.moderation.*;
 import fr.amisoz.consulatcore.commands.players.*;
 import fr.amisoz.consulatcore.duel.DuelManager;
 import fr.amisoz.consulatcore.economy.BaltopManager;
+import fr.amisoz.consulatcore.enchantments.EnchantmentManager;
 import fr.amisoz.consulatcore.fly.FlyManager;
 import fr.amisoz.consulatcore.listeners.entity.MobListeners;
 import fr.amisoz.consulatcore.listeners.entity.player.*;
@@ -104,6 +105,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         new FlyManager();
         moderationDatabase = new ModerationDatabase(this);
         new ShopManager();
+        EnchantmentManager.getInstance();
         Bukkit.getScheduler().runTaskTimer(this, new AFKRunnable(), 0L, 5 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MonitoringRunnable(this), 0L, 10 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MessageRunnable(), 0L, 15 * 60 * 20);

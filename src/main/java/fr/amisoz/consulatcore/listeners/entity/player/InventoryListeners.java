@@ -22,6 +22,9 @@ public class InventoryListeners implements Listener {
     public void onDrop(PlayerDropItemEvent event){
         Player player = event.getPlayer();
         SurvivalPlayer survivalPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
+        if(survivalPlayer == null){
+            return;
+        }
         if(survivalPlayer.isInModeration() || survivalPlayer.isLookingInventory()){
             event.setCancelled(true);
         }

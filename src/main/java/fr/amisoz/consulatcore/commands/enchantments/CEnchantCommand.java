@@ -27,6 +27,8 @@ public class CEnchantCommand extends ConsulatCommand {
     @Override
     public void onCommand(ConsulatPlayer sender, String[] args){
         CEnchantedItem enchantedItem = new CEnchantedItem(sender.getPlayer().getInventory().getItemInMainHand());
-        enchantedItem.addEnchantment(CEnchantment.Type.valueOf(args[0].toUpperCase()), Integer.parseInt(args[1]));
+        if(!enchantedItem.addEnchantment(CEnchantment.Type.valueOf(args[0].toUpperCase()), Integer.parseInt(args[1]))){
+            sender.sendMessage("§cL'enchantemement " + args[0] + " n'a pas pu être appliqué à cet item.");
+        }
     }
 }

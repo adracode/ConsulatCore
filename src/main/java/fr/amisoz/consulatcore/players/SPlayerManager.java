@@ -198,7 +198,7 @@ public class SPlayerManager implements Listener {
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
         PlayerArmorChangeEvent.SlotType slot = event.getSlotType();
         CEnchantedItem oldArmor = player.getArmor(slot);
-        ItemStack old = event.getOldItem();
+        ItemStack old = CEnchantedItem.isEnchanted(event.getOldItem()) ? event.getOldItem() : null;
         if(old != null && old.getType() == Material.AIR){
             old = null;
         }
@@ -241,7 +241,7 @@ public class SPlayerManager implements Listener {
         }
     }
     
-    public void applyCEnchantment(SurvivalPlayer player, CEnchantment[] armorEnchants){
+    public void applyCEnchantment(SurvivalPlayer player, CEnchantment... armorEnchants){
         Player bukkitPlayer = player.getPlayer();
         for(CEnchantment enchant : armorEnchants){
             PotionEffectType effect = enchant.getEnchantment().getEffect();
@@ -271,7 +271,7 @@ public class SPlayerManager implements Listener {
             for(CEnchantment enchantment : armorPart.getEnchants()){
                 System.out.println(oldEffect.getType() + " " + enchantment.getEnchantment().getEffect());
                 if(oldEffect.getType().equals(enchantment.getEnchantment().getEffect())){
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), ()-> {
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
                         player.getPlayer().addPotionEffect(new PotionEffect(enchantment.getEnchantment().getEffect(), Integer.MAX_VALUE, enchantment.getLevel() - 1, false, false));
                     });
                     break;

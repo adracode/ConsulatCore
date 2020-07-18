@@ -26,26 +26,28 @@ public class CEnchantment {
     }
     
     public enum Type {
-        GLOWING(PotionEffectType.GLOWING, "Surbrillance"),
-        WATER_BREATHING(PotionEffectType.WATER_BREATHING, "Respiration aquatique"),
-        CONDUIT_POWER(PotionEffectType.CONDUIT_POWER, "Force de conduit"),
-        DOLPHIN_GRACE(PotionEffectType.DOLPHINS_GRACE, "Grâce du dophin"),
-        NIGHT_VISION(PotionEffectType.NIGHT_VISION, "Vision nocturne"),
-        FIRE_RESISTANCE(PotionEffectType.FIRE_RESISTANCE, "Résistance au feu"),
-        HEALTH_BOOST(PotionEffectType.HEALTH_BOOST, "Augmentation de vie"),
-        INVISIBILITY(PotionEffectType.INVISIBILITY, "Invisibilité"),
-        HASTE(PotionEffectType.FAST_DIGGING, "Vitesse de minage"),
-        LUCK(PotionEffectType.LUCK, "Chance"),
-        SLOW_FALLING(PotionEffectType.SLOW_FALLING, "Chute lente"),
-        SPEED(PotionEffectType.SPEED, "Vitesse"),
-        JUMP_BOOST(PotionEffectType.JUMP, "Sauts augmentés");
+        GLOWING(PotionEffectType.GLOWING, "Surbrillance", (byte)1),
+        WATER_BREATHING(PotionEffectType.WATER_BREATHING, "Respiration aquatique", (byte)1),
+        CONDUIT_POWER(PotionEffectType.CONDUIT_POWER, "Force de conduit", (byte)1),
+        DOLPHIN_GRACE(PotionEffectType.DOLPHINS_GRACE, "Grâce du dophin", (byte)1),
+        NIGHT_VISION(PotionEffectType.NIGHT_VISION, "Vision nocturne", (byte)1),
+        FIRE_RESISTANCE(PotionEffectType.FIRE_RESISTANCE, "Résistance au feu", (byte)1),
+        HEALTH_BOOST(PotionEffectType.HEALTH_BOOST, "Augmentation de vie", (byte)1),
+        INVISIBILITY(PotionEffectType.INVISIBILITY, "Invisibilité", (byte)1),
+        HASTE(PotionEffectType.FAST_DIGGING, "Vitesse de minage", (byte)2),
+        LUCK(PotionEffectType.LUCK, "Chance", (byte)1),
+        SLOW_FALLING(PotionEffectType.SLOW_FALLING, "Chute lente", (byte)1),
+        SPEED(PotionEffectType.SPEED, "Vitesse", (byte)2),
+        JUMP_BOOST(PotionEffectType.JUMP, "Sauts augmentés", (byte)1);
     
         private final PotionEffectType effect;
         private final String display;
+        private final byte maxLevel;
     
-        Type(PotionEffectType effect, String display){
+        Type(PotionEffectType effect, String display, byte maxLevel){
             this.effect = effect;
             this.display = display;
+            this.maxLevel = maxLevel;
         }
     
         @SuppressWarnings("DuplicatedCode")
@@ -106,6 +108,10 @@ public class CEnchantment {
     
         public PotionEffectType getEffect(){
             return effect;
+        }
+    
+        public byte getMaxLevel(){
+            return maxLevel;
         }
     }
 
