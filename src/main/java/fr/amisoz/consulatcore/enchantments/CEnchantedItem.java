@@ -1,6 +1,7 @@
 package fr.amisoz.consulatcore.enchantments;
 
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.leconsulat.api.ConsulatAPI;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 
 public class CEnchantedItem {
     
@@ -182,6 +184,22 @@ public class CEnchantedItem {
     
     private void addEnchantment(PersistentDataContainer tag, byte index, CEnchantment.Type type, int level){
         tag.set(getKey(index), DATA_TYPE, new CEnchantment(type, level));
+    }
+    
+    public void removeEnchants(){
+        ItemMeta meta = handle.getItemMeta();
+        PersistentDataContainer data = meta.getPersistentDataContainer();
+        List<String> description = meta.getLore();
+        if(description == null){
+            ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Enchanted item without lore");
+            return;
+        }
+        for(byte i = 0, size = getNumberOfEnchant(getTag()); i < size; ++i){
+            description.remove(i);
+        }
+        data.remove(KEY_ENCHANT);
+        meta.setLore(description);
+        handle.setItemMeta(meta);
     }
     
     private @NotNull EquipmentSlot getSlot(Material material){

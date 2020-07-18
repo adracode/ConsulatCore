@@ -13,9 +13,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
+import org.bukkit.inventory.GrindstoneInventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -145,14 +148,14 @@ public class EnchantmentManager implements Listener {
                 CEnchantedItem secondEnchanted = new CEnchantedItem(second);
                 for(CEnchantment secondEnchantment : secondEnchanted.getEnchants()){
                     if(!resultEnchanted.addEnchantment(secondEnchantment.getEnchantment(), secondEnchantment.getLevel())){
-                        event.setResult(null);
-                        Bukkit.getScheduler().runTask(ConsulatCore.getInstance(), () -> {
-                            event.getInventory().setRepairCost(0);
-                            ((Player)event.getView().getPlayer()).updateInventory();
-                        });
+                        cancelAnvil(event);
                         return;
                     }
                     extraCost += 10;
+                }
+                if(CEnchantedItem.isEnchanted(result) && hasMending(result)){
+                    cancelAnvil(event);
+                    return;
                 }
                 event.setResult(result);
                 int finalExtraCost = extraCost;
@@ -161,6 +164,10 @@ public class EnchantmentManager implements Listener {
                 });
             }
         }
+        if(CEnchantedItem.isEnchanted(result) && hasMending(result)){
+            cancelAnvil(event);
+            return;
+        }
         if(result != null && result.getType() != Material.AIR && result.getEnchantments().size() > 1 && result.hasItemFlag(ItemFlag.HIDE_ENCHANTS) && result.containsEnchantment(Enchantment.ARROW_INFINITE) && result.getEnchantmentLevel(Enchantment.ARROW_INFINITE) == 0){
             ItemMeta meta = result.getItemMeta();
             meta.removeEnchant(Enchantment.ARROW_INFINITE);
@@ -168,6 +175,42 @@ public class EnchantmentManager implements Listener {
             result.setItemMeta(meta);
         }
         anvilEventCalled.put(event.getView().getPlayer().getUniqueId(), event.getResult());
+    }
+    
+    @EventHandler
+    public void onGrindstone(InventoryClickEvent event){
+        if(!(event.getWhoClicked().getOpenInventory().getTopInventory() instanceof GrindstoneInventory)){
+            return;
+        }
+        Bukkit.getScheduler().runTask(ConsulatCore.getInstance(), () -> {
+            if(!(event.getWhoClicked().getOpenInventory().getTopInventory() instanceof GrindstoneInventory)){
+                return;
+            }
+            GrindstoneInventory inventory = (GrindstoneInventory)event.getWhoClicked().getOpenInventory().getTopInventory();
+            ItemStack result = inventory.getItem(2);
+            if(CEnchantedItem.isEnchanted(result)){
+                new CEnchantedItem(result).removeEnchants();
+            }
+        });
+    }
+    
+    private boolean hasMending(ItemStack item){
+        if(item == null || item.getType() == Material.AIR){
+            return false;
+        }
+        if(item.getType() == Material.ENCHANTED_BOOK){
+            EnchantmentStorageMeta book = (EnchantmentStorageMeta)item.getItemMeta();
+            return book.hasStoredEnchant(Enchantment.MENDING);
+        }
+        return item.containsEnchantment(Enchantment.MENDING);
+    }
+    
+    private void cancelAnvil(PrepareAnvilEvent event){
+        event.setResult(null);
+        Bukkit.getScheduler().runTask(ConsulatCore.getInstance(), () -> {
+            event.getInventory().setRepairCost(0);
+            ((Player)event.getView().getPlayer()).updateInventory();
+        });
     }
     
     @EventHandler
