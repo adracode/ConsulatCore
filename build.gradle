@@ -33,6 +33,7 @@ dependencies {
     compile 'com.mojang:brigadier:1.0.17'
     compile 'org.jetbrains:annotations:16.0.2'
     compile group: 'org.redisson', name: 'redisson', version: '3.13.2'
+
 }
 
 processResources {

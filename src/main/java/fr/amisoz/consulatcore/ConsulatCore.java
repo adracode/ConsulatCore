@@ -89,6 +89,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         }
         instance = this;
         random = new Random();
+        saveDefaultConfig();
         long startLoading = System.currentTimeMillis();
         spawn = new Location(Bukkit.getWorlds().get(0), 330, 65, -438, -145, 0);
         new DuelManager();

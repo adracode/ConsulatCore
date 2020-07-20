@@ -3,6 +3,7 @@ package fr.amisoz.consulatcore.commands.safari;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.player.stream.PlayerOutputStream;
@@ -19,11 +20,11 @@ public class SafariCommand extends ConsulatCommand {
     
     @Override
     public void onCommand(ConsulatPlayer player, String[] args){
-        RedisManager.getInstance().getRedis().getTopic("LoadPlayerDataSafari").publish(
+        RedisManager.getInstance().getRedis().getTopic(ConsulatAPI.getConsulatAPI().isDevelopment() ? "LoadPlayerDataTestSafari" : "LoadPlayerDataSafari").publish(
                 new PlayerOutputStream(player.getPlayer()).writeLevel().writeInventory().send());
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
         out.writeUTF("Connect");
-        out.writeUTF("survie");
+        out.writeUTF(ConsulatAPI.getConsulatAPI().isDevelopment() ? "testsafari" : "safari");
         player.getPlayer().sendPluginMessage(ConsulatCore.getInstance(), "BungeeCord", out.toByteArray());
     }
 }

@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.zones.claims;
 
+import fr.amisoz.consulatcore.chunks.CChunk;
 import fr.amisoz.consulatcore.guis.city.CityGui;
 import fr.amisoz.consulatcore.guis.city.members.member.MemberGui;
 import fr.amisoz.consulatcore.guis.city.members.member.claims.AccessibleClaimGui;
@@ -18,23 +19,16 @@ import fr.leconsulat.api.player.Permission;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
-import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
 import java.util.*;
 
-public class Claim implements Comparable<Claim> {
+public class Claim extends CChunk {
     
     public static final double BUY_CLAIM = 180;
     public static final double BUY_CITY_CLAIM = BUY_CLAIM;
     public static final double REFUND = BUY_CLAIM * 0.7;
     
-    private static final int SHIFT = 25 - 4; //Max coordonnées MC - Taille du chunk
-    private static final int LIMIT_X = 1 << SHIFT; //2 097 152 > 30 000 000 / 16 = 1 875 000
-    private static final int LIMIT_Z = 1 << SHIFT; //2 097 152 > 30 000 000 / 16 = 1 875 000
-    private static final int CONVERT = (1 << SHIFT + 1) - 1; //1111111111111111111111
-    
-    private long coords;
     private String description;
     private Zone owner;
     private Map<UUID, Set<String>> permissions = new HashMap<>();
@@ -43,21 +37,6 @@ public class Claim implements Comparable<Claim> {
         setOwner(owner);
         setCoords(x, z);
         this.description = description;
-    }
-    
-    private void setCoords(int x, int z){
-        if(x < -LIMIT_X || x > LIMIT_X || z < -LIMIT_Z || z > LIMIT_Z){
-            throw new IllegalArgumentException("Les coordonnées d'un chunk ne peuvent dépasse les limites");
-        }
-        coords = Claim.convert(x, z);
-    }
-    
-    public int getX(){
-        return (int)((coords & CONVERT) - LIMIT_X);
-    }
-    
-    public int getZ(){
-        return (int)((coords >> SHIFT + 1) - LIMIT_Z);
     }
     
     public Zone getOwner(){
@@ -78,10 +57,6 @@ public class Claim implements Comparable<Claim> {
     
     public String getDescription(){
         return description;
-    }
-    
-    public long getCoordinates(){
-        return coords;
     }
     
     public boolean addPlayer(UUID uuid){
@@ -204,23 +179,6 @@ public class Claim implements Comparable<Claim> {
         };
     }
     
-    @Override
-    public boolean equals(Object o){
-        if(this == o) return true;
-        if(o == null || getClass() != o.getClass()) return false;
-        Claim claim = (Claim)o;
-        return coords == claim.coords;
-    }
-    
-    @Override
-    public int hashCode(){
-        return Long.hashCode(coords);
-    }
-    
-    public static long convert(int x, int z){
-        return (((long)z + LIMIT_Z) << SHIFT + 1) | (x + LIMIT_X);
-    }
-    
     public boolean canFertilize(SurvivalPlayer player){
         return canInteract(player);
     }
@@ -307,7 +265,7 @@ public class Claim implements Comparable<Claim> {
     
     public CompoundTag saveNBT(){
         CompoundTag claim = new CompoundTag();
-        claim.putLong("Coords", coords);
+        claim.putLong("Coords", getCoordinates());
         if(description != null){
             claim.putString("Description", description);
         }
@@ -327,19 +285,14 @@ public class Claim implements Comparable<Claim> {
         return claim;
     }
     
-    @Override
-    public int compareTo(@NotNull Claim o){
-        return Long.compare(coords, o.coords);
-    }
-    
     public Set<UUID> getPlayers(){
         return Collections.unmodifiableSet(permissions.keySet());
     }
     
     @Override
     public String toString(){
-        return "Claim{" +
-                "coords=" + coords +
+        return super.toString() +
+                ", Claim{" +
                 ", description='" + description + '\'' +
                 ", owner=" + owner.getName() +
                 ", permissions=" + permissions +

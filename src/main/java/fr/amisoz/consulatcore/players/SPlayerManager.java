@@ -77,10 +77,10 @@ public class SPlayerManager implements Listener {
                 },
                 (SurvivalPlayer::getCity)
         ));
-        RedisManager.getInstance().register("LoadPlayerDataSurvie", byte[].class, (channel, data) -> {
+        RedisManager.getInstance().register(ConsulatAPI.getConsulatAPI().isDevelopment() ? "LoadPlayerDataTestSurvie" : "LoadPlayerDataSurvie", byte[].class, (channel, data) -> {
             CPlayerManager.getInstance().loadPlayerData(data);
         });
-        RedisManager.getInstance().register("SavePlayerDataSurvie", byte[].class, (channel, data) -> {
+        RedisManager.getInstance().register(ConsulatAPI.getConsulatAPI().isDevelopment() ? "SavePlayerDataTestSurvie" : "SavePlayerDataSurvie", byte[].class, (channel, data) -> {
             CPlayerManager.getInstance().savePlayerData(data);
         });
     }

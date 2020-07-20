@@ -2,6 +2,8 @@ package fr.amisoz.consulatcore.zones.claims;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
+import fr.amisoz.consulatcore.chunks.CChunk;
+import fr.amisoz.consulatcore.chunks.ChunkManager;
 import fr.amisoz.consulatcore.events.ClaimChangeEvent;
 import fr.amisoz.consulatcore.guis.city.CityGui;
 import fr.amisoz.consulatcore.guis.city.claimlist.ClaimsGui;
@@ -48,7 +50,7 @@ public class ClaimManager implements Listener {
     private static ClaimManager instance;
     private static final int SHIFT_CLAIMS = 5;
     
-    private final Map<Long, Claim> claims = new HashMap<>();
+    private ChunkManager chunkManager = ChunkManager.getInstance();
     
     public ClaimManager(){
         if(instance != null){
@@ -90,6 +92,7 @@ public class ClaimManager implements Listener {
             resultClaims.close();
             getClaims.close();
             if(new File(ConsulatAPI.getConsulatAPI().getDataFolder(), "claims").exists()){
+                ChunkManager chunkManager = ChunkManager.getInstance();
                 for(Map.Entry<Integer, Map<Integer, Set<Claim>>> claimX : orderedClaims.entrySet()){
                     for(Map.Entry<Integer, Set<Claim>> claimZ : claimX.getValue().entrySet()){
                         try {
@@ -101,7 +104,7 @@ public class ClaimManager implements Listener {
                             CompoundTag regionMap = is.read();
                             is.close();
                             for(CompoundTag claimTag : regionMap.getList("Claims", CompoundTag.class)){
-                                Claim claim = claims.get(claimTag.getLong("Coords"));
+                                Claim claim = getClaim(claimTag.getLong("Coords"));
                                 if(claim != null){
                                     claim.loadNBT(claimTag);
                                 }
@@ -143,7 +146,7 @@ public class ClaimManager implements Listener {
     private Claim addClaim(int x, int z, Zone owner, String description){
         Claim claim = new Claim(x, z, owner, description);
         owner.addClaim(claim);
-        this.claims.put(claim.getCoordinates(), claim);
+        chunkManager.addChunk(claim);
         return claim;
     }
     
@@ -154,7 +157,7 @@ public class ClaimManager implements Listener {
     }
     
     private void removeClaim(Claim claim){
-        this.claims.remove(claim.getCoordinates());
+        chunkManager.removeChunk(claim);
         Zone owner = claim.getOwner();
         owner.removeClaim(claim);
         if(owner instanceof City){
@@ -216,11 +219,12 @@ public class ClaimManager implements Listener {
     }
     
     public @Nullable Claim getClaim(int x, int z){
-        return getClaim(Claim.convert(x, z));
+        return getClaim(CChunk.convert(x, z));
     }
     
     public @Nullable Claim getClaim(long coords){
-        return this.claims.get(coords);
+        CChunk chunk = chunkManager.getChunk(coords);
+        return chunk instanceof Claim ? (Claim)chunk : null;
     }
     
     @EventHandler
@@ -382,11 +386,14 @@ public class ClaimManager implements Listener {
     public void saveClaims(){
         try {
             Map<Integer, Map<Integer, Set<Claim>>> orderedClaims = new HashMap<>();
-            for(Claim claim : claims.values()){
+            for(CChunk claim : chunkManager.getChunks()){
+                if(!(claim instanceof Claim)){
+                    continue;
+                }
                 orderedClaims.computeIfAbsent(
                         claim.getX() >> SHIFT_CLAIMS,
                         v -> new HashMap<>()).computeIfAbsent(claim.getZ() >> SHIFT_CLAIMS,
-                        v -> new TreeSet<>()).add(claim);
+                        v -> new TreeSet<>()).add((Claim)claim);
             }
             for(Map.Entry<Integer, Map<Integer, Set<Claim>>> claimX : orderedClaims.entrySet()){
                 for(Map.Entry<Integer, Set<Claim>> claimZ : claimX.getValue().entrySet()){
