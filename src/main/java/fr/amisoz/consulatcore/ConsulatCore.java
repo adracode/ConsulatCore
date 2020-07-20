@@ -11,6 +11,7 @@ import fr.amisoz.consulatcore.commands.economy.PayCommand;
 import fr.amisoz.consulatcore.commands.enchantments.CEnchantCommand;
 import fr.amisoz.consulatcore.commands.moderation.*;
 import fr.amisoz.consulatcore.commands.players.*;
+import fr.amisoz.consulatcore.commands.safari.SafariCommand;
 import fr.amisoz.consulatcore.duel.DuelManager;
 import fr.amisoz.consulatcore.economy.BaltopManager;
 import fr.amisoz.consulatcore.enchantments.EnchantmentManager;
@@ -179,6 +180,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         new PayCommand();
         new PersoCommand();
         new ReportCommand();
+        new SafariCommand();
         new SanctionCommand();
         new SeenCommand();
         new SetHomeCommand();
