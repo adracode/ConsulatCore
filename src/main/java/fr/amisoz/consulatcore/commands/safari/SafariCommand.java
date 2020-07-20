@@ -10,6 +10,8 @@ import fr.leconsulat.api.player.stream.PlayerOutputStream;
 import fr.leconsulat.api.ranks.Rank;
 import fr.leconsulat.api.redis.RedisManager;
 
+import java.util.logging.Level;
+
 public class SafariCommand extends ConsulatCommand {
     
     public SafariCommand(){
@@ -23,8 +25,11 @@ public class SafariCommand extends ConsulatCommand {
         RedisManager.getInstance().getRedis().getTopic(ConsulatAPI.getConsulatAPI().isDevelopment() ? "LoadPlayerDataTestSafari" : "LoadPlayerDataSafari").publish(
                 new PlayerOutputStream(player.getPlayer()).writeLevel().writeInventory().send());
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        String server = ConsulatAPI.getConsulatAPI().isDevelopment() ? "testsafari" : "safari";
+        ConsulatAPI.getConsulatAPI().log(Level.INFO, "Sending " + player.getPlayer().getName() + " to " + server + "...");
         out.writeUTF("Connect");
-        out.writeUTF(ConsulatAPI.getConsulatAPI().isDevelopment() ? "testsafari" : "safari");
+        out.writeUTF(server);
         player.getPlayer().sendPluginMessage(ConsulatCore.getInstance(), "BungeeCord", out.toByteArray());
+        ConsulatAPI.getConsulatAPI().log(Level.INFO, "Plugin message sent");
     }
 }
