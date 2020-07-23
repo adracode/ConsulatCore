@@ -1,56 +1,152 @@
 package fr.amisoz.consulatcore.chunks;
 
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.chunks.scan.ChunkScanner;
 import fr.leconsulat.api.ConsulatAPI;
+import fr.leconsulat.api.nbt.*;
+import fr.leconsulat.api.task.TaskManager;
+import fr.leconsulat.api.utils.FileUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.world.ChunkLoadEvent;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 
-public class ChunkManager {
+//TODO: Nether et End
+public class ChunkManager implements Listener {
     
     private static final ChunkManager instance = new ChunkManager();
+    private static final int SHIFT_CLAIMS = 5;
     
-    private final Map<Long, CChunk> claims = new HashMap<>();
-    private Map<Material, Integer> limits = new EnumMap<>(Material.class);
+    private final Map<String, ChunkConstructor> createChunk = new HashMap<>();
+    
+    private final Map<Long, CChunk> chunks = new HashMap<>();
+    private final Map<Material, Integer> limits = new EnumMap<>(Material.class);
+    
+    private Queue<ChunkScanner> queue = new LinkedBlockingQueue<>();
     
     private ChunkManager(){
         FileConfiguration config = ConsulatCore.getInstance().getConfig();
-        for(String limit : config.getStringList("block-limits")){
-            int separator = limit.indexOf(':');
-            if(separator == -1){
-                ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Separator ':' not found in limit config (" + limit + ")");
-                continue;
-            }
+        for(Map.Entry<String, Object> limit : config.getConfigurationSection("block-limits").getValues(false).entrySet()){
             Material material;
             try {
-                material = Material.valueOf(limit.substring(0, separator));
+                material = Material.valueOf(limit.getKey());
             } catch(IllegalArgumentException | NullPointerException e){
                 ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Invalid block in limit config (" + limit + ")");
                 continue;
             }
-            int definedLimit;
-            try {
-                definedLimit = Integer.parseInt(limit.substring(separator + 1));
-            } catch(NumberFormatException e){
-                ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Invalid number in limit config (" + limit + ")");
-                continue;
+            limits.put(material, (int)limit.getValue());
+        }
+        ConsulatCore.getInstance().getServer().getPluginManager().registerEvents(this, ConsulatCore.getInstance());
+    }
+    
+    public void register(String type, ChunkConstructor create){
+        this.createChunk.put(type, create);
+    }
+    
+    public void loadChunks(){
+        ConsulatAPI.getConsulatAPI().log(Level.INFO, "Loading chunks...");
+        long start = System.currentTimeMillis();
+        int size = 0;
+        try {
+            for(File file : FileUtils.getFiles(new File(ConsulatAPI.getConsulatAPI().getDataFolder(), "chunks"))){
+                NBTInputStream is = new NBTInputStream(file);
+                CompoundTag region = is.read();
+                is.close();
+                List<CompoundTag> chunks = region.getList("Chunks", CompoundTag.class);
+                for(CompoundTag chunkTag : chunks){
+                    CChunk chunk = createChunk.get(chunkTag.getString("Type")).construct(chunkTag.getLong("Coords"));
+                    chunk.loadNBT(chunkTag);
+                    this.chunks.put(chunk.getCoordinates(), chunk);
+                    if(chunk.syncLimits()){
+                        chunk.setNeedLimitSync(true);
+                    }
+                    ++size;
+                }
             }
-            limits.put(material, definedLimit);
+        } catch(IOException e){
+            e.printStackTrace();
+            Bukkit.shutdown();
+        }
+        ConsulatAPI.getConsulatAPI().log(Level.INFO, size + " Chunks loaded in " + (System.currentTimeMillis() - start));
+    }
+    
+    public void saveChunks(){
+        try {
+            Map<Integer, Map<Integer, Set<CChunk>>> orderedChunks = new HashMap<>();
+            for(CChunk chunk : chunks.values()){
+                orderedChunks.computeIfAbsent(
+                        chunk.getX() >> SHIFT_CLAIMS,
+                        v -> new HashMap<>()).computeIfAbsent(chunk.getZ() >> SHIFT_CLAIMS,
+                        v -> new TreeSet<>()).add(chunk);
+            }
+            for(Map.Entry<Integer, Map<Integer, Set<CChunk>>> claimX : orderedChunks.entrySet()){
+                for(Map.Entry<Integer, Set<CChunk>> chunkZ : claimX.getValue().entrySet()){
+                    File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "chunks/" + claimX.getKey() + "." + chunkZ.getKey() + ".dat");
+                    if(!file.exists()){
+                        if(!file.createNewFile()){
+                            throw new IOException("Couldn't create file.");
+                        }
+                    }
+                    CompoundTag chunks = new CompoundTag();
+                    ListTag<CompoundTag> listChunks = new ListTag<>(NBTType.COMPOUND);
+                    for(CChunk chunk : chunkZ.getValue()){
+                        listChunks.addTag(chunk.saveNBT());
+                    }
+                    chunks.put("Chunks", listChunks);
+                    NBTOutputStream os = new NBTOutputStream(file, chunks);
+                    os.write("Region");
+                    os.close();
+                }
+            }
+        } catch(IOException e){
+            e.printStackTrace();
         }
     }
     
+    public CChunk getChunk(Block block){
+        return getChunk(block.getLocation());
+    }
+    
+    public CChunk getChunk(Location location){
+        return getChunk(location.getChunk().getX(), location.getChunk().getZ());
+    }
+    
+    public CChunk getChunk(Chunk chunk){
+        return getChunk(chunk.getX(), chunk.getZ());
+    }
+    
+    public CChunk getChunk(int x, int z){
+        return getChunk(CChunk.convert(x, z));
+    }
+    
     public CChunk getChunk(long coords){
-        return claims.get(coords);
+        return chunks.get(coords);
     }
     
     public void addChunk(CChunk chunk){
-        claims.put(chunk.getCoordinates(), chunk);
+        CChunk previous = chunks.put(chunk.getCoordinates(), chunk);
+        if(previous != null){
+            chunk.set(previous);
+        }
     }
     
     public boolean removeChunk(CChunk chunk){
-        return claims.remove(chunk.getCoordinates()) != null;
+        return chunks.remove(chunk.getCoordinates()) != null;
+    }
+    
+    public Map<Material, Integer> getLimitedBlocks(){
+        return Collections.unmodifiableMap(limits);
     }
     
     public int getMaxLimit(Material material){
@@ -63,6 +159,36 @@ public class ChunkManager {
     }
     
     public Collection<CChunk> getChunks(){
-        return Collections.unmodifiableCollection(claims.values());
+        return Collections.unmodifiableCollection(chunks.values());
+    }
+    
+    @EventHandler
+    public void onLoad(ChunkLoadEvent event){
+        CChunk chunk = chunks.get(CChunk.convert(event.getChunk().getX(), event.getChunk().getZ()));
+        if(event.getWorld() == Bukkit.getWorlds().get(0) && (chunk == null || chunk.isNeedLimitSync())){
+            if(chunk == null){
+                chunk = new CChunk(event.getChunk().getX(), event.getChunk().getZ());
+                addChunk(chunk);
+                for(Material material : limits.keySet()){
+                    chunk.addLimit(material);
+                }
+            } else {
+                chunk.setNeedLimitSync(false);
+            }
+            scanLimitedBlock(chunk, event.getChunk());
+        }
+    }
+    
+    public void scanLimitedBlock(CChunk consulatChunk, Chunk chunk){
+        ChunkScanner scanner = new ChunkScanner(chunk, (x, y, z, type) -> {
+            if(consulatChunk.hasLimit(type)){
+                if(consulatChunk.getLimit(type) < limits.get(type)){
+                    consulatChunk.incrementLimit(type);
+                } else {
+                    chunk.getBlock(x, y, z).setType(Material.AIR, false);
+                }
+            }
+        });
+        TaskManager.getInstance().addTask(scanner);
     }
 }

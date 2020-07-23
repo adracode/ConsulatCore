@@ -20,10 +20,11 @@ import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 
-import java.sql.SQLException;
 import java.util.*;
 
 public class Claim extends CChunk {
+    
+    public static final String TYPE = "CLAIM";
     
     public static final double BUY_CLAIM = 180;
     public static final double BUY_CITY_CLAIM = BUY_CLAIM;
@@ -33,9 +34,13 @@ public class Claim extends CChunk {
     private Zone owner;
     private Map<UUID, Set<String>> permissions = new HashMap<>();
     
+    public Claim(long coords){
+        super(coords);
+    }
+    
     Claim(int x, int z, Zone owner, String description){
+        super(x, z);
         setOwner(owner);
-        setCoords(x, z);
         this.description = description;
     }
     
@@ -160,8 +165,7 @@ public class Claim extends CChunk {
         return permissions.contains(permission);
     }
     
-    public void setDescription(String description) throws SQLException{
-        ClaimManager.getInstance().setDescriptionDatabase(this, description);
+    public void setDescription(String description){
         this.description = description;
     }
     
@@ -200,7 +204,13 @@ public class Claim extends CChunk {
     }
     
     void setOwner(Zone owner){
+        if(this.owner != null){
+            owner.removeClaim(this);
+        }
         this.owner = owner;
+        if(owner != null){
+            owner.addClaim(this);
+        }
         permissions.clear();
         IGui iClaimGui = GuiManager.getInstance().getContainer("claim").getGui(false, this);
         if(iClaimGui != null){
@@ -241,7 +251,9 @@ public class Claim extends CChunk {
         return member;
     }
     
+    @Override
     public void loadNBT(CompoundTag claim){
+        super.loadNBT(claim);
         if(claim.has("Description")){
             this.description = claim.getString("Description");
         }
@@ -263,9 +275,9 @@ public class Claim extends CChunk {
         }
     }
     
+    @Override
     public CompoundTag saveNBT(){
-        CompoundTag claim = new CompoundTag();
-        claim.putLong("Coords", getCoordinates());
+        CompoundTag claim = super.saveNBT();
         if(description != null){
             claim.putString("Description", description);
         }
@@ -294,7 +306,7 @@ public class Claim extends CChunk {
         return super.toString() +
                 ", Claim{" +
                 ", description='" + description + '\'' +
-                ", owner=" + owner.getName() +
+                ", owner=" + (owner == null ? "null" : owner.getName()) +
                 ", permissions=" + permissions +
                 ", protectedContainers=" + protectedContainers +
                 '}';
@@ -308,4 +320,8 @@ public class Claim extends CChunk {
         return isOwner(uuid) || owner instanceof City && ((City)owner).canManageAccesses(uuid);
     }
     
+    @Override
+    public String getType(){
+        return TYPE;
+    }
 }

@@ -1,10 +1,14 @@
 package fr.amisoz.consulatcore.chunks;
 
+import fr.leconsulat.api.ConsulatAPI;
+import fr.leconsulat.api.nbt.CompoundTag;
+import fr.leconsulat.api.nbt.ListTag;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.EnumMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 
 public class CChunk implements Comparable<CChunk> {
     
@@ -13,18 +17,42 @@ public class CChunk implements Comparable<CChunk> {
     private static final int LIMIT_Z = 1 << SHIFT; //2 097 152 > 30 000 000 / 16 = 1 875 000
     private static final int CONVERT = (1 << SHIFT + 1) - 1; //1111111111111111111111
     
+    public static final String TYPE = "CHUNK";
+    
     public static long convert(int x, int z){
         return (((long)z + LIMIT_Z) << SHIFT + 1) | (x + LIMIT_X);
     }
     
-    private long coords;
-    private Map<Material, Integer> limits = new EnumMap<>(Material.class);
+    private final long coords;
+    private Map<Material, AtomicInteger> limits = new EnumMap<>(Material.class);
+    private boolean needLimitSync = false;
     
-    protected void setCoords(int x, int z){
-        if(x < -LIMIT_X || x > LIMIT_X || z < -LIMIT_Z || z > LIMIT_Z){
-            throw new IllegalArgumentException("Les coordonnées d'un chunk ne peuvent dépasse les limites");
-        }
-        coords = CChunk.convert(x, z);
+    public CChunk(int x, int z){
+        this(convert(x, z));
+    }
+    
+    public CChunk(long coords){
+        this.coords = coords;
+    }
+    
+    public void addLimit(Material type){
+        limits.put(type, new AtomicInteger(0));
+    }
+    
+    public boolean hasLimit(Material type){
+        return limits.containsKey(type);
+    }
+    
+    public void changeLimit(Material type, int amount){
+        limits.get(type).addAndGet(amount);
+    }
+    
+    public int getLimit(Material type){
+        return limits.get(type).get();
+    }
+    
+    public int getLimitSize(){
+        return limits.size();
     }
     
     public long getCoordinates(){
@@ -61,11 +89,108 @@ public class CChunk implements Comparable<CChunk> {
         return Long.compare(this.coords, o.coords);
     }
     
+    public void loadNBT(CompoundTag chunk){
+        if(chunk.has("LimitedBlocks")){
+            List<CompoundTag> limits = chunk.getList("LimitedBlocks", CompoundTag.class);
+            for(CompoundTag limited : limits){
+                this.limits.put(
+                        Material.valueOf(limited.getString("Id")),
+                        new AtomicInteger(limited.getShort("Limit")));
+            }
+        }
+    }
+    
+    public CompoundTag saveNBT(){
+        CompoundTag chunk = new CompoundTag();
+        chunk.putString("Type", getType());
+        chunk.putLong("Coords", coords);
+        if(!limits.isEmpty()){
+            ListTag<CompoundTag> limits = new ListTag<>();
+            for(Map.Entry<Material, AtomicInteger> limitedBlock : this.limits.entrySet()){
+                CompoundTag limited = new CompoundTag();
+                limited.putString("Id", limitedBlock.getKey().toString());
+                limited.putShort("Limit", limitedBlock.getValue().shortValue());
+                limits.addTag(limited);
+            }
+            chunk.put("LimitedBlocks", limits);
+        }
+        return chunk;
+    }
+    
+    public String getType(){
+        return TYPE;
+    }
+    
+    public void set(CChunk chunk){
+        this.limits = chunk.limits;
+    }
+    
+    public boolean incrementLimit(Material type){
+        AtomicInteger limit = limits.get(type);
+        if(limit == null){
+            return true;
+        }
+        if(ChunkManager.getInstance().getMaxLimit(type) > limit.get()){
+            limit.incrementAndGet();
+            return true;
+        }
+        return false;
+    }
+    
+    public void decrementLimit(Material type){
+        AtomicInteger limit = limits.get(type);
+        if(limit != null){
+            if(limit.decrementAndGet() < 0){
+                limit.set(0);
+                ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Attempt to decrement limit below 0 at chunk " + this);
+            }
+        }
+    }
+    
+    public boolean syncLimits(){
+        boolean updated = false;
+        Map<Material, Integer> config = ChunkManager.getInstance().getLimitedBlocks();
+        for(Iterator<Map.Entry<Material, AtomicInteger>> iterator = this.limits.entrySet().iterator(); iterator.hasNext(); ){
+            Map.Entry<Material, AtomicInteger> currentLimit = iterator.next();
+            Integer limitedBlock = config.get(currentLimit.getKey());
+            if(limitedBlock == null){
+                iterator.remove();
+            } else if(currentLimit.getValue().get() > limitedBlock){
+                currentLimit.getValue().set(limitedBlock);
+            } else {
+                continue;
+            }
+            updated = true;
+        }
+        if(config.keySet().size() > this.limits.keySet().size()){
+            updated = true;
+            Set<Material> missing = new HashSet<>(config.keySet());
+            missing.removeAll(this.limits.keySet());
+            for(Material missingType : missing){
+                this.limits.put(missingType, new AtomicInteger(config.get(missingType)));
+            }
+        }
+        if(updated){
+            for(AtomicInteger limit : limits.values()){
+                limit.set(0);
+            }
+        }
+        return updated;
+    }
+    
     @Override
     public String toString(){
         return "CChunk{" +
-                "coords=" + coords +
+                "coords=" + getX() + " " + getZ() +
+                ", limits=" + limits +
                 '}';
     }
     
+    public boolean isNeedLimitSync(){
+        return needLimitSync;
+    }
+    
+    public void setNeedLimitSync(boolean needLimitSync){
+        this.needLimitSync = needLimitSync;
+    }
 }

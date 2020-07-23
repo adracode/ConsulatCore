@@ -129,7 +129,7 @@ public class ClaimCommand extends ConsulatCommand {
                 }
                 Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
                     try {
-                        claim.setDescription(description);
+                        ClaimManager.getInstance().setDescription(claim, description);
                         if(description == null){
                             sender.sendMessage(Text.PREFIX + "§aTu as reset la description de ce claim.");
                         } else {

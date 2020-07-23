@@ -1,1 +1,4 @@
 block-limits:
+  DISPENSER: 10
+  GRASS_BLOCK: 200
+  HOPPER: 10

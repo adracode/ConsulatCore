@@ -1,5 +1,7 @@
 package fr.amisoz.consulatcore.listeners.world;
 
+import fr.amisoz.consulatcore.chunks.CChunk;
+import fr.amisoz.consulatcore.chunks.ChunkManager;
 import fr.amisoz.consulatcore.events.ClaimChangeEvent;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.utils.ChestUtils;
@@ -12,6 +14,7 @@ import fr.leconsulat.api.events.blocks.*;
 import fr.leconsulat.api.events.entities.PlayerInteractWithEntityEvent;
 import fr.leconsulat.api.events.items.PlayerPlaceItemEvent;
 import fr.leconsulat.api.player.CPlayerManager;
+import fr.leconsulat.api.utils.Rollback;
 import org.bukkit.Art;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -52,40 +55,49 @@ import java.util.UUID;
 @SuppressWarnings("Java8CollectionRemoveIf")
 public class ClaimCancelListener implements Listener {
     
+    private ChunkManager chunkManager = ChunkManager.getInstance();
+    
+    public ClaimCancelListener(){
+    }
+    
     //Bloc est détruit par un joueur
     @EventHandler(priority = EventPriority.LOW)
     public void onBreakBlock(BlockBreakEvent event){
-        Claim blockClaim = ClaimManager.getInstance().getClaim(event.getBlock().getChunk());
-        if(blockClaim != null && !blockClaim.canInteract(
-                (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId()),
-                ClaimPermission.BREAK_BLOCK)){
-            event.setCancelled(true);
-        } else if(blockClaim != null){
-            if(!ClaimManager.protectable.contains(event.getBlock().getType())){
-                return;
-            }
-            UUID opener = event.getPlayer().getUniqueId();
-            UUID owner = blockClaim.getProtectedContainer(CoordinatesUtils.convertCoordinates(event.getBlock().getLocation()));
-            if(owner == null){
-                return;
-            }
-            if(!owner.equals(opener)){
-                event.getPlayer().sendActionBar("§cCe coffre est privé");
+        CChunk blockChunk = chunkManager.getChunk(event.getBlock().getChunk());
+        if(blockChunk instanceof Claim){
+            Claim blockClaim = (Claim)blockChunk;
+            if(!blockClaim.canInteract((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId()),
+                    ClaimPermission.BREAK_BLOCK)){
                 event.setCancelled(true);
+                return;
             } else {
-                blockClaim.freeContainer(event.getBlock());
+                if(ClaimManager.protectable.contains(event.getBlock().getType())){
+                    UUID opener = event.getPlayer().getUniqueId();
+                    UUID owner = blockClaim.getProtectedContainer(CoordinatesUtils.convertCoordinates(event.getBlock().getLocation()));
+                    if(owner != null){
+                        if(!owner.equals(opener)){
+                            event.getPlayer().sendActionBar("§cCe coffre est privé");
+                            event.setCancelled(true);
+                            return;
+                        } else {
+                            blockClaim.freeContainer(event.getBlock());
+                        }
+                    }
+                }
             }
         }
+        blockChunk.decrementLimit(event.getBlock().getType());
     }
     
     @EventHandler
     public void onBurn(BlockBurnEvent event){
-        if(event.getIgnitingBlock() == null){
-            return;
+        if(event.getIgnitingBlock() != null){
+            if(!isInteractionAuthorized(event.getIgnitingBlock().getChunk(), event.getBlock().getChunk())){
+                event.setCancelled(true);
+                return;
+            }
         }
-        if(!isInteractionAuthorized(event.getIgnitingBlock().getChunk(), event.getBlock().getChunk())){
-            event.setCancelled(true);
-        }
+        chunkManager.getChunk(event.getBlock()).decrementLimit(event.getBlock().getType());
     }
     
     /*
@@ -135,28 +147,58 @@ public class ClaimCancelListener implements Listener {
     //Bloc explose (ex: lit dans le nether)
     @EventHandler(priority = EventPriority.LOW)
     public void onBlockExplode(BlockExplodeEvent event){
-        if(ClaimManager.getInstance().isClaimed(event.getBlock().getChunk())){
+        CChunk chunk = chunkManager.getChunk(event.getBlock());
+        if(chunk instanceof Claim){
             event.setCancelled(true);
+        } else {
+            chunk.decrementLimit(event.getBlock().getType());
         }
     }
     
-    //BlockFadeEvent -> Bloc qui fond ou disparais (ex: corail sans eau, glace avec lumière, feux qui s'éteint)
+    @EventHandler
+    public void onFade(BlockFadeEvent event){
+        CChunk chunk = chunkManager.getChunk(event.getBlock());
+        if(!chunk.incrementLimit(event.getNewState().getType())){
+            event.setCancelled(true);
+            return;
+        }
+        chunk.decrementLimit(event.getBlock().getType());
+    }
     
     //Bloc fertilisé (arbre, graines...)
     @EventHandler
     public void onFertilize(BlockFertilizeEvent event){
         Player player = event.getPlayer();
-        if(player == null){
-            return;
+        CChunk chunk = chunkManager.getChunk(event.getBlock());
+        if(player != null){
+            if(chunk instanceof Claim && !((Claim)chunk).canFertilize((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId()))){
+                event.setCancelled(true);
+                return;
+            }
         }
-        Claim claim = ClaimManager.getInstance().getClaim(event.getBlock());
-        if(claim != null && !claim.canFertilize((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId()))){
-            event.setCancelled(true);
+        Rollback onCancel = new Rollback();
+        for(BlockState block : event.getBlocks()){
+            CChunk blockChunk = chunkManager.getChunk(block.getLocation());
+            if(!blockChunk.incrementLimit(block.getType())){
+                event.setCancelled(true);
+                onCancel.execute();
+                return;
+            }
+            onCancel.prepare(() -> blockChunk.decrementLimit(block.getType()));
         }
+        chunk.decrementLimit(event.getBlock().getType());
     }
     
-    //BlockFormEvent -> Formation d'un block (ex: lave)
+    @EventHandler
+    public void onForm(BlockFormEvent event){
+        CChunk chunk = chunkManager.getChunk(event.getBlock());
+        if(!chunk.incrementLimit(event.getNewState().getType())){
+            event.setCancelled(true);
+        }
+        chunk.decrementLimit(event.getBlock().getType());
+    }
     
+    //On suppose que l'eau la lave et les oeufs de dragon ne sont pas limités par chunk parce que bon :Kappa:
     //Lava, water and dragon egg moves
     @EventHandler
     public void onFlow(BlockFromToEvent event){
@@ -168,9 +210,11 @@ public class ClaimCancelListener implements Listener {
     //TODO
     @EventHandler
     public void onGrow(BlockGrowEvent event){
-        if(event.getBlock().getType() != Material.MELON_STEM && event.getBlock().getType() != Material.PUMPKIN_STEM){
-            return;
+        CChunk chunk = chunkManager.getChunk(event.getBlock());
+        if(!chunk.incrementLimit(event.getNewState().getType())){
+            event.setCancelled(true);
         }
+        chunk.decrementLimit(event.getBlock().getType());
     }
     
     //Bloc prend feu
@@ -214,59 +258,101 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    //BlockPhysicsEvent
+    //BlockPhysicsEvent -> Appelé trop fréquemment pour être utilisé
     //BlockPistonEvent -> Retract ou Push
     
     //Bloc poussé
     @EventHandler(priority = EventPriority.LOW)
     public void onPistonPush(BlockPistonExtendEvent event){
-        if(event.getBlocks().size() == 0){
+        BlockFace direction = event.getDirection();
+        if(!isInteractionAuthorized(event.getBlock().getChunk(), event.getBlock().getRelative(direction).getChunk())){
+            event.setCancelled(true);
             return;
         }
-        BlockFace direction = event.getDirection();
-        for(Block block : event.getBlocks()){
-            if(!isInteractionAuthorized(event.getBlock().getChunk(), block.getRelative(direction).getChunk())){
-                event.setCancelled(true);
-                break;
+        if(event.getBlocks().size() != 0){
+            for(Block block : event.getBlocks()){
+                if(!isInteractionAuthorized(event.getBlock().getChunk(), block.getRelative(direction).getChunk())){
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+            Rollback onCancel = new Rollback();
+            for(Block block : event.getBlocks()){
+                Location futureLocation = block.getRelative(direction).getLocation();
+                CChunk futureChunk = chunkManager.getChunk(futureLocation);
+                CChunk currentChunk = chunkManager.getChunk(block);
+                Material type = block.getType();
+                currentChunk.decrementLimit(type);
+                if(!futureChunk.incrementLimit(type)){
+                    event.setCancelled(true);
+                    currentChunk.incrementLimit(type);
+                    onCancel.execute();
+                    return;
+                }
+                onCancel.prepare(() -> {
+                    futureChunk.decrementLimit(type);
+                    currentChunk.incrementLimit(type);
+                });
             }
         }
+        
     }
     
     //Bloc tiré
     @EventHandler(priority = EventPriority.LOW)
     public void onPistonRetract(BlockPistonRetractEvent event){
-        if(event.getBlocks().size() == 0){
-            return;
-        }
-        for(Block block : event.getBlocks()){
-            if(!isInteractionAuthorized(event.getBlock().getChunk(), block.getChunk())){
-                event.setCancelled(true);
-                break;
+        if(event.getBlocks().size() != 0){
+            for(Block block : event.getBlocks()){
+                if(!isInteractionAuthorized(event.getBlock().getChunk(), block.getChunk())){
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+            Rollback onCancel = new Rollback();
+            BlockFace direction = event.getDirection();
+            for(Block block : event.getBlocks()){
+                Location futureLocation = block.getRelative(direction).getLocation();
+                CChunk futureChunk = chunkManager.getChunk(futureLocation);
+                CChunk currentChunk = chunkManager.getChunk(block);
+                Material type = block.getType();
+                currentChunk.decrementLimit(type);
+                if(!futureChunk.incrementLimit(type)){
+                    event.setCancelled(true);
+                    currentChunk.incrementLimit(type);
+                    onCancel.execute();
+                    return;
+                }
+                onCancel.prepare(() -> {
+                    futureChunk.decrementLimit(type);
+                    currentChunk.incrementLimit(type);
+                });
             }
         }
     }
     
     @EventHandler(priority = EventPriority.LOW)
     public void onPlace(BlockPlaceEvent event){
-        Claim blockClaim = ClaimManager.getInstance().getClaim(event.getBlock().getChunk());
+        CChunk blockChunk = chunkManager.getChunk(event.getBlock().getChunk());
+        Claim blockClaim = blockChunk instanceof Claim ? (Claim)blockChunk : null;
         if(blockClaim != null && !blockClaim.canInteract(
                 (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId()),
                 ClaimPermission.PLACE_BLOCK)){
             event.setCancelled(true);
+            return;
         } else if(blockClaim != null){
-            if(!ClaimManager.protectable.contains(event.getBlock().getType())){
-                return;
+            if(ClaimManager.protectable.contains(event.getBlock().getType())){
+                Block chest = event.getBlock();
+                if(ChestUtils.isDoubleChest((Chest)chest.getState())){
+                    Block otherChest = ChestUtils.getNextChest(chest);
+                    if(blockClaim.getProtectedContainer(CoordinatesUtils.convertCoordinates(otherChest.getLocation())) != null){
+                        ChestUtils.setChestsSingle(chest, otherChest);
+                        event.getPlayer().sendBlockChange(otherChest.getLocation(), otherChest.getBlockData());
+                    }
+                }
             }
-            Block chest = event.getBlock();
-            if(!ChestUtils.isDoubleChest((Chest)chest.getState())){
-                return;
-            }
-            Block otherChest = ChestUtils.getNextChest(chest);
-            if(blockClaim.getProtectedContainer(CoordinatesUtils.convertCoordinates(otherChest.getLocation())) == null){
-                return;
-            }
-            ChestUtils.setChestsSingle(chest, otherChest);
-            event.getPlayer().sendBlockChange(otherChest.getLocation(), otherChest.getBlockData());
+        }
+        if(!blockChunk.incrementLimit(event.getBlockPlaced().getType())){
+            event.setCancelled(true);
         }
     }
     
@@ -284,7 +370,14 @@ public class ClaimCancelListener implements Listener {
     public void onSpread(BlockSpreadEvent event){
         if(!isInteractionAuthorized(event.getSource().getChunk(), event.getBlock().getChunk())){
             event.setCancelled(true);
+            return;
         }
+        CChunk chunk = chunkManager.getChunk(event.getBlock());
+        if(!chunk.incrementLimit(event.getNewState().getType())){
+            event.setCancelled(true);
+            return;
+        }
+        chunk.decrementLimit(event.getBlock().getType());
     }
     
     @EventHandler
@@ -312,13 +405,17 @@ public class ClaimCancelListener implements Listener {
     
     @EventHandler
     public void onEntityFormBlock(EntityBlockFormEvent event){
-        if(!(event.getEntity() instanceof Player)){
-            return;
+        CChunk chunk = chunkManager.getChunk(event.getBlock().getChunk());
+        if(event.getEntity() instanceof Player){
+            if(chunk instanceof Claim && !((Claim)chunk).canFormBlock((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getEntity().getUniqueId()))){
+                event.setCancelled(true);
+                return;
+            }
         }
-        Claim claim = ClaimManager.getInstance().getClaim(event.getBlock().getChunk());
-        if(claim != null && claim.canFormBlock((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getEntity().getUniqueId()))){
+        if(!chunk.incrementLimit(event.getNewState().getType())){
             event.setCancelled(true);
         }
+        chunk.decrementLimit(event.getBlock().getType());
     }
     
     //FluidLevelChangeEvent -> ?
@@ -364,7 +461,7 @@ public class ClaimCancelListener implements Listener {
     //EntityBreakDoorEvent
     //EntityBreedEvent
     
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void ravagerBlockDestroy(EntityChangeBlockEvent event){
         Entity entity = event.getEntity();
         if(entity instanceof Ravager || entity instanceof Wither){
@@ -374,13 +471,19 @@ public class ClaimCancelListener implements Listener {
         if(entity.getType() == EntityType.FALLING_BLOCK && entity.isDead()){
             Entity fallingBlock = event.getEntity();
             Location from = fallingBlock.getOrigin();
-            if(from == null){
-                return;
-            }
-            if(!isInteractionAuthorized(from.getChunk(), fallingBlock.getChunk())){
-                event.setCancelled(true);
+            if(from != null){
+                if(!isInteractionAuthorized(from.getChunk(), fallingBlock.getChunk())){
+                    event.setCancelled(true);
+                    return;
+                }
             }
         }
+        CChunk chunk = chunkManager.getChunk(event.getBlock());
+        if(!chunk.incrementLimit(event.getTo())){
+            event.setCancelled(true);
+            return;
+        }
+        chunk.decrementLimit(event.getBlock().getType());
     }
     
     //EntityCombustByBlockEvent
@@ -432,9 +535,7 @@ public class ClaimCancelListener implements Listener {
     }
     
     //EntityDamageEvent
-    
     //EntityDeathEvent
-    
     //EntityDropItemEvent
     
     @EventHandler(priority = EventPriority.LOW)
@@ -1069,11 +1170,10 @@ public class ClaimCancelListener implements Listener {
     }
     
     private boolean isInteractionAuthorized(Chunk chunk1, Chunk chunk2){
-        if(chunk1 == chunk2){
-            return true;
-        }
-        Claim claim1 = ClaimManager.getInstance().getClaim(chunk1);
-        Claim claim2 = ClaimManager.getInstance().getClaim(chunk2);
+        return chunk1 == chunk2 || isInteractionAuthorized(ClaimManager.getInstance().getClaim(chunk1), ClaimManager.getInstance().getClaim(chunk2));
+    }
+    
+    private boolean isInteractionAuthorized(Claim claim1, Claim claim2){
         if(claim1 != null && claim2 == null){
             return false;
         }

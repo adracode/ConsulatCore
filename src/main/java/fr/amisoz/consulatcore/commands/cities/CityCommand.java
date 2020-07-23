@@ -351,7 +351,7 @@ public class CityCommand extends ConsulatCommand {
                     }
                 }
                 city.removeMoney(Claim.BUY_CITY_CLAIM);
-                city.addClaim(ClaimManager.getInstance().cityClaim(chunk.getX(), chunk.getZ(), city));
+                ClaimManager.getInstance().cityClaim(chunk.getX(), chunk.getZ(), city);
                 player.sendMessage("§aTu as claim ce chunk pour ta ville.");
             }
             break;

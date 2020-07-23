@@ -1,6 +1,8 @@
 package fr.amisoz.consulatcore;
 
 
+import fr.amisoz.consulatcore.chunks.CChunk;
+import fr.amisoz.consulatcore.chunks.ChunkManager;
 import fr.amisoz.consulatcore.commands.cities.CityCommand;
 import fr.amisoz.consulatcore.commands.claims.AccessCommand;
 import fr.amisoz.consulatcore.commands.claims.ClaimCommand;
@@ -28,6 +30,7 @@ import fr.amisoz.consulatcore.runnable.MessageRunnable;
 import fr.amisoz.consulatcore.runnable.MonitoringRunnable;
 import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.amisoz.consulatcore.zones.ZoneManager;
+import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.amisoz.consulatcore.zones.claims.ClaimManager;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.events.PostInitEvent;
@@ -97,7 +100,11 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         new ZoneManager();
         try {
-            new ClaimManager();
+            ChunkManager chunkManager = ChunkManager.getInstance();
+            chunkManager.register(CChunk.TYPE, CChunk::new);
+            chunkManager.register(Claim.TYPE, Claim::new);
+            chunkManager.loadChunks();
+            ClaimManager.getInstance();
         } catch(UnsupportedOperationException e){
             e.printStackTrace();
             Bukkit.shutdown();
@@ -114,7 +121,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         Bukkit.getScheduler().runTaskTimer(this, new MeceneRunnable(), 0L, 20 * 60 * 60);
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
             ZoneManager.getInstance().saveZones();
-            ClaimManager.getInstance().saveClaims();
+            ChunkManager.getInstance().saveChunks();
         }, 60 * 60 * 20, 60 * 60 * 20);
         registerEvents();
         for(World world : Bukkit.getWorlds()){
@@ -138,13 +145,13 @@ public class ConsulatCore extends JavaPlugin implements Listener {
                 getServer().getPluginManager().callEvent(new PlayerJoinEvent(p, ""));
             }
         }
-        ConsulatAPI.getConsulatAPI().log(Level.FINE, "ConsulatCore loaded in " + (System.currentTimeMillis() - startLoading) + " ms.");
+        ConsulatAPI.getConsulatAPI().log(Level.INFO, "ConsulatCore loaded in " + (System.currentTimeMillis() - startLoading) + " ms.");
     }
     
     @Override
     public void onDisable(){
         ZoneManager.getInstance().saveZones();
-        ClaimManager.getInstance().saveClaims();
+        ChunkManager.getInstance().saveChunks();
     }
     
     @EventHandler(priority = EventPriority.HIGH)

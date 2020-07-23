@@ -19,9 +19,7 @@ import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.events.PlayerClickBlockEvent;
 import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.gui.gui.IGui;
-import fr.leconsulat.api.nbt.*;
 import fr.leconsulat.api.player.CPlayerManager;
-import fr.leconsulat.api.utils.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
@@ -35,7 +33,6 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -47,16 +44,11 @@ public class ClaimManager implements Listener {
     public static final Set<Material> protectable = Collections.unmodifiableSet(EnumSet.of(
             Material.CHEST,
             Material.TRAPPED_CHEST));
-    private static ClaimManager instance;
-    private static final int SHIFT_CLAIMS = 5;
+    private static final ClaimManager instance = new ClaimManager();
     
     private ChunkManager chunkManager = ChunkManager.getInstance();
     
-    public ClaimManager(){
-        if(instance != null){
-            throw new IllegalStateException();
-        }
-        instance = this;
+    private ClaimManager(){
         new ManageClaimGui.Container();
         loadClaims();
     }
@@ -65,10 +57,10 @@ public class ClaimManager implements Listener {
         ConsulatAPI.getConsulatAPI().log(Level.INFO, "Loading chunks...");
         long start = System.currentTimeMillis();
         ZoneManager zoneManager = ZoneManager.getInstance();
+        int size = 0;
         try {
             PreparedStatement getClaims = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM claims;");
             ResultSet resultClaims = getClaims.executeQuery();
-            Map<Integer, Map<Integer, Set<Claim>>> orderedClaims = new HashMap<>();
             while(resultClaims.next()){
                 String stringUUID = resultClaims.getString("player_uuid");
                 if(stringUUID == null){
@@ -81,40 +73,23 @@ public class ClaimManager implements Listener {
                     zoneManager.addZone(claimOwner = new Zone(uuid, Bukkit.getOfflinePlayer(uuid).getName(), uuid));
                     claimOwner.loadNBT();
                 }
-                Claim claim = addClaim(resultClaims.getInt("claim_x"),
-                        resultClaims.getInt("claim_z"),
-                        claimOwner,
-                        resultClaims.getString("description"));
-                orderedClaims.computeIfAbsent(claim.getX() >> SHIFT_CLAIMS, v -> new HashMap<>())
-                        .computeIfAbsent(claim.getZ() >> SHIFT_CLAIMS, v -> new TreeSet<>()).add(claim);
-                
+                int x = resultClaims.getInt("claim_x"), z = resultClaims.getInt("claim_z");
+                String description = resultClaims.getString("description");
+                long coords = CChunk.convert(x, z);
+                CChunk chunk = chunkManager.getChunk(coords);
+                if(chunk instanceof Claim){
+                    Claim claim = (Claim)chunk;
+                    claim.setOwner(claimOwner);
+                    claim.setDescription(description);
+                } else {
+                    ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Database Claim (x=" + x + ", z=" + z + ") is not referenced as a Claim");
+                    addClaim(x, z, claimOwner, description);
+                }
+                ++size;
             }
             resultClaims.close();
             getClaims.close();
-            if(new File(ConsulatAPI.getConsulatAPI().getDataFolder(), "claims").exists()){
-                ChunkManager chunkManager = ChunkManager.getInstance();
-                for(Map.Entry<Integer, Map<Integer, Set<Claim>>> claimX : orderedClaims.entrySet()){
-                    for(Map.Entry<Integer, Set<Claim>> claimZ : claimX.getValue().entrySet()){
-                        try {
-                            File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "claims/" + claimX.getKey() + "." + claimZ.getKey() + ".dat");
-                            if(!file.exists()){
-                                return;
-                            }
-                            NBTInputStream is = new NBTInputStream(file);
-                            CompoundTag regionMap = is.read();
-                            is.close();
-                            for(CompoundTag claimTag : regionMap.getList("Claims", CompoundTag.class)){
-                                Claim claim = getClaim(claimTag.getLong("Coords"));
-                                if(claim != null){
-                                    claim.loadNBT(claimTag);
-                                }
-                            }
-                        } catch(IOException e){
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            } else {
+            if(!new File(ConsulatAPI.getConsulatAPI().getDataFolder(), "chunks").exists()){
                 PreparedStatement getAllowedPlayers = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM access;");
                 ResultSet resultAllowedPlayers = getAllowedPlayers.executeQuery();
                 while(resultAllowedPlayers.next()){
@@ -140,12 +115,11 @@ public class ClaimManager implements Listener {
             e.printStackTrace();
             Bukkit.shutdown();
         }
-        ConsulatAPI.getConsulatAPI().log(Level.INFO, "Chunks loaded in " + (System.currentTimeMillis() - start) + " ms");
+        ConsulatAPI.getConsulatAPI().log(Level.INFO, size + " Claims loaded in " + (System.currentTimeMillis() - start) + " ms");
     }
     
     private Claim addClaim(int x, int z, Zone owner, String description){
         Claim claim = new Claim(x, z, owner, description);
-        owner.addClaim(claim);
         chunkManager.addChunk(claim);
         return claim;
     }
@@ -180,21 +154,18 @@ public class ClaimManager implements Listener {
             changeOwner(x, z, claim);
             return claim;
         }
+        claim = claim(x, z, city);
         IGui iClaimsGui = GuiManager.getInstance().getContainer("city").getGui(false, city, CityGui.CLAIMS);
         if(iClaimsGui != null){
             ((ClaimsGui)iClaimsGui).addItemClaim(claim);
         }
-        return claim(x, z, city);
+        return claim;
     }
     
     private Claim claim(int x, int z, Zone owner){
         Claim claim = addClaim(x, z, owner, null);
         addClaimDatabase(x, z, owner);
         return claim;
-    }
-    
-    public Claim unClaim(int x, int z){
-        return unClaim(getClaim(x, z));
     }
     
     public Claim unClaim(Claim claim){
@@ -270,7 +241,8 @@ public class ClaimManager implements Listener {
         event.getPlayer().sendActionBar("§aCe coffre est maintenant privé");
     }
     
-    public void setDescriptionDatabase(Claim claim, String description) throws SQLException{
+    public void setDescription(Claim claim, String description) throws SQLException{
+        claim.setDescription(description);
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE claims SET description = ? WHERE claim_x = ? AND claim_z = ?;");
         preparedStatement.setString(1, description);
         preparedStatement.setInt(2, claim.getX());
@@ -380,42 +352,6 @@ public class ClaimManager implements Listener {
             if(description != null){
                 player.sendMessage(Text.PREFIX + "§7" + description);
             }
-        }
-    }
-    
-    public void saveClaims(){
-        try {
-            Map<Integer, Map<Integer, Set<Claim>>> orderedClaims = new HashMap<>();
-            for(CChunk claim : chunkManager.getChunks()){
-                if(!(claim instanceof Claim)){
-                    continue;
-                }
-                orderedClaims.computeIfAbsent(
-                        claim.getX() >> SHIFT_CLAIMS,
-                        v -> new HashMap<>()).computeIfAbsent(claim.getZ() >> SHIFT_CLAIMS,
-                        v -> new TreeSet<>()).add((Claim)claim);
-            }
-            for(Map.Entry<Integer, Map<Integer, Set<Claim>>> claimX : orderedClaims.entrySet()){
-                for(Map.Entry<Integer, Set<Claim>> claimZ : claimX.getValue().entrySet()){
-                    ListTag<CompoundTag> claimsList = new ListTag<>(NBTType.COMPOUND);
-                    for(Claim claim : claimZ.getValue()){
-                        claimsList.addTag(claim.saveNBT());
-                    }
-                    File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "claims/" + claimX.getKey() + "." + claimZ.getKey() + ".dat");
-                    if(!file.exists()){
-                        if(!file.createNewFile()){
-                            throw new IOException("Couldn't create file.");
-                        }
-                    }
-                    CompoundTag claims = new CompoundTag();
-                    claims.put("Claims", claimsList);
-                    NBTOutputStream os = new NBTOutputStream(file, claims);
-                    os.write("Claim");
-                    os.close();
-                }
-            }
-        } catch(IOException e){
-            e.printStackTrace();
         }
     }
     
