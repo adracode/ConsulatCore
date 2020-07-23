@@ -11,6 +11,10 @@ compileJava.options.encoding = 'UTF-8'
 
 repositories {
     mavenCentral()
+    //Paper
+    maven {
+        url 'https://papermc.io/repo/repository/maven-public/'
+    }
     //TextComponent
     maven {
         url "https://oss.sonatype.org/content/repositories/snapshots"
