@@ -35,6 +35,11 @@ public class CChunk implements Comparable<CChunk> {
         this.coords = coords;
     }
     
+    public CChunk(CChunk chunk){
+        this.coords = chunk.coords;
+        this.limits = chunk.limits;
+    }
+    
     public void addLimit(Material type){
         limits.put(type, new AtomicInteger(0));
     }
@@ -89,6 +94,15 @@ public class CChunk implements Comparable<CChunk> {
         return Long.compare(this.coords, o.coords);
     }
     
+    @Override
+    public String toString(){
+        return "CChunk{" +
+                "coords=" + coords +
+                ", limits=" + limits +
+                ", needLimitSync=" + needLimitSync +
+                '}';
+    }
+    
     public void loadNBT(CompoundTag chunk){
         if(chunk.has("LimitedBlocks")){
             List<CompoundTag> limits = chunk.getList("LimitedBlocks", CompoundTag.class);
@@ -97,6 +111,9 @@ public class CChunk implements Comparable<CChunk> {
                         Material.valueOf(limited.getString("Id")),
                         new AtomicInteger(limited.getShort("Limit")));
             }
+        }
+        if(chunk.has("NeedSync")){
+            setNeedLimitSync(true);
         }
     }
     
@@ -113,6 +130,9 @@ public class CChunk implements Comparable<CChunk> {
                 limits.addTag(limited);
             }
             chunk.put("LimitedBlocks", limits);
+        }
+        if(needLimitSync){
+            chunk.putByte("NeedSync", (byte)0);
         }
         return chunk;
     }
@@ -147,43 +167,30 @@ public class CChunk implements Comparable<CChunk> {
         }
     }
     
-    public boolean syncLimits(){
-        boolean updated = false;
+    public void syncLimits(){
+        boolean needSync = false;
         Map<Material, Integer> config = ChunkManager.getInstance().getLimitedBlocks();
         for(Iterator<Map.Entry<Material, AtomicInteger>> iterator = this.limits.entrySet().iterator(); iterator.hasNext(); ){
             Map.Entry<Material, AtomicInteger> currentLimit = iterator.next();
             Integer limitedBlock = config.get(currentLimit.getKey());
             if(limitedBlock == null){
                 iterator.remove();
-            } else if(currentLimit.getValue().get() > limitedBlock){
-                currentLimit.getValue().set(limitedBlock);
-            } else {
+            } else if(currentLimit.getValue().get() <= limitedBlock){
                 continue;
             }
-            updated = true;
+            needSync = true;
         }
         if(config.keySet().size() > this.limits.keySet().size()){
-            updated = true;
+            needSync = true;
             Set<Material> missing = new HashSet<>(config.keySet());
             missing.removeAll(this.limits.keySet());
             for(Material missingType : missing){
-                this.limits.put(missingType, new AtomicInteger(config.get(missingType)));
+                this.limits.put(missingType, new AtomicInteger(0));
             }
         }
-        if(updated){
-            for(AtomicInteger limit : limits.values()){
-                limit.set(0);
-            }
+        if(!this.needLimitSync){
+            setNeedLimitSync(needSync);
         }
-        return updated;
-    }
-    
-    @Override
-    public String toString(){
-        return "CChunk{" +
-                "coords=" + getX() + " " + getZ() +
-                ", limits=" + limits +
-                '}';
     }
     
     public boolean isNeedLimitSync(){
@@ -191,6 +198,11 @@ public class CChunk implements Comparable<CChunk> {
     }
     
     public void setNeedLimitSync(boolean needLimitSync){
+        if(needLimitSync){
+            for(AtomicInteger limit : limits.values()){
+                limit.set(0);
+            }
+        }
         this.needLimitSync = needLimitSync;
     }
 }

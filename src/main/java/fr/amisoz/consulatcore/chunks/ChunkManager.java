@@ -19,7 +19,6 @@ import org.bukkit.event.world.ChunkLoadEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 
 //TODO: Nether et End
@@ -32,8 +31,6 @@ public class ChunkManager implements Listener {
     
     private final Map<Long, CChunk> chunks = new HashMap<>();
     private final Map<Material, Integer> limits = new EnumMap<>(Material.class);
-    
-    private Queue<ChunkScanner> queue = new LinkedBlockingQueue<>();
     
     private ChunkManager(){
         FileConfiguration config = ConsulatCore.getInstance().getConfig();
@@ -67,10 +64,8 @@ public class ChunkManager implements Listener {
                 for(CompoundTag chunkTag : chunks){
                     CChunk chunk = createChunk.get(chunkTag.getString("Type")).construct(chunkTag.getLong("Coords"));
                     chunk.loadNBT(chunkTag);
-                    this.chunks.put(chunk.getCoordinates(), chunk);
-                    if(chunk.syncLimits()){
-                        chunk.setNeedLimitSync(true);
-                    }
+                    addChunk(chunk);
+                    chunk.syncLimits();
                     ++size;
                 }
             }
@@ -133,16 +128,27 @@ public class ChunkManager implements Listener {
     public CChunk getChunk(long coords){
         return chunks.get(coords);
     }
-    
+   
     public void addChunk(CChunk chunk){
         CChunk previous = chunks.put(chunk.getCoordinates(), chunk);
         if(previous != null){
             chunk.set(previous);
         }
+        if(chunk.getLimitSize() == 0){
+            for(Material material : limits.keySet()){
+                chunk.addLimit(material);
+            }
+            chunk.setNeedLimitSync(true);
+        }
     }
     
-    public boolean removeChunk(CChunk chunk){
-        return chunks.remove(chunk.getCoordinates()) != null;
+    public boolean removeChunk(CChunk chunk, boolean replaceByCChunk){
+        if(replaceByCChunk){
+            addChunk(new CChunk(chunk));
+            return true;
+        } else {
+            return chunks.remove(chunk.getCoordinates()) != null;
+        }
     }
     
     public Map<Material, Integer> getLimitedBlocks(){
@@ -165,21 +171,18 @@ public class ChunkManager implements Listener {
     @EventHandler
     public void onLoad(ChunkLoadEvent event){
         CChunk chunk = chunks.get(CChunk.convert(event.getChunk().getX(), event.getChunk().getZ()));
+        System.out.println("Loading chunk " + chunk);
         if(event.getWorld() == Bukkit.getWorlds().get(0) && (chunk == null || chunk.isNeedLimitSync())){
             if(chunk == null){
                 chunk = new CChunk(event.getChunk().getX(), event.getChunk().getZ());
                 addChunk(chunk);
-                for(Material material : limits.keySet()){
-                    chunk.addLimit(material);
-                }
-            } else {
-                chunk.setNeedLimitSync(false);
             }
             scanLimitedBlock(chunk, event.getChunk());
         }
     }
     
     public void scanLimitedBlock(CChunk consulatChunk, Chunk chunk){
+        consulatChunk.setNeedLimitSync(false);
         ChunkScanner scanner = new ChunkScanner(chunk, (x, y, z, type) -> {
             if(consulatChunk.hasLimit(type)){
                 if(consulatChunk.getLimit(type) < limits.get(type)){

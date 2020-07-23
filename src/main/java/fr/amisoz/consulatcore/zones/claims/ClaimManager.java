@@ -131,7 +131,7 @@ public class ClaimManager implements Listener {
     }
     
     private void removeClaim(Claim claim){
-        chunkManager.removeChunk(claim);
+        chunkManager.removeChunk(claim, true);
         Zone owner = claim.getOwner();
         owner.removeClaim(claim);
         if(owner instanceof City){
