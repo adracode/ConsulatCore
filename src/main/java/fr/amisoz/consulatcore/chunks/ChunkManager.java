@@ -6,10 +6,7 @@ import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.nbt.*;
 import fr.leconsulat.api.task.TaskManager;
 import fr.leconsulat.api.utils.FileUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
@@ -29,10 +26,13 @@ public class ChunkManager implements Listener {
     
     private final Map<String, ChunkConstructor> createChunk = new HashMap<>();
     
-    private final Map<Long, CChunk> chunks = new HashMap<>();
+    private final Map<UUID, Map<Long, CChunk>> chunks = new HashMap<>();
     private final Map<Material, Integer> limits = new EnumMap<>(Material.class);
     
     private ChunkManager(){
+        Bukkit.getWorlds().stream()
+                .sorted(Comparator.comparingInt(world -> world.getEnvironment().ordinal()))
+                .forEach((world -> chunks.put(world.getUID() ,new HashMap<>())));
         FileConfiguration config = ConsulatCore.getInstance().getConfig();
         for(Map.Entry<String, Object> limit : config.getConfigurationSection("block-limits").getValues(false).entrySet()){
             Material material;
@@ -56,52 +56,77 @@ public class ChunkManager implements Listener {
         long start = System.currentTimeMillis();
         int size = 0;
         try {
-            for(File file : FileUtils.getFiles(new File(ConsulatAPI.getConsulatAPI().getDataFolder(), "chunks"))){
-                NBTInputStream is = new NBTInputStream(file);
-                CompoundTag region = is.read();
-                is.close();
-                List<CompoundTag> chunks = region.getList("Chunks", CompoundTag.class);
-                for(CompoundTag chunkTag : chunks){
-                    CChunk chunk = createChunk.get(chunkTag.getString("Type")).construct(chunkTag.getLong("Coords"));
-                    chunk.loadNBT(chunkTag);
-                    addChunk(chunk);
-                    chunk.syncLimits();
-                    ++size;
+            for(File worldDir : FileUtils.getFiles(new File(ConsulatAPI.getConsulatAPI().getDataFolder(), "chunks"))){
+                UUID worldUUID = UUID.fromString(worldDir.getName());
+                World world = Bukkit.getWorld(worldUUID);
+                if(world == null){
+                    ConsulatAPI.getConsulatAPI().log(Level.WARNING, "World " + worldUUID + " not found, skipping loading chunks for this world");
+                    continue;
+                }
+                for(File chunkFile : FileUtils.getFiles(worldDir)){
+                    NBTInputStream is = new NBTInputStream(chunkFile);
+                    CompoundTag region = is.read();
+                    is.close();
+                    List<CompoundTag> chunks = region.getList("Chunks", CompoundTag.class);
+                    for(CompoundTag chunkTag : chunks){
+                        CChunk chunk = createChunk.get(chunkTag.getString("Type")).construct(chunkTag.getLong("Coords"));
+                        chunk.loadNBT(chunkTag);
+                        addChunk(world, chunk);
+                        chunk.syncLimits();
+                        ++size;
+                    }
                 }
             }
         } catch(IOException e){
             e.printStackTrace();
             Bukkit.shutdown();
         }
+        for(World world : Bukkit.getWorlds()){
+            Map<Long, CChunk> worldChunks = chunks.get(world.getUID());
+            for(Chunk spawnChunk : world.getLoadedChunks()){
+                if(!worldChunks.containsKey(CChunk.convert(spawnChunk.getX(), spawnChunk.getZ()))){
+                    Bukkit.getPluginManager().callEvent(new ChunkLoadEvent(spawnChunk, false));
+                }
+            }
+        }
         ConsulatAPI.getConsulatAPI().log(Level.INFO, size + " Chunks loaded in " + (System.currentTimeMillis() - start));
     }
     
     public void saveChunks(){
         try {
-            Map<Integer, Map<Integer, Set<CChunk>>> orderedChunks = new HashMap<>();
-            for(CChunk chunk : chunks.values()){
-                orderedChunks.computeIfAbsent(
-                        chunk.getX() >> SHIFT_CLAIMS,
-                        v -> new HashMap<>()).computeIfAbsent(chunk.getZ() >> SHIFT_CLAIMS,
-                        v -> new TreeSet<>()).add(chunk);
+            File chunkDir = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "chunks");
+            if(!chunkDir.exists()){
+                if(!chunkDir.mkdir()){
+                    throw new IOException("Couldn't create file.");
+                }
             }
-            for(Map.Entry<Integer, Map<Integer, Set<CChunk>>> claimX : orderedChunks.entrySet()){
-                for(Map.Entry<Integer, Set<CChunk>> chunkZ : claimX.getValue().entrySet()){
-                    File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "chunks/" + claimX.getKey() + "." + chunkZ.getKey() + ".dat");
-                    if(!file.exists()){
-                        if(!file.createNewFile()){
-                            throw new IOException("Couldn't create file.");
+            for(Map.Entry<UUID, Map<Long, CChunk>> worldChunks : chunks.entrySet()){
+                Map<Long, CChunk> world = worldChunks.getValue();
+                File worldDir = FileUtils.loadFile(chunkDir, worldChunks.getKey().toString());
+                if(!worldDir.exists()){
+                    if(!worldDir.mkdir()){
+                        throw new IOException("Couldn't create file.");
+                    }
+                }
+                Map<Integer, Map<Integer, Set<CChunk>>> orderedChunks = new HashMap<>();
+                for(CChunk chunk : world.values()){
+                    orderedChunks.computeIfAbsent(
+                            chunk.getX() >> SHIFT_CLAIMS,
+                            v -> new HashMap<>()).computeIfAbsent(chunk.getZ() >> SHIFT_CLAIMS,
+                            v -> new TreeSet<>()).add(chunk);
+                }
+                for(Map.Entry<Integer, Map<Integer, Set<CChunk>>> claimX : orderedChunks.entrySet()){
+                    for(Map.Entry<Integer, Set<CChunk>> chunkZ : claimX.getValue().entrySet()){
+                        CompoundTag chunks = new CompoundTag();
+                        ListTag<CompoundTag> listChunks = new ListTag<>(NBTType.COMPOUND);
+                        for(CChunk chunk : chunkZ.getValue()){
+                            listChunks.addTag(chunk.saveNBT());
                         }
+                        chunks.put("Chunks", listChunks);
+                        NBTOutputStream os = new NBTOutputStream(new File(worldDir, claimX.getKey() + "." + chunkZ.getKey() + ".dat"), chunks);
+                        os.write("Region");
+                        os.close();
                     }
-                    CompoundTag chunks = new CompoundTag();
-                    ListTag<CompoundTag> listChunks = new ListTag<>(NBTType.COMPOUND);
-                    for(CChunk chunk : chunkZ.getValue()){
-                        listChunks.addTag(chunk.saveNBT());
-                    }
-                    chunks.put("Chunks", listChunks);
-                    NBTOutputStream os = new NBTOutputStream(file, chunks);
-                    os.write("Region");
-                    os.close();
                 }
             }
         } catch(IOException e){
@@ -114,23 +139,23 @@ public class ChunkManager implements Listener {
     }
     
     public CChunk getChunk(Location location){
-        return getChunk(location.getChunk().getX(), location.getChunk().getZ());
+        return getChunk(location.getWorld(), location.getChunk().getX(), location.getChunk().getZ());
     }
     
     public CChunk getChunk(Chunk chunk){
-        return getChunk(chunk.getX(), chunk.getZ());
+        return getChunk(chunk.getWorld(), chunk.getX(), chunk.getZ());
     }
     
-    public CChunk getChunk(int x, int z){
-        return getChunk(CChunk.convert(x, z));
+    public CChunk getChunk(World world, int x, int z){
+        return getChunk(world, CChunk.convert(x, z));
     }
     
-    public CChunk getChunk(long coords){
-        return chunks.get(coords);
+    public CChunk getChunk(World world, long coords){
+        return chunks.get(world.getUID()).get(coords);
     }
-   
-    public void addChunk(CChunk chunk){
-        CChunk previous = chunks.put(chunk.getCoordinates(), chunk);
+    
+    public void addChunk(World world, CChunk chunk){
+        CChunk previous = chunks.get(world.getUID()).put(chunk.getCoordinates(), chunk);
         if(previous != null){
             chunk.set(previous);
         }
@@ -142,12 +167,12 @@ public class ChunkManager implements Listener {
         }
     }
     
-    public boolean removeChunk(CChunk chunk, boolean replaceByCChunk){
+    public boolean removeChunk(World world, CChunk chunk, boolean replaceByCChunk){
         if(replaceByCChunk){
-            addChunk(new CChunk(chunk));
+            addChunk(world, new CChunk(chunk));
             return true;
         } else {
-            return chunks.remove(chunk.getCoordinates()) != null;
+            return chunks.get(world.getUID()).remove(chunk.getCoordinates()) != null;
         }
     }
     
@@ -164,18 +189,17 @@ public class ChunkManager implements Listener {
         return instance;
     }
     
-    public Collection<CChunk> getChunks(){
-        return Collections.unmodifiableCollection(chunks.values());
+    public Collection<CChunk> getChunks(World world){
+        return Collections.unmodifiableCollection(chunks.get(world.getUID()).values());
     }
     
     @EventHandler
     public void onLoad(ChunkLoadEvent event){
-        CChunk chunk = chunks.get(CChunk.convert(event.getChunk().getX(), event.getChunk().getZ()));
-        System.out.println("Loading chunk " + chunk);
-        if(event.getWorld() == Bukkit.getWorlds().get(0) && (chunk == null || chunk.isNeedLimitSync())){
+        CChunk chunk = chunks.get(event.getWorld().getUID()).get(CChunk.convert(event.getChunk().getX(), event.getChunk().getZ()));
+        if(chunk == null || chunk.isNeedLimitSync()){
             if(chunk == null){
                 chunk = new CChunk(event.getChunk().getX(), event.getChunk().getZ());
-                addChunk(chunk);
+                addChunk(event.getWorld(), chunk);
             }
             scanLimitedBlock(chunk, event.getChunk());
         }

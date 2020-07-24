@@ -23,6 +23,7 @@ import fr.leconsulat.api.player.CPlayerManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
@@ -47,9 +48,15 @@ public class ClaimManager implements Listener {
     private static final ClaimManager instance = new ClaimManager();
     
     private ChunkManager chunkManager = ChunkManager.getInstance();
+    private final World world;
     
     private ClaimManager(){
         new ManageClaimGui.Container();
+        world = Bukkit.getWorld("world");
+        if(world == null){
+            ConsulatAPI.getConsulatAPI().log(Level.SEVERE, "Couldn't find base world");
+            Bukkit.shutdown();
+        }
         loadClaims();
     }
     
@@ -76,7 +83,7 @@ public class ClaimManager implements Listener {
                 int x = resultClaims.getInt("claim_x"), z = resultClaims.getInt("claim_z");
                 String description = resultClaims.getString("description");
                 long coords = CChunk.convert(x, z);
-                CChunk chunk = chunkManager.getChunk(coords);
+                CChunk chunk = chunkManager.getChunk(world, coords);
                 if(chunk instanceof Claim){
                     Claim claim = (Claim)chunk;
                     claim.setOwner(claimOwner);
@@ -120,7 +127,7 @@ public class ClaimManager implements Listener {
     
     private Claim addClaim(int x, int z, Zone owner, String description){
         Claim claim = new Claim(x, z, owner, description);
-        chunkManager.addChunk(claim);
+        chunkManager.addChunk(world, claim);
         return claim;
     }
     
@@ -131,7 +138,7 @@ public class ClaimManager implements Listener {
     }
     
     private void removeClaim(Claim claim){
-        chunkManager.removeChunk(claim, true);
+        chunkManager.removeChunk(world, claim, true);
         Zone owner = claim.getOwner();
         owner.removeClaim(claim);
         if(owner instanceof City){
@@ -194,7 +201,7 @@ public class ClaimManager implements Listener {
     }
     
     public @Nullable Claim getClaim(long coords){
-        CChunk chunk = chunkManager.getChunk(coords);
+        CChunk chunk = chunkManager.getChunk(world, coords);
         return chunk instanceof Claim ? (Claim)chunk : null;
     }
     

@@ -45,8 +45,6 @@ import org.bukkit.projectiles.BlockProjectileSource;
 import java.util.Iterator;
 import java.util.UUID;
 
-//TODO: Farmland
-//TODO: pouvoir lire les livres
 //TODO: On peut mettre du charbon dans un wagon
 //TODO: on peut jeter des potions depuis l'ext
 //TODO: on peut pousser les mobs -> à test
