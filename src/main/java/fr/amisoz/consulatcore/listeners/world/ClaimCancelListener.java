@@ -66,7 +66,7 @@ public class ClaimCancelListener implements Listener {
                 event.setCancelled(true);
                 return;
             } else {
-                if(ClaimManager.protectable.contains(event.getBlock().getType())){
+                if(ClaimManager.PROTECTABLE.contains(event.getBlock().getType())){
                     UUID opener = event.getPlayer().getUniqueId();
                     UUID owner = blockClaim.getProtectedContainer(CoordinatesUtils.convertCoordinates(event.getBlock().getLocation()));
                     if(owner != null){
@@ -335,13 +335,29 @@ public class ClaimCancelListener implements Listener {
             event.setCancelled(true);
             return;
         } else if(blockClaim != null){
-            if(ClaimManager.protectable.contains(event.getBlock().getType())){
-                Block chest = event.getBlock();
-                if(ChestUtils.isDoubleChest((Chest)chest.getState())){
-                    Block otherChest = ChestUtils.getNextChest(chest);
-                    if(blockClaim.getProtectedContainer(CoordinatesUtils.convertCoordinates(otherChest.getLocation())) != null){
-                        ChestUtils.setChestsSingle(chest, otherChest);
-                        event.getPlayer().sendBlockChange(otherChest.getLocation(), otherChest.getBlockData());
+            if(ClaimManager.PROTECTABLE.contains(event.getBlock().getType())){
+                Block placedChest = event.getBlock();
+                if(ChestUtils.isDoubleChest((Chest)placedChest.getState())){
+                    Block otherChest = ChestUtils.getNextChest(placedChest);
+                    if(otherChest != null){
+                        if(blockClaim.getProtectedContainer(CoordinatesUtils.convertCoordinates(otherChest.getLocation())) != null){
+                            ChestUtils.setChestsSingle(placedChest, otherChest);
+                            event.getPlayer().sendBlockChange(otherChest.getLocation(), otherChest.getBlockData());
+                        }
+                    }
+                }
+            }
+        }
+        Block block = event.getBlock();
+        if(ChestUtils.isChest(block.getType())){
+            Chest chest = (Chest)block.getState();
+            if(ChestUtils.isDoubleChest(chest)){
+                Block nextChest = ChestUtils.getNextChest(block);
+                if(nextChest != null){
+                    Claim nextChestClaim = ClaimManager.getInstance().getClaim(nextChest);
+                    if(!isInteractionAuthorized(blockClaim, nextChestClaim)){
+                        ChestUtils.setChestsSingle(block, nextChest);
+                        event.getPlayer().sendBlockChange(nextChest.getLocation(), nextChest.getBlockData());
                     }
                 }
             }
@@ -732,7 +748,7 @@ public class ClaimCancelListener implements Listener {
         if(event.getSource().getHolder() instanceof BlockInventoryHolder){
             Block blockSource = ((BlockInventoryHolder)event.getSource().getHolder()).getBlock();
             sourceChunk = blockSource.getChunk();
-            if(ClaimManager.protectable.contains(blockSource.getType())){
+            if(ClaimManager.PROTECTABLE.contains(blockSource.getType())){
                 Claim claim = ClaimManager.getInstance().getClaim(blockSource.getChunk());
                 if(claim != null && claim.getProtectedContainer(CoordinatesUtils.convertCoordinates(blockSource.getLocation())) != null){
                     event.setCancelled(true);
@@ -748,7 +764,7 @@ public class ClaimCancelListener implements Listener {
         if(event.getDestination().getHolder() instanceof BlockInventoryHolder){
             Block blockDestination = ((BlockInventoryHolder)event.getDestination().getHolder()).getBlock();
             destinationChunk = blockDestination.getChunk();
-            if(ClaimManager.protectable.contains(blockDestination.getType())){
+            if(ClaimManager.PROTECTABLE.contains(blockDestination.getType())){
                 Claim claim = ClaimManager.getInstance().getClaim(blockDestination.getChunk());
                 if(claim != null && claim.getProtectedContainer(CoordinatesUtils.convertCoordinates(blockDestination.getLocation())) != null){
                     event.setCancelled(true);
@@ -1026,7 +1042,7 @@ public class ClaimCancelListener implements Listener {
             if(!player.isInModeration() || player.getPlayer().getGameMode() != GameMode.SPECTATOR){
                 event.setCancelled(true);
             }
-        } else if(ClaimManager.protectable.contains(event.getBlock().getType())){
+        } else if(ClaimManager.PROTECTABLE.contains(event.getBlock().getType())){
             if(!(blockClaim.getOwner() instanceof City) || player.getUUID().equals(blockClaim.getOwnerUUID())){
                 return;
             }
@@ -1041,6 +1057,7 @@ public class ClaimCancelListener implements Listener {
             }
         }
     }
+    
     
     @EventHandler()
     public void onInteractLever(PlayerInteractLeverEvent event){

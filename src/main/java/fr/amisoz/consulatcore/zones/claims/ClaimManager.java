@@ -42,15 +42,22 @@ import java.util.logging.Level;
 
 public class ClaimManager implements Listener {
     
-    public static final Set<Material> protectable = Collections.unmodifiableSet(EnumSet.of(
+    public static final Set<Material> PROTECTABLE = Collections.unmodifiableSet(EnumSet.of(
             Material.CHEST,
             Material.TRAPPED_CHEST));
-    private static final ClaimManager instance = new ClaimManager();
+    private static ClaimManager instance;
+    
+    static{
+        new ClaimManager();
+    }
     
     private ChunkManager chunkManager = ChunkManager.getInstance();
     private final World world;
     
     private ClaimManager(){
+        if(instance == null){
+            instance = this;
+        }
         new ManageClaimGui.Container();
         world = Bukkit.getWorld("world");
         if(world == null){
@@ -211,7 +218,7 @@ public class ClaimManager implements Listener {
         if(itemInHand.getType() != Material.NAME_TAG || !itemInHand.hasItemMeta() || !itemInHand.getItemMeta().hasDisplayName() || !itemInHand.getItemMeta().getDisplayName().equalsIgnoreCase("clé")){
             return;
         }
-        if(!protectable.contains(event.getBlock().getType())){
+        if(!PROTECTABLE.contains(event.getBlock().getType())){
             return;
         }
         event.setCancelled(true);
@@ -236,9 +243,11 @@ public class ClaimManager implements Listener {
         Block chestClicked = event.getBlock();
         Block nextChest = ChestUtils.getNextChest(chestClicked);
         if(ChestUtils.isDoubleChest((Chest)chestClicked.getState())){
-            claim.protectContainer(CoordinatesUtils.convertCoordinates(nextChest.getLocation()), event.getPlayer().getUniqueId());
+            if(nextChest != null){
+                claim.protectContainer(CoordinatesUtils.convertCoordinates(nextChest.getLocation()), event.getPlayer().getUniqueId());
+            }
         } else {
-            if(!nextChest.getLocation().equals(chestClicked.getLocation())){
+            if(nextChest != null && !nextChest.getLocation().equals(chestClicked.getLocation())){
                 UUID nextChestOwner = claim.getProtectedContainer(CoordinatesUtils.convertCoordinates(nextChest.getLocation()));
                 if(event.getPlayer().getUniqueId().equals(nextChestOwner)){
                     ChestUtils.setChestDouble(chestClicked, nextChest);

@@ -21,7 +21,10 @@ import java.util.logging.Level;
 //TODO: Nether et End
 public class ChunkManager implements Listener {
     
-    private static final ChunkManager instance = new ChunkManager();
+    private static ChunkManager instance;
+    static {
+         new ChunkManager();
+    }
     private static final int SHIFT_CLAIMS = 5;
     
     private final Map<String, ChunkConstructor> createChunk = new HashMap<>();
@@ -30,6 +33,9 @@ public class ChunkManager implements Listener {
     private final Map<Material, Integer> limits = new EnumMap<>(Material.class);
     
     private ChunkManager(){
+        if(instance == null){
+            instance = this;
+        }
         Bukkit.getWorlds().stream()
                 .sorted(Comparator.comparingInt(world -> world.getEnvironment().ordinal()))
                 .forEach((world -> chunks.put(world.getUID() ,new HashMap<>())));

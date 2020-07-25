@@ -103,7 +103,10 @@ public class ShopManager implements Listener {
                     Location old = location;
                     location = block.getLocation();
                     if(ChestUtils.isDoubleChest(chest)){
-                        ChestUtils.setChestsSingle(chest.getBlock(), ChestUtils.getNextChest(chest.getBlock()));
+                        Block nextChest = ChestUtils.getNextChest(chest.getBlock());
+                        if(nextChest != null){
+                            ChestUtils.setChestsSingle(chest.getBlock(), nextChest);
+                        }
                     }
                     updateShop(old, location);
                 } else {
@@ -616,11 +619,14 @@ public class ShopManager implements Listener {
             return;
         }
         Block otherChest = ChestUtils.getNextChest(chest);
-        if(!isShop((Chest)otherChest.getState())){
-            return;
+        if(otherChest != null){
+            if(!isShop((Chest)otherChest.getState())){
+                return;
+            }
+            ChestUtils.setChestsSingle(chest, otherChest);
+            event.getPlayer().sendBlockChange(otherChest.getLocation(), otherChest.getBlockData());
         }
-        ChestUtils.setChestsSingle(chest, otherChest);
-        event.getPlayer().sendBlockChange(otherChest.getLocation(), otherChest.getBlockData());
+       
     }
     
     @EventHandler

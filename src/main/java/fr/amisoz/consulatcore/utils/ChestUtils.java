@@ -4,6 +4,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.type.Chest;
+import org.jetbrains.annotations.Nullable;
 
 public final class ChestUtils {
     
@@ -16,7 +17,7 @@ public final class ChestUtils {
         return false;
     }
     
-    public static Block getNextChest(Block chest){
+    public static @Nullable Block getNextChest(Block chest){
         Chest side = (Chest)chest.getBlockData();
         if(side.getType() == Chest.Type.SINGLE){
             switch(side.getFacing()){
@@ -34,7 +35,7 @@ public final class ChestUtils {
                             ((Chest)nextChest.getBlockData()).getFacing() == side.getFacing()){
                         return nextChest;
                     }
-                    return chest.getRelative(BlockFace.SELF);
+                    return null;
                 }
                 case EAST:
                 case WEST:
@@ -50,15 +51,19 @@ public final class ChestUtils {
                             ((Chest)nextChest.getBlockData()).getFacing() == side.getFacing()){
                         return nextChest;
                     }
-                    return chest.getRelative(BlockFace.SELF);
+                    return null;
             }
         } else {
-            return chest.getRelative(getNextChest(side));
+            BlockFace next = getNextChest(side);
+            if(next == null){
+                return null;
+            }
+            return chest.getRelative(next);
         }
-        return chest.getRelative(BlockFace.SELF);
+        return null;
     }
     
-    public static BlockFace getNextChest(Chest side){
+    public static @Nullable BlockFace getNextChest(Chest side){
         switch(side.getFacing()){
             case NORTH:
                 return side.getType() != Chest.Type.RIGHT ? BlockFace.EAST : BlockFace.WEST;
@@ -69,7 +74,7 @@ public final class ChestUtils {
             case WEST:
                 return side.getType() != Chest.Type.RIGHT ? BlockFace.NORTH : BlockFace.SOUTH;
         }
-        return BlockFace.SELF;
+        return null;
     }
     
     public static void setChestsSingle(Block chest, Block otherChest){
