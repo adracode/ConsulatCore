@@ -15,10 +15,7 @@ import fr.leconsulat.api.events.entities.PlayerInteractWithEntityEvent;
 import fr.leconsulat.api.events.items.PlayerPlaceItemEvent;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.utils.Rollback;
-import org.bukkit.Art;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -1026,7 +1023,9 @@ public class ClaimCancelListener implements Listener {
         }
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
         if(!blockClaim.canInteract(player, ClaimPermission.OPEN_CONTAINER)){
-            event.setCancelled(true);
+            if(!player.isInModeration() || player.getPlayer().getGameMode() != GameMode.SPECTATOR){
+                event.setCancelled(true);
+            }
         } else if(ClaimManager.protectable.contains(event.getBlock().getType())){
             if(!(blockClaim.getOwner() instanceof City) || player.getUUID().equals(blockClaim.getOwnerUUID())){
                 return;
