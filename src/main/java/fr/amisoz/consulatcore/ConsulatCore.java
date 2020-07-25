@@ -178,6 +178,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         new HelpCommand();
         new HomeCommand();
         new HubCommand();
+        new IgnoreCommand();
         new InfosCommand();
         new InvseeCommand();
         new KickCommand();

@@ -53,8 +53,8 @@ public class CityCommand extends ConsulatCommand {
                     "§6/ville access remove <joueur> §7- §eEnlever l’accès d’un joueur d'un claim.\n" +
                     "§6/ville access list §7- §eLister les accès du claim où tu es.\n" +
                     "§6/ville options §7- §eDonne des informations complètes sur ta ville et te permets aussi de la gérer (permissions, claim, grade). Seulement pour le propriétaire\n" +
-                    "§6/ville chat §7- §e\n" +
-                    "§6/ville chat <message> §7- §eTe permets de parler dans un tchat accessibles seulement aux membres de ta ville. Tu peux utiliser l’abréviation /ville c. \n" +
+                    "§6/ville chat <message> §7- §eTe permets de parler dans un chat accessibles seulement aux membres de ta ville. Tu peux utiliser l’abréviation /ville c. \n" +
+                    "§6/ville chat §7- §eChange de chat pour parler directement dans le chat de ville\n" +
                     "§6/ville info <joueur> §7- §eTe donne les informations globales sur la ville d’un joueur.\n" +
                     "§6/ville help §7- §eAffiche toutes les commandes utiles pour ta ville. C’est ce que tu lis ;).";
     

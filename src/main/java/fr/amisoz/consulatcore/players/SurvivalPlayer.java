@@ -17,6 +17,10 @@ import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.amisoz.consulatcore.zones.claims.ClaimManager;
 import fr.amisoz.consulatcore.zones.claims.ClaimPermission;
 import fr.leconsulat.api.ConsulatAPI;
+import fr.leconsulat.api.nbt.CompoundTag;
+import fr.leconsulat.api.nbt.ListTag;
+import fr.leconsulat.api.nbt.NBTType;
+import fr.leconsulat.api.nbt.StringTag;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -29,6 +33,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.SQLException;
@@ -64,6 +69,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
     private Zone zone;
     private City city;
     private CEnchantedItem[] enchantedArmor;
+    private Set<UUID> ignoredPlayers = new HashSet<>(1);
     private HashMap<BanEnum, Integer> banHistory = new HashMap<>();
     private HashMap<MuteEnum, Integer> muteHistory = new HashMap<>();
     
@@ -602,6 +608,38 @@ public class SurvivalPlayer extends ConsulatPlayer {
         return message;
     }
     
+    public boolean ignorePlayer(UUID uuid){
+        return ignoredPlayers.add(uuid);
+    }
+    
+    public boolean removeIgnoredPlayer(UUID uuid){
+        return ignoredPlayers.remove(uuid);
+    }
+    
+    public boolean isIgnored(UUID uuid){
+        return ignoredPlayers.contains(uuid);
+    }
+    
+    @Override
+    public void loadNBT(@NotNull CompoundTag playerTag){
+        super.loadNBT(playerTag);
+        List<StringTag> ignored = playerTag.getList("Ignored", NBTType.STRING);
+        for(StringTag uuid : ignored){
+            ignoredPlayers.add(UUID.fromString(uuid.getValue()));
+        }
+    }
+    
+    @Override
+    public CompoundTag saveNBT(){
+        CompoundTag playerTag = super.saveNBT();
+        ListTag<StringTag> ignored = new ListTag<>(NBTType.STRING);
+        for(UUID uuid : ignoredPlayers){
+            ignored.addTag(new StringTag(uuid.toString()));
+        }
+        playerTag.put("Ignored", ignored);
+        return playerTag;
+    }
+    
     @Override
     public String toString(){
         return super.toString() +
@@ -635,5 +673,9 @@ public class SurvivalPlayer extends ConsulatPlayer {
                 ", banHistory=" + banHistory +
                 ", muteHistory=" + muteHistory +
                 '}';
+    }
+    
+    public Set<UUID> getIgnoredPlayers(){
+        return Collections.unmodifiableSet(ignoredPlayers);
     }
 }

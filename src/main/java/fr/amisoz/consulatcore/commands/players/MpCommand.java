@@ -22,7 +22,7 @@ public class MpCommand extends ConsulatCommand {
     public MpCommand(){
         super("msg", Arrays.asList("mp", "whisper", "tell"), "/msg <Joueur> <Message>", 2, Rank.JOUEUR);
         suggest(true, Arguments.playerList("joueur")
-                        .then(RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString()))
+                .then(RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString()))
         );
     }
     
@@ -34,6 +34,10 @@ public class MpCommand extends ConsulatCommand {
             return;
         }
         SurvivalPlayer survivalSender = (SurvivalPlayer)sender;
+        if(target.isIgnored(sender.getUUID()) || survivalSender.isIgnored(target.getUUID())){
+            sender.sendMessage("§cTu ne peux pas MP ce joueur.");
+            return;
+        }
         if(survivalSender.isMuted()){
             MuteObject muteInfo = survivalSender.getMute();
             if(muteInfo != null){
