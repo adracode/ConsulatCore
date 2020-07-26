@@ -40,6 +40,7 @@ import org.bukkit.inventory.BlockInventoryHolder;
 import org.bukkit.projectiles.BlockProjectileSource;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 //TODO: On peut mettre du charbon dans un wagon
@@ -87,7 +88,7 @@ public class ClaimCancelListener implements Listener {
     @EventHandler
     public void onBurn(BlockBurnEvent event){
         if(event.getIgnitingBlock() != null){
-            if(!isInteractionAuthorized(event.getIgnitingBlock().getChunk(), event.getBlock().getChunk())){
+            if(!Claim.canInteract(event.getIgnitingBlock().getChunk(), event.getBlock().getChunk())){
                 event.setCancelled(true);
                 return;
             }
@@ -126,11 +127,12 @@ public class ClaimCancelListener implements Listener {
     //Item lancé par un dispenser
     @EventHandler
     public void onDispenser(BlockDispenseEvent event){
-        if(!(event.getBlock().getBlockData() instanceof Dispenser)){
+        Block dispenser = event.getBlock();
+        if(!(dispenser.getBlockData() instanceof Dispenser)){
             return;
         }
-        Block face = event.getBlock().getRelative(((Dispenser)event.getBlock().getBlockData()).getFacing());
-        if(!isInteractionAuthorized(face.getChunk(), event.getBlock().getChunk())){
+        Block face = dispenser.getRelative(((Dispenser)dispenser.getBlockData()).getFacing());
+        if(!Claim.canInteract(face.getChunk(), dispenser.getChunk())){
             event.setCancelled(true);
         }
     }
@@ -197,7 +199,7 @@ public class ClaimCancelListener implements Listener {
     //Lava, water and dragon egg moves
     @EventHandler
     public void onFlow(BlockFromToEvent event){
-        if(!isInteractionAuthorized(event.getBlock().getChunk(), event.getToBlock().getChunk())){
+        if(!Claim.canInteract(event.getBlock().getChunk(), event.getToBlock().getChunk())){
             event.setCancelled(true);
         }
     }
@@ -212,11 +214,12 @@ public class ClaimCancelListener implements Listener {
         chunk.decrementLimit(event.getBlock().getType());
     }
     
+    //TODO
     //Bloc prend feu
     @EventHandler
     public void onIgnition(BlockIgniteEvent event){
         if(event.getIgnitingBlock() != null){
-            if(!isInteractionAuthorized(event.getBlock().getChunk(), event.getIgnitingBlock().getChunk())){
+            if(!Claim.canInteract(event.getIgnitingBlock().getChunk(), event.getBlock().getChunk())){
                 event.setCancelled(true);
                 return;
             }
@@ -228,7 +231,7 @@ public class ClaimCancelListener implements Listener {
                 event.setCancelled(true);
             }
         } else if(event.getIgnitingEntity() != null){
-            if(!isInteractionAuthorized(event.getBlock().getChunk(), event.getPlayer().getChunk())){
+            if(!Claim.canInteract(event.getIgnitingEntity().getChunk(), event.getBlock().getChunk())){
                 event.setCancelled(true);
             }
         }
@@ -240,7 +243,7 @@ public class ClaimCancelListener implements Listener {
             return;
         }
         for(BlockState block : event.getReplacedBlockStates()){
-            if(!isInteractionAuthorized(event.getBlock().getChunk(), block.getChunk())){
+            if(!Claim.canInteract(event.getBlock().getChunk(), block.getChunk())){
                 event.setCancelled(true);
                 break;
             }
@@ -260,13 +263,13 @@ public class ClaimCancelListener implements Listener {
     @EventHandler(priority = EventPriority.LOW)
     public void onPistonPush(BlockPistonExtendEvent event){
         BlockFace direction = event.getDirection();
-        if(!isInteractionAuthorized(event.getBlock().getChunk(), event.getBlock().getRelative(direction).getChunk())){
+        if(!Claim.canInteract(event.getBlock().getChunk(), event.getBlock().getRelative(direction).getChunk())){
             event.setCancelled(true);
             return;
         }
         if(event.getBlocks().size() != 0){
             for(Block block : event.getBlocks()){
-                if(!isInteractionAuthorized(event.getBlock().getChunk(), block.getRelative(direction).getChunk())){
+                if(!Claim.canInteract(event.getBlock().getChunk(), block.getRelative(direction).getChunk())){
                     event.setCancelled(true);
                     return;
                 }
@@ -274,6 +277,9 @@ public class ClaimCancelListener implements Listener {
             Rollback onCancel = new Rollback();
             for(Block block : event.getBlocks()){
                 Location futureLocation = block.getRelative(direction).getLocation();
+                if(futureLocation.getChunk() == block.getChunk()){
+                    continue;
+                }
                 CChunk futureChunk = chunkManager.getChunk(futureLocation);
                 CChunk currentChunk = chunkManager.getChunk(block);
                 Material type = block.getType();
@@ -298,7 +304,7 @@ public class ClaimCancelListener implements Listener {
     public void onPistonRetract(BlockPistonRetractEvent event){
         if(event.getBlocks().size() != 0){
             for(Block block : event.getBlocks()){
-                if(!isInteractionAuthorized(event.getBlock().getChunk(), block.getChunk())){
+                if(!Claim.canInteract(event.getBlock().getChunk(), block.getChunk())){
                     event.setCancelled(true);
                     return;
                 }
@@ -307,6 +313,9 @@ public class ClaimCancelListener implements Listener {
             BlockFace direction = event.getDirection();
             for(Block block : event.getBlocks()){
                 Location futureLocation = block.getRelative(direction).getLocation();
+                if(futureLocation.getChunk() == block.getChunk()){
+                    continue;
+                }
                 CChunk futureChunk = chunkManager.getChunk(futureLocation);
                 CChunk currentChunk = chunkManager.getChunk(block);
                 Material type = block.getType();
@@ -354,8 +363,7 @@ public class ClaimCancelListener implements Listener {
             if(ChestUtils.isDoubleChest(chest)){
                 Block nextChest = ChestUtils.getNextChest(block);
                 if(nextChest != null){
-                    Claim nextChestClaim = ClaimManager.getInstance().getClaim(nextChest);
-                    if(!isInteractionAuthorized(blockClaim, nextChestClaim)){
+                    if(!Claim.canInteract(block.getChunk(), nextChest.getChunk())){
                         ChestUtils.setChestsSingle(block, nextChest);
                         event.getPlayer().sendBlockChange(nextChest.getLocation(), nextChest.getBlockData());
                     }
@@ -372,14 +380,14 @@ public class ClaimCancelListener implements Listener {
     //Dispenser tond un mouton
     @EventHandler
     public void onDispenserShear(BlockShearEntityEvent event){
-        if(!isInteractionAuthorized(event.getEntity().getChunk(), event.getBlock().getChunk())){
+        if(!Claim.canInteract(event.getBlock().getChunk(), event.getEntity().getChunk())){
             event.setCancelled(true);
         }
     }
     
     @EventHandler
     public void onSpread(BlockSpreadEvent event){
-        if(!isInteractionAuthorized(event.getSource().getChunk(), event.getBlock().getChunk())){
+        if(!Claim.canInteract(event.getSource().getChunk(), event.getBlock().getChunk())){
             event.setCancelled(true);
             return;
         }
@@ -440,9 +448,8 @@ public class ClaimCancelListener implements Listener {
         if(event.getBlocks().size() == 0){
             return;
         }
-        //noinspection Java8CollectionRemoveIf
         for(Iterator<BlockState> iterator = event.getBlocks().iterator(); iterator.hasNext(); ){
-            if(!isInteractionAuthorized(event.getBlock().getChunk(), iterator.next().getChunk())){
+            if(!Claim.canInteract(event.getBlock().getChunk(), iterator.next().getChunk())){
                 iterator.remove();
             }
         }
@@ -483,7 +490,7 @@ public class ClaimCancelListener implements Listener {
             Entity fallingBlock = event.getEntity();
             Location from = fallingBlock.getOrigin();
             if(from != null){
-                if(!isInteractionAuthorized(from.getChunk(), fallingBlock.getChunk())){
+                if(!Claim.canInteract(from.getChunk(), fallingBlock.getChunk())){
                     event.setCancelled(true);
                     return;
                 }
@@ -530,7 +537,9 @@ public class ClaimCancelListener implements Listener {
         Projectile projectile = (Projectile)event.getDamager();
         //Si un bloc lance le projectile (dispenser)
         if(projectile.getShooter() instanceof BlockProjectileSource){
-            if(!isInteractionAuthorized(((BlockProjectileSource)projectile.getShooter()).getBlock().getChunk(), entity.getChunk())){
+            if(!Claim.canInteract(
+                    ((BlockProjectileSource)projectile.getShooter()).getBlock().getChunk(),
+                    entity.getChunk())){
                 event.setCancelled(true);
                 return;
             }
@@ -613,7 +622,7 @@ public class ClaimCancelListener implements Listener {
         Projectile projectile = event.getEntity();
         //Si un bloc lance le projectile (dispenser)
         if(projectile.getShooter() instanceof BlockProjectileSource){
-            if(!isInteractionAuthorized(((BlockProjectileSource)projectile.getShooter()).getBlock().getChunk(), event.getEntity().getChunk())){
+            if(!Claim.canInteract(((BlockProjectileSource)projectile.getShooter()).getBlock().getChunk(), event.getEntity().getChunk())){
                 event.setCancelled(true);
             }
         } else if(projectile.getShooter() instanceof Player){//Si un joueur lance le projectile
@@ -645,7 +654,7 @@ public class ClaimCancelListener implements Listener {
         Projectile projectile = event.getEntity();
         //Si un bloc lance le projectile (dispenser)
         if(projectile.getShooter() instanceof BlockProjectileSource){
-            if(!isInteractionAuthorized(((BlockProjectileSource)projectile.getShooter()).getBlock().getChunk(), event.getEntity().getChunk())){
+            if(!Claim.canInteract(((BlockProjectileSource)projectile.getShooter()).getBlock().getChunk(), event.getEntity().getChunk())){
                 event.setCancelled(true);
             }
         } else if(projectile.getShooter() instanceof Player){ //Si un joueur lance le projectile
@@ -704,7 +713,7 @@ public class ClaimCancelListener implements Listener {
                     event.setCancelled(true);
                 }
             } else if(projectile.getShooter() instanceof BlockProjectileSource){
-                if(!isInteractionAuthorized(((BlockProjectileSource)projectile.getShooter()).getBlock().getChunk(), event.getEntity().getChunk())){
+                if(!Claim.canInteract(((BlockProjectileSource)projectile.getShooter()).getBlock().getChunk(), event.getEntity().getChunk())){
                     event.setCancelled(true);
                 }
             }
@@ -776,7 +785,7 @@ public class ClaimCancelListener implements Listener {
         } else {
             return;
         }
-        if(!isInteractionAuthorized(sourceChunk, destinationChunk)){
+        if(!Claim.canInteract(sourceChunk, destinationChunk)){
             event.setCancelled(true);
         }
     }
@@ -803,6 +812,15 @@ public class ClaimCancelListener implements Listener {
     
     @EventHandler
     public void onEmptyBucket(PlayerBucketEmptyEvent event){
+        if(event.getBucket() == Material.LAVA_BUCKET){
+            List<Player> nearbyPlayers = (List<Player>)event.getBlockClicked().getLocation().getNearbyPlayers(3, 2);
+            if(nearbyPlayers.size() > 1 ||
+                    (nearbyPlayers.size() == 1 && !nearbyPlayers.get(0).getUniqueId().equals(event.getPlayer().getUniqueId()))){
+                event.setCancelled(true);
+                event.getPlayer().sendMessage("§cUn autre joueur est à proximité.");
+                return;
+            }
+        }
         onEmptyBucket((PlayerBucketEvent)event);
     }
     
@@ -963,7 +981,7 @@ public class ClaimCancelListener implements Listener {
         }
         Location source = event.getLocation();
         for(Iterator<BlockState> iterator = event.getBlocks().iterator(); iterator.hasNext(); ){
-            if(!isInteractionAuthorized(iterator.next().getChunk(), source.getChunk())){
+            if(!Claim.canInteract(source.getChunk(), iterator.next().getChunk())){
                 iterator.remove();
             }
         }
@@ -1182,22 +1200,4 @@ public class ClaimCancelListener implements Listener {
             event.getPlayer().getPlayer().setCollidable(true);
         }
     }
-    
-    private boolean isInteractionAuthorized(Chunk chunk1, Chunk chunk2){
-        return chunk1 == chunk2 || isInteractionAuthorized(ClaimManager.getInstance().getClaim(chunk1), ClaimManager.getInstance().getClaim(chunk2));
-    }
-    
-    private boolean isInteractionAuthorized(Claim claim1, Claim claim2){
-        if(claim1 != null && claim2 == null){
-            return false;
-        }
-        if(claim1 == null && claim2 != null){
-            return false;
-        }
-        if(claim2 == null){
-            return true;
-        }
-        return claim1.isOwner(claim2.getOwnerUUID());
-    }
-    
 }

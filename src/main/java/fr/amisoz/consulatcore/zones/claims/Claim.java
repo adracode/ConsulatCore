@@ -18,6 +18,7 @@ import fr.leconsulat.api.nbt.StringTag;
 import fr.leconsulat.api.player.Permission;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.block.Block;
 
 import java.util.*;
@@ -324,4 +325,29 @@ public class Claim extends CChunk {
     public String getType(){
         return TYPE;
     }
+    
+    public static boolean canInteract(Chunk from, Chunk to){
+        if(from == to){
+            return true;
+        }
+        Claim claimFrom = ClaimManager.getInstance().getClaim(from);
+        Claim claimTo = ClaimManager.getInstance().getClaim(to);
+        //Si le claim d'où part l'interaction existe, c'est sa méthode qui décide du résultat
+        if(claimFrom != null){
+            return claimFrom.canInteractWith(claimTo);
+        }
+        /*Sinon, puisque claimFrom est null, alors si claimTo est null, l'interaction est autorisé,
+          sinon l'interaction non-claim -> claim est interdite*/
+        return claimTo == null;
+    }
+    
+    public boolean canInteractWith(Claim to){
+        /*Si le claim où arrive l'interaction est null,
+          alors il n'est pas claim et l'interaction dans ce sens est autorisé*/
+        if(to == null){
+            return true;
+        }
+        return isOwner(to.getOwnerUUID());
+    }
+    
 }
