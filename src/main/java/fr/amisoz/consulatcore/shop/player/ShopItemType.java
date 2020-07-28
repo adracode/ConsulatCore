@@ -1,4 +1,4 @@
-package fr.amisoz.consulatcore.shop;
+package fr.amisoz.consulatcore.shop.player;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;

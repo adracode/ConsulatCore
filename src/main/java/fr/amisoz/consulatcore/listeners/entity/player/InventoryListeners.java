@@ -1,7 +1,9 @@
 package fr.amisoz.consulatcore.listeners.entity.player;
 
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.guis.shop.admin.AdminShopGui;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.gui.event.GuiOpenEvent;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.entity.Player;
@@ -37,8 +39,15 @@ public class InventoryListeners implements Listener {
         }
         Player player = (Player)event.getEntity();
         SurvivalPlayer survivalPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
-        if(survivalPlayer == null || survivalPlayer.isInModeration() || survivalPlayer.isLookingInventory()){
+        if(survivalPlayer == null){
+            return;
+        }
+        if(survivalPlayer.isInModeration() || survivalPlayer.isLookingInventory()){
             event.setCancelled(true);
+            return;
+        }
+        if(survivalPlayer.getCurrentlyOpen() instanceof AdminShopGui){
+            survivalPlayer.getCurrentlyOpen().onOpen(new GuiOpenEvent(survivalPlayer));
         }
     }
     

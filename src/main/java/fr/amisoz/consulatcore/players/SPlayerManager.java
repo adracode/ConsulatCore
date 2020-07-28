@@ -6,8 +6,8 @@ import fr.amisoz.consulatcore.events.SurvivalPlayerLoadedEvent;
 import fr.amisoz.consulatcore.moderation.BanEnum;
 import fr.amisoz.consulatcore.moderation.MuteEnum;
 import fr.amisoz.consulatcore.moderation.SanctionType;
-import fr.amisoz.consulatcore.shop.Shop;
 import fr.amisoz.consulatcore.shop.ShopManager;
+import fr.amisoz.consulatcore.shop.player.PlayerShop;
 import fr.amisoz.consulatcore.zones.ZoneManager;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.leconsulat.api.ConsulatAPI;
@@ -204,7 +204,7 @@ public class SPlayerManager implements Listener {
     public void fetchPlayer(SurvivalPlayer player) throws SQLException{
         Map<String, Location> homes = getHomes(player.getName(), true);
         Fly fly = getFly(player.getUUID());
-        List<Shop> shops = ShopManager.getInstance().getShops(player.getUUID());
+        List<PlayerShop> shops = ShopManager.getInstance().getPlayerShops(player.getUUID());
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement(
                 "SELECT * FROM players WHERE player_uuid = ?;");
         preparedStatement.setString(1, player.getUUID().toString());

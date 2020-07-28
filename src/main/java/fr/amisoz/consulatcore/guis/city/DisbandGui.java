@@ -2,8 +2,11 @@ package fr.amisoz.consulatcore.guis.city;
 
 import fr.amisoz.consulatcore.zones.ZoneManager;
 import fr.amisoz.consulatcore.zones.cities.City;
+import fr.leconsulat.api.gui.GuiContainer;
+import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.gui.event.GuiClickEvent;
 import fr.leconsulat.api.gui.gui.IGui;
+import fr.leconsulat.api.gui.gui.module.api.Datable;
 import fr.leconsulat.api.gui.gui.template.DataGui;
 import org.bukkit.Material;
 
@@ -32,4 +35,24 @@ public class DisbandGui extends DataGui<City> {
                 break;
         }
     }
+    
+    public static class Container extends GuiContainer<City> {
+        
+        private static Container instance;
+        
+        public Container(){
+            if(instance != null){
+                throw new IllegalStateException();
+            }
+            instance = this;
+            GuiManager.getInstance().addContainer("city-disband", this);
+        }
+        
+        @Override
+        public Datable<City> createGui(City city){
+            return new DisbandGui(city);
+        }
+    }
+    
+    
 }

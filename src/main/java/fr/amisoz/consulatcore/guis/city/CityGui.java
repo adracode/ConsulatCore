@@ -126,6 +126,9 @@ public class CityGui extends DataRelatGui<City> {
             case CITY_SLOT:{
                 GuiManager.getInstance().userInput(event.getPlayer().getPlayer(), (input) -> {
                     SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
+                    if(input.isEmpty()){
+                        player.sendMessage("§cLe nouveau nom ne peut pas être vide");
+                    }
                     if(input.length() > City.MAX_LENGTH_NAME){
                         player.sendMessage("§cLe nouveau nom est trop long.");
                         return;

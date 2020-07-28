@@ -9,7 +9,7 @@ import fr.amisoz.consulatcore.fly.FlyManager;
 import fr.amisoz.consulatcore.moderation.BanEnum;
 import fr.amisoz.consulatcore.moderation.MuteEnum;
 import fr.amisoz.consulatcore.moderation.MuteObject;
-import fr.amisoz.consulatcore.shop.Shop;
+import fr.amisoz.consulatcore.shop.player.PlayerShop;
 import fr.amisoz.consulatcore.utils.CustomEnum;
 import fr.amisoz.consulatcore.zones.Zone;
 import fr.amisoz.consulatcore.zones.cities.City;
@@ -31,6 +31,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
@@ -65,7 +66,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
     private CustomEnum persoState = CustomEnum.START;
     private int limitShop;
     private Fly fly = null;
-    private Set<Shop> shops = new HashSet<>();
+    private Set<PlayerShop> shops = new HashSet<>();
     private Zone zone;
     private City city;
     private CEnchantedItem[] enchantedArmor;
@@ -113,7 +114,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
     }
     
     public void initialize(double money, int extraHomes, int limitShop,
-                           Map<String, Location> homes, boolean perkTop, Fly fly, Collection<Shop> shops, Zone zone, City city){
+                           Map<String, Location> homes, boolean perkTop, Fly fly, Collection<PlayerShop> shops, Zone zone, City city){
         this.money = money;
         this.limitHomes = setExtraHomes() + extraHomes;
         this.limitShop = setExtraShops() + limitShop;
@@ -432,18 +433,19 @@ public class SurvivalPlayer extends ConsulatPlayer {
         return hasFly() ? fly.getTimeLeft() : 0;
     }
     
-    public void addShop(Shop shop){
+    public void addShop(PlayerShop shop){
         this.shops.add(shop);
     }
     
-    public void removeShop(Shop shop){
+    public void removeShop(PlayerShop shop){
         this.shops.remove(shop);
     }
     
-    public Set<Shop> getShops(){
+    public Set<PlayerShop> getShops(){
         return shops;
     }
     
+    @SuppressWarnings("ConstantConditions")
     public int spaceAvailable(ItemStack item){
         int available = 0;
         for(ItemStack itemInv : getPlayer().getInventory().getStorageContents()){
@@ -454,6 +456,35 @@ public class SurvivalPlayer extends ConsulatPlayer {
             }
         }
         return available;
+    }
+    
+    public int getSimilarItems(ItemStack item){
+        int size = 0;
+        ItemStack[] storageContents = getPlayer().getInventory().getStorageContents();
+        for(ItemStack itemInv : storageContents){
+            if(itemInv != null && itemInv.isSimilar(item)){
+                size += itemInv.getAmount();
+            }
+        }
+        return size;
+    }
+    
+    public void removeSimilarItems(ItemStack item, int amountToRemove){
+        int deleted = 0;
+        PlayerInventory inventory = getPlayer().getInventory();
+        ItemStack[] storageContents = inventory.getStorageContents();
+        for(int i = 0; i < storageContents.length; i++){
+            ItemStack itemInv = storageContents[i];
+            if(itemInv != null && itemInv.isSimilar(item)){
+                if(deleted + itemInv.getAmount() > amountToRemove){
+                    itemInv.setAmount(itemInv.getAmount() - (amountToRemove - deleted));
+                    inventory.setItem(i, itemInv);
+                    return;
+                }
+                deleted += itemInv.getAmount();
+                inventory.clear(i);
+            }
+        }
     }
     
     public void addItemInInventory(int amount, ItemStack item){
@@ -678,4 +709,6 @@ public class SurvivalPlayer extends ConsulatPlayer {
     public Set<UUID> getIgnoredPlayers(){
         return Collections.unmodifiableSet(ignoredPlayers);
     }
+    
+    
 }

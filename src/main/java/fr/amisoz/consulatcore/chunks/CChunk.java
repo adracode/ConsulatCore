@@ -132,7 +132,7 @@ public class CChunk implements Comparable<CChunk> {
             chunk.put("LimitedBlocks", limits);
         }
         if(needLimitSync){
-            chunk.putByte("NeedSync", (byte)0);
+            chunk.putByte("NeedSync", (byte)1);
         }
         return chunk;
     }

@@ -2,16 +2,21 @@ package fr.amisoz.consulatcore.shop;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.guis.shop.ShopGuiContainer;
+import fr.amisoz.consulatcore.guis.shop.ShopGui;
 import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.amisoz.consulatcore.shop.admin.AdminShop;
+import fr.amisoz.consulatcore.shop.player.PlayerShop;
+import fr.amisoz.consulatcore.shop.player.ShopItemType;
 import fr.amisoz.consulatcore.utils.ChestUtils;
 import fr.amisoz.consulatcore.utils.CoordinatesUtils;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.events.blocks.PlayerInteractContainerBlockEvent;
 import fr.leconsulat.api.events.blocks.PlayerInteractSignEvent;
+import fr.leconsulat.api.nbt.*;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.ranks.Rank;
+import fr.leconsulat.api.utils.FileUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -40,7 +45,10 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -51,28 +59,92 @@ public class ShopManager implements Listener {
     
     private static ShopManager instance;
     
-    private Map<Long, Shop> shops = new HashMap<>();
-    private Map<ShopItemType, Set<Shop>> nonEmptyTypes = new HashMap<>();
+    static{
+        new ShopManager();
+    }
     
-    public ShopManager(){
+    private final Map<String, ShopConstructor> createShop = new HashMap<>();
+    
+    private Map<Long, Shop> shops = new HashMap<>();
+    private Map<ShopItemType, Set<PlayerShop>> nonEmptyTypes = new HashMap<>();
+    
+    private ShopManager(){
         if(instance != null){
-            return;
+            throw new IllegalStateException();
         }
         instance = this;
-        ShopGuiContainer container = new ShopGuiContainer();
+        ShopGui.Container container = new ShopGui.Container();
         container.getGui(ShopItemType.ALL);
         //Volontairement bloquant
         try {
             ConsulatAPI.getConsulatAPI().log(Level.INFO, "Loading shops...");
             long start = System.currentTimeMillis();
-            initShops();
-            ConsulatAPI.getConsulatAPI().log(Level.INFO, "Shops loaded in " + (System.currentTimeMillis() - start) + " ms");
+            loadPlayerShops();
+            ConsulatAPI.getConsulatAPI().log(Level.INFO, shops.size() + " Shops loaded in " + (System.currentTimeMillis() - start) + " ms");
         } catch(SQLException e){
             e.printStackTrace();
         }
     }
     
-    private void initShops() throws SQLException{
+    public void register(String type, ShopConstructor constructor){
+        this.createShop.put(type, constructor);
+    }
+    
+    public void loadAdminShops(){
+        File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "admin-shops.dat");
+        if(!file.exists()){
+            return;
+        }
+        ConsulatAPI.getConsulatAPI().log(Level.INFO, "Loading admin shops...");
+        long start = System.currentTimeMillis();
+        int size = 0;
+        try {
+            NBTInputStream is = new NBTInputStream(file);
+            CompoundTag shopsTag = is.read();
+            is.close();
+            List<CompoundTag> shops = shopsTag.getList("AdminShops", NBTType.COMPOUND);
+            for(CompoundTag shopTag : shops){
+                AdminShop shop = (AdminShop)createShop.get(shopTag.getString("Type")).construct(shopTag.getLong("Coords"));
+                shop.loadNBT(shopTag);
+                shop.createGui();
+                this.shops.put(shop.getCoords(), shop);
+                ++size;
+            }
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+        ConsulatAPI.getConsulatAPI().log(Level.INFO, size + " admin shops loaded in " + (System.currentTimeMillis() - start) + " ms");
+    }
+    
+    public void saveAdminShops(){
+        ListTag<CompoundTag> adminShops = new ListTag<>(NBTType.COMPOUND);
+        for(Shop shop : shops.values()){
+            if(!(shop instanceof AdminShop)){
+                continue;
+            }
+            adminShops.addTag(((AdminShop)shop).saveNBT());
+        }
+        if(adminShops.getValue().isEmpty()){
+            return;
+        }
+        try {
+            File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "admin-shops.dat");
+            if(!file.exists()){
+                if(!file.createNewFile()){
+                    throw new IOException("Couldn't create file.");
+                }
+            }
+            CompoundTag tag = new CompoundTag();
+            tag.put("AdminShops", adminShops);
+            NBTOutputStream os = new NBTOutputStream(file, tag);
+            os.write("AdminShop");
+            os.close();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+    
+    private void loadPlayerShops() throws SQLException{
         PreparedStatement shops = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM shopinfo");
         ResultSet resultShops = shops.executeQuery();
         World world = Bukkit.getWorlds().get(0);
@@ -116,7 +188,7 @@ public class ShopManager implements Listener {
                     continue;
                 }
             }
-            ItemFrame itemFrame = Shop.getItemFrame(block.getLocation());
+            ItemFrame itemFrame = PlayerShop.getItemFrame(block.getLocation());
             ItemStack item;
             String stringMaterial = resultShops.getString("material");
             if(stringMaterial == null){
@@ -162,7 +234,7 @@ public class ShopManager implements Listener {
                 ConsulatAPI.getConsulatAPI().log(Level.SEVERE, "Le shop en " + location.getBlockX() + " " + location.getBlockY() + " " + location.getBlockZ() + " est censé" +
                         " avoir un item " + type + " mais à un item de type " + item.getType());
             }
-            Shop shop = new Shop(
+            PlayerShop shop = new PlayerShop(
                     uuid,
                     Bukkit.getOfflinePlayer(uuid).getName(),
                     item,
@@ -189,7 +261,7 @@ public class ShopManager implements Listener {
         }
     }
     
-    void addType(Shop shop){
+    public void addType(PlayerShop shop){
         if(shop.isEmpty()){
             return;
         }
@@ -198,9 +270,9 @@ public class ShopManager implements Listener {
         }
     }
     
-    void removeType(Shop shop){
+    public void removeType(PlayerShop shop){
         for(ShopItemType type : shop.getTypes()){
-            Set<Shop> shops = nonEmptyTypes.get(type);
+            Set<PlayerShop> shops = nonEmptyTypes.get(type);
             if(shops.size() == 1 && shops.iterator().next().equals(shop)){
                 nonEmptyTypes.remove(type);
             } else {
@@ -213,18 +285,21 @@ public class ShopManager implements Listener {
         return nonEmptyTypes.keySet();
     }
     
-    public void addShop(SurvivalPlayer player, Shop shop) throws SQLException{
+    public void addShop(SurvivalPlayer player, PlayerShop shop) throws SQLException{
         addShopDatabase(player.getUUID(), shop);
         Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
             player.addShop(shop);
             shops.put(shop.getCoords(), shop);
             shop.addInGui();
         });
-        
+    }
+    
+    public void addAdminShop(AdminShop shop){
+        shops.put(shop.getCoords(), shop);
     }
     
     public boolean isShop(Chest chest){
-        return getShop(chest.getLocation()) != null;
+        return getPlayerShop(chest.getLocation()) != null;
     }
     
     public void tutorial(SurvivalPlayer player){
@@ -237,6 +312,7 @@ public class ShopManager implements Listener {
         player.sendMessage(ChatColor.YELLOW + "                       VIDE");
     }
     
+    @SuppressWarnings("ConstantConditions")
     private boolean isChestEmpty(Chest chest){
         for(ItemStack item : chest.getBlockInventory().getContents()){
             if(item != null){
@@ -331,7 +407,7 @@ public class ShopManager implements Listener {
             event.getBlock().breakNaturally();
             return;
         }
-        Shop shop = new Shop(
+        PlayerShop shop = new PlayerShop(
                 player.getUUID(),
                 player.getName(),
                 sold,
@@ -375,7 +451,7 @@ public class ShopManager implements Listener {
         if(event.getRightClicked().getType() == EntityType.ITEM_FRAME){
             Entity frame = event.getRightClicked();
             Location location = frame.getLocation().clone().add(0, -1, 0);
-            if(frame.isInvulnerable() && getShop(location) == null){
+            if(frame.isInvulnerable() && getPlayerShop(location) == null){
                 frame.remove();
             }
         }
@@ -387,15 +463,22 @@ public class ShopManager implements Listener {
         switch(event.getBlock().getType()){
             case CHEST:{
                 Shop shop = getShop(event.getBlock().getLocation());
-                if(shop == null){
-                    return;
-                }
-                if(player.getUUID().equals(shop.getOwner())){
-                    event.setCancelled(true);
-                    player.sendMessage(Text.PREFIX + "§cTu dois casser le panneau pour supprimer ton Shop!");
+                if(shop instanceof PlayerShop){
+                    if(((PlayerShop)shop).getOwner().equals(player.getUUID())){
+                        event.setCancelled(true);
+                        player.sendMessage(Text.PREFIX + "§cTu dois casser le panneau pour supprimer ton Shop!");
+                    } else {
+                        event.setCancelled(true);
+                        player.sendMessage(Text.PREFIX + "§cCe shop appartient à: §4" + ((PlayerShop)shop).getOwnerName() + "§c.");
+                    }
+                } else if(shop instanceof AdminShop){
+                    if(!player.hasPower(Rank.RESPONSABLE)){
+                        event.setCancelled(true);
+                        return;
+                    }
+                    shops.remove(shop.getCoords());
                 } else {
-                    event.setCancelled(true);
-                    player.sendMessage(Text.PREFIX + "§cCe shop appartient à: §4" + shop.getOwnerName() + "§c.");
+                    return;
                 }
                 break;
             }
@@ -409,7 +492,7 @@ public class ShopManager implements Listener {
                 if(chest == null){
                     return;
                 }
-                Shop shop = getShop(chest.getLocation());
+                PlayerShop shop = getPlayerShop(chest.getLocation());
                 if(shop == null){
                     return;
                 }
@@ -453,7 +536,7 @@ public class ShopManager implements Listener {
         if(chest == null){
             return;
         }
-        Shop shop = getShop(chest.getLocation());
+        PlayerShop shop = getPlayerShop(chest.getLocation());
         if(shop == null){
             return;
         }
@@ -547,13 +630,19 @@ public class ShopManager implements Listener {
             return;
         }
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
-        if(!shop.isOwner(player.getUUID())){
-            if(player.hasPower(Rank.ADMIN)){
-                player.sendMessage(Text.PREFIX + "§cCe shop appartient à: §4" + shop.getOwnerName() + "§c.");
-            } else {
-                player.sendMessage(Text.PREFIX + "§cTu ne peux pas ouvrir ce shop, il appartient à " + shop.getOwnerName() + "§c.");
-                event.setCancelled(true);
+        if(shop instanceof PlayerShop){
+            PlayerShop playerShop = (PlayerShop)shop;
+            if(!playerShop.isOwner(player.getUUID())){
+                if(player.hasPower(Rank.ADMIN)){
+                    player.sendMessage(Text.PREFIX + "§cCe shop appartient à: §4" + playerShop.getOwnerName() + "§c.");
+                } else {
+                    player.sendMessage(Text.PREFIX + "§cTu ne peux pas ouvrir ce shop, il appartient à " + playerShop.getOwnerName() + "§c.");
+                    event.setCancelled(true);
+                }
             }
+        } else if(shop instanceof AdminShop){
+            ((AdminShop)shop).getGui().open(player);
+            event.setCancelled(true);
         }
     }
     
@@ -566,7 +655,7 @@ public class ShopManager implements Listener {
         if(chest == null){
             return;
         }
-        Shop shop = getShop(chest.getLocation());
+        PlayerShop shop = getPlayerShop(chest.getLocation());
         if(shop == null){
             return;
         }
@@ -582,7 +671,7 @@ public class ShopManager implements Listener {
         if(chest == null){
             return;
         }
-        Shop shop = getShop(chest.getLocation());
+        PlayerShop shop = getPlayerShop(chest.getLocation());
         if(shop == null){
             return;
         }
@@ -598,7 +687,7 @@ public class ShopManager implements Listener {
         if(chest == null){
             return;
         }
-        Shop shop = getShop(chest.getLocation());
+        PlayerShop shop = getPlayerShop(chest.getLocation());
         if(shop == null){
             return;
         }
@@ -626,7 +715,7 @@ public class ShopManager implements Listener {
             ChestUtils.setChestsSingle(chest, otherChest);
             event.getPlayer().sendBlockChange(otherChest.getLocation(), otherChest.getBlockData());
         }
-       
+        
     }
     
     @EventHandler
@@ -663,7 +752,7 @@ public class ShopManager implements Listener {
         }
     }
     
-    public void removeShop(Shop shop) throws SQLException{
+    public void removeShop(PlayerShop shop) throws SQLException{
         removeShopDatabase(shop.getOwner(), shop.getX(), shop.getY(), shop.getZ());
         this.shops.remove(shop.getCoords());
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(shop.getOwner());
@@ -694,25 +783,34 @@ public class ShopManager implements Listener {
         return instance;
     }
     
-    public Shop getShop(Location location){
+    public @Nullable Shop getShop(Location location){
         return shops.get(CoordinatesUtils.convertCoordinates(location));
     }
     
-    public Collection<Shop> getShops(){
-        return shops.values();
+    public @Nullable PlayerShop getPlayerShop(Location location){
+        Shop shop = shops.get(CoordinatesUtils.convertCoordinates(location));
+        if(shop instanceof PlayerShop){
+            return (PlayerShop)shop;
+        }
+        return null;
     }
     
-    public List<Shop> getShops(UUID uuid){
-        List<Shop> playerShops = new ArrayList<>(16);
+    public Collection<Shop> getShops(){
+        return Collections.unmodifiableCollection(shops.values());
+    }
+    
+    public List<PlayerShop> getPlayerShops(UUID uuid){
+        List<PlayerShop> playerShops = new ArrayList<>();
         for(Shop shop : shops.values()){
-            if(shop.getOwner().equals(uuid)){
-                playerShops.add(shop);
+            PlayerShop playerShop = shop instanceof PlayerShop ? (PlayerShop)shop : null;
+            if(playerShop != null && playerShop.getOwner().equals(uuid)){
+                playerShops.add(playerShop);
             }
         }
         return playerShops;
     }
     
-    public void addShopDatabase(UUID uuid, Shop shop) throws SQLException{
+    public void addShopDatabase(UUID uuid, PlayerShop shop) throws SQLException{
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("INSERT INTO shopinfo (shop_x, shop_y, shop_z, material, price, owner_uuid, isEmpty) VALUES (?, ?, ?, ?, ?, ?, ?)");
         preparedStatement.setInt(1, shop.getX());
         preparedStatement.setInt(2, shop.getY());
@@ -821,49 +919,8 @@ public class ShopManager implements Listener {
                     player.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent");
                 }
             } else {
-                Material material;
-                byte data = 0;
-                if(getShopMaterial(sign.getLines()[1]) != null){
-                    ShopEnum shop = getShopMaterial(sign.getLines()[1]);
-                    material = Material.getMaterial(shop.getOldMaterialName());
-                    data = shop.getMetadata();
-                } else {
-                    material = Material.getMaterial(sign.getLines()[1]);
-                }
-                if(material == null){
-                    return;
-                }
-                ItemStack itemStack = new ItemStack(material, 1, data);
-                int spaceAvailable = player.spaceAvailable(itemStack);
-                if(player.getPlayer().isSneaking()){
-                    if(spaceAvailable < 64){
-                        player.sendMessage(Text.PREFIX + "§cVous n'avez pas assez de place dans votre inventaire");
-                        return;
-                    }
-                    if(player.hasMoney(buyPrice * 64)){
-                        player.removeMoney(buyPrice * 64);
-                        itemStack.setAmount(64);
-                        player.getPlayer().getInventory().addItem(itemStack);
-                        player.sendMessage(Text.PREFIX + "Tu as acheté §e" + material.name() + " x 64 §6pour §e" + buyPrice * 64);
-                    } else {
-                        player.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent");
-                    }
-                } else {
-                    if(spaceAvailable == 0){
-                        player.sendMessage(Text.PREFIX + "§cVous n'avez pas assez de place dans votre inventaire");
-                        return;
-                    }
-                    if(player.hasMoney(buyPrice)){
-                        player.removeMoney(buyPrice);
-                        player.sendMessage(Text.PREFIX + "Tu as acheté §e" + material.name() + " x 1 §6pour §e" + buyPrice);
-                        player.getPlayer().getInventory().addItem(itemStack);
-                    } else {
-                        player.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent");
-                    }
-                }
             }
         }
-        
         if(event.getAction() == Action.RIGHT_CLICK_BLOCK){
             SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
             event.setCancelled(true);
@@ -871,70 +928,7 @@ public class ShopManager implements Listener {
                 player.sendMessage(Text.PREFIX + "Item non disponible à la vente.");
                 return;
             }
-            Material material;
-            byte data = 0;
-            if(getShopMaterial(sign.getLines()[1]) != null){
-                ShopEnum shop = getShopMaterial(sign.getLines()[1]);
-                material = Material.getMaterial(shop.getOldMaterialName());
-                data = shop.getMetadata();
-            } else {
-                material = Material.getMaterial(sign.getLines()[1]);
-            }
-            if(material == null){
-                return;
-            }
-            ItemStack itemStack = new ItemStack(material, 1, data);
-            double price = Double.parseDouble(sign.getLines()[3]);
-            if(player.getRank() == Rank.TOURISTE){
-                price *= 1.12;
-            } else if(player.getRank() == Rank.FINANCEUR){
-                price *= 1.15;
-            } else if(player.hasPower(Rank.MECENE)){
-                price *= 1.20;
-            }
-            final double sellPrice = price;
-            if(sign.getLines()[3].contains("Vente impossible")){
-                player.sendMessage(Text.PREFIX + "Item non disponible à la vente.");
-                return;
-            }
-            ItemStack itemInHand = player.getPlayer().getInventory().getItemInMainHand();
-            if(player.getPlayer().isSneaking()){
-                if(itemInHand.getType() == material){
-                    if(material == Material.EGG){
-                        if(itemInHand.getAmount() == 16){
-                            itemStack.setAmount(16);
-                            ItemStack save = player.getPlayer().getInventory().getItemInMainHand();
-                            player.getPlayer().getInventory().clear(player.getPlayer().getInventory().getHeldItemSlot());
-                            player.getPlayer().updateInventory();
-                            player.addMoney(sellPrice * 16);
-                            player.sendMessage(Text.PREFIX + "Tu as vendu §e" + material.name() + " x 16 §6pour §e" + sellPrice * 16);
-                        }
-                    } else {
-                        if(itemInHand.getAmount() == 64){
-                            itemStack.setAmount(64);
-                            player.getPlayer().getInventory().clear(player.getPlayer().getInventory().getHeldItemSlot());
-                            player.getPlayer().updateInventory();
-                            player.addMoney(sellPrice * 64);
-                            player.sendMessage(Text.PREFIX + "Tu as vendu §e" + material.name() + " x 64 §6pour §e" + sellPrice * 64);
-                        } else {
-                            player.sendMessage(Text.PREFIX + "§cTu n'as pas assez de §4" + itemStack.getType().name() + "§c pour vendre un stack.");
-                        }
-                    }
-                }
-            } else {
-                if(itemInHand.getType() == material){
-                    if(itemInHand.getAmount() > 1){
-                        itemInHand.setAmount((itemInHand.getAmount() - 1));
-                    } else {
-                        player.getPlayer().getInventory().clear(player.getPlayer().getInventory().getHeldItemSlot());
-                    }
-                    player.getPlayer().updateInventory();
-                    player.addMoney(sellPrice);
-                    player.sendMessage(Text.PREFIX + "Tu as vendu §e" + material.name() + " x 1 §6pour §e" + sellPrice);
-                } else {
-                    player.sendMessage(Text.PREFIX + "§cTu n'as pas de " + itemStack.getType().name());
-                }
-            }
+            
         }
     }
     

@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 
-//TODO: Nether et End
 public class ChunkManager implements Listener {
     
     private static ChunkManager instance;
@@ -69,11 +68,11 @@ public class ChunkManager implements Listener {
                     ConsulatAPI.getConsulatAPI().log(Level.WARNING, "World " + worldUUID + " not found, skipping loading chunks for this world");
                     continue;
                 }
-                for(File chunkFile : FileUtils.getFiles(worldDir)){
-                    NBTInputStream is = new NBTInputStream(chunkFile);
+                for(File regionFile : FileUtils.getFiles(worldDir)){
+                    NBTInputStream is = new NBTInputStream(regionFile);
                     CompoundTag region = is.read();
                     is.close();
-                    List<CompoundTag> chunks = region.getList("Chunks", CompoundTag.class);
+                    List<CompoundTag> chunks = region.getList("Chunks", NBTType.COMPOUND);
                     for(CompoundTag chunkTag : chunks){
                         CChunk chunk = createChunk.get(chunkTag.getString("Type")).construct(chunkTag.getLong("Coords"));
                         chunk.loadNBT(chunkTag);
@@ -95,7 +94,7 @@ public class ChunkManager implements Listener {
                 }
             }
         }
-        ConsulatAPI.getConsulatAPI().log(Level.INFO, size + " Chunks loaded in " + (System.currentTimeMillis() - start));
+        ConsulatAPI.getConsulatAPI().log(Level.INFO, size + " Chunks loaded in " + (System.currentTimeMillis() - start) + " ms");
     }
     
     public void saveChunks(){

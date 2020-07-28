@@ -3,7 +3,7 @@ package fr.amisoz.consulatcore.zones;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.guis.city.CityGui;
 import fr.amisoz.consulatcore.guis.city.CityInfo;
-import fr.amisoz.consulatcore.guis.city.DisbandGuiContainer;
+import fr.amisoz.consulatcore.guis.city.DisbandGui;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.amisoz.consulatcore.zones.claims.ClaimManager;
 import fr.leconsulat.api.ConsulatAPI;
@@ -56,7 +56,7 @@ public class ZoneManager {
         ));
         new CityGui.Container();
         new CityInfo.Container();
-        new DisbandGuiContainer();
+        new DisbandGui.Container();
         try {
             initZones();
             initCities();

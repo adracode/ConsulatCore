@@ -50,7 +50,7 @@ public class AccessCommand extends ConsulatCommand {
                 }
                 Zone zone = player.getZone();
                 if(zone == null){
-                    sender.sendMessage(Text.PREFIX + "§cTu n'a pas de claims.");
+                    sender.sendMessage(Text.PREFIX + "§cTu n'as pas de claims.");
                     return;
                 }
                 UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(args[1]);
@@ -72,7 +72,7 @@ public class AccessCommand extends ConsulatCommand {
                 }
                 Zone zone = player.getZone();
                 if(zone == null){
-                    sender.sendMessage(Text.PREFIX + "§cTu n'a pas de claims.");
+                    sender.sendMessage(Text.PREFIX + "§cTu n'as pas de claims.");
                     return;
                 }
                 UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(args[1]);

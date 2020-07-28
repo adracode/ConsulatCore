@@ -232,7 +232,7 @@ public class ClaimManager implements Listener {
             event.getPlayer().sendActionBar("§cTu ne peux pas mettre un coffre en privé ici");
             return;
         }
-        if(ShopManager.getInstance().getShop(event.getBlock().getLocation()) != null){
+        if(ShopManager.getInstance().getPlayerShop(event.getBlock().getLocation()) != null){
             event.getPlayer().sendActionBar("§cTu ne peux pas mettre un shop en privé");
             return;
         }

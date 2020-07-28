@@ -2,13 +2,16 @@ package fr.amisoz.consulatcore.guis.shop;
 
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
-import fr.amisoz.consulatcore.shop.Shop;
-import fr.amisoz.consulatcore.shop.ShopItemType;
+import fr.amisoz.consulatcore.shop.player.PlayerShop;
+import fr.amisoz.consulatcore.shop.player.ShopItemType;
 import fr.leconsulat.api.ConsulatAPI;
+import fr.leconsulat.api.gui.GuiContainer;
 import fr.leconsulat.api.gui.GuiItem;
+import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.gui.event.GuiClickEvent;
 import fr.leconsulat.api.gui.event.GuiCreateEvent;
 import fr.leconsulat.api.gui.gui.IGui;
+import fr.leconsulat.api.gui.gui.module.api.Datable;
 import fr.leconsulat.api.gui.gui.module.api.Pageable;
 import fr.leconsulat.api.gui.gui.template.DataPagedGui;
 import org.bukkit.ChatColor;
@@ -29,7 +32,7 @@ public class ShopGui extends DataPagedGui<ShopItemType> {
         setDynamicItemsRange(0, 45);
     }
     
-    public void addShop(Shop shop){
+    public void addShop(PlayerShop shop){
         if(shop.isEmpty()){
             return;
         }
@@ -42,7 +45,7 @@ public class ShopGui extends DataPagedGui<ShopItemType> {
         addItem(item);
     }
     
-    public void removeShop(Shop shop){
+    public void removeShop(PlayerShop shop){
         for(Iterator<GuiItem> iterator = iterator(); iterator.hasNext(); ){
             GuiItem item = iterator.next();
             if(item != null && shop.equals(item.getAttachedObject())){
@@ -77,7 +80,7 @@ public class ShopGui extends DataPagedGui<ShopItemType> {
                 getPage(pageGui.getPage() + 1).open(event.getPlayer());
                 break;
             default:
-                Shop shop = (Shop)pageGui.getItem(event.getSlot()).getAttachedObject();
+                PlayerShop shop = (PlayerShop)pageGui.getItem(event.getSlot()).getAttachedObject();
                 SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
                 player.getPlayer().closeInventory();
                 if(player.hasMoney(10.0)){
@@ -111,4 +114,24 @@ public class ShopGui extends DataPagedGui<ShopItemType> {
                 }
         }
     }
+    
+    public static class Container extends GuiContainer<ShopItemType> {
+        
+        private static Container instance;
+        
+        public Container(){
+            if(instance != null){
+                throw new IllegalStateException();
+            }
+            instance = this;
+            GuiManager.getInstance().addContainer("shop", this);
+        }
+        
+        @Override
+        public Datable<ShopItemType> createGui(ShopItemType itemType){
+            return new ShopGui(itemType);
+        }
+    }
+    
+    
 }

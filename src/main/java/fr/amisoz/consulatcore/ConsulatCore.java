@@ -7,6 +7,7 @@ import fr.amisoz.consulatcore.commands.cities.CityCommand;
 import fr.amisoz.consulatcore.commands.claims.AccessCommand;
 import fr.amisoz.consulatcore.commands.claims.ClaimCommand;
 import fr.amisoz.consulatcore.commands.claims.UnclaimCommand;
+import fr.amisoz.consulatcore.commands.economy.AdminShopCommand;
 import fr.amisoz.consulatcore.commands.economy.BaltopCommand;
 import fr.amisoz.consulatcore.commands.economy.MoneyCommand;
 import fr.amisoz.consulatcore.commands.economy.PayCommand;
@@ -29,6 +30,8 @@ import fr.amisoz.consulatcore.runnable.MeceneRunnable;
 import fr.amisoz.consulatcore.runnable.MessageRunnable;
 import fr.amisoz.consulatcore.runnable.MonitoringRunnable;
 import fr.amisoz.consulatcore.shop.ShopManager;
+import fr.amisoz.consulatcore.shop.admin.AdminShopBuy;
+import fr.amisoz.consulatcore.shop.admin.AdminShopSell;
 import fr.amisoz.consulatcore.zones.ZoneManager;
 import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.amisoz.consulatcore.zones.claims.ClaimManager;
@@ -109,11 +112,14 @@ public class ConsulatCore extends JavaPlugin implements Listener {
             e.printStackTrace();
             Bukkit.shutdown();
         }
+        ShopManager shopManager = ShopManager.getInstance();
+        shopManager.register(AdminShopBuy.TYPE, AdminShopBuy::new);
+        shopManager.register(AdminShopSell.TYPE, AdminShopSell::new);
+        shopManager.loadAdminShops();
         new SPlayerManager();
         new BaltopManager();
         new FlyManager();
         moderationDatabase = new ModerationDatabase(this);
-        new ShopManager();
         EnchantmentManager.getInstance();
         Bukkit.getScheduler().runTaskTimer(this, new AFKRunnable(), 0L, 5 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MonitoringRunnable(this), 0L, 10 * 60 * 20);
@@ -122,6 +128,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
             ZoneManager.getInstance().saveZones();
             ChunkManager.getInstance().saveChunks();
+            ShopManager.getInstance().saveAdminShops();
         }, 60 * 60 * 20, 60 * 60 * 20);
         registerEvents();
         for(World world : Bukkit.getWorlds()){
@@ -152,6 +159,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     public void onDisable(){
         ZoneManager.getInstance().saveZones();
         ChunkManager.getInstance().saveChunks();
+        ShopManager.getInstance().saveAdminShops();
     }
     
     @EventHandler(priority = EventPriority.HIGH)
@@ -162,6 +170,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     @SuppressWarnings("ConstantConditions")
     private void registerCommands(){
         new AccessCommand();
+        new AdminShopCommand();
         new AdvertCommand();
         new AnswerCommand();
         new BackCommand();

@@ -292,7 +292,7 @@ public class CityCommand extends ConsulatCommand {
                 Set<City> cities = manager.getInvitations(player.getUUID());
                 City city;
                 if(cities == null || (city = manager.getCity(args[1])) == null || !cities.contains(city)){
-                    player.sendMessage("§cTu n'a pas été invité dans cette ville.");
+                    player.sendMessage("§cTu n'as pas été invité dans cette ville.");
                     return;
                 }
                 manager.removeInvitation(player.getUUID());
