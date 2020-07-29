@@ -2,6 +2,7 @@ package fr.amisoz.consulatcore.commands.economy;
 
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
@@ -35,7 +36,7 @@ public class PayCommand extends ConsulatCommand {
             return;
         }
         if(moneyToGive <= 0 || moneyToGive > 1_000_000){
-            sender.sendMessage(Text.PREFIX + "§cTu ne peux pas donner " + moneyToGive + " €.");
+            sender.sendMessage(Text.PREFIX + "§cTu ne peux pas donner " + ConsulatCore.formatMoney(moneyToGive) + ".");
             return;
         }
         if(!player.hasMoney(moneyToGive)){
@@ -50,7 +51,7 @@ public class PayCommand extends ConsulatCommand {
         SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(targetUUID);
         if(target != null){
             target.addMoney(moneyToGive);
-            target.getPlayer().sendMessage(Text.PREFIX + "§aTu as reçu §2" + moneyToGive + "€ §ade §2" + player.getName());
+            target.getPlayer().sendMessage(Text.PREFIX + "§aTu as reçu §2" + ConsulatCore.formatMoney(moneyToGive) + " §ade §2" + player.getName());
         } else {
             SPlayerManager.getInstance().fetchOffline(args[1], survivalOffline -> {
                 //Le joueur existe forcément, donc erreur BDD
@@ -62,6 +63,6 @@ public class PayCommand extends ConsulatCommand {
             });
         }
         player.removeMoney(moneyToGive);
-        sender.sendMessage(Text.PREFIX + "§aTu as envoyé §2" + moneyToGive + "€ §aà §2" + args[0]);
+        sender.sendMessage(Text.PREFIX + "§aTu as envoyé §2" + ConsulatCore.formatMoney(moneyToGive) + " §aà §2" + args[0]);
     }
 }

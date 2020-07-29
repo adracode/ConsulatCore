@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.commands.claims;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
@@ -11,18 +12,11 @@ import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 
-import java.text.DecimalFormat;
-
 public class UnclaimCommand extends ConsulatCommand {
-
-    private DecimalFormat shapePrice = new DecimalFormat();
-
+    
     public UnclaimCommand(){
         super("unclaim", "/unclaim", 0, Rank.JOUEUR);
         suggest(true);
-        shapePrice.setMaximumFractionDigits(2);
-        shapePrice.setMinimumFractionDigits(2);
-        shapePrice.setDecimalSeparatorAlwaysShown(true);
     }
 
     @Override
@@ -39,7 +33,7 @@ public class UnclaimCommand extends ConsulatCommand {
         }
         ClaimManager.getInstance().unClaim(claim);
         if(claim.isOwner(sender.getUUID())){
-            sender.sendMessage(Text.PREFIX + "§aChunk unclaim, tu as récupéré " + shapePrice.format(Claim.REFUND) + " €.");
+            sender.sendMessage(Text.PREFIX + "§aChunk unclaim, tu as récupéré " + ConsulatCore.formatMoney(Claim.REFUND) + ".");
             player.addMoney(Claim.REFUND);
         } else {
             SurvivalPlayer survivalTarget = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(claim.getOwnerUUID());

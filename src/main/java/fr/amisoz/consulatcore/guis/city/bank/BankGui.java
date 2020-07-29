@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.guis.city.bank;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.zones.cities.City;
@@ -38,7 +39,7 @@ public class BankGui extends DataRelatGui<City> {
                         return;
                     }
                     if(moneyToGive <= 0 || moneyToGive > 1_000_000){
-                        player.sendMessage(Text.PREFIX + "§cTu ne peux pas donner " + moneyToGive + " € à la banque de ta ville.");
+                        player.sendMessage(Text.PREFIX + "§cTu ne peux pas donner " + ConsulatCore.formatMoney(moneyToGive) + " à la banque de ta ville.");
                         return;
                     }
                     if(!player.hasMoney(moneyToGive)){
@@ -61,7 +62,7 @@ public class BankGui extends DataRelatGui<City> {
                         return;
                     }
                     if(moneyToWithdraw <= 0 || moneyToWithdraw > 1_000_000){
-                        player.sendMessage(Text.PREFIX + "§cTu ne peux pas retirer " + moneyToWithdraw + " € de la banque de ta ville.");
+                        player.sendMessage(Text.PREFIX + "§cTu ne peux pas retirer " + ConsulatCore.formatMoney(moneyToWithdraw) + " de la banque de ta ville.");
                         return;
                     }
                     City city = player.getCity();

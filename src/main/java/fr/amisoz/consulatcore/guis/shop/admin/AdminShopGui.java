@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.guis.shop.admin;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.shop.admin.AdminShop;
 import fr.leconsulat.api.gui.GuiItem;
 import fr.leconsulat.api.gui.gui.template.DataGui;
@@ -20,7 +21,7 @@ public abstract class AdminShopGui extends DataGui<AdminShop> {
     @Override
     public void onCreate(){
         GuiItem item = new GuiItem(getData().getItem(), 13);
-        item.setDescription("", "§7Prix: §e" + getData().getPrice() + "€");
+        item.setDescription("", "§7Prix: §e" + ConsulatCore.formatMoney(getData().getPrice()));
         setItem(item);
     }
 }

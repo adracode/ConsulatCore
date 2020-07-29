@@ -4,6 +4,7 @@ import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.guis.city.CityGui;
 import fr.amisoz.consulatcore.players.CityPermission;
@@ -43,7 +44,7 @@ public class CityCommand extends ConsulatCommand {
                     "§6/ville kick <pseudo> §7- §eExclure une personne de ta ville.\n" +
                     "§6/ville accept <nom de la ville> §7- §eAccepter la demande d’invitation d'une ville.\n" +
                     "§6/ville leave §7- §eQuitter la ville dans laquelle tu es.\n" +
-                    "§6/ville claim §7- §eClaim un chunk pour 180 € au nom de ta ville (Assure toi d’avoir de l’argent dans la banque de ville). Tu peux claim le chunk d’un de tes membres.\n" +
+                    "§6/ville claim §7- §eClaim un chunk pour " + ConsulatCore.formatMoney(180) + " au nom de ta ville (Assure toi d’avoir de l’argent dans la banque de ville). Tu peux claim le chunk d’un de tes membres.\n" +
                     "§6/ville unclaim §7- §eSupprimer un claim de ta ville.\n" +
                     "§6/ville sethome §7- §eCréer le point d’apparition de ta ville.\n" +
                     "§6/ville home §7- §eTe téléporter au point d’apparition de ta ville. Tu peux utiliser l’abréviation /ville h\n" +
@@ -444,7 +445,7 @@ public class CityCommand extends ConsulatCommand {
                             return;
                         }
                         if(moneyToGive <= 0 || moneyToGive > 1_000_000){
-                            sender.sendMessage(Text.PREFIX + "§cTu ne peux pas donner " + moneyToGive + " € à la banque de ta ville.");
+                            sender.sendMessage(Text.PREFIX + "§cTu ne peux pas donner " + ConsulatCore.formatMoney(moneyToGive) + " à la banque de ta ville.");
                             return;
                         }
                         if(!player.hasMoney(moneyToGive)){
@@ -474,7 +475,7 @@ public class CityCommand extends ConsulatCommand {
                             return;
                         }
                         if(moneyToWithdraw <= 0 || moneyToWithdraw > 1_000_000){
-                            sender.sendMessage(Text.PREFIX + "§cTu ne peux pas retirer " + moneyToWithdraw + " € de la banque de ta ville.");
+                            sender.sendMessage(Text.PREFIX + "§cTu ne peux pas retirer " + ConsulatCore.formatMoney(moneyToWithdraw) + " de la banque de ta ville.");
                             return;
                         }
                         if(!city.hasMoney(moneyToWithdraw)){
@@ -486,7 +487,7 @@ public class CityCommand extends ConsulatCommand {
                     }
                     break;
                     case "info":{
-                        player.sendMessage("§aTa ville a §e" + player.getCity().getMoney() + " €§a.");
+                        player.sendMessage("§aTa ville a §e" + ConsulatCore.formatMoney(player.getCity().getMoney()));
                     }
                     break;
                     default:

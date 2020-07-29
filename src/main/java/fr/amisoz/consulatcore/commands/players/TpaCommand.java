@@ -1,6 +1,7 @@
 package fr.amisoz.consulatcore.commands.players;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.Arguments;
@@ -74,7 +75,7 @@ public class TpaCommand extends ConsulatCommand {
                     request.remove(target.getUUID());
                     target.removeMoney(10D);
                     target.getPlayer().teleportAsync(sender.getPlayer().getLocation());
-                    target.sendMessage("§aTu as été téléporté à " + sender.getName() + " pour 10 €.");
+                    target.sendMessage("§aTu as été téléporté à " + sender.getName() + " pour " + ConsulatCore.formatMoney(10) + ".");
                 } else {
                     target.getPlayer().teleportAsync(sender.getPlayer().getLocation());
                     request.remove(target.getUUID());

@@ -42,7 +42,8 @@ public class AdminShopCommand extends ConsulatCommand {
             sender.sendMessage("§cUn Shop doit être placé dans l'overworld.");
             return;
         }
-        ItemStack item = bukkitPlayer.getInventory().getItemInMainHand();
+        ItemStack item = new ItemStack(bukkitPlayer.getInventory().getItemInMainHand());
+        item.setAmount(1);
         if(item.getType() == Material.AIR){
             sender.sendMessage("§cMerci de tenir l'item concerné en main.");
             return;
@@ -70,7 +71,6 @@ public class AdminShopCommand extends ConsulatCommand {
             return;
         }
         shopBlock.setType(Material.CHEST);
-        item.setAmount(1);
         ((Chest)shopBlock.getState()).getBlockInventory().setItem(0, item);
         AdminShop shop;
         switch(args[0]){

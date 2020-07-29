@@ -50,6 +50,8 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.Connection;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
@@ -76,11 +78,9 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     private static Random random;
     
     private Location spawn;
-    
     public SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy 'à' HH:mm");
-    
+    private DecimalFormat moneyFormat;
     private ModerationDatabase moderationDatabase;
-    
     private boolean chat = true;
     
     private List<TextComponent> textPerso = new ArrayList<>();
@@ -98,6 +98,9 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         random = new Random();
         saveDefaultConfig();
         long startLoading = System.currentTimeMillis();
+        DecimalFormatSymbols custom = new DecimalFormatSymbols();
+        custom.setGroupingSeparator(' ');
+        moneyFormat = new DecimalFormat("###,###,###,###.## ¢", custom);
         spawn = new Location(Bukkit.getWorlds().get(0), 330, 65, -438, -145, 0);
         new DuelManager();
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
@@ -273,6 +276,10 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     
     public boolean isCustomRankForbidden(String rank){
         return forbiddenPerso.contains(rank.toLowerCase());
+    }
+    
+    public synchronized static String formatMoney(double money){
+        return getInstance().moneyFormat.format(money);
     }
     
     public static Random getRandom(){

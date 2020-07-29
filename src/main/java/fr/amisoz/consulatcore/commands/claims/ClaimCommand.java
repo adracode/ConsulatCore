@@ -55,7 +55,7 @@ public class ClaimCommand extends ConsulatCommand {
                 return;
             }
             if(!player.hasMoney(Claim.BUY_CLAIM)){
-                sender.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent pour claim ce chunk, il te faut " + Claim.BUY_CLAIM + "€.");
+                sender.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent pour claim ce chunk, il te faut " + ConsulatCore.formatMoney(Claim.BUY_CLAIM));
                 return;
             }
             sender.sendMessage("§aClaim du chunk en cours...");
@@ -67,7 +67,7 @@ public class ClaimCommand extends ConsulatCommand {
             }
             ClaimManager.getInstance().playerClaim(chunk.getX(), chunk.getZ(), zone);
             player.removeMoney(Claim.BUY_CLAIM);
-            sender.sendMessage(Text.PREFIX + "§aTu as claim ce chunk pour un prix de " + Claim.BUY_CLAIM + " €.");
+            sender.sendMessage(Text.PREFIX + "§aTu as claim ce chunk pour un prix de " + ConsulatCore.formatMoney(Claim.BUY_CLAIM) + ".");
             return;
         }
         switch(args[0].toLowerCase()){

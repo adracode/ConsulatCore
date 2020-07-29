@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.commands.players;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
@@ -20,7 +21,7 @@ public class HelpCommand extends ConsulatCommand {
                 + "\n§r§6/spawn §r§7: Téléportation au spawn"
                 + "\n§r§6/msg <Joueur> <Message> §r§7:  Envoyer un message privé à un joueur"
                 + "\n§r§6/claim §r§7: §7Claim le chunk §7dans lequel §7tu te trouves"
-                + "\n§r§6/tpa <Joueur> §r§7:  Envoyer une demande de téléportation §o(Payant : 10€)"
+                + "\n§r§6/tpa <Joueur> §r§7:  Envoyer une demande de téléportation §o(Payant : " + ConsulatCore.formatMoney(10) + ")"
                 + "\n§r§6/access add|addall <Joueur> §r§7:  Ajoute le joueur §7dans le claim où §7tu te trouves|tous tes claims"
                 + "\n§r§6/access remove|removeall <Joueur> §r§7:  Retire le§7 joueur dans §7le claim §7où tu §7te trouves|tous tes claims"
                 + "\n§r§6/access list §r§7: §7Montre les joueurs §7ayant accès au §7claim dans lequel §7tu te trouves."

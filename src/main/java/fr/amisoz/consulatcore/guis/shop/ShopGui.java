@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.guis.shop;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.shop.player.PlayerShop;
@@ -38,9 +39,9 @@ public class ShopGui extends DataPagedGui<ShopItemType> {
         }
         GuiItem item = new GuiItem(shop.getItem(), 0);
         item.setDescription("§eVendu par: §c" + shop.getOwnerName(),
-                "§ePrix unitaire: §c" + shop.getPrice() + "§e€.",
+                "§ePrix unitaire: §c" + ConsulatCore.formatMoney(shop.getPrice()),
                 "§eCoordonnées: X: §c" + shop.getX() + "§e Y: §c" + shop.getY() + "§e Z: §c" + shop.getZ(),
-                "§eTéléportation pour: §c10§e€.");
+                "§eTéléportation pour: §c" + ConsulatCore.formatMoney(10) + ".");
         item.setAttachedObject(shop);
         addItem(item);
     }
@@ -107,7 +108,7 @@ public class ShopGui extends DataPagedGui<ShopItemType> {
                         player.sendMessage("Erreur lors de la téléportation");
                         return;
                     }
-                    player.sendMessage(ChatColor.YELLOW + "Téléportation réussie pour " + ChatColor.RED + "10.0" + ChatColor.YELLOW + "€.");
+                    player.sendMessage(ChatColor.YELLOW + "Téléportation réussie pour §c" + ConsulatCore.formatMoney(10) + ".");
                     player.removeMoney(10.0);
                 } else {
                     player.sendMessage(Text.PREFIX + "§cVous n'avez pas assez d'argent.");

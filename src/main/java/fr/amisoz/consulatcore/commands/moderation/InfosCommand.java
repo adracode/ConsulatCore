@@ -66,7 +66,7 @@ public class InfosCommand extends ConsulatCommand {
                 player.sendMessage(ChatColor.GRAY + "Fly ⤗ " + ChatColor.YELLOW + (flyTime / 60) + " minutes" + ChatColor.GRAY + " • " + (survivalTarget.isFlying() ? ChatColor.GREEN + "Fly activé" : ChatColor.RED + "Fly désactivé"));
             }
             
-            player.sendMessage(ChatColor.GRAY + "Grade ⤗ " + survivalTarget.getRank().getRankColor() + survivalTarget.getRank().getRankName() + ChatColor.GRAY + " ↭ Argent ⤗ " + ChatColor.BLUE + survivalTarget.getMoney() + "€");
+            player.sendMessage(ChatColor.GRAY + "Grade ⤗ " + survivalTarget.getRank().getRankColor() + survivalTarget.getRank().getRankName() + ChatColor.GRAY + " ↭ Argent ⤗ " + ChatColor.BLUE + ConsulatCore.formatMoney(survivalTarget.getMoney()));
         }
         
         
@@ -81,7 +81,7 @@ public class InfosCommand extends ConsulatCommand {
                     }
                     SurvivalOffline offlineTarget = offlineConsulat.get();
                     sendBan(args[0], player.getPlayer());
-                    player.sendMessage(ChatColor.GRAY + "Grade ⤗ " + offlineTarget.getRank().getRankColor() + offlineTarget.getRank().getRankName() + ChatColor.GRAY + " ↭ Argent ⤗ " + ChatColor.BLUE + offlineTarget.getMoney() + "€");
+                    player.sendMessage(ChatColor.GRAY + "Grade ⤗ " + offlineTarget.getRank().getRankColor() + offlineTarget.getRank().getRankName() + ChatColor.GRAY + " ↭ Argent ⤗ " + ChatColor.BLUE + ConsulatCore.formatMoney(offlineTarget.getMoney()));
                 }
             } catch(SQLException e){
                 player.sendMessage(ChatColor.RED + "Erreur lors de la récupération de certaines informations.");

@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.guis.shop.admin;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.shop.admin.AdminShop;
@@ -19,12 +20,12 @@ public class SellGui extends AdminShopGui {
     @Override
     public void onCreate(){
         super.onCreate();
-        GuiItem buy1 = IGui.getItem("§eVendre 1", 37, getData().getItem().getType(), "", "§7Prix: §e" + getData().getPrice() + "€");
-        GuiItem buy16 = IGui.getItem("§eVendre 16", 39, getData().getItem().getType(), "", "§7Prix: §e" + getData().getPrice() + "€");
+        GuiItem buy1 = IGui.getItem("§eVendre 1", 37, getData().getItem().getType(), "", "§7Prix: §e" + ConsulatCore.formatMoney(getData().getPrice()));
+        GuiItem buy16 = IGui.getItem("§eVendre 16", 39, getData().getItem().getType(), "", "§7Prix: §e" + ConsulatCore.formatMoney(getData().getPrice()));
         buy16.setAmount(16);
-        GuiItem buy64 = IGui.getItem("§eVendre 64", 41, getData().getItem().getType(), "", "§7Prix: §e" + getData().getPrice() + "€");
+        GuiItem buy64 = IGui.getItem("§eVendre 64", 41, getData().getItem().getType(), "", "§7Prix: §e" + ConsulatCore.formatMoney(getData().getPrice()));
         buy64.setAmount(64);
-        GuiItem fillInventory = IGui.getItem("§eVendre l'inventaire", 43, getData().getItem().getType(), "", "§7Prix: §e" + getData().getPrice() + "€");
+        GuiItem fillInventory = IGui.getItem("§eVendre l'inventaire", 43, getData().getItem().getType(), "", "§7Prix: §e" + ConsulatCore.formatMoney(getData().getPrice()));
         fillInventory.setAmount(64);
         setItem(buy1);
         setItem(buy16);
@@ -40,18 +41,18 @@ public class SellGui extends AdminShopGui {
             setDescriptionPlayer(ITEM_1_SLOT, event.getPlayer(), "", "§cTu n'as pas assez d'items à vendre");
             setDescriptionPlayer(ITEM_ALL_SLOT, event.getPlayer(), "", "§cTu n'as pas d'items à vendre");
         } else {
-            setDescriptionPlayer(ITEM_1_SLOT, event.getPlayer(), "", "§7Prix: §e" + getPrice(player) + "€");
-            setDescriptionPlayer(ITEM_ALL_SLOT, event.getPlayer(), "", "§7Vendre §e" + amountToSell, "§7Prix: §e" + getPrice(player) * amountToSell + "€");
+            setDescriptionPlayer(ITEM_1_SLOT, event.getPlayer(), "", "§7Prix: §e" + ConsulatCore.formatMoney(getPrice(player)));
+            setDescriptionPlayer(ITEM_ALL_SLOT, event.getPlayer(), "", "§7Vendre §e" + amountToSell, "§7Prix: §e" + ConsulatCore.formatMoney(getPrice(player) * amountToSell));
         }
         if(amountToSell < 16){
             setDescriptionPlayer(ITEM_16_SLOT, event.getPlayer(), "", "§cTu n'as pas assez d'items à vendre");
         } else {
-            setDescriptionPlayer(ITEM_16_SLOT, event.getPlayer(), "", "§7Prix: §e" + getPrice(player) * 16 + "€");
+            setDescriptionPlayer(ITEM_16_SLOT, event.getPlayer(), "", "§7Prix: §e" + ConsulatCore.formatMoney(getPrice(player) * 16));
         }
         if(amountToSell < 64){
             setDescriptionPlayer(ITEM_64_SLOT, event.getPlayer(), "", "§cTu n'as pas assez d'items à vendre");
         } else {
-            setDescriptionPlayer(ITEM_64_SLOT, event.getPlayer(), "", "§7Prix: §e" + getPrice(player) * 64 + "€");
+            setDescriptionPlayer(ITEM_64_SLOT, event.getPlayer(), "", "§7Prix: §e" + ConsulatCore.formatMoney(getPrice(player) * 64));
         }
     }
     
@@ -76,19 +77,13 @@ public class SellGui extends AdminShopGui {
     public void onClick(GuiClickEvent event){
         int amount = -1;
         switch(event.getSlot()){
-            case ITEM_1_SLOT:
-                amount = 1;
-                break;
-            case ITEM_16_SLOT:
-                amount = 16;
-                break;
-            case ITEM_64_SLOT:
-                amount = 64;
-                break;
-            case ITEM_ALL_SLOT:
-                break;
-            default:
-                return;
+            //@formatter:off
+            case ITEM_1_SLOT: amount = 1; break;
+            case ITEM_16_SLOT: amount = 16; break;
+            case ITEM_64_SLOT: amount = 64; break;
+            case ITEM_ALL_SLOT: break;
+            default: return;
+            //@formatter:on
         }
         SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
         AdminShop shop = getData();
@@ -100,11 +95,12 @@ public class SellGui extends AdminShopGui {
         }
         if(numberToSell < amount || numberToSell == 0){
             player.sendMessage("§cTu n'as pas d'item à vendre.");
+            player.getPlayer().closeInventory();
             return;
         }
         player.removeSimilarItems(toSell, amount);
         player.addMoney(sellPrice);
-        player.sendMessage(Text.PREFIX + "Tu as vendu §e" + toSell.getType().name() + " x" + amount + " §6pour §e" + sellPrice * amount + "€");
+        player.sendMessage(Text.PREFIX + "Tu as vendu §e" + toSell.getType().name() + " x" + amount + " §6pour §e" + ConsulatCore.formatMoney(sellPrice * amount));
         onOpen(new GuiOpenEvent(player));
     }
 }

@@ -586,7 +586,7 @@ public class ShopManager implements Listener {
             });
         } else {
             target.addMoney(price);
-            target.sendMessage(Text.PREFIX + "§aTu as reçu " + price + " € grâce à un de tes shops.");
+            target.sendMessage(Text.PREFIX + "§aTu as reçu " + ConsulatCore.formatMoney(price) + " grâce à un de tes shops.");
         }
         player.sendMessage(Text.PREFIX + "Tu as acheté §e" + shop.getItemType().toString() + " x " + amount + " §6pour §e" + price);
         ConsulatAPI.getConsulatAPI().logFile("Achat: " + player + " a acheté au shop " + shop + " " + amount + " items pour un prix de " + price);
@@ -620,7 +620,7 @@ public class ShopManager implements Listener {
         }
     }
     
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.NORMAL)
     public void onChestClick(PlayerInteractContainerBlockEvent event){
         if(event.getType() != PlayerInteractContainerBlockEvent.Type.CHEST){
             return;

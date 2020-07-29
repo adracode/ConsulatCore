@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.guis.city;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.guis.city.bank.BankGui;
 import fr.amisoz.consulatcore.guis.city.changehome.ChangeHomeGui;
 import fr.amisoz.consulatcore.guis.city.claimlist.ClaimsGui;
@@ -188,7 +189,7 @@ public class CityGui extends DataRelatGui<City> {
     
     public void updateBank(){
         City city = getData();
-        setDescription(BANK_BUTTON, "", "§a" + city.getMoney() + " €", "", "§7Gérer la banque");
+        setDescription(BANK_BUTTON, "", "§a" + ConsulatCore.formatMoney(city.getMoney()), "", "§7Gérer la banque");
     }
     
     public void updateRank(){
