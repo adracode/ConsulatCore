@@ -28,22 +28,46 @@ import java.util.UUID;
 
 public class ManageClaimGui extends DataRelatPagedGui<Claim> {
     
+    private static final byte MANAGE_INTERACT_SLOT = 2;
     private static final byte INFO_SLOT = 4;
     private static final byte ADD_SLOT = 6;
     
     public ManageClaimGui(Claim claim){
         super(claim, "<position>", 6,
+                IGui.getItem("Interaction", MANAGE_INTERACT_SLOT, Material.LAVA_BUCKET),
                 IGui.getItem("§eAccès", INFO_SLOT, Material.PAPER),
                 IGui.getItem("§eAjouter un joueur", ADD_SLOT, Material.PLAYER_HEAD)
         );
         setDeco(Material.BLACK_STAINED_GLASS_PANE, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 26, 27, 35, 36, 44, 46, 47, 48, 49, 50, 51, 52, 53);
-        setDeco(Material.RED_STAINED_GLASS_PANE, 0, 1, 2, 3, 5, 7, 8);
+        setDeco(Material.RED_STAINED_GLASS_PANE, 0, 1, 3, 5, 7, 8);
         setDynamicItems(19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43);
+    }
+    
+    private void setManageInteractSlot(boolean interaction){
+        if(interaction){
+            setType(MANAGE_INTERACT_SLOT, Material.WATER_BUCKET);
+            setDisplayName(MANAGE_INTERACT_SLOT, "§eInterdire l'interaction");
+            setDescription(MANAGE_INTERACT_SLOT, "",
+                    "§7Interdire les claims dont vous êtes",
+                    "§7propriétaire autour de ce claim",
+                    "§7à interagir avec celui ci",
+                    "§7§oExemple: écoulement d'eau");
+        } else {
+            setType(MANAGE_INTERACT_SLOT, Material.LAVA_BUCKET);
+            setDisplayName(MANAGE_INTERACT_SLOT, "§eAutoriser l'interaction");
+            setDescription(MANAGE_INTERACT_SLOT, "",
+                    "§7Autoriser les claims dont vous êtes",
+                    "§7propriétaire autour de ce claim",
+                    "§7à interagir avec celui ci",
+                    "§7§oExemple: écoulement d'eau");
+        }
     }
     
     @Override
     public void onCreate(){
         applyFather();
+        Claim claim = getData();
+        setManageInteractSlot(claim.isInteractSurrounding());
         for(UUID uuid : getData().getPlayers()){
             addPlayerToClaim(uuid, Bukkit.getOfflinePlayer(uuid).getName());
         }
@@ -80,6 +104,11 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
                 if(clickedItem.getType() == Material.ARROW){
                     getPage(page.getPage() + 1).open(player);
                 }
+                return;
+            case MANAGE_INTERACT_SLOT:
+                Claim claim = getData();
+                claim.setInteractSurrounding(!claim.isInteractSurrounding());
+                setManageInteractSlot(claim.isInteractSurrounding());
                 return;
             case ADD_SLOT:
                 GuiManager.getInstance().userInput(event.getPlayer().getPlayer(), (input) -> {

@@ -35,9 +35,9 @@ public class ChunkManager implements Listener {
         if(instance == null){
             instance = this;
         }
-        Bukkit.getWorlds().stream()
-                .sorted(Comparator.comparingInt(world -> world.getEnvironment().ordinal()))
-                .forEach((world -> chunks.put(world.getUID() ,new HashMap<>())));
+        for(World world : Bukkit.getWorlds()){
+            chunks.put(world.getUID(), new HashMap<>());
+        }
         FileConfiguration config = ConsulatCore.getInstance().getConfig();
         for(Map.Entry<String, Object> limit : config.getConfigurationSection("block-limits").getValues(false).entrySet()){
             Material material;

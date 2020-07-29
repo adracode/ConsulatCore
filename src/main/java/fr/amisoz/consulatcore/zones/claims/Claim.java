@@ -33,6 +33,7 @@ public class Claim extends CChunk {
     
     private String description;
     private Zone owner;
+    private boolean interactSurrounding = false;
     private Map<UUID, Set<String>> permissions = new HashMap<>();
     
     public Claim(long coords){
@@ -274,6 +275,7 @@ public class Claim extends CChunk {
                         protectedContainer.getUUID("Owner"));
             }
         }
+        this.interactSurrounding = claim.getByte("InteractSurrounding") == 1;
     }
     
     @Override
@@ -295,6 +297,7 @@ public class Claim extends CChunk {
             containersTag.addTag(containerTag);
         }
         claim.put("Containers", containersTag);
+        claim.putByte("InteractSurrounding", (byte)(interactSurrounding ? 1 : 0));
         return claim;
     }
     
@@ -347,7 +350,14 @@ public class Claim extends CChunk {
         if(to == null){
             return true;
         }
-        return isOwner(to.getOwnerUUID());
+        return interactSurrounding && to.interactSurrounding && isOwner(to.getOwnerUUID());
     }
     
+    public boolean isInteractSurrounding(){
+        return interactSurrounding;
+    }
+    
+    public void setInteractSurrounding(boolean interactSurrounding){
+        this.interactSurrounding = interactSurrounding;
+    }
 }
