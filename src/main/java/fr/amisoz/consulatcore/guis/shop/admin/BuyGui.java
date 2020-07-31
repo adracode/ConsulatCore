@@ -33,7 +33,7 @@ public class BuyGui extends AdminShopGui {
     }
     
     @Override
-    public void onOpen(GuiOpenEvent event){
+    public void onOpened(GuiOpenEvent event){
         int spaceAvailable = ((SurvivalPlayer)event.getPlayer()).spaceAvailable(getData().getItem());
         if(spaceAvailable == 0){
             setDescriptionPlayer(ITEM_1_SLOT, event.getPlayer(), "", "§cTu n'as pas assez de", "§cplace dans ton inventaire");
@@ -84,7 +84,7 @@ public class BuyGui extends AdminShopGui {
             player.removeMoney(buyPrice);
             player.sendMessage(Text.PREFIX + "Tu as acheté §e" + shop.getItem().getType().name() + " x" + amount + " §6pour §e" + ConsulatCore.formatMoney(buyPrice) + ".");
             player.addItemInInventory(amount, toBuy);
-            onOpen(new GuiOpenEvent(player));
+            onOpened(new GuiOpenEvent(player));
         } else {
             player.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent");
             player.getPlayer().closeInventory();

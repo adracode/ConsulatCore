@@ -17,6 +17,8 @@ import fr.leconsulat.api.nbt.NBTType;
 import fr.leconsulat.api.nbt.StringTag;
 import fr.leconsulat.api.player.Permission;
 import fr.leconsulat.api.ranks.Rank;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.block.Block;
@@ -35,6 +37,7 @@ public class Claim extends CChunk {
     private Zone owner;
     private boolean interactSurrounding = false;
     private Map<UUID, Set<String>> permissions = new HashMap<>();
+    private final Long2ObjectMap<UUID> protectedContainers = new Long2ObjectOpenHashMap<>();
     
     public Claim(long coords){
         super(coords);
@@ -220,16 +223,6 @@ public class Claim extends CChunk {
         }
     }
     
-    private final Map<Long, UUID> protectedContainers = new HashMap<>();
-    
-    public Map<Long, UUID> getProtectedContainers(){
-        return Collections.unmodifiableMap(protectedContainers);
-    }
-    
-    public boolean protectContainer(Block block, UUID uuid){
-        return protectContainer(CoordinatesUtils.convertCoordinates(block.getLocation()), uuid);
-    }
-    
     public boolean protectContainer(long coords, UUID uuid){
         return protectedContainers.putIfAbsent(coords, uuid) == null;
     }
@@ -259,16 +252,17 @@ public class Claim extends CChunk {
         if(claim.has("Description")){
             this.description = claim.getString("Description");
         }
-        List<CompoundTag> members = claim.getList("Members", CompoundTag.class);
+        List<CompoundTag> members = claim.getList("Members", NBTType.COMPOUND);
         for(CompoundTag member : members){
             Set<String> permissions = new HashSet<>();
-            for(StringTag permission : member.getList("Permissions", StringTag.class)){
+            List<StringTag> tagList = member.getList("Permissions", NBTType.STRING);
+            for(StringTag permission : tagList){
                 permissions.add(permission.getValue());
             }
             this.permissions.put(member.getUUID("UUID"), permissions);
         }
         if(claim.has("ProtectedContainers")){
-            List<CompoundTag> protectedContainers = claim.getList("ProtectedContainers", CompoundTag.class);
+            List<CompoundTag> protectedContainers = claim.getList("ProtectedContainers", NBTType.COMPOUND);
             for(CompoundTag protectedContainer : protectedContainers){
                 this.protectedContainers.put(
                         protectedContainer.getLong("Coords"),
@@ -290,9 +284,9 @@ public class Claim extends CChunk {
         }
         claim.put("Members", members);
         ListTag<CompoundTag> containersTag = new ListTag<>(NBTType.COMPOUND);
-        for(Map.Entry<Long, UUID> container : protectedContainers.entrySet()){
+        for(Long2ObjectMap.Entry<UUID> container : protectedContainers.long2ObjectEntrySet()){
             CompoundTag containerTag = new CompoundTag();
-            containerTag.putLong("Coords", container.getKey());
+            containerTag.putLong("Coords", container.getLongKey());
             containerTag.putUUID("Owner", container.getValue());
             containersTag.addTag(containerTag);
         }

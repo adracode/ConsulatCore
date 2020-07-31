@@ -18,10 +18,10 @@ public enum MuteEnum {
 
     private String sanctionName;
     private Material guiMaterial;
-    private Long durationSanction;
+    private long durationSanction;
     private String formatDuration;
 
-    MuteEnum(String sanctionName, Material guiMaterial, Long durationSanction, String formatDuration) {
+    MuteEnum(String sanctionName, Material guiMaterial, long durationSanction, String formatDuration) {
         this.sanctionName = sanctionName;
         this.guiMaterial = guiMaterial;
         this.durationSanction = durationSanction;
@@ -36,7 +36,7 @@ public enum MuteEnum {
         return guiMaterial;
     }
 
-    public Long getDurationSanction() {
+    public long getDurationSanction() {
         return durationSanction;
     }
 

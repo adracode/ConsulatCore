@@ -101,6 +101,6 @@ public class SellGui extends AdminShopGui {
         player.removeSimilarItems(toSell, amount);
         player.addMoney(sellPrice);
         player.sendMessage(Text.PREFIX + "Tu as vendu §e" + toSell.getType().name() + " x" + amount + " §6pour §e" + ConsulatCore.formatMoney(sellPrice * amount));
-        onOpen(new GuiOpenEvent(player));
+        onOpened(new GuiOpenEvent(player));
     }
 }

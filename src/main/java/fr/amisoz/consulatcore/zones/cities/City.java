@@ -33,10 +33,12 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 @SuppressWarnings({"UnusedReturnValue", "BooleanMethodIsAlwaysInverted"})
 public class City extends Zone {
     
+    public static final Pattern TEST_NAME = Pattern.compile("^[ a-zA-Z0-9_'àçéèêîïùÀÇÉÈÊÎÏÙ]+$");
     public static final int MAX_LENGTH_NAME = 32;
     
     private double bank;
@@ -490,7 +492,7 @@ public class City extends Zone {
                 home.putDouble("z", this.home.getZ());
                 home.putFloat("yaw", this.home.getYaw());
                 home.putFloat("pitch", this.home.getPitch());
-                city.put("home", home);
+                city.put("Home", home);
             }
             NBTOutputStream os = new NBTOutputStream(file, city);
             os.write("City");

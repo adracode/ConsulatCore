@@ -11,8 +11,9 @@ import java.util.SortedSet;
 public class BaltopCommand extends ConsulatCommand {
     
     public BaltopCommand(){
-        super("baltop", "/baltop", 0, Rank.JOUEUR);
+        super("baltop", "/baltop", 0, Rank.ADMIN);
         suggest(true);
+        setPermission("consulat.core.command.baltop");
     }
     
     @Override

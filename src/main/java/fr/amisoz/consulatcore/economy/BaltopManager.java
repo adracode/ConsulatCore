@@ -13,7 +13,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Level;
 
-//TODO: si un joueur passe admin, il sera affiché dans le baltop s'il n'y a pas eu d'update
 public class BaltopManager implements Listener {
     
     private static BaltopManager instance;

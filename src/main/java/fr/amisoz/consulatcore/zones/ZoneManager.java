@@ -148,7 +148,7 @@ public class ZoneManager {
         city.setHome(location);
         IGui cityGui = GuiManager.getInstance().getContainer("city").getGui(false, city);
         if(cityGui != null){
-            ((CityGui)cityGui).updateHome(true);
+            ((CityGui)cityGui).updateHome();
         }
         IGui cityInfoGui = GuiManager.getInstance().getContainer("city-info").getGui(false, city);
         if(cityInfoGui != null){

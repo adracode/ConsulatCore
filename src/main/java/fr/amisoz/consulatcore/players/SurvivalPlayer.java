@@ -60,7 +60,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
     private String sanctionTarget;
     private boolean spying;
     private boolean isMuted;
-    private Long muteExpireMillis;
+    private long muteExpireMillis;
     private String muteReason;
     private UUID lastPrivate;
     private CustomEnum persoState = CustomEnum.START;
@@ -145,7 +145,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
         return ClaimManager.getInstance().getClaim(this.getPlayer().getChunk());
     }
     
-    public Long getMuteExpireMillis(){
+    public long getMuteExpireMillis(){
         return muteExpireMillis;
     }
     
@@ -377,7 +377,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
         this.muteReason = reason;
     }
     
-    public void setMuteExpireMillis(Long muteExpireMillis){
+    public void setMuteExpireMillis(long muteExpireMillis){
         this.muteExpireMillis = muteExpireMillis;
     }
     

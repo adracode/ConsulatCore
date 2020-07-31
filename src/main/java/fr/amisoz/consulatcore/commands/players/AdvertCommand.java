@@ -7,26 +7,27 @@ import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import org.bukkit.Bukkit;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 public class AdvertCommand extends ConsulatCommand {
     
-    private Map<UUID, Long> delay = new HashMap<>();
+    private Object2LongMap<UUID> delay = new Object2LongOpenHashMap<>();
     
     public AdvertCommand(){
         super("advert", "/advert <Annonce>", 1, Rank.FINANCEUR);
         suggest(true,
                 RequiredArgumentBuilder.argument("annonce", StringArgumentType.greedyString()));
+        delay.defaultReturnValue(-1);
     }
     
     @Override
     public void onCommand(ConsulatPlayer sender, String[] args){
-        Long delay = this.delay.get(sender.getUUID());
-        if(delay != null){
+        long delay = this.delay.getLong(sender.getUUID());
+        if(delay != -1){
             if((System.currentTimeMillis() - delay) < 3 * 60 * 60 * 1000){
                 sender.sendMessage("§cTu dois attendre pour refaire cette commande.");
                 return;

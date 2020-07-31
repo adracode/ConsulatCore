@@ -19,10 +19,10 @@ public enum BanEnum {
 
     private String sanctionName;
     private Material guiMaterial;
-    private Long durationSanction;
+    private long durationSanction;
     private String formatDuration;
 
-    BanEnum(String sanctionName, Material guiMaterial, Long durationSanction, String formatDuration) {
+    BanEnum(String sanctionName, Material guiMaterial, long durationSanction, String formatDuration) {
         this.sanctionName = sanctionName;
         this.guiMaterial = guiMaterial;
         this.durationSanction = durationSanction;
@@ -37,7 +37,7 @@ public enum BanEnum {
         return guiMaterial;
     }
 
-    public Long getDurationSanction() {
+    public long getDurationSanction() {
         return durationSanction;
     }
 

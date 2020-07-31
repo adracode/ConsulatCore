@@ -47,7 +47,7 @@ public class InventoryListeners implements Listener {
             return;
         }
         if(survivalPlayer.getCurrentlyOpen() instanceof AdminShopGui){
-            survivalPlayer.getCurrentlyOpen().onOpen(new GuiOpenEvent(survivalPlayer));
+            survivalPlayer.getCurrentlyOpen().onOpened(new GuiOpenEvent(survivalPlayer));
         }
     }
     

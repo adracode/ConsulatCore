@@ -17,6 +17,8 @@ import fr.leconsulat.api.nbt.*;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.ranks.Rank;
 import fr.leconsulat.api.utils.FileUtils;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -65,7 +67,7 @@ public class ShopManager implements Listener {
     
     private final Map<String, ShopConstructor> createShop = new HashMap<>();
     
-    private Map<Long, Shop> shops = new HashMap<>();
+    private Long2ObjectMap<Shop> shops = new Long2ObjectOpenHashMap<>();
     private Map<ShopItemType, Set<PlayerShop>> nonEmptyTypes = new HashMap<>();
     
     private ShopManager(){
@@ -918,22 +920,8 @@ public class ShopManager implements Listener {
                 } else {
                     player.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent");
                 }
-            } else {
             }
         }
-        if(event.getAction() == Action.RIGHT_CLICK_BLOCK){
-            SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
-            event.setCancelled(true);
-            if(sign.getLines()[3].contains("Vente impossible")){
-                player.sendMessage(Text.PREFIX + "Item non disponible à la vente.");
-                return;
-            }
-            
-        }
-    }
-    
-    public static ShopEnum getShopMaterial(final String name){
-        return Arrays.stream(ShopEnum.values()).filter(shop -> shop.getNewMaterialName().equalsIgnoreCase(name)).findFirst().orElse(null);
     }
     
     private void updateShop(Location old, Location loc) throws SQLException{

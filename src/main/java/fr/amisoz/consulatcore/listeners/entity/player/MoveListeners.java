@@ -1,7 +1,9 @@
 package fr.amisoz.consulatcore.listeners.entity.player;
 
 import fr.amisoz.consulatcore.events.ClaimChangeEvent;
+import fr.amisoz.consulatcore.guis.city.CityGui;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.amisoz.consulatcore.zones.claims.ClaimManager;
 import fr.leconsulat.api.player.CPlayerManager;
 import org.bukkit.Bukkit;
@@ -35,18 +37,21 @@ public class MoveListeners implements Listener {
     
     @EventHandler
     public void onTeleport(PlayerTeleportEvent event){
+        if(event.getTo().getChunk() == event.getFrom().getChunk()){
+            return;
+        }
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
         if(player == null){
             return;
         }
-
+        
         Location to = event.getTo();
         Location from = event.getFrom();
-
+        
         if(to.getWorld().equals(Bukkit.getWorlds().get(0)) && from.getWorld().equals(Bukkit.getWorlds().get(1))){
-            player.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10*20, 10));
+            player.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10 * 20, 10));
         }
-
+        
         player.setOldLocation(event.getFrom());
         player.setLastTeleport(System.currentTimeMillis());
         Chunk chunkTo = to.getChunk();
@@ -54,6 +59,16 @@ public class MoveListeners implements Listener {
         Bukkit.getPluginManager().callEvent(new ClaimChangeEvent(player,
                 ClaimManager.getInstance().getClaim(chunkFrom),
                 ClaimManager.getInstance().getClaim(chunkTo)));
+    }
+    
+    @EventHandler
+    public void onClaimChange(ClaimChangeEvent event){
+        if(event.getPlayer().getCurrentlyOpen() instanceof CityGui){
+            SurvivalPlayer player = event.getPlayer();
+            CityGui cityGui = (CityGui)player.getCurrentlyOpen();
+            Claim claim = event.getClaimTo();
+            cityGui.updateHome(player, claim != null && cityGui.getData().isClaim(claim));
+        }
     }
     
 }

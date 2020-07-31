@@ -6,8 +6,11 @@ import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.nbt.*;
 import fr.leconsulat.api.task.TaskManager;
 import fr.leconsulat.api.utils.FileUtils;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -21,14 +24,16 @@ import java.util.logging.Level;
 public class ChunkManager implements Listener {
     
     private static ChunkManager instance;
-    static {
-         new ChunkManager();
+    
+    static{
+        new ChunkManager();
     }
+    
     private static final int SHIFT_CLAIMS = 5;
     
     private final Map<String, ChunkConstructor> createChunk = new HashMap<>();
     
-    private final Map<UUID, Map<Long, CChunk>> chunks = new HashMap<>();
+    private final Map<UUID, Long2ObjectMap<CChunk>> chunks = new HashMap<>();
     private final Map<Material, Integer> limits = new EnumMap<>(Material.class);
     
     private ChunkManager(){
@@ -36,18 +41,23 @@ public class ChunkManager implements Listener {
             instance = this;
         }
         for(World world : Bukkit.getWorlds()){
-            chunks.put(world.getUID(), new HashMap<>());
+            chunks.put(world.getUID(), new Long2ObjectOpenHashMap<>());
         }
         FileConfiguration config = ConsulatCore.getInstance().getConfig();
-        for(Map.Entry<String, Object> limit : config.getConfigurationSection("block-limits").getValues(false).entrySet()){
-            Material material;
-            try {
-                material = Material.valueOf(limit.getKey());
-            } catch(IllegalArgumentException | NullPointerException e){
-                ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Invalid block in limit config (" + limit + ")");
-                continue;
+        ConfigurationSection blockLimits = config.getConfigurationSection("block-limits");
+        if(blockLimits == null){
+            ConsulatAPI.getConsulatAPI().log(Level.WARNING, "No 'block-limits' section found in config.yml, then no limits are applied on chunks.");
+        } else {
+            for(Map.Entry<String, Object> limit : blockLimits.getValues(false).entrySet()){
+                Material material;
+                try {
+                    material = Material.valueOf(limit.getKey());
+                } catch(IllegalArgumentException | NullPointerException e){
+                    ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Invalid block in limit config (" + limit + ")");
+                    continue;
+                }
+                limits.put(material, (int)limit.getValue());
             }
-            limits.put(material, (int)limit.getValue());
         }
         ConsulatCore.getInstance().getServer().getPluginManager().registerEvents(this, ConsulatCore.getInstance());
     }
@@ -87,7 +97,7 @@ public class ChunkManager implements Listener {
             Bukkit.shutdown();
         }
         for(World world : Bukkit.getWorlds()){
-            Map<Long, CChunk> worldChunks = chunks.get(world.getUID());
+            Long2ObjectMap<CChunk> worldChunks = chunks.get(world.getUID());
             for(Chunk spawnChunk : world.getLoadedChunks()){
                 if(!worldChunks.containsKey(CChunk.convert(spawnChunk.getX(), spawnChunk.getZ()))){
                     Bukkit.getPluginManager().callEvent(new ChunkLoadEvent(spawnChunk, false));
@@ -105,8 +115,8 @@ public class ChunkManager implements Listener {
                     throw new IOException("Couldn't create file.");
                 }
             }
-            for(Map.Entry<UUID, Map<Long, CChunk>> worldChunks : chunks.entrySet()){
-                Map<Long, CChunk> world = worldChunks.getValue();
+            for(Map.Entry<UUID, Long2ObjectMap<CChunk>> worldChunks : chunks.entrySet()){
+                Long2ObjectMap<CChunk> world = worldChunks.getValue();
                 File worldDir = FileUtils.loadFile(chunkDir, worldChunks.getKey().toString());
                 if(!worldDir.exists()){
                     if(!worldDir.mkdir()){

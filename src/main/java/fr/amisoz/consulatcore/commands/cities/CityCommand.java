@@ -129,7 +129,11 @@ public class CityCommand extends ConsulatCommand {
                     return;
                 }
                 if(args[1].length() > City.MAX_LENGTH_NAME){
-                    player.sendMessage("§cLe nom est trop long.");
+                    player.sendMessage("§cLe nom de ville est trop long.");
+                    return;
+                }
+                if(!City.TEST_NAME.matcher(args[1]).matches()){
+                    player.sendMessage("§cLe nom de ville n'est pas valide.");
                     return;
                 }
                 ZoneManager cityManager = ZoneManager.getInstance();

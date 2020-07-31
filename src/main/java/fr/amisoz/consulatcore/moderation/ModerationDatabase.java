@@ -19,7 +19,7 @@ public class ModerationDatabase {
         this.connection = consulatCore.getDatabaseConnection();
     }
     
-    public void addSanction(UUID uuid, String name, Player moderator, String sanctionType, String reason, Long expireMillis, Long applicationMillis) throws SQLException{
+    public void addSanction(UUID uuid, String name, Player moderator, String sanctionType, String reason, long expireMillis, long applicationMillis) throws SQLException{
         PreparedStatement request = connection.prepareStatement("INSERT INTO antecedents(playeruuid, playername, modname, moduuid, sanction, reason, expire, applicated, cancelled, active) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         request.setString(1, uuid.toString());
         request.setString(2, name);
