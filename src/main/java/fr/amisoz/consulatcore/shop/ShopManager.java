@@ -377,12 +377,17 @@ public class ShopManager implements Listener {
             price = Double.parseDouble(lines[1]);
         } catch(NumberFormatException e){
             event.getBlock().breakNaturally();
-            player.sendMessage("§cLe prix est incorrecte.");
+            player.sendMessage("§cLe prix est incorrect.");
             return;
         }
-        if(price <= 0 || Double.isInfinite(price)){
+        if(Double.isInfinite(price)){
             event.getBlock().breakNaturally();
-            player.sendMessage("§cLe prix est incorrecte.");
+            player.sendMessage("§cLe prix est incorrect.");
+            return;
+        }
+        if(price < 1){
+            event.getBlock().breakNaturally();
+            player.sendMessage("§cLe prix doit être d'au moins 1€.");
             return;
         }
         ItemStack sold = null;
