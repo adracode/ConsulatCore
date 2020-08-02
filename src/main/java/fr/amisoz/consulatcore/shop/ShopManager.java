@@ -509,12 +509,8 @@ public class ShopManager implements Listener {
                 if(target == null){
                     SPlayerManager.getInstance().addMoney(shop.getOwner(), price);
                 } else {
-                    double percentAdd = 0;
-                    if(price >= 1000){
-                        percentAdd = (price / 1000) / 100 * price;
-                    }
-                    target.addMoney(price + percentAdd);
-                    target.sendMessage(Text.PREFIX + "§aTu as reçu " + (price + percentAdd ) + " € grâce à un de tes shops.");
+                    target.addMoney(price);
+                    target.sendMessage(Text.PREFIX + "§aTu as reçu " + price + " € grâce à un de tes shops.");
                 }
             } catch(SQLException e){
                 player.sendMessage("§cUne erreur interne est survenue, la transaction a échoué");
