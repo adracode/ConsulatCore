@@ -80,11 +80,11 @@ public class SurvivalPlayer extends ConsulatPlayer {
         switch(getRank()){
             case JOUEUR:
             case TOURISTE:
-                return 5;
+                return 2;
             case FINANCEUR:
-                return 10;
+                return 3;
             default:
-                return 15;
+                return 4;
         }
     }
     
