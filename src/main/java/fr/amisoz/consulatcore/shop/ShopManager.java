@@ -592,8 +592,12 @@ public class ShopManager implements Listener {
                 SPlayerManager.getInstance().addMoney(shop.getOwner(), price);
             });
         } else {
-            target.addMoney(price);
-            target.sendMessage(Text.PREFIX + "§aTu as reçu " + ConsulatCore.formatMoney(price) + " grâce à un de tes shops.");
+            double percentAdd = 0;
+            if(price >= 1000){
+                percentAdd = (price / 1000) / 100 * price;
+            }
+            target.addMoney(price + percentAdd);
+            target.sendMessage(Text.PREFIX + "§aTu as reçu " + (price + percentAdd) + " € grâce à un de tes shops.");
         }
         player.sendMessage(Text.PREFIX + "Tu as acheté §e" + shop.getItemType().toString() + " x " + amount + " §6pour §e" + price);
         ConsulatAPI.getConsulatAPI().logFile("Achat: " + player + " a acheté au shop " + shop + " " + amount + " items pour un prix de " + price);
