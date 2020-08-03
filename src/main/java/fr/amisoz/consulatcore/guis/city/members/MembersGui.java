@@ -4,11 +4,13 @@ import fr.amisoz.consulatcore.guis.city.members.member.MemberGui;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.zones.ZoneManager;
 import fr.amisoz.consulatcore.zones.cities.City;
+import fr.amisoz.consulatcore.zones.cities.CityPlayer;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.gui.GuiItem;
 import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.gui.event.GuiClickEvent;
 import fr.leconsulat.api.gui.event.GuiCreateEvent;
+import fr.leconsulat.api.gui.event.GuiOpenEvent;
 import fr.leconsulat.api.gui.event.GuiRemoveEvent;
 import fr.leconsulat.api.gui.gui.IGui;
 import fr.leconsulat.api.gui.gui.module.api.Pageable;
@@ -16,12 +18,17 @@ import fr.leconsulat.api.gui.gui.module.api.Relationnable;
 import fr.leconsulat.api.gui.gui.template.DataRelatPagedGui;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.UUID;
 
 public class MembersGui extends DataRelatPagedGui<City> {
@@ -30,7 +37,6 @@ public class MembersGui extends DataRelatPagedGui<City> {
     private static final byte PUBLIC_PERMISSIONS_SLOT = 13;
     
     public static final String PUBLIC = "city.members.public";
-    public static final String MEMBER = "city.members.member";
     
     public MembersGui(City city){
         super(city, "Membres", 6,
@@ -43,9 +49,21 @@ public class MembersGui extends DataRelatPagedGui<City> {
     
     @Override
     public void onCreate(){
-        for(UUID uuid : getData().getMembers()){
-            String name = Bukkit.getOfflinePlayer(uuid).getName();
-            addPlayer(uuid, name == null ? "Pseudo" : name);
+        for(CityPlayer player : getData().getMembers()){
+            String name = Bukkit.getOfflinePlayer(player.getUUID()).getName();
+            addPlayer(player.getUUID(), name == null ? "Pseudo" : name);
+        }
+    }
+    
+    @Override
+    public void onPageOpened(GuiOpenEvent event, Pageable pageGui){
+        ConsulatPlayer player = event.getPlayer();
+        UUID uuid = player.getUUID();
+        UUID ownerUUID = getData().getOwner();
+        for(GuiItem item : this){
+            if(uuid.equals(item.getAttachedObject()) || ownerUUID.equals(item.getAttachedObject())){
+                pageGui.setDescriptionPlayer(item.getSlot(), player, "", "§cVous ne pouvez pas modifier", "§cce membre");
+            }
         }
     }
     
@@ -78,7 +96,7 @@ public class MembersGui extends DataRelatPagedGui<City> {
     public void onPageClick(GuiClickEvent event, Pageable page){
         City city = getData();
         ConsulatPlayer player = event.getPlayer();
-        GuiItem clickedItem = page.getItem(event.getSlot());
+        GuiItem clickedItem = Objects.requireNonNull(page.getItem(event.getSlot()));
         switch(event.getSlot()){
             case PUBLIC_PERMISSIONS_SLOT:
                 getChild(PUBLIC).open(player);
@@ -93,8 +111,9 @@ public class MembersGui extends DataRelatPagedGui<City> {
                     getPage(page.getPage() + 1).open(player);
                 }
                 return;
+                //TODO: si n'a pas la perm
             case ADD_SLOT:{
-                GuiManager.getInstance().userInput(event.getPlayer().getPlayer(), input -> {
+                GuiManager.getInstance().userInput(event.getPlayer(), input -> {
                     UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(input);
                     if(targetUUID == null){
                         player.sendMessage("§cCe joueur n'existe pas.");
@@ -114,14 +133,17 @@ public class MembersGui extends DataRelatPagedGui<City> {
                         return;
                     }
                     player.sendMessage("§aTu as invité §7" + target.getName() + " §a à rejoindre la ville §7" + city.getName() + "§a.");
-                    target.sendMessage("§aTu as été invité à rejoindre la ville §7" + city.getName() + "§a par §7" + player.getName() + "§a.");
                     city.sendMessage("§a" + player.getName() + "§7 a invité §a" + target.getName() + "§7.");
+                    TextComponent message = new TextComponent("§aTu as été invité à rejoindre la ville §7" + city.getName() + "§a par §7" + player.getName() + "§a.");
+                    message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§aClique pour rejoindre " + city.getName()).create()));
+                    message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/city accept " + city.getName()));
+                    target.sendMessage(message);
                 }, new String[]{"", "^^^^^^^^^^^^^^", "Entrez le nom", "du joueur"}, 0);
             }
             return;
         }
         if(event.getSlot() >= 19 && event.getSlot() <= 44 && clickedItem.getType() == Material.PLAYER_HEAD){
-            if(!ConsulatAPI.getConsulatAPI().isDebug() && city.getOwner().equals(clickedItem.getAttachedObject())){
+            if(!ConsulatAPI.getConsulatAPI().isDebug() && (city.getOwner().equals(clickedItem.getAttachedObject()) || player.getUUID().equals(clickedItem.getAttachedObject()))){
                 player.sendMessage("§cLes permissions du proriétaire de la ville ne peuvent pas changer.");
                 return;
             }

@@ -1,7 +1,6 @@
 package fr.amisoz.consulatcore.guis.city.members.member.rank;
 
 import fr.amisoz.consulatcore.zones.cities.City;
-import fr.amisoz.consulatcore.zones.cities.CityPlayer;
 import fr.amisoz.consulatcore.zones.cities.CityRank;
 import fr.leconsulat.api.gui.event.GuiClickEvent;
 import fr.leconsulat.api.gui.gui.IGui;
@@ -23,7 +22,7 @@ public class RankMemberGui extends DataRelatGui<UUID> {
     
     public RankMemberGui(UUID uuid){
         super(uuid, "Grade", 5,
-                IGui.getItem("§eGrade actuel", CURRENT_SLOT, Material.NAME_TAG),
+                IGui.getItem("§eGrade actuel", CURRENT_SLOT, Material.NAME_TAG, "", "§7Assigner un grade à", "§7un membre reset ses", "§7permissions et lui donne", "§7les permissions par défaut", "§7du grade"),
                 IGui.getItem("<grade2>", RANK2_SLOT, Material.DIAMOND, GIVE_RANK_DESCRIPTION),
                 IGui.getItem("<grade3>", RANK3_SLOT, Material.GOLD_INGOT, GIVE_RANK_DESCRIPTION),
                 IGui.getItem("<grade4>", RANK4_SLOT, Material.IRON_INGOT, GIVE_RANK_DESCRIPTION));
@@ -33,11 +32,11 @@ public class RankMemberGui extends DataRelatGui<UUID> {
     @Override
     public void onCreate(){
         City city = getCity();
-        CityRank rank = city.getCityPlayer(getData()).getRank();
+        CityRank rank = city.getCityPlayer(getData()).getRank(), ranks;
         setDescription(CURRENT_SLOT, "§a" + rank.getRankName());
-        setDisplayName(RANK2_SLOT, "§b" + city.getRankName(1));
-        setDisplayName(RANK3_SLOT, "§e" + city.getRankName(2));
-        setDisplayName(RANK4_SLOT, "§7" + city.getRankName(3));
+        updateRank(city.getRank(1));
+        updateRank(city.getRank(2));
+        updateRank(city.getRank(3));
         int slot = slotByRank(rank);
         if(slot == -1){
             return;
@@ -58,24 +57,27 @@ public class RankMemberGui extends DataRelatGui<UUID> {
         return -1;
     }
     
-    public void setRank(CityRank rank){
-        City city = getCity();
-        UUID uuid = getData();
-        CityPlayer cityPlayer = city.getCityPlayer(uuid);
-        CityRank currentRank = cityPlayer.getRank();
-        int slot = slotByRank(currentRank);
+    public void setRank(CityRank oldRank, CityRank rank){
+        int slot = slotByRank(oldRank);
         setGlowing(slot, false);
         setDescription(slot, GIVE_RANK_DESCRIPTION);
         setGlowing(slotByRank(rank), true);
         setDescription(CURRENT_SLOT, "§a" + rank.getRankName());
         setDescription(slotByRank(rank));
-        cityPlayer.setRank(rank);
+    }
+    
+    public void updateRank(CityRank rank){
+        int slot = slotByRank(rank);
+        if(slot == -1){
+            return;
+        }
+        setDisplayName(slot, rank.getColor() + rank.getRankName());
     }
     
     @Override
     public void onClick(GuiClickEvent event){
         City city = getCity();
-        CityRank rank = null;
+        CityRank rank;
         switch(event.getSlot()){
             case RANK2_SLOT:
                 rank = city.getRank(1);
@@ -86,10 +88,10 @@ public class RankMemberGui extends DataRelatGui<UUID> {
             case RANK4_SLOT:
                 rank = city.getRank(3);
                 break;
+            default:
+                return;
         }
-        if(rank != null){
-            setRank(rank);
-        }
+        city.setRank(getData(), rank);
     }
     
     @SuppressWarnings("unchecked")

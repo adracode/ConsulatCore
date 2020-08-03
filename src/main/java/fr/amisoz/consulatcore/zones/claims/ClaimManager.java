@@ -365,9 +365,12 @@ public class ClaimManager implements Listener {
                 player.sendMessage(claimTo.getOwner().getEnterMessage());
             }
             String description = claimTo.getDescription();
-            if(description != null){
-                player.sendMessage(Text.PREFIX + "§7" + description);
-            }
+            if(description != null)
+                if(claimFrom != null && !description.equals(claimFrom.getDescription())){
+                    player.sendMessage(Text.PREFIX + "§7" + description);
+                } else if(claimFrom == null){
+                    player.sendMessage(Text.PREFIX + "§7" + description);
+                }
         }
     }
     

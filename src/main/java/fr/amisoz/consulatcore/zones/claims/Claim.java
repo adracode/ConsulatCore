@@ -22,6 +22,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.block.Block;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -65,8 +66,8 @@ public class Claim extends CChunk {
         return owner.equals(zone);
     }
     
-    public String getDescription(){
-        return description;
+    public @Nullable String getDescription(){
+        return description == null ? owner instanceof City ? ((City)owner).getDescription() : null : description;
     }
     
     public boolean addPlayer(UUID uuid){
@@ -329,6 +330,21 @@ public class Claim extends CChunk {
         }
         Claim claimFrom = ClaimManager.getInstance().getClaim(from);
         Claim claimTo = ClaimManager.getInstance().getClaim(to);
+        //Si le claim d'où part l'interaction existe, c'est sa méthode qui décide du résultat
+        if(claimFrom != null){
+            return claimFrom.canInteractWith(claimTo);
+        }
+        /*Sinon, puisque claimFrom est null, alors si claimTo est null, l'interaction est autorisé,
+          sinon l'interaction non-claim -> claim est interdite*/
+        return claimTo == null;
+    }
+    
+    public static boolean canInteract(CChunk from, CChunk to){
+        if(from == to){
+            return true;
+        }
+        Claim claimFrom = from instanceof Claim ? (Claim)from : null;
+        Claim claimTo = to instanceof Claim ? (Claim)to : null;
         //Si le claim d'où part l'interaction existe, c'est sa méthode qui décide du résultat
         if(claimFrom != null){
             return claimFrom.canInteractWith(claimTo);

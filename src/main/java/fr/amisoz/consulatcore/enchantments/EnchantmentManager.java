@@ -113,6 +113,9 @@ public class EnchantmentManager implements Listener {
             return;
         }
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getEntity().getUniqueId());
+        if(player == null){
+            return;
+        }
         for(int i = 0; i < 4; ++i){
             CEnchantedItem armorPart = player.getArmor(i);
             if(armorPart == null){

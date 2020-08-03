@@ -130,6 +130,7 @@ public class ZoneManager {
         if(ConsulatAPI.getConsulatAPI().isDebug()){
             ConsulatAPI.getConsulatAPI().log(Level.INFO, "Renaming city " + city.getName() + " to " + newName);
         }
+        city.removeMoney(City.RENAME_TAX);
         citiesByName.remove(city.getName().toLowerCase());
         city.rename(newName);
         citiesByName.put(newName.toLowerCase(), city);

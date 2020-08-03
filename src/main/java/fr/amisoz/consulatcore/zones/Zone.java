@@ -9,11 +9,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-@SuppressWarnings({"UnusedReturnValue", "BooleanMethodIsAlwaysInverted", "unused"})
+@SuppressWarnings({"UnusedReturnValue", "unused"})
 public class Zone implements Saveable {
     
     @NotNull private final UUID uuid;
-    @NotNull private final UUID owner;
+    @NotNull private UUID owner;
     @NotNull private final Set<Claim> claims;
     @NotNull private String name;
     
@@ -103,6 +103,10 @@ public class Zone implements Saveable {
     
     public @NotNull UUID getOwner(){
         return owner;
+    }
+    
+    public void setOwner(@NotNull UUID owner){
+        this.owner = owner;
     }
     
     public boolean isOwner(@Nullable UUID uuid){

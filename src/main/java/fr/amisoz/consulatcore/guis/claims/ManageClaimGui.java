@@ -111,7 +111,7 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
                 setManageInteractSlot(claim.isInteractSurrounding());
                 return;
             case ADD_SLOT:
-                GuiManager.getInstance().userInput(event.getPlayer().getPlayer(), (input) -> {
+                GuiManager.getInstance().userInput(event.getPlayer(), (input) -> {
                     UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(input);
                     if(targetUUID == null){
                         player.sendMessage("§cCe joueur n'existe pas.");

@@ -2,12 +2,15 @@ package fr.amisoz.consulatcore.guis.city.bank;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
+import fr.amisoz.consulatcore.players.CityPermission;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.gui.event.GuiClickEvent;
+import fr.leconsulat.api.gui.event.GuiOpenEvent;
 import fr.leconsulat.api.gui.gui.IGui;
 import fr.leconsulat.api.gui.gui.template.DataRelatGui;
+import fr.leconsulat.api.player.ConsulatPlayer;
 import org.bukkit.Material;
 
 public class BankGui extends DataRelatGui<City> {
@@ -18,18 +21,33 @@ public class BankGui extends DataRelatGui<City> {
     
     public BankGui(City city){
         super(city, "Banque", 5,
-                IGui.getItem("§eBanque", INFO_SLOT, Material.SUNFLOWER),
+                IGui.getItem("§eBanque", INFO_SLOT, Material.SUNFLOWER, "", "§a" + ConsulatCore.formatMoney(city.getMoney())),
                 IGui.getItem("§eAjouter de l'argent", ADD_SLOT, Material.ENDER_EYE),
                 IGui.getItem("§eRetirer de l'argent", WITHDRAW_SLOT, Material.ENDER_PEARL)
         );
-        setDeco(Material.BLACK_STAINED_GLASS_PANE, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 37, 38, 39, 40, 41, 42, 43, 44);
+        setDeco(Material.BLACK_STAINED_GLASS_PANE, 0, 1, 2, 3, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 37, 38, 39, 40, 41, 42, 43, 44);
+    }
+    
+    @Override
+    public void onOpened(GuiOpenEvent event){
+        if(!getData().hasPermission(event.getPlayer().getUUID(), CityPermission.MANAGE_BANK)){
+            updateBank(event.getPlayer(), false);
+        }
+    }
+    
+    public void updateBank(ConsulatPlayer player, boolean allow){
+        if(allow){
+            setFakeItem(WITHDRAW_SLOT, null, player);
+        } else {
+            setDescriptionPlayer(WITHDRAW_SLOT, player, "", "§cVous ne pouvez pas", "§cretirer de l'argent");
+        }
     }
     
     @Override
     public void onClick(GuiClickEvent event){
         switch(event.getSlot()){
             case ADD_SLOT:
-                GuiManager.getInstance().userInput(event.getPlayer().getPlayer(), (input) -> {
+                GuiManager.getInstance().userInput(event.getPlayer(), (input) -> {
                     SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
                     double moneyToGive;
                     try {
@@ -52,7 +70,10 @@ public class BankGui extends DataRelatGui<City> {
                 }, new String[]{"", "^^^^^^^^^^^^^^", "Entrez le montant", "à ajouter"}, 0);
                 break;
             case WITHDRAW_SLOT:
-                GuiManager.getInstance().userInput(event.getPlayer().getPlayer(), (input) -> {
+                if(!getData().hasPermission(event.getPlayer().getUUID(), CityPermission.MANAGE_BANK)){
+                    return;
+                }
+                GuiManager.getInstance().userInput(event.getPlayer(), (input) -> {
                     SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
                     double moneyToWithdraw;
                     try {
@@ -67,7 +88,8 @@ public class BankGui extends DataRelatGui<City> {
                     }
                     City city = player.getCity();
                     if(!city.hasMoney(moneyToWithdraw)){
-                        moneyToWithdraw = city.getMoney();
+                        player.sendMessage("§cLa banque de ville n'a pas assez d'argent pour retirer ce montant.");
+                        return;
                     }
                     city.removeMoney(moneyToWithdraw);
                     player.addMoney(moneyToWithdraw);

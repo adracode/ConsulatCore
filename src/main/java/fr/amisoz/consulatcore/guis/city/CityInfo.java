@@ -34,15 +34,14 @@ public class CityInfo extends DataPagedGui<City> {
     
     @Override
     public void onCreate(){
-        for(UUID uuid : getData().getMembers()){
-            addPlayer(uuid);
+        for(CityPlayer player : getData().getMembers()){
+            addPlayer(player.getUUID());
         }
     }
     
     @Override
     public void onPageCreated(GuiCreateEvent event, Pageable pageGui){
-        City city = getData();
-        setDescription(CITY_SLOT, "§7Propriétaire: §a" + Bukkit.getOfflinePlayer(city.getOwner()).getName());
+        updateOwner();
         updateHome();
         updateName();
         int page = pageGui.getPage();
@@ -106,6 +105,10 @@ public class CityInfo extends DataPagedGui<City> {
         for(GuiItem item : this){
             item.setDescription("", "§7Grade: §b" + ((CityPlayer)item.getAttachedObject()).getRank().getRankName());
         }
+    }
+    
+    public void updateOwner(){
+        setDescription(CITY_SLOT, "§7Propriétaire: §a" + Bukkit.getOfflinePlayer(getData().getOwner()).getName());
     }
     
     public static class Container extends GuiContainer<City> {
