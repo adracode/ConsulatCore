@@ -2,6 +2,7 @@ package fr.amisoz.consulatcore.chunks;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.chunks.scan.ChunkScanner;
+import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.nbt.*;
 import fr.leconsulat.api.task.TaskManager;
@@ -26,12 +27,14 @@ public class ChunkManager implements Listener {
     private static ChunkManager instance;
     
     static{
-        new ChunkManager();
+        ChunkManager chunkManager = new ChunkManager();
+        chunkManager.register(CChunk.TYPE, CChunk::new);
+        chunkManager.register(Claim.TYPE, Claim::new);
     }
     
     private static final int SHIFT_CLAIMS = 5;
     
-    private final Map<String, ChunkConstructor> createChunk = new HashMap<>();
+    private final Map<String, ChunkConstructor> createChunk = new HashMap<>(2);
     
     private final Map<UUID, Long2ObjectMap<CChunk>> chunks = new HashMap<>();
     private final Map<Material, Integer> limits = new EnumMap<>(Material.class);
@@ -97,11 +100,8 @@ public class ChunkManager implements Listener {
             Bukkit.shutdown();
         }
         for(World world : Bukkit.getWorlds()){
-            Long2ObjectMap<CChunk> worldChunks = chunks.get(world.getUID());
             for(Chunk spawnChunk : world.getLoadedChunks()){
-                if(!worldChunks.containsKey(CChunk.convert(spawnChunk.getX(), spawnChunk.getZ()))){
-                    Bukkit.getPluginManager().callEvent(new ChunkLoadEvent(spawnChunk, false));
-                }
+                Bukkit.getPluginManager().callEvent(new ChunkLoadEvent(spawnChunk, false));
             }
         }
         ConsulatAPI.getConsulatAPI().log(Level.INFO, size + " Chunks loaded in " + (System.currentTimeMillis() - start) + " ms");

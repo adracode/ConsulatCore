@@ -33,6 +33,7 @@ public class AccessibleClaimGui extends DataRelatPagedGui<UUID> {
                 IGui.getItem("§eAccès", REMOVE_ALL_SLOT, Material.BARRIER, "§7Retirer l'accès de tous les claims"));
         setDeco(Material.BLACK_STAINED_GLASS_PANE, 0, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 26, 27, 35, 36, 44, 46, 47, 48, 49, 50, 51, 52, 53);
         setDynamicItems(19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43);
+        setTemplateItems(0, 3, 5, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 26, 27, 35, 36, 44, 46, 47, 48, 49, 50, 51, 52, 53);
     }
     
     @Override
@@ -50,6 +51,7 @@ public class AccessibleClaimGui extends DataRelatPagedGui<UUID> {
         if(page.getPage() != 0){
             page.setItem(IGui.getItem("§7Précédent", PREVIOUS, Material.ARROW));
             getPage(page.getPage() - 1).setItem(IGui.getItem("§7Suivant", NEXT, Material.ARROW));
+            page.setDeco(Material.BLACK_STAINED_GLASS_PANE, NEXT);
         }
     }
     

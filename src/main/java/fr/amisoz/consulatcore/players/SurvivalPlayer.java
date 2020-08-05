@@ -17,6 +17,8 @@ import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.amisoz.consulatcore.zones.claims.ClaimManager;
 import fr.amisoz.consulatcore.zones.claims.ClaimPermission;
 import fr.leconsulat.api.ConsulatAPI;
+import fr.leconsulat.api.channel.Channel;
+import fr.leconsulat.api.channel.Speakable;
 import fr.leconsulat.api.nbt.CompoundTag;
 import fr.leconsulat.api.nbt.ListTag;
 import fr.leconsulat.api.nbt.NBTType;
@@ -105,11 +107,11 @@ public class SurvivalPlayer extends ConsulatPlayer {
         switch(getRank()){
             case JOUEUR:
             case TOURISTE:
-                return 5;
+                return 2;
             case FINANCEUR:
-                return 10;
+                return 3;
             default:
-                return 15;
+                return 4;
         }
     }
     
@@ -574,6 +576,9 @@ public class SurvivalPlayer extends ConsulatPlayer {
         if(belongsToCity()){
             city.getChannel().removePlayer(this);
         }
+        if(isSpying()){
+            ConsulatCore.getInstance().getSpy().removePlayer(this);
+        }
     }
     
     public String chat(String message){
@@ -628,12 +633,15 @@ public class SurvivalPlayer extends ConsulatPlayer {
         if(cancel){
             return null;
         }
-        if(getCurrentChannel() == null){
+        Channel channel = getCurrentChannel();
+        if(channel == null){
             if(hasPower(Rank.MODO)){
                 return ChatColor.translateAlternateColorCodes('&', message);
             }
         } else {
-            getCurrentChannel().sendMessage(this, message);
+            if(channel instanceof Speakable){
+                channel.sendMessage(((Speakable)channel).speak(this, message));
+            }
             return null;
         }
         return message;

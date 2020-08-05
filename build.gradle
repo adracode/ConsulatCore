@@ -37,6 +37,7 @@ dependencies {
     compileOnly group: 'org.jetbrains', name: 'annotations', version:'16.0.2'
     compileOnly group: 'org.redisson', name: 'redisson', version: '3.13.2'
     compileOnly group: 'it.unimi.dsi', name: 'fastutil', version: '8.2.1'
+
 }
 
 processResources {

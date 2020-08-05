@@ -46,7 +46,7 @@ public class CityGui extends DataRelatGui<City> {
     public CityGui(City city){
         super(city, "<ville>", 6,
                 IGui.getItem("§e<nom>", CITY_SLOT, Material.PAPER),
-                IGui.getItem("§eClaims", CLAIM_SLOT, Material.FILLED_MAP, "", "§7Gérer les claims", "§7de la ville"),
+                IGui.getItem("§eClaims", CLAIM_SLOT, Material.FILLED_MAP, "", "§7Voir les claims", "§7de la ville"),
                 IGui.getItem("§eHome", HOME_SLOT, Material.COMPASS),
                 IGui.getItem("§eBanque", BANK_SLOT, Material.SUNFLOWER),
                 IGui.getItem("§eGrades", RANK_SLOT, Material.OAK_SIGN),
@@ -90,7 +90,6 @@ public class CityGui extends DataRelatGui<City> {
         Claim claim = player.getClaim();
         City city = getData();
         updateInfo(player, city.canRename(player.getUUID()));
-        updateClaim(player, city.hasPermission(player.getUUID(), CityPermission.MANAGE_CLAIM) && city.hasPermission(player.getUUID(), CityPermission.MANAGE_ACCESS));
         updateHome(player, claim != null && city.isClaim(claim));
         updateRank(player, city.isOwner(player.getUUID()));
         updateDisband(player, city.canDisband(player.getUUID()));
@@ -100,7 +99,7 @@ public class CityGui extends DataRelatGui<City> {
         if(allow){
             setFakeItem(DISBAND_SLOT, null, player);
         } else {
-            setDescriptionPlayer(DISBAND_SLOT, player, "", "§cVous ne pouvez pas", "§cdétruire la ville");
+            setDescriptionPlayer(DISBAND_SLOT, player, "", "§cTu ne peux pas", "§cdétruire la ville");
         }
     }
     
@@ -118,9 +117,6 @@ public class CityGui extends DataRelatGui<City> {
         City city = getData();
         switch(event.getSlot()){
             case CLAIM_SLOT:{
-                if(!city.hasPermission(player.getUUID(), CityPermission.MANAGE_CLAIM) || !city.hasPermission(player.getUUID(), CityPermission.MANAGE_ACCESS)){
-                    return;
-                }
                 getChild(CLAIMS).open(player);
             }
             break;
@@ -201,7 +197,7 @@ public class CityGui extends DataRelatGui<City> {
     
     public void updateOwner(){
         setDescription(CITY_SLOT, "", "§7Propriétaire: §a" + Bukkit.getOfflinePlayer(getData().getOwner()).getName(),
-                "", "§7§oCliquez pour renommer", "§7§ovotre ville (" + ConsulatCore.formatMoney(City.RENAME_TAX) + ")");
+                "", "§7§oClique pour renommer", "§7§ota ville (" + ConsulatCore.formatMoney(City.RENAME_TAX) + ")");
     }
     
     public void confirmSethome(ConsulatPlayer player){
@@ -209,14 +205,6 @@ public class CityGui extends DataRelatGui<City> {
     }
     
     public void updateClaim(ConsulatPlayer player, boolean allow){
-        if(!this.equals(player.getCurrentlyOpen())){
-            return;
-        }
-        if(allow){
-            setFakeItem(CLAIM_SLOT, null, player);
-        } else {
-            setDescriptionPlayer(CLAIM_SLOT, player, "", "§cVous ne pouvez pas", "§cgérer les claims");
-        }
     }
     
     public void updateHome(){
@@ -237,7 +225,7 @@ public class CityGui extends DataRelatGui<City> {
             if(allow){
                 setDescriptionPlayer(HOME_SLOT, player, "§7Aucun home défini", "",
                         "§7§oDéfinir le home", "§7§o/ville sethome", "",
-                        "§7Ou §acliquez §7pour", "§7définir le home §aici");
+                        "§7Ou §aclique §7pour", "§7définir le home §aici");
             } else {
                 setDescriptionPlayer(HOME_SLOT, player, "§7Aucun home défini");
             }
@@ -246,7 +234,7 @@ public class CityGui extends DataRelatGui<City> {
             if(allow){
                 setDescriptionPlayer(HOME_SLOT, player, "§7x: " + home.getBlockX(), "§7y: " + home.getBlockY(), "§7z: " + home.getBlockZ(), "",
                         "§7§oChanger le home", "§7§o/ville sethome", "",
-                        "§7Ou §acliquez §7pour", "§7définir le home §aici");
+                        "§7Ou §aclique §7pour", "§7définir le home §aici");
             } else {
                 setDescriptionPlayer(HOME_SLOT, player, "§7x: " + home.getBlockX(), "§7y: " + home.getBlockY(), "§7z: " + home.getBlockZ());
             }
@@ -276,7 +264,7 @@ public class CityGui extends DataRelatGui<City> {
                     "§b" + city.getRankName(1),
                     "§e" + city.getRankName(2),
                     "§7" + city.getRankName(3),
-                    "", "§cVous ne pouvez pas", "§cgérer les grades de ville");
+                    "", "§cTu ne peux pas", "§cgérer les grades de ville");
         }
     }
     
@@ -304,5 +292,5 @@ public class CityGui extends DataRelatGui<City> {
             return new CityGui(city);
         }
     }
-    
+  
 }

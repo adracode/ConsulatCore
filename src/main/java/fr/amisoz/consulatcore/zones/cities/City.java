@@ -6,6 +6,7 @@ import fr.amisoz.consulatcore.guis.city.CityGui;
 import fr.amisoz.consulatcore.guis.city.CityInfo;
 import fr.amisoz.consulatcore.guis.city.bank.BankGui;
 import fr.amisoz.consulatcore.guis.city.members.MembersGui;
+import fr.amisoz.consulatcore.guis.city.members.PublicPermissionsGui;
 import fr.amisoz.consulatcore.guis.city.members.member.MemberGui;
 import fr.amisoz.consulatcore.guis.city.members.member.permissions.MemberPermissionGui;
 import fr.amisoz.consulatcore.guis.city.members.member.rank.RankMemberGui;
@@ -46,7 +47,7 @@ public class City extends Zone {
     
     public static final Pattern TEST_NAME = Pattern.compile("^[ a-zA-Z0-9_'àçéèêîïùÀÇÉÈÊÎÏÙ]+$");
     public static final int MAX_LENGTH_NAME = 32;
-    public static final int RENAME_TAX = 200;
+    public static final int RENAME_TAX = 5_000;
     
     private double bank;
     private @Nullable Location home;
@@ -76,6 +77,7 @@ public class City extends Zone {
         UUID old = getOwner();
         setRank(old, getRank(1));
         super.setOwner(owner);
+        ZoneManager.getInstance().updateOwner(this);
         setRank(owner, getRank(0));
         SurvivalPlayer oldOwner = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(old);
         if(oldOwner != null){
@@ -313,7 +315,6 @@ public class City extends Zone {
         if(player != null){
             IGui currentlyOpen = player.getCurrentlyOpen();
             if(currentlyOpen instanceof BankGui){
-                Claim claim = player.getClaim();
                 ((BankGui)currentlyOpen).updateBank(player, hasPermission(uuid, CityPermission.MANAGE_BANK));
             }
         }
@@ -363,11 +364,25 @@ public class City extends Zone {
     }
     
     public boolean addPublicPermission(@NotNull ClaimPermission permission){
-        return this.publicPermissions.add(permission.getPermission());
+        boolean result = this.publicPermissions.add(permission.getPermission());
+        if(result){
+            PublicPermissionsGui permissionGui = (PublicPermissionsGui)(IGui)GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS, MembersGui.PUBLIC);
+            if(permissionGui != null){
+                permissionGui.setPermission(true, permission);
+            }
+        }
+        return result;
     }
     
     public boolean removePublicPermission(@NotNull ClaimPermission permission){
-        return this.publicPermissions.remove(permission.getPermission());
+        boolean result = this.publicPermissions.remove(permission.getPermission());
+        if(result){
+            PublicPermissionsGui permissionGui = (PublicPermissionsGui)(IGui)GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS, MembersGui.PUBLIC);
+            if(permissionGui != null){
+                permissionGui.setPermission(false, permission);
+            }
+        }
+        return result;
     }
     
     @Override
@@ -376,6 +391,14 @@ public class City extends Zone {
             return false;
         }
         return this.publicPermissions.contains(permission.getPermission());
+    }
+    
+    public void switchPermission(ClaimPermission permission){
+        if(hasPublicPermission(permission)){
+            removePublicPermission(permission);
+        } else {
+            addPublicPermission(permission);
+        }
     }
     
     @Override
@@ -455,7 +478,6 @@ public class City extends Zone {
         return ranks.get(index);
     }
     
-    //TODO: pas d'update
     public void setRank(UUID uuid, CityRank rank){
         CityPlayer player = getCityPlayer(uuid);
         CityRank oldRank = player.getRank();
@@ -517,10 +539,6 @@ public class City extends Zone {
     
     public @NotNull String getRankName(int index){
         return ranks.get(index).getRankName();
-    }
-    
-    public void sendMessage(@NotNull SurvivalPlayer player, @NotNull String message){
-        this.channel.sendMessage(player, message);
     }
     
     public void sendMessage(@Nullable String message){

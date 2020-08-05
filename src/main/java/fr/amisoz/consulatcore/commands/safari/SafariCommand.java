@@ -1,35 +1,29 @@
 package fr.amisoz.consulatcore.commands.safari;
 
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import fr.amisoz.consulatcore.ConsulatCore;
-import fr.leconsulat.api.ConsulatAPI;
+import fr.amisoz.consulatcore.server.SafariServer;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
-import fr.leconsulat.api.player.stream.PlayerOutputStream;
 import fr.leconsulat.api.ranks.Rank;
-import fr.leconsulat.api.redis.RedisManager;
-
-import java.util.logging.Level;
 
 public class SafariCommand extends ConsulatCommand {
     
     public SafariCommand(){
-        super("safari", "/safari", 0, Rank.RESPONSABLE);
+        super("safari", "/safari", 0, Rank.JOUEUR);
         setPermission("consulat.core.command.safari");
         suggest(false);
     }
     
     @Override
     public void onCommand(ConsulatPlayer player, String[] args){
-        RedisManager.getInstance().getRedis().getTopic(ConsulatAPI.getConsulatAPI().isDevelopment() ? "LoadPlayerDataTestSafari" : "LoadPlayerDataSafari").publish(
-                new PlayerOutputStream(player.getPlayer()).writeLevel().writeInventory().send());
-        ByteArrayDataOutput out = ByteStreams.newDataOutput();
-        String server = ConsulatAPI.getConsulatAPI().isDevelopment() ? "testsafari" : "safari";
-        ConsulatAPI.getConsulatAPI().log(Level.INFO, "Sending " + player.getPlayer().getName() + " to " + server + "...");
-        out.writeUTF("Connect");
-        out.writeUTF(server);
-        player.getPlayer().sendPluginMessage(ConsulatCore.getInstance(), "BungeeCord", out.toByteArray());
-        ConsulatAPI.getConsulatAPI().log(Level.INFO, "Plugin message sent");
+        SafariServer safari = ConsulatCore.getInstance().getSafari();
+        switch(safari.queuePlayer(player)){
+            case IN_QUEUE:
+                player.sendMessage("§aTu es desormais dans la queue : " + player.getPositionInQueue() + " / " + safari.getPlayersInQueue());
+                break;
+            case ALREADY_IN_QUEUE:
+                player.sendMessage("§cTu es déjà dans la queue : " + player.getPositionInQueue() + " / " + safari.getPlayersInQueue());
+                break;
+        }
     }
 }

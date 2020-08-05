@@ -10,7 +10,6 @@ import org.bukkit.Material;
 
 import java.util.UUID;
 
-//TODO: changer le nom lors d'une update
 public class RankMemberGui extends DataRelatGui<UUID> {
     
     private static final byte CURRENT_SLOT = 4;
@@ -18,7 +17,7 @@ public class RankMemberGui extends DataRelatGui<UUID> {
     private static final byte RANK3_SLOT = 22;
     private static final byte RANK4_SLOT = 24;
     
-    private static final String[] GIVE_RANK_DESCRIPTION = new String[]{"", "§aCliquez §7pour attribuer", "§7ce grade au joueur"};
+    private static final String[] GIVE_RANK_DESCRIPTION = new String[]{"", "§aClique §7pour attribuer", "§7ce grade au joueur"};
     
     public RankMemberGui(UUID uuid){
         super(uuid, "Grade", 5,

@@ -16,6 +16,7 @@ import org.bukkit.Material;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
+import java.util.Objects;
 
 public class ClaimsGui extends DataRelatPagedGui<City> {
     
@@ -25,10 +26,11 @@ public class ClaimsGui extends DataRelatPagedGui<City> {
     public ClaimsGui(City city){
         super(city, "Claims", 6,
                 IGui.getItem("§eClaims", 4, Material.FILLED_MAP,
-                        "§7Vous pouvez gérer les claims", "§7de votre ville."));
+                        "§7Gérer les claims", "§7de la ville."));
         setDeco(Material.BLACK_STAINED_GLASS_PANE, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 26, 27, 35, 36, 44, 46, 47, 48, 49, 50, 51, 52, 53);
         setDeco(Material.RED_STAINED_GLASS_PANE, 0, 1, 2, 3, 5, 6, 7, 8);
         setDynamicItems(19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43);
+        setTemplateItems(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 26, 27, 35, 36, 44, 46, 47, 48, 49, 50, 51, 52, 53);
     }
     
     @Override
@@ -43,6 +45,7 @@ public class ClaimsGui extends DataRelatPagedGui<City> {
         if(page.getPage() != 0){
             page.setItem(IGui.getItem("§7Précédent", PREVIOUS, Material.ARROW));
             getPage(page.getPage() - 1).setItem(IGui.getItem("§7Suivant", NEXT, Material.ARROW));
+            page.setDeco(Material.BLACK_STAINED_GLASS_PANE, NEXT);
         }
     }
     
@@ -56,7 +59,7 @@ public class ClaimsGui extends DataRelatPagedGui<City> {
     @Override
     public void onPageClick(GuiClickEvent event, Pageable page){
         ConsulatPlayer player = event.getPlayer();
-        GuiItem clickedItem = page.getItem(event.getSlot());
+        GuiItem clickedItem = Objects.requireNonNull(page.getItem(event.getSlot()));
         switch(event.getSlot()){
             case PREVIOUS:
                 if(clickedItem.getType() == Material.ARROW){

@@ -15,6 +15,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
+import org.bukkit.block.data.Directional;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -42,7 +43,7 @@ public class AdminShopCommand extends ConsulatCommand {
             sender.sendMessage("§cUn Shop doit être placé dans l'overworld.");
             return;
         }
-        ItemStack item = new ItemStack(bukkitPlayer.getInventory().getItemInMainHand());
+        ItemStack item = bukkitPlayer.getInventory().getItemInMainHand().clone();
         item.setAmount(1);
         if(item.getType() == Material.AIR){
             sender.sendMessage("§cMerci de tenir l'item concerné en main.");
@@ -71,6 +72,9 @@ public class AdminShopCommand extends ConsulatCommand {
             return;
         }
         shopBlock.setType(Material.CHEST);
+        Directional directional = (Directional)shopBlock.getBlockData();
+        directional.setFacing(bukkitPlayer.getFacing().getOppositeFace());
+        shopBlock.setBlockData(directional);
         ((Chest)shopBlock.getState()).getBlockInventory().setItem(0, item);
         AdminShop shop;
         switch(args[0]){

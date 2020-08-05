@@ -7,7 +7,6 @@ import fr.amisoz.consulatcore.shop.admin.AdminShop;
 import fr.leconsulat.api.gui.GuiItem;
 import fr.leconsulat.api.gui.event.GuiClickEvent;
 import fr.leconsulat.api.gui.event.GuiOpenEvent;
-import fr.leconsulat.api.gui.gui.IGui;
 import org.bukkit.inventory.ItemStack;
 
 public class BuyGui extends AdminShopGui {
@@ -19,16 +18,27 @@ public class BuyGui extends AdminShopGui {
     @Override
     public void onCreate(){
         super.onCreate();
-        GuiItem buy1 = IGui.getItem("§eAcheter 1", ITEM_1_SLOT, getData().getItem().getType(), "", "§7Prix: §e" + ConsulatCore.formatMoney(getData().getPrice()));
-        GuiItem buy16 = IGui.getItem("§eAcheter 16", ITEM_16_SLOT, getData().getItem().getType(), "", "§7Prix: §e" + ConsulatCore.formatMoney(getData().getPrice() * 16));
-        buy16.setAmount(16);
-        GuiItem buy64 = IGui.getItem("§eAcheter 64", ITEM_64_SLOT, getData().getItem().getType(), "", "§7Prix: §e" + ConsulatCore.formatMoney(getData().getPrice() * 64));
-        buy64.setAmount(64);
-        GuiItem fillInventory = IGui.getItem("§eRemplir l'inventaire", ITEM_ALL_SLOT, getData().getItem().getType());
-        fillInventory.setAmount(64);
+    
+        GuiItem buy1 = (new GuiItem(getData().getItem(), ITEM_1_SLOT));
+        buy1.setDisplayName("§eAcheter 1");
+        buy1.setDescription("", "§7Prix: §e" + ConsulatCore.formatMoney(getData().getPrice()));
         setItem(buy1);
+    
+        GuiItem buy16 = new GuiItem(getData().getItem(), ITEM_16_SLOT);
+        buy16.setAmount(16);
+        buy16.setDisplayName("§eAcheter 16");
+        buy16.setDescription("", "§7Prix: §e" + ConsulatCore.formatMoney(getData().getPrice() * 16));
         setItem(buy16);
+    
+        GuiItem buy64 = new GuiItem(getData().getItem(), ITEM_64_SLOT);
+        buy64.setAmount(64);
+        buy64.setDisplayName("§eAcheter 64");
+        buy64.setDescription("", "§7Prix: §e" + ConsulatCore.formatMoney(getData().getPrice() * 64));
         setItem(buy64);
+    
+        GuiItem fillInventory = new GuiItem(getData().getItem(), ITEM_ALL_SLOT);
+        fillInventory.setAmount(64);
+        fillInventory.setDisplayName("§eRemplir l'inventaire");
         setItem(fillInventory);
     }
     
@@ -36,16 +46,16 @@ public class BuyGui extends AdminShopGui {
     public void onOpened(GuiOpenEvent event){
         int spaceAvailable = ((SurvivalPlayer)event.getPlayer()).spaceAvailable(getData().getItem());
         if(spaceAvailable == 0){
-            setDescriptionPlayer(ITEM_1_SLOT, event.getPlayer(), "", "§cTu n'as pas assez de", "§cplace dans ton inventaire");
-            setDescriptionPlayer(ITEM_ALL_SLOT, event.getPlayer(), "", "§cTon inventaire est plein");
+            setDescriptionPlayer(ITEM_1_SLOT, event.getPlayer(),"", "§cTu n'as pas assez de", "§cplace dans ton inventaire");
+            setDescriptionPlayer(ITEM_ALL_SLOT, event.getPlayer(),"", "§cTon inventaire est plein");
         } else {
-            setDescriptionPlayer(ITEM_ALL_SLOT, event.getPlayer(), "", "§7Acheter §e" + spaceAvailable, "§7Prix: §e" + ConsulatCore.formatMoney(getData().getPrice() * spaceAvailable));
+            setDescriptionPlayer(ITEM_ALL_SLOT, event.getPlayer(),"", "§7Acheter §e" + spaceAvailable, "§7Prix: §e" + ConsulatCore.formatMoney(getData().getPrice() * spaceAvailable));
         }
         if(spaceAvailable < 16){
-            setDescriptionPlayer(ITEM_16_SLOT, event.getPlayer(), "", "§cTu n'as pas assez de", "§cplace dans ton inventaire");
+            setDescriptionPlayer(ITEM_16_SLOT, event.getPlayer(),"", "§cTu n'as pas assez de", "§cplace dans ton inventaire");
         }
         if(spaceAvailable < 64){
-            setDescriptionPlayer(ITEM_64_SLOT, event.getPlayer(), "", "§cTu n'as pas assez de", "§cplace dans ton inventaire");
+            setDescriptionPlayer(ITEM_64_SLOT, event.getPlayer(),"", "§cTu n'as pas assez de", "§cplace dans ton inventaire");
         }
     }
     

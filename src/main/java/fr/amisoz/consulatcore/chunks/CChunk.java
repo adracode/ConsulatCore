@@ -3,6 +3,7 @@ package fr.amisoz.consulatcore.chunks;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.nbt.CompoundTag;
 import fr.leconsulat.api.nbt.ListTag;
+import fr.leconsulat.api.nbt.NBTType;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 
@@ -105,7 +106,7 @@ public class CChunk implements Comparable<CChunk> {
     
     public void loadNBT(CompoundTag chunk){
         if(chunk.has("LimitedBlocks")){
-            List<CompoundTag> limits = chunk.getList("LimitedBlocks", CompoundTag.class);
+            List<CompoundTag> limits = chunk.getList("LimitedBlocks", NBTType.COMPOUND);
             for(CompoundTag limited : limits){
                 this.limits.put(
                         Material.valueOf(limited.getString("Id")),

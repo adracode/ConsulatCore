@@ -127,7 +127,7 @@ public class RankGui extends DataRelatGui<CityRank> {
                                 open(player);
                             });
                         },
-                        new String[]{"", "^^^^^^^^^^^^^^", "Entrez le", "nom du grade"}, 0);
+                        new String[]{"", "^^^^^^^^^^^^^^", "Entre le", "nom du grade"}, 0);
                 return;
             case MEMBER_SLOT:
             case MEMBER_SLOT + 9:

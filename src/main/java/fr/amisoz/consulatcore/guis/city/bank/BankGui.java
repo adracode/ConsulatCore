@@ -39,7 +39,7 @@ public class BankGui extends DataRelatGui<City> {
         if(allow){
             setFakeItem(WITHDRAW_SLOT, null, player);
         } else {
-            setDescriptionPlayer(WITHDRAW_SLOT, player, "", "§cVous ne pouvez pas", "§cretirer de l'argent");
+            setDescriptionPlayer(WITHDRAW_SLOT, player, "", "§cTu ne peux pas", "§cretirer de l'argent");
         }
     }
     
@@ -67,7 +67,7 @@ public class BankGui extends DataRelatGui<City> {
                     player.removeMoney(moneyToGive);
                     player.getCity().addMoney(moneyToGive);
                     player.sendMessage("§aTu as ajouté §7" + moneyToGive + " §aà ta ville");
-                }, new String[]{"", "^^^^^^^^^^^^^^", "Entrez le montant", "à ajouter"}, 0);
+                }, new String[]{"", "^^^^^^^^^^^^^^", "Entre le montant", "à ajouter"}, 0);
                 break;
             case WITHDRAW_SLOT:
                 if(!getData().hasPermission(event.getPlayer().getUUID(), CityPermission.MANAGE_BANK)){
@@ -94,7 +94,7 @@ public class BankGui extends DataRelatGui<City> {
                     city.removeMoney(moneyToWithdraw);
                     player.addMoney(moneyToWithdraw);
                     player.sendMessage("§aTu as retiré §7" + moneyToWithdraw + " §ade ta ville");
-                }, new String[]{"", "^^^^^^^^^^^^^^", "Entrez le montant", "à retirer"}, 0);
+                }, new String[]{"", "^^^^^^^^^^^^^^", "Entre le montant", "à retirer"}, 0);
                 break;
         }
     }

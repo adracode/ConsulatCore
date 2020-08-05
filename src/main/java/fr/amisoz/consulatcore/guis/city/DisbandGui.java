@@ -14,7 +14,7 @@ public class DisbandGui extends DataGui<City> {
     
     public DisbandGui(City city){
         super(city, "§4Confirmer §8(§3" + city.getName() + "§8)", 5,
-                IGui.getItem("§6Attention", 22, Material.OAK_SIGN, "§cLa destruction de la ville", "§cest définitive et irréversible.", "§cVous perdrez tous les claims de la ville", "§cet l'argent de la banque"),
+                IGui.getItem("§6Attention", 22, Material.OAK_SIGN, "§cLa destruction de la ville", "§cest définitive et irréversible.", "§cTous les claims de la ville et", "§cl'argent de la banque seront perdus"),
                 IGui.getItem("§cAnnuler la destruction", 20, Material.RED_CONCRETE),
                 IGui.getItem("§aConfirmer la destruction", 24, Material.GREEN_CONCRETE));
         setDeco(Material.BLACK_STAINED_GLASS_PANE, 9, 17, 18, 26, 27, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44);

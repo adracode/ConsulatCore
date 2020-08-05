@@ -559,7 +559,7 @@ public class CityCommand extends ConsulatCommand {
                             player.sendMessage("§cCe joueur n'est pas membre de la ville");
                             return;
                         }
-                        if(targetUUID.equals(player.getUUID()) || targetUUID.equals(city.getOwner())){
+                        if((targetUUID.equals(player.getUUID()) || targetUUID.equals(city.getOwner())) && !ConsulatAPI.getConsulatAPI().isDebug()){
                             player.sendMessage("§cTu ne peux pas modifier l'accès de ce joueur.");
                             return;
                         }
@@ -580,7 +580,7 @@ public class CityCommand extends ConsulatCommand {
                             player.sendMessage("§cCe joueur n'existe pas.");
                             return;
                         }
-                        if(targetUUID.equals(player.getUUID()) || targetUUID.equals(city.getOwner())){
+                        if((targetUUID.equals(player.getUUID()) || targetUUID.equals(city.getOwner())) && !ConsulatAPI.getConsulatAPI().isDebug()){
                             player.sendMessage("§cTu ne peux pas modifier l'accès de ce joueur.");
                             return;
                         }
@@ -659,7 +659,10 @@ public class CityCommand extends ConsulatCommand {
                 if(chat == null){
                     return;
                 }
-                player.getCity().sendMessage(player, chat);
+                City city = player.getCity();
+                city.sendMessage("§8[§d" + city.getName() + "§8] "
+                        + "§7(§d" + city.getCityPlayer(player.getUUID()).getRank().getRankName()
+                        + "§7) §a" + player.getName() + "§7 > §e" + chat);
             }
             break;
             case "options":{
@@ -667,7 +670,8 @@ public class CityCommand extends ConsulatCommand {
                     player.sendMessage("§cTu n'as pas de ville.");
                     return;
                 }
-                GuiManager.getInstance().getContainer("city").getGui(player.getCity()).open(player);
+                IGui cityGui = GuiManager.getInstance().getContainer("city").getGui(player.getCity());
+                cityGui.open(player);
             }
             break;
             case "desc":{

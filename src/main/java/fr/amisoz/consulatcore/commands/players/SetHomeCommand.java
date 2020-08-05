@@ -36,7 +36,6 @@ public class SetHomeCommand extends ConsulatCommand {
                 return;
             }
         } else {
-            //TODO: enlever les homes lorsque l'accès est supprimé ???
             if(!claim.canInteract((SurvivalPlayer)sender)){
                 sender.sendMessage("§cTu dois être dans un claim t'appartenant pour définir ton home.");
                 return;

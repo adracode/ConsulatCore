@@ -31,6 +31,7 @@ public class ShopGui extends DataPagedGui<ShopItemType> {
                 IGui.getItem("§ePage précédente", (6 - 1) * 9, Material.ARROW),
                 IGui.getItem("§ePage suivante", 6 * 9 - 1, Material.ARROW));
         setDynamicItemsRange(0, 45);
+        setTemplateItems(45, 53);
     }
     
     public void addShop(PlayerShop shop){
@@ -111,7 +112,7 @@ public class ShopGui extends DataPagedGui<ShopItemType> {
                     player.sendMessage(ChatColor.YELLOW + "Téléportation réussie pour §c" + ConsulatCore.formatMoney(10) + ".");
                     player.removeMoney(10.0);
                 } else {
-                    player.sendMessage(Text.PREFIX + "§cVous n'avez pas assez d'argent.");
+                    player.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent.");
                 }
         }
     }

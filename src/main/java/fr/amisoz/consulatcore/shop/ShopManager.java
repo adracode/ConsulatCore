@@ -6,6 +6,8 @@ import fr.amisoz.consulatcore.guis.shop.ShopGui;
 import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.shop.admin.AdminShop;
+import fr.amisoz.consulatcore.shop.admin.AdminShopBuy;
+import fr.amisoz.consulatcore.shop.admin.AdminShopSell;
 import fr.amisoz.consulatcore.shop.player.PlayerShop;
 import fr.amisoz.consulatcore.shop.player.ShopItemType;
 import fr.amisoz.consulatcore.utils.ChestUtils;
@@ -62,7 +64,9 @@ public class ShopManager implements Listener {
     private static ShopManager instance;
     
     static{
-        new ShopManager();
+        ShopManager shopManager = new ShopManager();
+        shopManager.register(AdminShopBuy.TYPE, AdminShopBuy::new);
+        shopManager.register(AdminShopSell.TYPE, AdminShopSell::new);
     }
     
     private final Map<String, ShopConstructor> createShop = new HashMap<>();
@@ -357,7 +361,7 @@ public class ShopManager implements Listener {
             return;
         }
         if(!player.canAddNewShop()){
-            player.sendMessage(Text.PREFIX + "§cVous avez atteint votre limite de shops.");
+            player.sendMessage(Text.PREFIX + "§cTu as atteint ta limite de shops.");
             event.getBlock().breakNaturally();
             return;
         }
@@ -377,12 +381,17 @@ public class ShopManager implements Listener {
             price = Double.parseDouble(lines[1]);
         } catch(NumberFormatException e){
             event.getBlock().breakNaturally();
-            player.sendMessage("§cLe prix est incorrecte.");
+            player.sendMessage("§cLe prix est incorrect.");
             return;
         }
-        if(price <= 0 || Double.isInfinite(price)){
+        if(Double.isInfinite(price)){
             event.getBlock().breakNaturally();
-            player.sendMessage("§cLe prix est incorrecte.");
+            player.sendMessage("§cLe prix est incorrect.");
+            return;
+        }
+        if(price < 1){
+            event.getBlock().breakNaturally();
+            player.sendMessage("§cLe prix doit être d'au moins 1€.");
             return;
         }
         ItemStack sold = null;
@@ -478,6 +487,7 @@ public class ShopManager implements Listener {
                         event.setCancelled(true);
                         return;
                     }
+                    ((Chest)event.getBlock().getState()).getBlockInventory().clear();
                     shops.remove(shop.getCoords());
                 } else {
                     return;
@@ -569,7 +579,7 @@ public class ShopManager implements Listener {
         }
         int placeAvailable = player.spaceAvailable(shop.getItem());
         if(placeAvailable <= 0){
-            player.sendMessage("§cVous n'avez pas assez de place dans votre inventaire.");
+            player.sendMessage("§cTu n'as pas assez de place dans ton inventaire.");
             return;
         }
         int amount = Integer.min(shop.getAmount(!player.getPlayer().isSneaking() ? 1 : 64), placeAvailable);
@@ -587,8 +597,12 @@ public class ShopManager implements Listener {
                 SPlayerManager.getInstance().addMoney(shop.getOwner(), price);
             });
         } else {
-            target.addMoney(price);
-            target.sendMessage(Text.PREFIX + "§aTu as reçu " + ConsulatCore.formatMoney(price) + " grâce à un de tes shops.");
+            double percentAdd = 0;
+            if(price >= 1000){
+                percentAdd = (price / 1000) / 100 * price;
+            }
+            target.addMoney(price + percentAdd);
+            target.sendMessage(Text.PREFIX + "§aTu as reçu " + (price + percentAdd) + " € grâce à un de tes shops.");
         }
         player.sendMessage(Text.PREFIX + "Tu as acheté §e" + shop.getItemType().toString() + " x " + amount + " §6pour §e" + price);
         ConsulatAPI.getConsulatAPI().logFile("Achat: " + player + " a acheté au shop " + shop + " " + amount + " items pour un prix de " + price);
@@ -888,7 +902,7 @@ public class ShopManager implements Listener {
                                 player.sendMessage(Text.PREFIX + "Tu as acheté un home supplémentaire pour " + buyPrice + "§.");
                             } catch(SQLException e){
                                 e.printStackTrace();
-                                player.sendMessage(Text.PREFIX + "Il y a eu une erreur durant l'achat de votre home!");
+                                player.sendMessage(Text.PREFIX + "Il y a eu une erreur durant l'achat de ton home!");
                             }
                         });
                     }

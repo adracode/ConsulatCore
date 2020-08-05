@@ -6,11 +6,13 @@ import fr.amisoz.consulatcore.guis.claims.permissions.AccessPermissionsGui;
 import fr.amisoz.consulatcore.zones.Zone;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.amisoz.consulatcore.zones.claims.Claim;
+import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.gui.GuiContainer;
 import fr.leconsulat.api.gui.GuiItem;
 import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.gui.event.GuiClickEvent;
 import fr.leconsulat.api.gui.event.GuiCreateEvent;
+import fr.leconsulat.api.gui.event.GuiOpenEvent;
 import fr.leconsulat.api.gui.event.GuiRemoveEvent;
 import fr.leconsulat.api.gui.gui.IGui;
 import fr.leconsulat.api.gui.gui.module.api.Datable;
@@ -23,8 +25,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Iterator;
-import java.util.UUID;
+import java.util.*;
 
 public class ManageClaimGui extends DataRelatPagedGui<Claim> {
     
@@ -41,25 +42,27 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
         setDeco(Material.BLACK_STAINED_GLASS_PANE, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 26, 27, 35, 36, 44, 46, 47, 48, 49, 50, 51, 52, 53);
         setDeco(Material.RED_STAINED_GLASS_PANE, 0, 1, 3, 5, 7, 8);
         setDynamicItems(19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43);
+        setTemplateItems(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 26, 27, 35, 36, 44, 46, 47, 48, 49, 50, 51, 52, 53);
     }
+    
     
     private void setManageInteractSlot(boolean interaction){
         if(interaction){
-            setType(MANAGE_INTERACT_SLOT, Material.WATER_BUCKET);
-            setDisplayName(MANAGE_INTERACT_SLOT, "§eInterdire l'interaction");
-            setDescription(MANAGE_INTERACT_SLOT, "",
-                    "§7Interdire les claims dont vous êtes",
+            setTypePages(MANAGE_INTERACT_SLOT, Material.WATER_BUCKET);
+            setDisplayNamePages(MANAGE_INTERACT_SLOT, "§aInteraction");
+            setDescriptionPages(MANAGE_INTERACT_SLOT, "",
+                    "§7Interdire les claims dont " + (getData().getOwner() instanceof City ? "la ville est" : "le joueur est"),
                     "§7propriétaire autour de ce claim",
                     "§7à interagir avec celui ci",
-                    "§7§oExemple: écoulement d'eau");
+                    "§7§oExemple: écoulement d'eau", "", "§7Statut: §aActivé");
         } else {
-            setType(MANAGE_INTERACT_SLOT, Material.LAVA_BUCKET);
-            setDisplayName(MANAGE_INTERACT_SLOT, "§eAutoriser l'interaction");
-            setDescription(MANAGE_INTERACT_SLOT, "",
-                    "§7Autoriser les claims dont vous êtes",
+            setTypePages(MANAGE_INTERACT_SLOT, Material.LAVA_BUCKET);
+            setDisplayNamePages(MANAGE_INTERACT_SLOT, "§cInteraction");
+            setDescriptionPages(MANAGE_INTERACT_SLOT, "",
+                    "§7Autoriser les claims dont " + (getData().getOwner() instanceof City ? "la ville est" : "le joueur est"),
                     "§7propriétaire autour de ce claim",
                     "§7à interagir avec celui ci",
-                    "§7§oExemple: écoulement d'eau");
+                    "§7§oExemple: écoulement d'eau", "", "§7Statut: §cDésactivé");
         }
     }
     
@@ -73,6 +76,7 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
         }
     }
     
+    
     @Override
     public void onPageCreated(GuiCreateEvent event, Pageable page){
         Claim claim = getData();
@@ -80,6 +84,7 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
         if(page.getPage() != 0){
             page.setItem(IGui.getItem("§7Précédent", 47, Material.ARROW));
             getPage(page.getPage() - 1).setItem(IGui.getItem("§7Suivant", 51, Material.ARROW));
+            page.setDeco(Material.BLACK_STAINED_GLASS_PANE, 51);
         }
     }
     
@@ -91,9 +96,52 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
     }
     
     @Override
+    public void onPageOpened(GuiOpenEvent event, Pageable page){
+        ConsulatPlayer player = event.getPlayer();
+        UUID uuid = player.getUUID();
+        Zone zone = getData().getOwner();
+        updatePermissions(player, page, zone.isOwner(uuid));
+        updateInteract(player, page, zone.isOwner(uuid));
+        if(zone instanceof City){
+            City city = (City)zone;
+            updateAccess(player, page, city.canManageAccesses(uuid));
+        } else {
+            updateAccess(player, page, zone.isOwner(uuid));
+        }
+    }
+    
+    public void updatePermissions(ConsulatPlayer player, Pageable page, boolean allow){
+        for(GuiItem item : page){
+            if(!allow){
+                setDescriptionPlayer(item.getSlot(), player, "", "§cTu ne peux pas", "§cgérer les permissions", "§cde ce joueur");
+            } else {
+                setFakeItem(item.getSlot(), null, player);
+            }
+        }
+    }
+    
+    public void updateInteract(ConsulatPlayer player, Pageable page, boolean allow){
+        if(allow){
+            page.setFakeItem(MANAGE_INTERACT_SLOT, null, player);
+        } else {
+            List<String> description = page.getItem(MANAGE_INTERACT_SLOT).getDescription();
+            description.addAll(Arrays.asList("", "§cTu ne peux pas", "§cchanger l'interaction"));
+            setDescriptionPlayer(MANAGE_INTERACT_SLOT, player, description.toArray(new String[0]));
+        }
+    }
+    
+    public void updateAccess(ConsulatPlayer player, Pageable page, boolean allow){
+        if(allow){
+            page.setFakeItem(ADD_SLOT, null, player);
+        } else {
+            setDescriptionPlayer(ADD_SLOT, player, "", "§cTu ne peux pas", "§cajouter un joueur");
+        }
+    }
+    
+    @Override
     public void onPageClick(GuiClickEvent event, Pageable page){
         ConsulatPlayer player = event.getPlayer();
-        GuiItem clickedItem = page.getItem(event.getSlot());
+        GuiItem clickedItem = Objects.requireNonNull(page.getItem(event.getSlot()));
         switch(event.getSlot()){
             case 47:
                 if(clickedItem.getType() == Material.ARROW){
@@ -105,24 +153,35 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
                     getPage(page.getPage() + 1).open(player);
                 }
                 return;
-            case MANAGE_INTERACT_SLOT:
+            case MANAGE_INTERACT_SLOT:{
                 Claim claim = getData();
+                if(!claim.getOwner().isOwner(player.getUUID())){
+                    return;
+                }
                 claim.setInteractSurrounding(!claim.isInteractSurrounding());
                 setManageInteractSlot(claim.isInteractSurrounding());
-                return;
-            case ADD_SLOT:
+            }
+            return;
+            case ADD_SLOT:{
+                Zone zone = getData().getOwner();
+                if(zone instanceof City){
+                    if(!((City)zone).canManageAccesses(player.getUUID())){
+                        return;
+                    }
+                } else if(!zone.isOwner(player.getUUID())){
+                    return;
+                }
                 GuiManager.getInstance().userInput(event.getPlayer(), (input) -> {
                     UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(input);
                     if(targetUUID == null){
                         player.sendMessage("§cCe joueur n'existe pas.");
                         return;
                     }
-                    Zone zone = getData().getOwner();
                     if(zone instanceof City && !((City)zone).isMember(targetUUID)){
                         player.sendMessage("§cCe joueur n'est pas membre de la ville");
                         return;
                     }
-                    if(targetUUID.equals(player.getUUID()) || targetUUID.equals(zone.getOwner())){
+                    if((targetUUID.equals(player.getUUID()) || targetUUID.equals(zone.getOwner())) && !ConsulatAPI.getConsulatAPI().isDebug()){
                         player.sendMessage("§cTu ne peux pas modifier l'accès de ce joueur.");
                         return;
                     }
@@ -131,10 +190,14 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
                         return;
                     }
                     player.sendMessage("§aTu as ajouté " + input + " à ce claim");
-                }, new String[]{"", "^^^^^^^^^^^^^^", "Entrez le joueur", "à ajouter"}, 0);
-                return;
+                }, new String[]{"", "^^^^^^^^^^^^^^", "Entre le joueur", "à ajouter"}, 0);
+            }
+            return;
         }
         if(event.getSlot() >= 19 && event.getSlot() <= 44 && clickedItem.getType() == Material.PLAYER_HEAD){
+            if(!getData().getOwner().isOwner(player.getUUID())){
+                return;
+            }
             getChild(clickedItem.getAttachedObject()).open(player);
         }
     }

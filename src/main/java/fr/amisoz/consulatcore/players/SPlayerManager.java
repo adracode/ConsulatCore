@@ -32,6 +32,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.redisson.api.RTopic;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -47,6 +48,7 @@ public class SPlayerManager implements Listener {
     private static SPlayerManager instance;
     
     private DateFormat dateFormat;
+    private RTopic setPlayers = RedisManager.getInstance().getRedis().getTopic("PlayerSurvie");
     
     public SPlayerManager(){
         if(instance != null){
@@ -77,12 +79,6 @@ public class SPlayerManager implements Listener {
                 },
                 (SurvivalPlayer::getCity)
         ));
-        RedisManager.getInstance().register(ConsulatAPI.getConsulatAPI().isDevelopment() ? "LoadPlayerDataTestSurvie" : "LoadPlayerDataSurvie", byte[].class, (channel, data) -> {
-            CPlayerManager.getInstance().loadPlayerData(data);
-        });
-        RedisManager.getInstance().register(ConsulatAPI.getConsulatAPI().isDevelopment() ? "SavePlayerDataTestSurvie" : "SavePlayerDataSurvie", byte[].class, (channel, data) -> {
-            CPlayerManager.getInstance().savePlayerData(data);
-        });
     }
     
     @EventHandler
@@ -93,6 +89,7 @@ public class SPlayerManager implements Listener {
             player.teleport(ConsulatCore.getInstance().getSpawn());
             player.getInventory().addItem(new ItemStack(Material.BREAD, 32));
         }
+        setPlayers.publishAsync(Bukkit.getServer().getOnlinePlayers().size());
     }
     
     @EventHandler
@@ -186,6 +183,7 @@ public class SPlayerManager implements Listener {
             });
         }
         player.removeFromChannels();
+        setPlayers.publishAsync(Bukkit.getServer().getOnlinePlayers().size());
         saveOnLeave(player);
     }
     

@@ -12,11 +12,11 @@ import java.util.UUID;
 
 public class MemberPermissionGui extends DataRelatGui<UUID> {
     
-    private static final byte MEMBER_SLOT = 19;
-    private static final byte CLAIM_SLOT = 20;
-    private static final byte ACCESS_SLOT = 21;
-    private static final byte BANK_SLOT = 22;
-    private static final byte HOME_SLOT = 23;
+    private static final byte MEMBER_SLOT = 20;
+    private static final byte CLAIM_SLOT = 21;
+    private static final byte ACCESS_SLOT = 22;
+    private static final byte BANK_SLOT = 23;
+    private static final byte HOME_SLOT = 24;
     
     public MemberPermissionGui(UUID uuid){
         super(uuid, "Permissions de ville", 5,

@@ -1,7 +1,6 @@
 package fr.amisoz.consulatcore;
 
 
-import fr.amisoz.consulatcore.chunks.CChunk;
 import fr.amisoz.consulatcore.chunks.ChunkManager;
 import fr.amisoz.consulatcore.commands.cities.CityCommand;
 import fr.amisoz.consulatcore.commands.claims.AccessCommand;
@@ -24,19 +23,20 @@ import fr.amisoz.consulatcore.listeners.entity.player.*;
 import fr.amisoz.consulatcore.listeners.world.ClaimCancelListener;
 import fr.amisoz.consulatcore.listeners.world.SignListener;
 import fr.amisoz.consulatcore.moderation.ModerationDatabase;
+import fr.amisoz.consulatcore.moderation.channels.SpyChannel;
 import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.runnable.AFKRunnable;
 import fr.amisoz.consulatcore.runnable.MeceneRunnable;
 import fr.amisoz.consulatcore.runnable.MessageRunnable;
 import fr.amisoz.consulatcore.runnable.MonitoringRunnable;
+import fr.amisoz.consulatcore.server.SafariServer;
 import fr.amisoz.consulatcore.shop.ShopManager;
-import fr.amisoz.consulatcore.shop.admin.AdminShopBuy;
-import fr.amisoz.consulatcore.shop.admin.AdminShopSell;
 import fr.amisoz.consulatcore.zones.ZoneManager;
-import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.amisoz.consulatcore.zones.claims.ClaimManager;
 import fr.leconsulat.api.ConsulatAPI;
+import fr.leconsulat.api.channel.Channel;
 import fr.leconsulat.api.events.PostInitEvent;
+import fr.leconsulat.api.redis.RedisManager;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -82,6 +82,8 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     private DecimalFormat moneyFormat;
     private ModerationDatabase moderationDatabase;
     private boolean chat = true;
+    private Channel spy;
+    private SafariServer safari;
     
     private List<TextComponent> textPerso = new ArrayList<>();
     
@@ -104,11 +106,10 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         spawn = new Location(Bukkit.getWorlds().get(0), 330, 65, -438, -145, 0);
         new DuelManager();
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+        spy = new SpyChannel();
         new ZoneManager();
         try {
             ChunkManager chunkManager = ChunkManager.getInstance();
-            chunkManager.register(CChunk.TYPE, CChunk::new);
-            chunkManager.register(Claim.TYPE, Claim::new);
             chunkManager.loadChunks();
             ClaimManager.getInstance();
         } catch(UnsupportedOperationException e){
@@ -116,16 +117,16 @@ public class ConsulatCore extends JavaPlugin implements Listener {
             Bukkit.shutdown();
         }
         ShopManager shopManager = ShopManager.getInstance();
-        shopManager.register(AdminShopBuy.TYPE, AdminShopBuy::new);
-        shopManager.register(AdminShopSell.TYPE, AdminShopSell::new);
         shopManager.loadAdminShops();
         new SPlayerManager();
         new BaltopManager();
         new FlyManager();
         moderationDatabase = new ModerationDatabase(this);
         EnchantmentManager.getInstance();
+        safari = new SafariServer();
+        safari.setSlot(50);
         Bukkit.getScheduler().runTaskTimer(this, new AFKRunnable(), 0L, 5 * 60 * 20);
-        Bukkit.getScheduler().runTaskTimer(this, new MonitoringRunnable(this), 0L, 10 * 60 * 20);
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, new MonitoringRunnable(this), 0L, 10 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MessageRunnable(), 0L, 15 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MeceneRunnable(), 0L, 20 * 60 * 60);
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
@@ -160,6 +161,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     
     @Override
     public void onDisable(){
+        RedisManager.getInstance().getRedis().getTopic("PlayerSurvie").publish(0);
         ZoneManager.getInstance().saveZones();
         ChunkManager.getInstance().saveChunks();
         ShopManager.getInstance().saveAdminShops();
@@ -179,6 +181,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         new BackCommand();
         new BaltopCommand();
         new BroadcastCommand();
+        new CDebugCommand();
         new CEnchantCommand();
         new ClaimCommand();
         new DelHomeCommand();
@@ -284,5 +287,13 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     
     public static Random getRandom(){
         return random;
+    }
+    
+    public Channel getSpy(){
+        return spy;
+    }
+    
+    public SafariServer getSafari(){
+        return safari;
     }
 }

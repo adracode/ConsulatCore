@@ -41,10 +41,11 @@ public class MembersGui extends DataRelatPagedGui<City> {
     public MembersGui(City city){
         super(city, "Membres", 6,
                 IGui.getItem("§eInviter un joueur", ADD_SLOT, Material.PLAYER_HEAD),
-                IGui.getItem("§ePermissions publiques", PUBLIC_PERMISSIONS_SLOT, Material.BOOK));
+                IGui.getItem("§ePermissions publiques", PUBLIC_PERMISSIONS_SLOT, Material.BOOK, "", "§7Les permissions publiques", "§7définissent ce que les", "§7joueur n'appartenant pas", "§7à la ville peuvent faire"));
         setDeco(Material.BLACK_STAINED_GLASS_PANE, 9, 10, 11, 12, 14, 15, 16, 17, 18, 26, 27, 35, 36, 44, 46, 47, 48, 49, 50, 51, 52, 53);
         setDeco(Material.RED_STAINED_GLASS_PANE, 0, 1, 2, 3, 4, 5, 7, 8);
         setDynamicItems(19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43);
+        setTemplateItems(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 26, 27, 35, 36, 44, 46, 47, 48, 49, 50, 51, 52, 53);
     }
     
     @Override
@@ -57,12 +58,23 @@ public class MembersGui extends DataRelatPagedGui<City> {
     
     @Override
     public void onPageOpened(GuiOpenEvent event, Pageable pageGui){
-        ConsulatPlayer player = event.getPlayer();
+        update(event.getPlayer(), pageGui);
+    }
+    
+    public void update(ConsulatPlayer player, Pageable pageGui){
         UUID uuid = player.getUUID();
         UUID ownerUUID = getData().getOwner();
+        City city = getData();
+        if(!city.canInvite(uuid)){
+            setDescriptionPlayer(ADD_SLOT, player, "", "§cTu ne peux pas", "§cinviter un joueur");
+        } else {
+            setFakeItem(ADD_SLOT, null, player);
+        }
         for(GuiItem item : this){
-            if(uuid.equals(item.getAttachedObject()) || ownerUUID.equals(item.getAttachedObject())){
-                pageGui.setDescriptionPlayer(item.getSlot(), player, "", "§cVous ne pouvez pas modifier", "§cce membre");
+            if(!city.isOwner(uuid) || uuid.equals(item.getAttachedObject()) || ownerUUID.equals(item.getAttachedObject())){
+                pageGui.setDescriptionPlayer(item.getSlot(), player, "", "§cTu ne peux pas modifier", "§cce membre");
+            } else {
+                pageGui.setFakeItem(item.getSlot(), null, player);
             }
         }
     }
@@ -82,6 +94,7 @@ public class MembersGui extends DataRelatPagedGui<City> {
         if(page.getPage() != 0){
             page.setItem(IGui.getItem("§7Précédent", 47, Material.ARROW));
             getPage(page.getPage() - 1).setItem(IGui.getItem("§7Suivant", 51, Material.ARROW));
+            page.setDeco(Material.BLACK_STAINED_GLASS_PANE, 51);
         }
     }
     
@@ -101,18 +114,20 @@ public class MembersGui extends DataRelatPagedGui<City> {
             case PUBLIC_PERMISSIONS_SLOT:
                 getChild(PUBLIC).open(player);
                 return;
-            case 45:
+            case 47:
                 if(clickedItem.getType() == Material.ARROW){
                     getPage(page.getPage() - 1).open(player);
                 }
                 break;
-            case 53:
+            case 51:
                 if(clickedItem.getType() == Material.ARROW){
                     getPage(page.getPage() + 1).open(player);
                 }
                 return;
-                //TODO: si n'a pas la perm
             case ADD_SLOT:{
+                if(!city.canInvite(player.getUUID())){
+                    return;
+                }
                 GuiManager.getInstance().userInput(event.getPlayer(), input -> {
                     UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(input);
                     if(targetUUID == null){
@@ -138,7 +153,7 @@ public class MembersGui extends DataRelatPagedGui<City> {
                     message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§aClique pour rejoindre " + city.getName()).create()));
                     message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/city accept " + city.getName()));
                     target.sendMessage(message);
-                }, new String[]{"", "^^^^^^^^^^^^^^", "Entrez le nom", "du joueur"}, 0);
+                }, new String[]{"", "^^^^^^^^^^^^^^", "Entre le nom", "du joueur"}, 0);
             }
             return;
         }

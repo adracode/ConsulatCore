@@ -195,6 +195,20 @@ public class ZoneManager {
         });
     }
     
+    public void updateOwner(City city){
+        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
+            try {
+                PreparedStatement statement = ConsulatAPI.getDatabase().prepareStatement("UPDATE cities SET owner = ? WHERE uuid = ?");
+                statement.setString(1, city.getOwner().toString());
+                statement.setString(2, city.getUniqueId().toString());
+                statement.executeUpdate();
+                statement.close();
+            } catch(SQLException e){
+                e.printStackTrace();
+            }
+        });
+    }
+    
     public void deleteCity(City city){
         if(ConsulatAPI.getConsulatAPI().isDebug()){
             ConsulatAPI.getConsulatAPI().log(Level.INFO, "Deleting city " + city.getName());

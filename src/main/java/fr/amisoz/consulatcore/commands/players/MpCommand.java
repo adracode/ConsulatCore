@@ -2,6 +2,7 @@ package fr.amisoz.consulatcore.commands.players;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.moderation.MuteObject;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.Arguments;
@@ -34,16 +35,16 @@ public class MpCommand extends ConsulatCommand {
             return;
         }
         SurvivalPlayer survivalSender = (SurvivalPlayer)sender;
-        if(target.isIgnored(sender.getUUID()) || survivalSender.isIgnored(target.getUUID())){
-            sender.sendMessage("§cTu ne peux pas MP ce joueur.");
-            return;
-        }
         if(survivalSender.isMuted()){
             MuteObject muteInfo = survivalSender.getMute();
             if(muteInfo != null){
                 sender.sendMessage("§cTu es actuellement mute.\n§4Raison : §c" + muteInfo.getReason() + "\n§4Jusqu'au : §c" + muteInfo.getEndDate());
                 return;
             }
+        }
+        if(!survivalSender.hasPower(Rank.RESPONSABLE) && (target.isIgnored(sender.getUUID()) || survivalSender.isIgnored(target.getUUID()))){
+            sender.sendMessage("§cTu ne peux pas MP ce joueur.");
+            return;
         }
         String messageResult = StringUtils.join(args, " ", 1, args.length);
         String messageFormat = "§7[§6MP§7] §6§l" + sender.getName() + "§r§7 >> §6Toi§r§7 : §f" + messageResult;
@@ -55,10 +56,6 @@ public class MpCommand extends ConsulatCommand {
         target.sendMessage(messageFormatComponent, answerComponent);
         target.setLastPrivate(sender.getUUID());
         sender.sendMessage("§7[§6MP§7] §r§6Toi §7>> §6§l" + target.getName() + "§r§7 : §f" + messageResult);
-        for(ConsulatPlayer player : CPlayerManager.getInstance().getConsulatPlayers()){
-            if(((SurvivalPlayer)player).isSpying() && !player.equals(sender) && !player.equals(target)){
-                player.sendMessage("§2(Spy) §a" + sender.getName() + "§7 > §a" + target.getName() + "§7 : " + messageResult);
-            }
-        }
+        ConsulatCore.getInstance().getSpy().sendMessage("§2(Spy) §a" + sender.getName() + "§7 > §a" + target.getName() + "§7 : " + messageResult);
     }
 }

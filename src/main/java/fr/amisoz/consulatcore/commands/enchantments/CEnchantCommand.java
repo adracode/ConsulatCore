@@ -14,7 +14,7 @@ import java.util.Arrays;
 public class CEnchantCommand extends ConsulatCommand {
     
     public CEnchantCommand(){
-        super("cenchant", "/cenchant", 2, Rank.ADMIN);
+        super("cenchant", "/cenchant <enchantment> <level>", 1, Rank.ADMIN);
         setPermission("consulat.core.command.cenchant");
         suggest(false,
                 Arguments.word("enchant").suggests((context, builder) -> {
@@ -26,8 +26,14 @@ public class CEnchantCommand extends ConsulatCommand {
     
     @Override
     public void onCommand(ConsulatPlayer sender, String[] args){
-        CEnchantedItem enchantedItem = new CEnchantedItem(sender.getPlayer().getInventory().getItemInMainHand());
-        if(!enchantedItem.addEnchantment(CEnchantment.Type.valueOf(args[0].toUpperCase()), Integer.parseInt(args[1]))){
+        CEnchantedItem enchantedItem;
+        try {
+            enchantedItem = new CEnchantedItem(sender.getPlayer().getInventory().getItemInMainHand());
+        } catch(IllegalArgumentException e){
+            sender.sendMessage("§cCet item ne peut pas être enchanté.");
+            return;
+        }
+        if(!enchantedItem.addEnchantment(CEnchantment.Type.valueOf(args[0].toUpperCase()), args.length == 1 ? 1 : Integer.parseInt(args[1]))){
             sender.sendMessage("§cL'enchantemement " + args[0] + " n'a pas pu être appliqué à cet item.");
         }
     }

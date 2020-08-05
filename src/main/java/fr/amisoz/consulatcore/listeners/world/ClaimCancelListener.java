@@ -383,6 +383,7 @@ public class ClaimCancelListener implements Listener {
             }
         }
         if(!blockChunk.incrementLimit(event.getBlockPlaced().getType())){
+            event.getPlayer().sendMessage("§cCe chunk à atteint la limite pour ce bloc.");
             event.setCancelled(true);
         }
     }

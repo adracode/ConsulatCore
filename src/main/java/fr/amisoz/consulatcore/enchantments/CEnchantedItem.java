@@ -102,6 +102,9 @@ public class CEnchantedItem {
             return false;
         }
         if(index >= Byte.MAX_VALUE){
+            if(!enchantment.canCombine()){
+                return false;
+            }
             ++level;
             index -= Byte.MAX_VALUE;
         }
@@ -118,7 +121,7 @@ public class CEnchantedItem {
                 meta.addEnchant(Enchantment.ARROW_INFINITE, 0, true);
                 meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
             }
-        } else if(meta.hasItemFlag(ItemFlag.HIDE_ENCHANTS)){
+        } else if(meta.hasItemFlag(ItemFlag.HIDE_ENCHANTS) && meta.getEnchants().size() > 1 && meta.hasEnchant(Enchantment.ARROW_INFINITE) && meta.getEnchantLevel(Enchantment.ARROW_INFINITE) == 0){
             meta.removeEnchant(Enchantment.ARROW_INFINITE);
             meta.removeItemFlags(ItemFlag.HIDE_ENCHANTS);
         }
