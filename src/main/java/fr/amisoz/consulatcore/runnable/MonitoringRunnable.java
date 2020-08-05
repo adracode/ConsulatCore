@@ -21,14 +21,12 @@ public class MonitoringRunnable implements Runnable {
     @Override
     public void run() {
         try {
-            PreparedStatement preparedStatement = consulatCore.getDatabaseConnection().prepareStatement("INSERT INTO monitoring(tps, players, insert_date) VALUES(?, ?, ?)");
-            preparedStatement.setDouble(1, ServerTPS.getTPS());
-
-            preparedStatement.setInt(2, Bukkit.getOnlinePlayers().size());
+            PreparedStatement preparedStatement = consulatCore.getDatabaseConnection().prepareStatement("INSERT INTO monitoring(players, insert_date) VALUES(?, ?)");
+            preparedStatement.setInt(1, Bukkit.getOnlinePlayers().size());
             DateFormat shortDateFormat = DateFormat.getDateTimeInstance(
                     DateFormat.SHORT,
                     DateFormat.SHORT, new Locale("FR", "fr"));
-            preparedStatement.setString(3, shortDateFormat.format(new Date()));
+            preparedStatement.setString(2, shortDateFormat.format(new Date()));
 
             preparedStatement.executeUpdate();
             preparedStatement.close();
