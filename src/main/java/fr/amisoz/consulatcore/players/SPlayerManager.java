@@ -48,7 +48,8 @@ public class SPlayerManager implements Listener {
     private static SPlayerManager instance;
     
     private DateFormat dateFormat;
-    private RTopic setPlayers = RedisManager.getInstance().getRedis().getTopic("PlayerSurvie");
+    private RTopic setPlayers = RedisManager.getInstance().getRedis().getTopic(
+            ConsulatAPI.getConsulatAPI().isDevelopment() ? "PlayerTestsurvie" : "PlayerSurvie");
     
     public SPlayerManager(){
         if(instance != null){

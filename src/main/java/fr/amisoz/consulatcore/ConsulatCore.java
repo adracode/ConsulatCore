@@ -161,7 +161,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     
     @Override
     public void onDisable(){
-        RedisManager.getInstance().getRedis().getTopic("PlayerSurvie").publish(0);
+        RedisManager.getInstance().getRedis().getTopic(ConsulatAPI.getConsulatAPI().isDevelopment() ? "PlayerTestsurvie" : "PlayerSurvie").publish(-1);
         ZoneManager.getInstance().saveZones();
         ChunkManager.getInstance().saveChunks();
         ShopManager.getInstance().saveAdminShops();
