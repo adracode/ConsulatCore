@@ -1,41 +1,37 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
-import fr.amisoz.consulatcore.ConsulatCore;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.amisoz.consulatcore.chunks.ChunkManager;
 import fr.leconsulat.api.commands.ConsulatCommand;
-import fr.leconsulat.api.gui.GuiItem;
-import fr.leconsulat.api.gui.gui.IGui;
-import fr.leconsulat.api.gui.gui.module.api.Pageable;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
-import org.bukkit.Bukkit;
+
+import java.util.UUID;
 
 public class CDebugCommand extends ConsulatCommand {
     
+    private UUID uuid = UUID.fromString("43da311c-d869-4e88-9b78-f1d4fc193ed4");
+    
     public CDebugCommand(){
-        super("cdebug", "/cdebug", 0, Rank.ADMIN);
-        setPermission("consulat.core.command.cdebug");
-        suggest(false);
+        super("consulat.core", "cdebug", "/cdebug", 0, Rank.ADMIN);
+        suggest(listener -> {
+                    ConsulatPlayer player = getConsulatPlayer(listener);
+                    return player != null && player.getUUID().equals(uuid);
+                },
+                LiteralArgumentBuilder.literal("chunk"));
     }
     
     @Override
     public void onCommand(ConsulatPlayer sender, String[] args){
-        if(args.length == 1){
+        if(!sender.getUUID().equals(uuid)){
+            return;
+        }
+        if(args.length > 0){
             switch(args[0]){
                 case "chunk":
                     sender.sendMessage(ChunkManager.getInstance().getChunk(sender.getPlayer().getChunk()).toString());
                     break;
             }
-        }
-        if(args.length == 2){
-            Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
-                IGui open = sender.getCurrentlyOpen();
-                if(open instanceof Pageable){
-                    for(int i = 0, size = Integer.parseInt(args[1]); i < size; ++i){
-                        ((Pageable)open).getMainPage().addItem(new GuiItem("Test", (byte)-1, "adracode", null));
-                    }
-                }
-            }, Integer.parseInt(args[0]));
         }
     }
 }

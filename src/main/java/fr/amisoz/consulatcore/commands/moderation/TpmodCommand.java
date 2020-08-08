@@ -10,10 +10,8 @@ import fr.leconsulat.api.ranks.Rank;
 public class TpmodCommand extends ConsulatCommand {
     
     public TpmodCommand(){
-        super("tpmod", "/tpmod <Joueur>", 1, Rank.MODO);
-        suggest(true,
-                Arguments.playerList("joueur"),
-                Arguments.playerList("joueur").then(Arguments.playerList("joueur")));
+        super("consulat.core", "tpmod", "/tpmod <Joueur>", 1, Rank.MODO);
+        suggest(Arguments.playerList("joueur").then(Arguments.playerList("joueur")));
     }
     
     @Override

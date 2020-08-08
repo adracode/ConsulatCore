@@ -23,16 +23,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Optional;
 
 public class InfosCommand extends ConsulatCommand {
     
     public InfosCommand(){
-        super("infos", Collections.emptyList(), "/infos <Joueur>", 1, Rank.RESPONSABLE);
-        suggest(true, Arguments.playerList("joueur"),
-                Arguments.word("joueur"));
+        super("consulat.core", "infos", "/infos <Joueur>", 1, Rank.RESPONSABLE);
+        suggest(Arguments.playerList("joueur"));
     }
     
     @Override

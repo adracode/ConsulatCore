@@ -10,8 +10,8 @@ import org.bukkit.block.Block;
 public class TopCommand extends ConsulatCommand {
 
     public TopCommand() {
-        super("top", "/top", 0, Rank.JOUEUR);
-        suggest(true, (listener) -> {
+        super("consulat.core", "top", "/top", 0, Rank.JOUEUR);
+        suggest((listener) -> {
                     SurvivalPlayer player = (SurvivalPlayer)getConsulatPlayer(listener);
                     return player != null && player.hasPerkTop();
                 }

@@ -27,7 +27,7 @@ import org.bukkit.potion.PotionEffectType;
 public class ShopCommand extends ConsulatCommand {
     
     public ShopCommand(){
-        super("shop", "/shop list | help | locate <item>", 0, Rank.JOUEUR);
+        super("consulat.core", "shop", "/shop list | help | locate <item>", 0, Rank.JOUEUR);
         LiteralArgumentBuilder<Object> locate = LiteralArgumentBuilder.literal("locate").then(RequiredArgumentBuilder.argument("item", StringArgumentType.word()).suggests(((context, builder) -> {
             for(ShopItemType type : ShopManager.getInstance().getNonEmptyTypes()){
                 if(type.toString().startsWith(builder.getRemaining())){
@@ -36,8 +36,7 @@ public class ShopCommand extends ConsulatCommand {
             }
             return builder.buildFuture();
         })));
-        suggest(true,
-                LiteralArgumentBuilder.literal("list"),
+        suggest(LiteralArgumentBuilder.literal("list"),
                 locate,
                 LiteralArgumentBuilder.literal("help"),
                 LiteralArgumentBuilder.literal("create")
@@ -50,7 +49,6 @@ public class ShopCommand extends ConsulatCommand {
                         })
                         .then(RequiredArgumentBuilder.argument("nombre", IntegerArgumentType.integer()))
         );
-        //GuiManager.getInstance().addRootGui("shop-locate", new ShopLocateGui());
     }
     
     @Override

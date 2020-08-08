@@ -7,14 +7,11 @@ import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 
-import java.util.Collections;
-
 public class StaffChatCommand extends ConsulatCommand {
     
     public StaffChatCommand(){
-        super("staffchat", Collections.singletonList("sc"), "/sc <Message>", 1, Rank.MODO);
-        suggest(true,
-                RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString()));
+        super("consulat.core", "staffchat", "sc", "/sc <Message>", 1, Rank.MODO);
+        suggest(RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString()));
     }
     
     @Override

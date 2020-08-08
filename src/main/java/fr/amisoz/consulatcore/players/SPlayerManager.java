@@ -80,6 +80,24 @@ public class SPlayerManager implements Listener {
                 },
                 (SurvivalPlayer::getCity)
         ));
+        CPlayerManager.getInstance().onJoin((player, oldServer) -> {
+            switch(oldServer){
+                case SAFARI:
+                    if(player.isInventoryBlocked()){
+                        player.sendMessage("§7Chargement de l'inventaire...");
+                        Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
+                            if(player.isInventoryBlocked()){
+                                RedisManager.getInstance().getRedis().getTopic("AskPlayerData" + (ConsulatAPI.getConsulatAPI().isDevelopment() ? "Testsafari" : "Safari")).publishAsync(player.getUUID().toString());
+                            }
+                        }, 20);
+                    }
+                    break;
+                case HUB:
+                case SURVIE:
+                case UNKNOWN:
+                    player.setInventoryBlocked(false);
+            }
+        });
     }
     
     @EventHandler
@@ -184,7 +202,7 @@ public class SPlayerManager implements Listener {
             });
         }
         player.removeFromChannels();
-        setPlayers.publishAsync(Bukkit.getServer().getOnlinePlayers().size());
+        setPlayers.publishAsync(Bukkit.getServer().getOnlinePlayers().size() - 1);
         saveOnLeave(player);
     }
     

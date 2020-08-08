@@ -10,7 +10,6 @@ import fr.amisoz.consulatcore.guis.city.members.PublicPermissionsGui;
 import fr.amisoz.consulatcore.guis.city.members.member.MemberGui;
 import fr.amisoz.consulatcore.guis.city.members.member.permissions.MemberPermissionGui;
 import fr.amisoz.consulatcore.guis.city.members.member.rank.RankMemberGui;
-import fr.amisoz.consulatcore.guis.city.ranks.RanksGui;
 import fr.amisoz.consulatcore.players.CityPermission;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.zones.Zone;
@@ -21,7 +20,6 @@ import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.graph.Graph;
 import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.gui.gui.IGui;
-import fr.leconsulat.api.gui.gui.module.api.Relationnable;
 import fr.leconsulat.api.nbt.*;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -95,7 +93,7 @@ public class City extends Zone {
                 cityGui.updateOwner(newOwner);
             }
         }
-        CityGui cityGui = (CityGui)(IGui)GuiManager.getInstance().getContainer("city").getGui(false, this);
+        CityGui cityGui = (CityGui)GuiManager.getInstance().getContainer("city").getGui(false, this);
         if(cityGui != null){
             cityGui.updateOwner();
         }
@@ -238,7 +236,7 @@ public class City extends Zone {
         boolean result = permissions.length == 1 ? playerPermissions.addPermission(permissions[0]) : playerPermissions.addPermission(permissions);
         if(result){
             updatePermissions(uuid, permissions);
-            MemberPermissionGui permissionGui = (MemberPermissionGui)(IGui)GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS, uuid, MemberGui.PERMISSION);
+            MemberPermissionGui permissionGui = (MemberPermissionGui)GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS, uuid, MemberGui.PERMISSION);
             if(permissionGui != null){
                 for(CityPermission permission : permissions){
                     permissionGui.setPermission(true, permission);
@@ -259,7 +257,7 @@ public class City extends Zone {
         boolean result = permissions.length == 1 ? playerPermissions.removePermission(permissions[0]) : playerPermissions.removePermission(permissions);
         if(result){
             updatePermissions(uuid, permissions);
-            MemberPermissionGui permissionGui = (MemberPermissionGui)(IGui)GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS, uuid, MemberGui.PERMISSION);
+            MemberPermissionGui permissionGui = (MemberPermissionGui)GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS, uuid, MemberGui.PERMISSION);
             if(permissionGui != null){
                 for(CityPermission permission : permissions){
                     permissionGui.setPermission(false, permission);
@@ -270,33 +268,38 @@ public class City extends Zone {
     }
     
     private void updatePermissions(UUID uuid, CityPermission... permissions){
-        if(permissions.length == 1){
-            switch(permissions[0]){
-                case MANAGE_ACCESS:
-                case MANAGE_CLAIM: updateManageClaim(uuid);break;
-                case MANAGE_HOME: updateHome(uuid);break;
-                case MANAGE_BANK: updateBank(uuid);break;
-            }
-            return;
-        }
         for(CityPermission permission : permissions){
             switch(permission){
                 case MANAGE_ACCESS:
-                case MANAGE_CLAIM: updateManageClaim(uuid);break;
-                case MANAGE_HOME: updateHome(uuid);break;
-                case MANAGE_BANK: updateBank(uuid);break;
+                    updateManageAccess(uuid);
+                case MANAGE_CLAIM:
+                    updateManageClaim(uuid);
+                    break;
+                case MANAGE_HOME:
+                    updateHome(uuid);
+                    break;
+                case MANAGE_BANK:
+                    updateBank(uuid);
+                    break;
+                case MANAGE_PLAYER:
+                    updateManagePlayer(uuid);
+                    break;
+            }
+        }
+    }
+    
+    private void updateManageAccess(UUID uuid){
+        ConsulatPlayer player = CPlayerManager.getInstance().getConsulatPlayer(uuid);
+        if(player != null){
+            IGui currentlyOpen = player.getCurrentlyOpen();
+            if(currentlyOpen instanceof MemberGui){
+                ((MemberGui)currentlyOpen).updateAccess(player, hasPermission(uuid, CityPermission.MANAGE_ACCESS));
             }
         }
     }
     
     private void updateManageClaim(UUID uuid){
-        ConsulatPlayer player = CPlayerManager.getInstance().getConsulatPlayer(uuid);
-        if(player != null){
-            IGui currentlyOpen = player.getCurrentlyOpen();
-            if(currentlyOpen instanceof CityGui){
-                ((CityGui)currentlyOpen).updateClaim(player, hasPermission(uuid, CityPermission.MANAGE_CLAIM) && hasPermission(uuid, CityPermission.MANAGE_ACCESS));
-            }
-        }
+    
     }
     
     private void updateHome(UUID uuid){
@@ -311,11 +314,21 @@ public class City extends Zone {
     }
     
     private void updateBank(UUID uuid){
-        SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(uuid);
+        ConsulatPlayer player = CPlayerManager.getInstance().getConsulatPlayer(uuid);
         if(player != null){
             IGui currentlyOpen = player.getCurrentlyOpen();
             if(currentlyOpen instanceof BankGui){
-                ((BankGui)currentlyOpen).updateBank(player, hasPermission(uuid, CityPermission.MANAGE_BANK));
+                currentlyOpen.refresh(player);
+            }
+        }
+    }
+    
+    private void updateManagePlayer(UUID uuid){
+        ConsulatPlayer player = CPlayerManager.getInstance().getConsulatPlayer(uuid);
+        if(player != null){
+            IGui currentlyOpen = player.getCurrentlyOpen();
+            if(currentlyOpen instanceof MembersGui){
+                currentlyOpen.refresh(player);
             }
         }
     }
@@ -366,7 +379,7 @@ public class City extends Zone {
     public boolean addPublicPermission(@NotNull ClaimPermission permission){
         boolean result = this.publicPermissions.add(permission.getPermission());
         if(result){
-            PublicPermissionsGui permissionGui = (PublicPermissionsGui)(IGui)GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS, MembersGui.PUBLIC);
+            PublicPermissionsGui permissionGui = (PublicPermissionsGui)GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS, MembersGui.PUBLIC);
             if(permissionGui != null){
                 permissionGui.setPermission(true, permission);
             }
@@ -377,7 +390,7 @@ public class City extends Zone {
     public boolean removePublicPermission(@NotNull ClaimPermission permission){
         boolean result = this.publicPermissions.remove(permission.getPermission());
         if(result){
-            PublicPermissionsGui permissionGui = (PublicPermissionsGui)(IGui)GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS, MembersGui.PUBLIC);
+            PublicPermissionsGui permissionGui = (PublicPermissionsGui)GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS, MembersGui.PUBLIC);
             if(permissionGui != null){
                 permissionGui.setPermission(false, permission);
             }
@@ -422,9 +435,9 @@ public class City extends Zone {
     
     public void addMoney(double amount){
         bank += amount;
-        IGui iCityGui = GuiManager.getInstance().getContainer("city").getGui(false, this);
-        if(iCityGui != null){
-            ((CityGui)iCityGui).updateBank();
+        CityGui cityGui = (CityGui)GuiManager.getInstance().getContainer("city").getGui(false, this);
+        if(cityGui != null){
+            cityGui.updateBank();
         }
     }
     
@@ -483,20 +496,20 @@ public class City extends Zone {
         CityRank oldRank = player.getRank();
         player.setRank(rank);
         resetPermissions(uuid);
-        RankMemberGui rankMemberGui = (RankMemberGui)(IGui)GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS, uuid, MemberGui.RANK);
+        RankMemberGui rankMemberGui = (RankMemberGui)GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS, uuid, MemberGui.RANK);
         if(rankMemberGui != null){
             rankMemberGui.setRank(oldRank, rank);
         }
-        IGui iCityInfo = GuiManager.getInstance().getContainer("city-info").getGui(false, this);
-        if(iCityInfo != null){
-            ((CityInfo)iCityInfo).updateRanks();
+        CityInfo cityInfo = (CityInfo)GuiManager.getInstance().getContainer("city-info").getGui(false, this);
+        if(cityInfo != null){
+            cityInfo.updateRanks();
         }
     }
     
     private void resetPermissions(UUID uuid){
         CityPlayer player = getCityPlayer(uuid);
         player.clearPermissions();
-        MemberPermissionGui permissionGui = (MemberPermissionGui)(IGui)GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS, uuid, MemberGui.PERMISSION);
+        MemberPermissionGui permissionGui = (MemberPermissionGui)GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS, uuid, MemberGui.PERMISSION);
         if(permissionGui != null){
             for(CityPermission permission : CityPermission.values()){
                 permissionGui.setPermission(false, permission);
@@ -513,26 +526,11 @@ public class City extends Zone {
         IGui iCityGui = GuiManager.getInstance().getContainer("city").getGui(false, this);
         if(iCityGui != null){
             CityGui cityGui = (CityGui)iCityGui;
-            cityGui.updateRank();
-            IGui iRankGui = cityGui.getLegacyChild(CityGui.RANKS);
-            if(iRankGui != null){
-                ((RanksGui)iRankGui).setRank(index);
-            }
+            cityGui.updateRank(index);
         }
         IGui iCityInfo = GuiManager.getInstance().getContainer("city-info").getGui(false, this);
         if(iCityInfo != null){
             ((CityInfo)iCityInfo).updateRanks();
-        }
-        MembersGui cityMembers = (MembersGui)(IGui)GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS);
-        if(cityMembers != null){
-            Collection<Relationnable> children = cityMembers.getChildren();
-            for(Relationnable child : children){
-                MemberGui memberGui = (MemberGui)child;
-                RankMemberGui rankMemberGui = (RankMemberGui)memberGui.getLegacyChild(MemberGui.RANK);
-                if(rankMemberGui != null){
-                    rankMemberGui.updateRank(ranks.get(index));
-                }
-            }
         }
         return true;
     }

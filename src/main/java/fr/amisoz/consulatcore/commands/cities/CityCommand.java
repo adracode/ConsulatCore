@@ -30,7 +30,6 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 
-import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -63,9 +62,8 @@ public class CityCommand extends ConsulatCommand {
                     "§6/ville help §7- §eAffiche toutes les commandes utiles pour ta ville. C’est ce que tu lis ;).";
     
     public CityCommand(){
-        super("ville", Collections.singletonList("city"), "/ville help", 1, Rank.JOUEUR);
-        suggest(false,
-                LiteralArgumentBuilder.literal("create")
+        super("consulat.core", "ville", "city", "/ville help", 1, Rank.JOUEUR);
+        suggest(LiteralArgumentBuilder.literal("create")
                         .then(Arguments.word("nom")),
                 LiteralArgumentBuilder.literal("rename")
                         .then(Arguments.word("nom")),
@@ -431,7 +429,7 @@ public class CityCommand extends ConsulatCommand {
                     ZoneManager.getInstance().setHome(city, player.getPlayer().getLocation());
                     player.sendMessage("§aTu as déplacé le home de ta ville.");
                 } else {
-                    ((CityGui)(IGui)GuiManager.getInstance().getContainer("city").getGui(city)).confirmSethome(player);
+                    ((CityGui)GuiManager.getInstance().getContainer("city").getGui(city)).confirmSethome(player);
                 }
             }
             break;

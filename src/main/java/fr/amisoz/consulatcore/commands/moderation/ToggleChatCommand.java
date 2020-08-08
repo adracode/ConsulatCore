@@ -8,8 +8,8 @@ import fr.leconsulat.api.ranks.Rank;
 public class ToggleChatCommand extends ConsulatCommand {
     
     public ToggleChatCommand(){
-        super("chat", "/chat", 0, Rank.RESPONSABLE);
-        suggest(true);
+        super("consulat.core", "chat", "/chat", 0, Rank.RESPONSABLE);
+        suggest();
     }
     
     @Override

@@ -26,9 +26,8 @@ import java.util.Set;
 public class ClaimCommand extends ConsulatCommand {
 
     public ClaimCommand(){
-        super("claim", "/claim | /claim kick <Joueur> | /claim desc <Description> | /claim list", 0, Rank.JOUEUR);
-        suggest(true,
-                LiteralArgumentBuilder.literal("kick")
+        super("consulat.core", "claim", "/claim | /claim kick <Joueur> | /claim desc <Description> | /claim list", 0, Rank.JOUEUR);
+        suggest(LiteralArgumentBuilder.literal("kick")
                         .then(Arguments.playerList("joueur")),
                 LiteralArgumentBuilder.literal("desc")
                         .then(RequiredArgumentBuilder.argument("description", StringArgumentType.greedyString())),
@@ -164,7 +163,7 @@ public class ClaimCommand extends ConsulatCommand {
                         return;
                     }
                     sender.sendMessage(Text.PREFIX + "§7Informations sur §a" + survivalOffline.getName() + "§7: ");
-                    sender.sendMessage(Text.PREFIX + "§eRang: §a" + survivalOffline.getRank().getRankName());
+                    sender.sendMessage(Text.PREFIX + "§eGrade: §a" + survivalOffline.getRank().getRankName());
                     sender.sendMessage(Text.PREFIX + "§eArgent: §a" + survivalOffline.getMoney());
                     sender.sendMessage(Text.PREFIX + "§eA rejoint le: §a" + survivalOffline.getRegistered());
                     sender.sendMessage(Text.PREFIX + "§eDernière connexion: §a" + survivalOffline.getLastConnection());

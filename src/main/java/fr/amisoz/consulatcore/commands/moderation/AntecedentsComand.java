@@ -16,8 +16,8 @@ import java.util.UUID;
 public class AntecedentsComand extends ConsulatCommand {
 
     public AntecedentsComand() {
-        super("antecedents", "/antecedents <Joueur>", 1, Rank.RESPONSABLE);
-        suggest(true, Arguments.playerList("joueur"));
+        super("consulat.core", "antecedents", "/antecedents <Joueur>", 1, Rank.RESPONSABLE);
+        suggest(Arguments.playerList("joueur"));
         new AntecedentsGuiContainer();
     }
 

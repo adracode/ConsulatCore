@@ -17,8 +17,8 @@ public class SanctionCommand extends ConsulatCommand {
     
     
     public SanctionCommand(){
-        super("sanction", "/sanction <Joueur>", 1, Rank.MODO);
-        suggest(true, Arguments.playerList("joueur"));
+        super("consulat.core", "sanction", "/sanction <Joueur>", 1, Rank.MODO);
+        suggest(Arguments.playerList("joueur"));
         new SanctionsGuiContainer();
     }
     

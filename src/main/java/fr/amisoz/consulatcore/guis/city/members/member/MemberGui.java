@@ -92,19 +92,19 @@ public class MemberGui extends DataRelatGui<UUID> {
                 if(!city.isOwner(player.getUUID())){
                     return;
                 }
-                getChild(PERMISSION).open(event.getPlayer());
+                getChild(PERMISSION).getGui().open(event.getPlayer());
                 break;
             case CLAIM_SLOT:
                 if(!city.canManageAccesses(player.getUUID())){
                     return;
                 }
-                getChild(CLAIM).open(event.getPlayer());
+                getChild(CLAIM).getGui().open(event.getPlayer());
                 break;
             case RANK_SLOT:
                 if(!city.isOwner(player.getUUID())){
                     return;
                 }
-                getChild(RANK).open(event.getPlayer());
+                getChild(RANK).getGui().open(event.getPlayer());
                 break;
         }
     }

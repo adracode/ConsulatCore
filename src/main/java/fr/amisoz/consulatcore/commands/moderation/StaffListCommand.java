@@ -8,8 +8,8 @@ import fr.leconsulat.api.ranks.Rank;
 public class StaffListCommand extends ConsulatCommand {
 
     public StaffListCommand() {
-        super("stafflist", "/stafflist", 0, Rank.MODPLUS);
-        suggest(true);
+        super("consulat.core", "stafflist", "/stafflist", 0, Rank.MODPLUS);
+        suggest();
     }
 
     @Override

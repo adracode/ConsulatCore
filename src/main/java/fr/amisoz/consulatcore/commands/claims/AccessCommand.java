@@ -18,11 +18,11 @@ import java.util.Set;
 import java.util.UUID;
 
 public class AccessCommand extends ConsulatCommand {
-
+    
+    //TODO: bug save ?
     public AccessCommand(){
-        super("access", "/access [add <Joueur>, remove <Joueur>, list, addall <Joueur>, removeall <Joueur>]", 1, Rank.JOUEUR);
-        suggest(true,
-                LiteralArgumentBuilder.literal("list"),
+        super("consulat.core", "access", "/access [add <Joueur>, remove <Joueur>, list, addall <Joueur>, removeall <Joueur>]", 1, Rank.JOUEUR);
+        suggest(LiteralArgumentBuilder.literal("list"),
                 LiteralArgumentBuilder.literal("add")
                         .then(Arguments.playerList("player"))
                         .then(Arguments.word("player")),
@@ -37,7 +37,7 @@ public class AccessCommand extends ConsulatCommand {
                         .then(Arguments.word("player"))
         );
     }
-
+    
     @Override
     public void onCommand(ConsulatPlayer sender, String[] args){
         ClaimManager claimManager = ClaimManager.getInstance();
@@ -164,5 +164,5 @@ public class AccessCommand extends ConsulatCommand {
                 sender.sendMessage("§c" + getUsage());
         }
     }
-
+    
 }

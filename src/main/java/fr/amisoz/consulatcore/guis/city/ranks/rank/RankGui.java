@@ -17,18 +17,18 @@ public class RankGui extends DataRelatGui<CityRank> {
     
     private static final byte INFO_SLOT = 4;
     private static final byte RENAME_SLOT = 13;
-    private static final byte MEMBER_SLOT = 28;
-    private static final byte CLAIM_SLOT = 29;
-    private static final byte ACCESS_SLOT = 30;
-    private static final byte BANK_SLOT = 31;
-    private static final byte HOME_SLOT = 32;
+    private static final byte MEMBER_SLOT = 29;
+    private static final byte CLAIM_SLOT = 30;
+    private static final byte ACCESS_SLOT = 31;
+    private static final byte BANK_SLOT = 32;
+    private static final byte HOME_SLOT = 33;
     
     public RankGui(CityRank rank){
-        super(rank, rank.getRankName(), 6,
-                IGui.getItem("§eRang", INFO_SLOT, Material.PAPER, "",
-                        "§7Les rangs définissent des", "§7permissions par défaut aux", "§7membres", "",
+        super(rank, rank.getColor() + rank.getRankName(), 6,
+                IGui.getItem("§eGrade", INFO_SLOT, Material.PAPER, "",
+                        "§7Les grades définissent des", "§7permissions par défaut aux", "§7membres", "",
                         "§7Les permissions des membres", "§7peuvent être modifiées", "§7par la suite", "",
-                        "§7§oSi les permissions par", "§7§odéfaut d'un rang sont modifiées,", "§7§oles permissions des membres", "§7§one sont pas modifiées"),
+                        "§7§oSi les permissions par", "§7§odéfaut d'un grade sont modifiées,", "§7§oles permissions des membres", "§7§one sont pas modifiées"),
                 IGui.getItem("§eChanger le nom", RENAME_SLOT, Material.OAK_SIGN, "", "§7Changer le nom", "§7du grade"),
                 IGui.getItem("§eMembres", MEMBER_SLOT, Material.PLAYER_HEAD, "", "§7Inviter un joueur", "§7Kick un membre"),
                 IGui.getItem("§cDésactivé", MEMBER_SLOT + 9, Material.RED_CONCRETE),
@@ -42,6 +42,11 @@ public class RankGui extends DataRelatGui<CityRank> {
                 IGui.getItem("§cDésactivé", HOME_SLOT + 9, Material.RED_CONCRETE)
         );
         setDeco(Material.BLACK_STAINED_GLASS_PANE, 0, 1, 2, 3, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 46, 47, 48, 49, 50, 51, 52, 53);
+    }
+    
+    public void updateName(){
+        CityRank rank = getData();
+        setName(rank.getColor() + rank.getRankName());
     }
     
     @Override
@@ -160,5 +165,4 @@ public class RankGui extends DataRelatGui<CityRank> {
     public City getCity(){
         return ((Datable<City>)getFather()).getData();
     }
-    
 }

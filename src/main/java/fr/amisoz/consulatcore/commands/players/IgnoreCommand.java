@@ -15,9 +15,8 @@ import java.util.UUID;
 public class IgnoreCommand extends ConsulatCommand {
     
     public IgnoreCommand(){
-        super("ignore", "/ignore add <Joueur> | remove <Joueur> | list", 1, Rank.JOUEUR);
-        suggest(false,
-                LiteralArgumentBuilder.literal("add")
+        super("consulat.core", "ignore", "/ignore [add <joueur>|remove <joueur>|list]", 1, Rank.JOUEUR);
+        suggest(LiteralArgumentBuilder.literal("add")
                         .then(Arguments.playerList("joueur")),
                 LiteralArgumentBuilder.literal("remove")
                         .then(Arguments.word("joueur").suggests(((context, builder) -> {

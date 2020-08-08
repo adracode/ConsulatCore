@@ -65,16 +65,17 @@ public class MembersGui extends DataRelatPagedGui<City> {
         UUID uuid = player.getUUID();
         UUID ownerUUID = getData().getOwner();
         City city = getData();
+        IGui gui = pageGui.getGui();
         if(!city.canInvite(uuid)){
-            setDescriptionPlayer(ADD_SLOT, player, "", "§cTu ne peux pas", "§cinviter un joueur");
+            gui.setDescriptionPlayer(ADD_SLOT, player, "", "§cTu ne peux pas", "§cinviter un joueur");
         } else {
-            setFakeItem(ADD_SLOT, null, player);
+            gui.removeFakeItem(ADD_SLOT, player);
         }
         for(GuiItem item : this){
             if(!city.isOwner(uuid) || uuid.equals(item.getAttachedObject()) || ownerUUID.equals(item.getAttachedObject())){
-                pageGui.setDescriptionPlayer(item.getSlot(), player, "", "§cTu ne peux pas modifier", "§cce membre");
+                gui.setDescriptionPlayer(item.getSlot(), player, "", "§cTu ne peux pas modifier", "§cce membre");
             } else {
-                pageGui.setFakeItem(item.getSlot(), null, player);
+                gui.removeFakeItem(item.getSlot(),  player);
             }
         }
     }
@@ -92,16 +93,17 @@ public class MembersGui extends DataRelatPagedGui<City> {
     @Override
     public void onPageCreated(GuiCreateEvent event, Pageable page){
         if(page.getPage() != 0){
-            page.setItem(IGui.getItem("§7Précédent", 47, Material.ARROW));
-            getPage(page.getPage() - 1).setItem(IGui.getItem("§7Suivant", 51, Material.ARROW));
-            page.setDeco(Material.BLACK_STAINED_GLASS_PANE, 51);
+            IGui gui = page.getGui();
+            gui.setItem(IGui.getItem("§7Précédent", 47, Material.ARROW));
+            getPage(page.getPage() - 1).getGui().setItem(IGui.getItem("§7Suivant", 51, Material.ARROW));
+            gui.setDeco(Material.BLACK_STAINED_GLASS_PANE, 51);
         }
     }
     
     @Override
     public void onPageRemoved(GuiRemoveEvent event, Pageable page){
         if(page.getPage() != 0){
-            getPage(page.getPage() - 1).setDeco(Material.BLACK_STAINED_GLASS_PANE, 51);
+            getPage(page.getPage() - 1).getGui().setDeco(Material.BLACK_STAINED_GLASS_PANE, 51);
         }
     }
     
@@ -109,19 +111,19 @@ public class MembersGui extends DataRelatPagedGui<City> {
     public void onPageClick(GuiClickEvent event, Pageable page){
         City city = getData();
         ConsulatPlayer player = event.getPlayer();
-        GuiItem clickedItem = Objects.requireNonNull(page.getItem(event.getSlot()));
+        GuiItem clickedItem = Objects.requireNonNull(page.getGui().getItem(event.getSlot()));
         switch(event.getSlot()){
             case PUBLIC_PERMISSIONS_SLOT:
-                getChild(PUBLIC).open(player);
+                getChild(PUBLIC).getGui().open(player);
                 return;
             case 47:
                 if(clickedItem.getType() == Material.ARROW){
-                    getPage(page.getPage() - 1).open(player);
+                    getPage(page.getPage() - 1).getGui().open(player);
                 }
                 break;
             case 51:
                 if(clickedItem.getType() == Material.ARROW){
-                    getPage(page.getPage() + 1).open(player);
+                    getPage(page.getPage() + 1).getGui().open(player);
                 }
                 return;
             case ADD_SLOT:{
@@ -163,7 +165,7 @@ public class MembersGui extends DataRelatPagedGui<City> {
                 return;
             }
             UUID playerUUID = (UUID)clickedItem.getAttachedObject();
-            getChild(playerUUID).open(player);
+            getChild(playerUUID).getGui().open(player);
         }
     }
     

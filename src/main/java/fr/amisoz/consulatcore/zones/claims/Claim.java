@@ -217,7 +217,6 @@ public class Claim extends CChunk {
         if(owner != null){
             owner.addClaim(this);
         }
-        permissions.clear();
         IGui iClaimGui = GuiManager.getInstance().getContainer("claim").getGui(false, this);
         if(iClaimGui != null){
             ((ManageClaimGui)iClaimGui).applyFather();
@@ -291,7 +290,7 @@ public class Claim extends CChunk {
             containerTag.putUUID("Owner", container.getValue());
             containersTag.addTag(containerTag);
         }
-        claim.put("Containers", containersTag);
+        claim.put("ProtectedContainers", containersTag);
         claim.putByte("InteractSurrounding", (byte)(interactSurrounding ? 1 : 0));
         return claim;
     }

@@ -60,9 +60,9 @@ public class ShopGui extends DataPagedGui<ShopItemType> {
     @Override
     public void onPageCreated(GuiCreateEvent event, Pageable pageGui){
         if(getData().equals(ShopItemType.ALL)){
-            pageGui.setName("§4Shops §8(§3" + (pageGui.getPage() + 1) + "§8)");
+            pageGui.getGui().setName("§4Shops §8(§3" + (pageGui.getPage() + 1) + "§8)");
         } else {
-            pageGui.setName("§4Shops §8(§3" + getData().toString() + "§8) (§3" + (pageGui.getPage() + 1) + "§8)");
+            pageGui.getGui().setName("§4Shops §8(§3" + getData().toString() + "§8) (§3" + (pageGui.getPage() + 1) + "§8)");
         }
     }
     
@@ -73,16 +73,16 @@ public class ShopGui extends DataPagedGui<ShopItemType> {
                 if(pageGui.getPage() <= 0){
                     return;
                 }
-                getPage(pageGui.getPage() - 1).open(event.getPlayer());
+                getPage(pageGui.getPage() - 1).getGui().open(event.getPlayer());
                 break;
             case 53:
                 if(pageGui.getPage() == getCurrentPage()){
                     return;
                 }
-                getPage(pageGui.getPage() + 1).open(event.getPlayer());
+                getPage(pageGui.getPage() + 1).getGui().open(event.getPlayer());
                 break;
             default:
-                PlayerShop shop = (PlayerShop)pageGui.getItem(event.getSlot()).getAttachedObject();
+                PlayerShop shop = (PlayerShop)pageGui.getGui().getItem(event.getSlot()).getAttachedObject();
                 SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
                 player.getPlayer().closeInventory();
                 if(player.hasMoney(10.0)){

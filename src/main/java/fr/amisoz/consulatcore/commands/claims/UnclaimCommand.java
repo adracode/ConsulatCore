@@ -15,8 +15,8 @@ import fr.leconsulat.api.ranks.Rank;
 public class UnclaimCommand extends ConsulatCommand {
     
     public UnclaimCommand(){
-        super("unclaim", "/unclaim", 0, Rank.JOUEUR);
-        suggest(true);
+        super("consulat.core", "unclaim", "/unclaim", 0, Rank.JOUEUR);
+        suggest();
     }
 
     @Override

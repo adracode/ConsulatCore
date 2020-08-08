@@ -6,10 +6,17 @@ import fr.leconsulat.api.gui.event.GuiClickEvent;
 import fr.leconsulat.api.gui.event.GuiOpenEvent;
 import fr.leconsulat.api.gui.gui.IGui;
 import fr.leconsulat.api.gui.gui.template.DataRelatGui;
+import fr.leconsulat.api.player.ConsulatPlayer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 public class ChangeHomeGui extends DataRelatGui<City> {
+    
+    private Map<UUID, Location> newHomeByPlayer = new HashMap<>(1);
     
     public ChangeHomeGui(City city){
         super(city, "§4Changement de Home", 5,
@@ -22,26 +29,34 @@ public class ChangeHomeGui extends DataRelatGui<City> {
     }
     
     @Override
-    public void onOpen(GuiOpenEvent event){
+    public void onOpened(GuiOpenEvent event){
         Location home = getData().getHome();
         Location newHome = event.getPlayer().getPlayer().getLocation();
-        setDescription(22, "§cAncien §7home: ",
+        setDescriptionPlayer(22, event.getPlayer(),"§cAncien §7home: ",
                 "§7x: " + home.getBlockX(), "§7y: " + home.getBlockY(), "§7z: " + home.getBlockZ(), "",
                 "§aNouveau §7home: ",
                 "§7x: " + newHome.getBlockX(), "§7y: " + newHome.getBlockY(), "§7z: " + newHome.getBlockZ());
+        newHomeByPlayer.put(event.getPlayer().getUUID(), newHome);
     }
     
     @Override
     public void onClick(GuiClickEvent event){
+        ConsulatPlayer player = event.getPlayer();
         switch(event.getSlot()){
             case 20:
-                event.getPlayer().getPlayer().closeInventory();
-                event.getPlayer().sendMessage("§cTu as annulé le déplacement du home");
+                player.getPlayer().closeInventory();
+                player.sendMessage("§cTu as annulé le déplacement du home.");
                 return;
             case 24:
-                ZoneManager.getInstance().setHome(getData(), event.getPlayer().getPlayer().getLocation());
-                event.getPlayer().sendMessage("§aTu as déplacé le home de ta ville.");
-                event.getPlayer().getPlayer().closeInventory();
+                Location newSpawn = newHomeByPlayer.remove(player.getUUID());
+                if(newSpawn == null){
+                    player.getPlayer().closeInventory();
+                    player.sendMessage("§cUne erreur est survenue");
+                    return;
+                }
+                player.sendMessage("§aTu as déplacé le home de ta ville.");
+                player.getPlayer().closeInventory();
+                ZoneManager.getInstance().setHome(getData(), newSpawn);
                 break;
         }
     }

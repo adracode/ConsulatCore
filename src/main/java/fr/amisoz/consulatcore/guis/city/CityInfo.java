@@ -47,7 +47,7 @@ public class CityInfo extends DataPagedGui<City> {
         int page = pageGui.getPage();
         if(page != 0){
             setItem(IGui.getItem("§7Précédent", 47, Material.ARROW));
-            getPage(page - 1).setItem(IGui.getItem("§7Suivant", 51, Material.ARROW));
+            getPage(page - 1).getGui().setItem(IGui.getItem("§7Suivant", 51, Material.ARROW));
         }
     }
     
@@ -55,7 +55,7 @@ public class CityInfo extends DataPagedGui<City> {
     public void onPageRemoved(GuiRemoveEvent event, Pageable pageGui){
         int page = pageGui.getPage();
         if(page != 0){
-            getPage(page - 1).setDeco(Material.BLACK_STAINED_GLASS_PANE, 51);
+            getPage(page - 1).getGui().setDeco(Material.BLACK_STAINED_GLASS_PANE, 51);
         }
     }
     
@@ -82,8 +82,9 @@ public class CityInfo extends DataPagedGui<City> {
     public void updateName(){
         City city = getData();
         for(Pageable page : getPages()){
-            page.setDisplayName(CITY_SLOT, "§e" + city.getName());
-            page.setName("§e" + city.getName());
+            IGui gui = page.getGui();
+            gui.setDisplayName(CITY_SLOT, "§e" + city.getName());
+            gui.setName("§e" + city.getName());
         }
     }
     
@@ -92,11 +93,11 @@ public class CityInfo extends DataPagedGui<City> {
             if(city.hasHome()){
                 Location home = city.getHome();
                 for(Pageable page : getPages())
-                    page.setDescription(HOME_SLOT, "",
+                    page.getGui().setDescription(HOME_SLOT, "",
                         "§7x: " + home.getBlockX(), "§7y: " + home.getBlockY(), "§7z: " + home.getBlockZ());
             } else {
                 for(Pageable page : getPages()){
-                    page.setDescription(HOME_SLOT, "", "§cAucun");
+                    page.getGui().setDescription(HOME_SLOT, "", "§cAucun");
                 }
             }
     }

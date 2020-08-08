@@ -5,6 +5,7 @@ import fr.amisoz.consulatcore.chunks.ChunkManager;
 import fr.amisoz.consulatcore.commands.cities.CityCommand;
 import fr.amisoz.consulatcore.commands.claims.AccessCommand;
 import fr.amisoz.consulatcore.commands.claims.ClaimCommand;
+import fr.amisoz.consulatcore.commands.claims.GetkeyCommand;
 import fr.amisoz.consulatcore.commands.claims.UnclaimCommand;
 import fr.amisoz.consulatcore.commands.economy.AdminShopCommand;
 import fr.amisoz.consulatcore.commands.economy.BaltopCommand;
@@ -29,6 +30,7 @@ import fr.amisoz.consulatcore.runnable.AFKRunnable;
 import fr.amisoz.consulatcore.runnable.MeceneRunnable;
 import fr.amisoz.consulatcore.runnable.MessageRunnable;
 import fr.amisoz.consulatcore.runnable.MonitoringRunnable;
+import fr.amisoz.consulatcore.server.HubServer;
 import fr.amisoz.consulatcore.server.SafariServer;
 import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.amisoz.consulatcore.zones.ZoneManager;
@@ -72,6 +74,7 @@ import java.util.logging.Level;
  * );
  * ALTER TABLE players ADD city CHAR(36);
  */
+
 public class ConsulatCore extends JavaPlugin implements Listener {
     
     private static ConsulatCore instance;
@@ -84,6 +87,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     private boolean chat = true;
     private Channel spy;
     private SafariServer safari;
+    private HubServer hub;
     
     private List<TextComponent> textPerso = new ArrayList<>();
     
@@ -125,6 +129,8 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         EnchantmentManager.getInstance();
         safari = new SafariServer();
         safari.setSlot(50);
+        hub = new HubServer();
+        hub.setSlot(Integer.MAX_VALUE);
         Bukkit.getScheduler().runTaskTimer(this, new AFKRunnable(), 0L, 5 * 60 * 20);
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, new MonitoringRunnable(this), 0L, 10 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MessageRunnable(), 0L, 15 * 60 * 20);
@@ -157,6 +163,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
             }
         }
         ConsulatAPI.getConsulatAPI().log(Level.INFO, "ConsulatCore loaded in " + (System.currentTimeMillis() - startLoading) + " ms.");
+        RedisManager.getInstance().getRedis().getTopic(ConsulatAPI.getConsulatAPI().isDevelopment() ? "PlayerTestsurvie" : "PlayerSurvie").publish(0);
     }
     
     @Override
@@ -190,6 +197,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         new EnderchestCommand();
         new FlyCommand();
         new GamemodeCommand();
+        new GetkeyCommand();
         new HelpCommand();
         new HomeCommand();
         new HubCommand();
@@ -295,5 +303,9 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     
     public SafariServer getSafari(){
         return safari;
+    }
+    
+    public HubServer getHub(){
+        return hub;
     }
 }

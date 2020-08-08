@@ -5,11 +5,15 @@ import fr.amisoz.consulatcore.guis.city.bank.BankGui;
 import fr.amisoz.consulatcore.guis.city.changehome.ChangeHomeGui;
 import fr.amisoz.consulatcore.guis.city.claimlist.ClaimsGui;
 import fr.amisoz.consulatcore.guis.city.members.MembersGui;
+import fr.amisoz.consulatcore.guis.city.members.PublicPermissionsGui;
+import fr.amisoz.consulatcore.guis.city.members.member.MemberGui;
+import fr.amisoz.consulatcore.guis.city.members.member.rank.RankMemberGui;
 import fr.amisoz.consulatcore.guis.city.ranks.RanksGui;
 import fr.amisoz.consulatcore.players.CityPermission;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.zones.ZoneManager;
 import fr.amisoz.consulatcore.zones.cities.City;
+import fr.amisoz.consulatcore.zones.cities.CityRank;
 import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.leconsulat.api.gui.GuiContainer;
 import fr.leconsulat.api.gui.GuiManager;
@@ -26,6 +30,8 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Collection;
 
 public class CityGui extends DataRelatGui<City> {
     
@@ -117,7 +123,7 @@ public class CityGui extends DataRelatGui<City> {
         City city = getData();
         switch(event.getSlot()){
             case CLAIM_SLOT:{
-                getChild(CLAIMS).open(player);
+                getChild(CLAIMS).getGui().open(player);
             }
             break;
             case HOME_SLOT:{
@@ -140,15 +146,15 @@ public class CityGui extends DataRelatGui<City> {
                 if(!city.isOwner(player.getUUID())){
                     return;
                 }
-                getChild(RANKS).open(player);
+                getChild(RANKS).getGui().open(player);
             }
             break;
             case PERMISSION_SLOT:{
-                getChild(MEMBERS).open(player);
+                getChild(MEMBERS).getGui().open(player);
             }
             break;
             case BANK_SLOT:{
-                getChild(BANK).open(player);
+                getChild(BANK).getGui().open(player);
             }
             break;
             case CITY_SLOT:{
@@ -198,13 +204,22 @@ public class CityGui extends DataRelatGui<City> {
     public void updateOwner(){
         setDescription(CITY_SLOT, "", "§7Propriétaire: §a" + Bukkit.getOfflinePlayer(getData().getOwner()).getName(),
                 "", "§7§oClique pour renommer", "§7§ota ville (" + ConsulatCore.formatMoney(City.RENAME_TAX) + ")");
+        MembersGui membersGui = (MembersGui)getLegacyChild(MEMBERS);
+        if(membersGui != null){
+            membersGui.refresh();
+            PublicPermissionsGui publicPermissionsGui = (PublicPermissionsGui)getLegacyChild(MembersGui.PUBLIC);
+            if(publicPermissionsGui != null){
+                membersGui.refresh();
+            }
+            for(Relationnable child : membersGui.getChildren()){
+                child.getGui().refresh();
+            }
+        }
+        
     }
     
     public void confirmSethome(ConsulatPlayer player){
-        getChild(HOME).open(player);
-    }
-    
-    public void updateClaim(ConsulatPlayer player, boolean allow){
+        getChild(HOME).getGui().open(player);
     }
     
     public void updateHome(){
@@ -213,6 +228,12 @@ public class CityGui extends DataRelatGui<City> {
             SurvivalPlayer survivalPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
             Claim claim = survivalPlayer.getClaim();
             updateHome(survivalPlayer, claim != null && city.isClaim(claim));
+        }
+        ChangeHomeGui changeHomeGui = (ChangeHomeGui)getLegacyChild(HOME);
+        if(changeHomeGui != null){
+            for(HumanEntity player : changeHomeGui.getInventory().getViewers()){
+                player.sendMessage("§cLe home de la ville a été changé.");
+            }
         }
     }
     
@@ -224,8 +245,7 @@ public class CityGui extends DataRelatGui<City> {
         if(!city.hasHome()){
             if(allow){
                 setDescriptionPlayer(HOME_SLOT, player, "§7Aucun home défini", "",
-                        "§7§oDéfinir le home", "§7§o/ville sethome", "",
-                        "§7Ou §aclique §7pour", "§7définir le home §aici");
+                        "§aClique §7pour", "§7définir le home §aici");
             } else {
                 setDescriptionPlayer(HOME_SLOT, player, "§7Aucun home défini");
             }
@@ -233,8 +253,7 @@ public class CityGui extends DataRelatGui<City> {
             Location home = city.getHome();
             if(allow){
                 setDescriptionPlayer(HOME_SLOT, player, "§7x: " + home.getBlockX(), "§7y: " + home.getBlockY(), "§7z: " + home.getBlockZ(), "",
-                        "§7§oChanger le home", "§7§o/ville sethome", "",
-                        "§7Ou §aclique §7pour", "§7définir le home §aici");
+                        "§aClique §7pour", "§7définir le home §aici");
             } else {
                 setDescriptionPlayer(HOME_SLOT, player, "§7x: " + home.getBlockX(), "§7y: " + home.getBlockY(), "§7z: " + home.getBlockZ());
             }
@@ -243,6 +262,10 @@ public class CityGui extends DataRelatGui<City> {
     
     public void updateBank(){
         setDescription(BANK_SLOT, "", "§a" + ConsulatCore.formatMoney(getData().getMoney()), "", "§7Gérer la banque");
+        BankGui bankGui = (BankGui)getLegacyChild(BANK);
+        if(bankGui != null){
+            bankGui.updateBank();
+        }
     }
     
     public void updateRank(){
@@ -252,6 +275,27 @@ public class CityGui extends DataRelatGui<City> {
                 "§b" + city.getRankName(1),
                 "§e" + city.getRankName(2),
                 "§7" + city.getRankName(3), "", "§7Gérer les grades de ville");
+    }
+    
+    public void updateRank(int index){
+        CityRank rank = getData().getRank(index);
+        updateRank();
+        RanksGui ranksGui = (RanksGui)getLegacyChild(CityGui.RANKS);
+        if(ranksGui != null){
+            ranksGui.setRank(index);
+        }
+        MembersGui cityMembers = (MembersGui)getLegacyChild(CityGui.MEMBERS);
+        if(cityMembers != null){
+            Collection<Relationnable> children = cityMembers.getChildren();
+            for(Relationnable child : children){
+                if(child instanceof MemberGui){
+                    RankMemberGui rankMemberGui = (RankMemberGui)child.getLegacyChild(MemberGui.RANK);
+                    if(rankMemberGui != null){
+                        rankMemberGui.updateRank(rank);
+                    }
+                }
+            }
+        }
     }
     
     public void updateRank(SurvivalPlayer player, boolean allow){
@@ -292,5 +336,5 @@ public class CityGui extends DataRelatGui<City> {
             return new CityGui(city);
         }
     }
-  
+    
 }

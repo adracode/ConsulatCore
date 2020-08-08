@@ -28,9 +28,8 @@ public class AdminShopCommand extends ConsulatCommand {
     private static final Set<String> SUB_COMMAND = new HashSet<>(Arrays.asList("sell", "buy"));
     
     public AdminShopCommand(){
-        super("adminshop", "/adminshop [sell|buy] <prix>", 2, Rank.RESPONSABLE);
-        suggest(false,
-                LiteralArgumentBuilder.literal("sell")
+        super("consulat.core", "adminshop", "/adminshop [sell|buy] <prix>", 2, Rank.RESPONSABLE);
+        suggest(LiteralArgumentBuilder.literal("sell")
                         .then(RequiredArgumentBuilder.argument("prix", DoubleArgumentType.doubleArg(0, 1_000_000))),
                 LiteralArgumentBuilder.literal("buy")
                         .then(RequiredArgumentBuilder.argument("prix", DoubleArgumentType.doubleArg(0, 1_000_000))));
@@ -56,9 +55,9 @@ public class AdminShopCommand extends ConsulatCommand {
             sender.sendMessage("§cUn bloc doit être visé pour créer le shop.");
             return;
         }
-        int price;
+        double price;
         try {
-            price = Integer.parseInt(args[1]);
+            price = Double.parseDouble(args[1]);
         } catch(NumberFormatException e){
             sender.sendMessage("§cCe nombre n'est pas valide.");
             return;

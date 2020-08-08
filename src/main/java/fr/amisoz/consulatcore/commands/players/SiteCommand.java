@@ -14,8 +14,8 @@ public class SiteCommand extends ConsulatCommand {
     private TextComponent site;
     
     public SiteCommand() {
-        super("site", "/site", 0, Rank.JOUEUR);
-        suggest(true);
+        super("consulat.core", "site", "/site", 0, Rank.JOUEUR);
+        suggest();
         site = new TextComponent(ChatColor.GREEN + "Clique ici pour accéder au site");
         site.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, "https://leconsulat.fr"));
         site.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GRAY + "Clique pour accéder au site").create()));

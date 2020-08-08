@@ -80,18 +80,19 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
     @Override
     public void onPageCreated(GuiCreateEvent event, Pageable page){
         Claim claim = getData();
-        page.setName((claim.getX() << 4) + " " + (claim.getZ() << 4));
+        IGui gui = page.getGui();
+        gui.setName((claim.getX() << 4) + " " + (claim.getZ() << 4));
         if(page.getPage() != 0){
-            page.setItem(IGui.getItem("§7Précédent", 47, Material.ARROW));
-            getPage(page.getPage() - 1).setItem(IGui.getItem("§7Suivant", 51, Material.ARROW));
-            page.setDeco(Material.BLACK_STAINED_GLASS_PANE, 51);
+            gui.setItem(IGui.getItem("§7Précédent", 47, Material.ARROW));
+            getPage(page.getPage() - 1).getGui().setItem(IGui.getItem("§7Suivant", 51, Material.ARROW));
+            gui.setDeco(Material.BLACK_STAINED_GLASS_PANE, 51);
         }
     }
     
     @Override
     public void onPageRemoved(GuiRemoveEvent event, Pageable page){
         if(page.getPage() != 0){
-            getPage(page.getPage() - 1).setDeco(Material.BLACK_STAINED_GLASS_PANE, 51);
+            getPage(page.getPage() - 1).getGui().setDeco(Material.BLACK_STAINED_GLASS_PANE, 51);
         }
     }
     
@@ -122,9 +123,9 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
     
     public void updateInteract(ConsulatPlayer player, Pageable page, boolean allow){
         if(allow){
-            page.setFakeItem(MANAGE_INTERACT_SLOT, null, player);
+            page.getGui().setFakeItem(MANAGE_INTERACT_SLOT, null, player);
         } else {
-            List<String> description = page.getItem(MANAGE_INTERACT_SLOT).getDescription();
+            List<String> description = page.getGui().getItem(MANAGE_INTERACT_SLOT).getDescription();
             description.addAll(Arrays.asList("", "§cTu ne peux pas", "§cchanger l'interaction"));
             setDescriptionPlayer(MANAGE_INTERACT_SLOT, player, description.toArray(new String[0]));
         }
@@ -132,7 +133,7 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
     
     public void updateAccess(ConsulatPlayer player, Pageable page, boolean allow){
         if(allow){
-            page.setFakeItem(ADD_SLOT, null, player);
+            page.getGui().setFakeItem(ADD_SLOT, null, player);
         } else {
             setDescriptionPlayer(ADD_SLOT, player, "", "§cTu ne peux pas", "§cajouter un joueur");
         }
@@ -141,16 +142,16 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
     @Override
     public void onPageClick(GuiClickEvent event, Pageable page){
         ConsulatPlayer player = event.getPlayer();
-        GuiItem clickedItem = Objects.requireNonNull(page.getItem(event.getSlot()));
+        GuiItem clickedItem = Objects.requireNonNull(page.getGui().getItem(event.getSlot()));
         switch(event.getSlot()){
             case 47:
                 if(clickedItem.getType() == Material.ARROW){
-                    getPage(page.getPage() - 1).open(player);
+                    getPage(page.getPage() - 1).getGui().open(player);
                 }
                 break;
             case 51:
                 if(clickedItem.getType() == Material.ARROW){
-                    getPage(page.getPage() + 1).open(player);
+                    getPage(page.getPage() + 1).getGui().open(player);
                 }
                 return;
             case MANAGE_INTERACT_SLOT:{
@@ -198,7 +199,7 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
             if(!getData().getOwner().isOwner(player.getUUID())){
                 return;
             }
-            getChild(clickedItem.getAttachedObject()).open(player);
+            getChild(clickedItem.getAttachedObject()).getGui().open(player);
         }
     }
     

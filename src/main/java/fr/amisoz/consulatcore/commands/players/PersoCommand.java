@@ -16,8 +16,8 @@ import java.sql.SQLException;
 public class PersoCommand extends ConsulatCommand {
     
     public PersoCommand(){
-        super("perso", "/perso", 0, Rank.JOUEUR);
-        suggest(true, (listener) -> {
+        super("consulat.core", "perso", "/perso", 0, Rank.JOUEUR);
+        suggest((listener) -> {
                     ConsulatPlayer player = getConsulatPlayer(listener);
                     return player != null && player.hasCustomRank();
                 }

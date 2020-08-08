@@ -21,8 +21,8 @@ import java.sql.SQLException;
 public class ModerateCommand extends ConsulatCommand {
     
     public ModerateCommand(){
-        super("staff", "/staff", 0, Rank.MODO);
-        suggest(true);
+        super("consulat.core", "staff", "/staff", 0, Rank.MODO);
+        suggest();
     }
     
     @Override

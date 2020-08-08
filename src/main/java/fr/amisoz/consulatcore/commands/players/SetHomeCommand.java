@@ -14,8 +14,8 @@ import java.sql.SQLException;
 public class SetHomeCommand extends ConsulatCommand {
     
     public SetHomeCommand(){
-        super("sethome", "/sethome <Nom du home>", 1, Rank.JOUEUR);
-        suggest(true, Arguments.word("home"));
+        super("consulat.core", "sethome", "/sethome <Nom du home>", 1, Rank.JOUEUR);
+        suggest(Arguments.word("home"));
     }
     
     @Override

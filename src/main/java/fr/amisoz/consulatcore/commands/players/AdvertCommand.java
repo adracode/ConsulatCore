@@ -18,9 +18,8 @@ public class AdvertCommand extends ConsulatCommand {
     private Object2LongMap<UUID> delay = new Object2LongOpenHashMap<>();
     
     public AdvertCommand(){
-        super("advert", "/advert <Annonce>", 1, Rank.FINANCEUR);
-        suggest(true,
-                RequiredArgumentBuilder.argument("annonce", StringArgumentType.greedyString()));
+        super("consulat.core", "advert", "/advert <annonce>", 1, Rank.FINANCEUR);
+        suggest(RequiredArgumentBuilder.argument("annonce", StringArgumentType.greedyString()));
         delay.defaultReturnValue(-1);
     }
     

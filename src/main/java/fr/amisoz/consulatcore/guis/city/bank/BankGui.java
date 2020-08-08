@@ -21,7 +21,7 @@ public class BankGui extends DataRelatGui<City> {
     
     public BankGui(City city){
         super(city, "Banque", 5,
-                IGui.getItem("§eBanque", INFO_SLOT, Material.SUNFLOWER, "", "§a" + ConsulatCore.formatMoney(city.getMoney())),
+                IGui.getItem("§eBanque", INFO_SLOT, Material.SUNFLOWER),
                 IGui.getItem("§eAjouter de l'argent", ADD_SLOT, Material.ENDER_EYE),
                 IGui.getItem("§eRetirer de l'argent", WITHDRAW_SLOT, Material.ENDER_PEARL)
         );
@@ -29,15 +29,23 @@ public class BankGui extends DataRelatGui<City> {
     }
     
     @Override
+    public void onCreate(){
+        updateBank();
+    }
+    
+    @Override
     public void onOpened(GuiOpenEvent event){
-        if(!getData().hasPermission(event.getPlayer().getUUID(), CityPermission.MANAGE_BANK)){
-            updateBank(event.getPlayer(), false);
-        }
+        updateBank(event.getPlayer(),
+                getData().hasPermission(event.getPlayer().getUUID(), CityPermission.MANAGE_BANK));
+    }
+    
+    public void updateBank(){
+        setDescription(INFO_SLOT, "", "§a" + ConsulatCore.formatMoney(getData().getMoney()));
     }
     
     public void updateBank(ConsulatPlayer player, boolean allow){
         if(allow){
-            setFakeItem(WITHDRAW_SLOT, null, player);
+            removeFakeItem(WITHDRAW_SLOT, player);
         } else {
             setDescriptionPlayer(WITHDRAW_SLOT, player, "", "§cTu ne peux pas", "§cretirer de l'argent");
         }
@@ -66,7 +74,7 @@ public class BankGui extends DataRelatGui<City> {
                     }
                     player.removeMoney(moneyToGive);
                     player.getCity().addMoney(moneyToGive);
-                    player.sendMessage("§aTu as ajouté §7" + moneyToGive + " §aà ta ville");
+                    player.sendMessage("§aTu as ajouté §7" + ConsulatCore.formatMoney(moneyToGive) + " §aà ta ville");
                 }, new String[]{"", "^^^^^^^^^^^^^^", "Entre le montant", "à ajouter"}, 0);
                 break;
             case WITHDRAW_SLOT:
@@ -93,7 +101,7 @@ public class BankGui extends DataRelatGui<City> {
                     }
                     city.removeMoney(moneyToWithdraw);
                     player.addMoney(moneyToWithdraw);
-                    player.sendMessage("§aTu as retiré §7" + moneyToWithdraw + " §ade ta ville");
+                    player.sendMessage("§aTu as retiré §7" + ConsulatCore.formatMoney(moneyToWithdraw) + " §ade ta ville");
                 }, new String[]{"", "^^^^^^^^^^^^^^", "Entre le montant", "à retirer"}, 0);
                 break;
         }

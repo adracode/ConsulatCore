@@ -17,8 +17,8 @@ import net.md_5.bungee.api.chat.TextComponent;
 public class ReportCommand extends ConsulatCommand {
     
     public ReportCommand(){
-        super("report", "/report <Joueur> <Raison>", 2, Rank.JOUEUR);
-        suggest(true, Arguments.playerList("joueur")
+        super("consulat.core", "report", "/report <Joueur> <Raison>", 2, Rank.JOUEUR);
+        suggest(Arguments.playerList("joueur")
                         .then(RequiredArgumentBuilder.argument("raison", StringArgumentType.greedyString())));
     }
     

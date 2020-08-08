@@ -10,8 +10,8 @@ import fr.leconsulat.api.ranks.Rank;
 public class MoneyCommand extends ConsulatCommand {
     
     public MoneyCommand(){
-        super("money", "/money", 0, Rank.JOUEUR);
-        suggest(true);
+        super("consulat.core", "money", "/money", 0, Rank.JOUEUR);
+        suggest();
     }
     
     @Override

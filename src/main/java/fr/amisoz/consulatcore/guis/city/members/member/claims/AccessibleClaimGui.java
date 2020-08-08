@@ -49,32 +49,33 @@ public class AccessibleClaimGui extends DataRelatPagedGui<UUID> {
     @Override
     public void onPageCreated(GuiCreateEvent event, Pageable page){
         if(page.getPage() != 0){
-            page.setItem(IGui.getItem("§7Précédent", PREVIOUS, Material.ARROW));
-            getPage(page.getPage() - 1).setItem(IGui.getItem("§7Suivant", NEXT, Material.ARROW));
-            page.setDeco(Material.BLACK_STAINED_GLASS_PANE, NEXT);
+            IGui gui = page.getGui();
+            gui.setItem(IGui.getItem("§7Précédent", PREVIOUS, Material.ARROW));
+            getPage(page.getPage() - 1).getGui().setItem(IGui.getItem("§7Suivant", NEXT, Material.ARROW));
+            gui.setDeco(Material.BLACK_STAINED_GLASS_PANE, NEXT);
         }
     }
     
     @Override
     public void onPageRemoved(GuiRemoveEvent event, Pageable page){
         if(page.getPage() != 0){
-            getPage(page.getPage() - 1).setDeco(Material.BLACK_STAINED_GLASS_PANE, NEXT);
+            getPage(page.getPage() - 1).getGui().setDeco(Material.BLACK_STAINED_GLASS_PANE, NEXT);
         }
     }
     
     @Override
     public void onPageClick(GuiClickEvent event, Pageable page){
         City city = getPlayerCity();
-        GuiItem clickedItem = page.getItem(event.getSlot());
+        GuiItem clickedItem = page.getGui().getItem(event.getSlot());
         switch(event.getSlot()){
             case PREVIOUS:
                 if(clickedItem.getType() == Material.ARROW){
-                    getPage(page.getPage() - 1).open(event.getPlayer());
+                    getPage(page.getPage() - 1).getGui().open(event.getPlayer());
                 }
                 break;
             case NEXT:
                 if(clickedItem.getType() == Material.ARROW){
-                    getPage(page.getPage() + 1).open(event.getPlayer());
+                    getPage(page.getPage() + 1).getGui().open(event.getPlayer());
                 }
                 break;
             case GIVE_ALL_SLOT:
@@ -86,7 +87,7 @@ public class AccessibleClaimGui extends DataRelatPagedGui<UUID> {
         }
         if(event.getSlot() >= 19 && event.getSlot() <= 43 && clickedItem.getType() == Material.GRASS_BLOCK){
             Claim claim = (Claim)clickedItem.getAttachedObject();
-            getChild(claim).open(event.getPlayer());
+            getChild(claim).getGui().open(event.getPlayer());
         }
     }
     
@@ -96,7 +97,7 @@ public class AccessibleClaimGui extends DataRelatPagedGui<UUID> {
             Claim claim = (Claim)key;
             return new AccessPermissionsGui(
                     (fr.amisoz.consulatcore.guis.claims.permissions.AccessPermissionsGui)
-                            (IGui)Objects.requireNonNull(GuiManager.getInstance().getContainer("claim").getGui(true, claim, getData())), claim
+                            Objects.requireNonNull(GuiManager.getInstance().getContainer("claim").getGui(true, claim, getData())), claim
             );
         }
         return super.createChild(key);

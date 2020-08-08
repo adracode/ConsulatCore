@@ -23,8 +23,8 @@ import java.util.Set;
 public class HomeCommand extends ConsulatCommand {
     
     public HomeCommand(){
-        super("home", "/home <Nom du home>", 0, Rank.JOUEUR);
-        suggest(true, RequiredArgumentBuilder.argument("home", StringArgumentType.word()).suggests((context, builder) -> {
+        super("consulat.core", "home", "/home <Nom du home>", 0, Rank.JOUEUR);
+        suggest(RequiredArgumentBuilder.argument("home", StringArgumentType.word()).suggests((context, builder) -> {
                     SurvivalPlayer player = (SurvivalPlayer)getConsulatPlayer(context.getSource());
                     if(player == null){
                         return builder.buildFuture();

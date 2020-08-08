@@ -9,16 +9,14 @@ import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 
-import java.util.Collections;
-
 public class KickCommand extends ConsulatCommand {
-
-    public KickCommand() {
-        super("kick", Collections.emptyList(), "/kick <Joueur> <Raison>", 2, Rank.MODO);
-        suggest(true, Arguments.playerList("joueur")
-                        .then(RequiredArgumentBuilder.argument("raison", StringArgumentType.greedyString())));
+    
+    public KickCommand(){
+        super("consulat.core", "kick", "/kick <Joueur> <Raison>", 2, Rank.MODO);
+        suggest(Arguments.playerList("joueur")
+                .then(RequiredArgumentBuilder.argument("raison", StringArgumentType.greedyString())));
     }
-
+    
     @Override
     public void onCommand(ConsulatPlayer sender, String[] args){
         SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[0]);
@@ -26,7 +24,7 @@ public class KickCommand extends ConsulatCommand {
             sender.sendMessage("§cJoueur hors-ligne");
             return;
         }
-        StringBuilder stringBuilder = new StringBuilder() ;
+        StringBuilder stringBuilder = new StringBuilder();
         for(int i = 1; i < args.length; i++){
             stringBuilder.append(" ").append(args[i]);
         }

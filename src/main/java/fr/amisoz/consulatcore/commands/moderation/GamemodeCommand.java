@@ -10,8 +10,8 @@ import org.bukkit.entity.Player;
 public class GamemodeCommand extends ConsulatCommand {
     
     public GamemodeCommand(){
-        super("gm", "/gm", 0, Rank.MODO);
-        suggest(true);
+        super("consulat.core", "gm", "/gm", 0, Rank.MODO);
+        suggest();
     }
     
     @Override

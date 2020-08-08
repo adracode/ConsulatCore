@@ -9,9 +9,8 @@ import fr.leconsulat.api.ranks.Rank;
 public class SafariCommand extends ConsulatCommand {
     
     public SafariCommand(){
-        super("safari", "/safari", 0, Rank.JOUEUR);
-        setPermission("consulat.core.command.safari");
-        suggest(false);
+        super("consulat.core", "safari", "/safari", 0, Rank.JOUEUR);
+        suggest();
     }
     
     @Override

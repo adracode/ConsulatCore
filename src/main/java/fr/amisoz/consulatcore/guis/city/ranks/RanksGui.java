@@ -44,20 +44,28 @@ public class RanksGui extends DataRelatGui<City> {
     
     public void setRank(int index){
         City city = getData();
-        CityRank rank;
+        int slot;
         switch(index){
             case 0:
-                setDisplayName(RANK1_SLOT, (rank = city.getRank(0)).getColor() + rank.getRankName());
+                slot = RANK1_SLOT;
                 break;
             case 1:
-                setDisplayName(RANK2_SLOT, (rank = city.getRank(1)).getColor() + rank.getRankName());
+                slot = RANK2_SLOT;
                 break;
             case 2:
-                setDisplayName(RANK3_SLOT, (rank = city.getRank(2)).getColor() + rank.getRankName());
+                slot = RANK3_SLOT;
                 break;
             case 3:
-                setDisplayName(RANK4_SLOT, (rank = city.getRank(3)).getColor() + rank.getRankName());
+                slot = RANK4_SLOT;
                 break;
+            default:
+                return;
+        }
+        CityRank rank = city.getRank(index);
+        setDisplayName(slot, rank.getColor() + rank.getRankName());
+        RankGui rankGui = (RankGui)getLegacyChild(rank);
+        if(rankGui != null){
+            rankGui.updateName();
         }
     }
     
@@ -82,7 +90,7 @@ public class RanksGui extends DataRelatGui<City> {
             case RANK2_SLOT:
             case RANK3_SLOT:
             case RANK4_SLOT:
-                getChild(getRank(event.getSlot())).open(event.getPlayer());
+                getChild(getRank(event.getSlot())).getGui().open(event.getPlayer());
                 break;
         }
     }

@@ -8,8 +8,8 @@ import fr.leconsulat.api.ranks.Rank;
 public class HelpCommand extends ConsulatCommand {
 
     public HelpCommand() {
-        super("help", "/help", 0, Rank.JOUEUR);
-        suggest(true);
+        super("consulat.core", "help", "/help", 0, Rank.JOUEUR);
+        suggest();
     }
 
     @Override

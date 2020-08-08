@@ -13,8 +13,8 @@ import org.bukkit.ChatColor;
 public class UnmuteCommand extends ConsulatCommand {
     
     public UnmuteCommand(){
-        super("unmute", "/unmute <Joueur>", 1, Rank.RESPONSABLE);
-        suggest(true, Arguments.playerList("joueur"), Arguments.word("joueur"));
+        super("consulat.core", "unmute", "/unmute <Joueur>", 1, Rank.RESPONSABLE);
+        suggest(Arguments.playerList("joueur"), Arguments.word("joueur"));
     }
     
     @Override

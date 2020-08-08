@@ -18,8 +18,8 @@ public class TpaCommand extends ConsulatCommand {
     private Map<UUID, UUID> request = new HashMap<>();
     
     public TpaCommand(){
-        super("tpa", "/tpa <Joueur> | /tpa accept", 1, Rank.JOUEUR);
-        suggest(true, LiteralArgumentBuilder.literal("accept")
+        super("consulat.core", "tpa", "/tpa <Joueur> | /tpa accept", 1, Rank.JOUEUR);
+        suggest(LiteralArgumentBuilder.literal("accept")
                         .then(Arguments.player("joueur").suggests(((context, builder) -> {
                             List<ConsulatPlayer> playersToAcceptTp = new ArrayList<>();
                             ConsulatPlayer player = CPlayerManager.getInstance().getConsulatPlayerFromContextSource(context.getSource());

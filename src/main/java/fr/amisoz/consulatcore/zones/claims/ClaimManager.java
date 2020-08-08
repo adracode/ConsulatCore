@@ -31,6 +31,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -49,6 +50,22 @@ public class ClaimManager implements Listener {
     
     static{
         new ClaimManager();
+    }
+    
+    public static boolean isKey(ItemStack item){
+        if(item == null || item.getType() != Material.TRIPWIRE_HOOK || !item.hasItemMeta()){
+            return false;
+        }
+        ItemMeta meta = item.getItemMeta();
+        return meta.hasDisplayName() && meta.getDisplayName().equals("§6[§7Clé§6]");
+    }
+    
+    public static ItemStack getKey(){
+        ItemStack item = new ItemStack(Material.TRIPWIRE_HOOK);
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName("§6[§7Clé§6]");
+        item.setItemMeta(meta);
+        return item;
     }
     
     private ChunkManager chunkManager = ChunkManager.getInstance();
@@ -215,7 +232,7 @@ public class ClaimManager implements Listener {
     @EventHandler
     public void setChestPrivate(PlayerClickBlockEvent event){
         ItemStack itemInHand = event.getItemInHand();
-        if(itemInHand.getType() != Material.NAME_TAG || !itemInHand.hasItemMeta() || !itemInHand.getItemMeta().hasDisplayName() || !itemInHand.getItemMeta().getDisplayName().equalsIgnoreCase("clé")){
+        if(!isKey(itemInHand)){
             return;
         }
         if(!PROTECTABLE.contains(event.getBlock().getType())){
@@ -254,6 +271,7 @@ public class ClaimManager implements Listener {
                 }
             }
         }
+        itemInHand.setAmount(itemInHand.getAmount() - 1);
         event.getPlayer().sendActionBar("§aCe coffre est maintenant privé");
     }
     

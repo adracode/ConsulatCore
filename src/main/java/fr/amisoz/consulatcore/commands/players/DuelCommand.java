@@ -7,7 +7,7 @@ import fr.leconsulat.api.ranks.Rank;
 public class DuelCommand extends ConsulatCommand {
 
     public DuelCommand() {
-        super("duel", "/duel spectate ou /duel <Joueur> <Mise> ou /duel accept/reject ou /duel annonce on/off", 0, Rank.JOUEUR);
+        super("consulat.core", "duel", "/duel spectate ou /duel <Joueur> <Mise> ou /duel accept/reject ou /duel annonce on/off", 0, Rank.JOUEUR);
     }
 
     @Override

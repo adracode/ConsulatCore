@@ -11,9 +11,8 @@ import org.bukkit.Bukkit;
 public class UnbanCommand extends ConsulatCommand {
     
     public UnbanCommand(){
-        super("unban", "/unban <Pseudo>", 1, Rank.RESPONSABLE);
-        suggest(true,
-                Arguments.word("joueur"));
+        super("consulat.core", "unban", "/unban <Pseudo>", 1, Rank.RESPONSABLE);
+        suggest(Arguments.word("joueur"));
     }
     
     @Override

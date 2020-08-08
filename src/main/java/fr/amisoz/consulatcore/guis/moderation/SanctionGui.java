@@ -37,10 +37,10 @@ public class SanctionGui extends DataRelatGui<ConsulatOffline> {
     public void onClick(GuiClickEvent event){
         switch(event.getSlot()){
             case 11:
-                getChild(BAN).open(event.getPlayer());
+                getChild(BAN).getGui().open(event.getPlayer());
                 break;
             case 15:
-                getChild(MUTE).open(event.getPlayer());
+                getChild(MUTE).getGui().open(event.getPlayer());
                 break;
         }
     }

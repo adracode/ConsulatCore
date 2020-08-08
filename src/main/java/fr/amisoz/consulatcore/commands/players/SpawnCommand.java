@@ -8,8 +8,8 @@ import fr.leconsulat.api.ranks.Rank;
 public class SpawnCommand extends ConsulatCommand {
     
     public SpawnCommand(){
-        super("spawn","/spawn", 0, Rank.JOUEUR);
-        suggest(true);
+        super("consulat.core", "spawn","/spawn", 0, Rank.JOUEUR);
+        suggest();
     }
     
     @Override

@@ -31,6 +31,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
+import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.*;
@@ -48,14 +49,14 @@ import java.util.UUID;
 
 //TODO: On peut mettre du charbon dans un wagon
 //on peut pousser les mobs -> impossible à enlever sans enlever toutes les collisions
-//TODO: on peut jeter des items dans les hoppers
+//on peut jeter des items dans les hoppers -> à interdire ?
 public class ClaimCancelListener implements Listener {
     
     private ChunkManager chunkManager = ChunkManager.getInstance();
     private ClaimManager claimManager = ClaimManager.getInstance();
     
     //Bloc est détruit par un joueur
-    @EventHandler(priority = EventPriority.LOW)
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onBreakBlock(BlockBreakEvent event){
         CChunk blockChunk = chunkManager.getChunk(event.getBlock().getChunk());
         if(blockChunk instanceof Claim){
@@ -111,7 +112,7 @@ public class ClaimCancelListener implements Listener {
     //BlockDamageEvent -> Bloc reçoit des dégâts
     
     //Item qui peut être équipé lancé par un dispenser sur une entité
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBlockDispenseArmor(BlockDispenseArmorEvent event){
         if(!(event.getTargetEntity() instanceof Player)){
             return;
@@ -167,7 +168,7 @@ public class ClaimCancelListener implements Listener {
     }
     
     //Bloc fertilisé (arbre, graines...)
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onFertilize(BlockFertilizeEvent event){
         Player player = event.getPlayer();
         CChunk chunk = chunkManager.getChunk(event.getBlock());
@@ -218,7 +219,7 @@ public class ClaimCancelListener implements Listener {
     }
     
     //Bloc prend feu
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onIgnition(BlockIgniteEvent event){
         if(event.getIgnitingBlock() != null){
             if(!Claim.canInteract(event.getIgnitingBlock().getChunk(), event.getBlock().getChunk())){
@@ -346,7 +347,7 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    @EventHandler(priority = EventPriority.LOW)
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onPlace(BlockPlaceEvent event){
         CChunk blockChunk = chunkManager.getChunk(event.getBlock().getChunk());
         Claim blockClaim = blockChunk instanceof Claim ? (Claim)blockChunk : null;
@@ -383,7 +384,7 @@ public class ClaimCancelListener implements Listener {
             }
         }
         if(!blockChunk.incrementLimit(event.getBlockPlaced().getType())){
-            event.getPlayer().sendMessage("§cCe chunk à atteint la limite pour ce bloc.");
+            event.getPlayer().sendActionBar("§cCe chunk à atteint la limite pour ce bloc.");
             event.setCancelled(true);
         }
     }
@@ -412,7 +413,7 @@ public class ClaimCancelListener implements Listener {
         chunk.decrementLimit(event.getBlock().getType());
     }
     
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onCauldronChanged(CauldronLevelChangeEvent event){
         switch(event.getReason()){
             case EXTINGUISH:
@@ -435,7 +436,7 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onEntityFormBlock(EntityBlockFormEvent event){
         CChunk chunk = chunkManager.getChunk(event.getBlock().getChunk());
         if(event.getEntity() instanceof Player){
@@ -489,7 +490,7 @@ public class ClaimCancelListener implements Listener {
     //EntityBreedEvent
     
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void ravagerBlockDestroy(EntityChangeBlockEvent event){
+    public void onEntityChangeBlock(EntityChangeBlockEvent event){
         Entity entity = event.getEntity();
         if(entity instanceof Ravager || entity instanceof Wither){
             event.setCancelled(true);
@@ -720,21 +721,25 @@ public class ClaimCancelListener implements Listener {
     //VillagerCareerChangeEvent
     //VillagerReplenishTradeEvent
     
-    //TODO: explosion casse itemframe
     @EventHandler
     public void onHangingEntityDamageByEntity(HangingBreakByEntityEvent event){
         Entity remover = event.getRemover();
+        //En cas d'explosion, remover = null donc on ne peut pas savoir d'où vient l'explosion
+        if(event.getCause() == HangingBreakEvent.RemoveCause.EXPLOSION){
+            event.setCancelled(true);
+            return;
+        }
         if(remover instanceof Player){
             Claim entityClaim = claimManager.getClaim(event.getEntity().getChunk());
             if(entityClaim == null){
                 return;
             }
-            Player player = (Player)event.getRemover();
+            Player player = (Player)remover;
             if(!entityClaim.canInteract((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId()))){
                 event.setCancelled(true);
             }
         } else if(remover instanceof Projectile){
-            Projectile projectile = (Projectile)event.getRemover();
+            Projectile projectile = (Projectile)remover;
             if(projectile.getShooter() instanceof Player){
                 Claim entityClaim = claimManager.getClaim(event.getEntity().getChunk());
                 if(entityClaim == null){
@@ -748,15 +753,6 @@ public class ClaimCancelListener implements Listener {
                 if(!Claim.canInteract(((BlockProjectileSource)projectile.getShooter()).getBlock().getChunk(), event.getEntity().getChunk())){
                     event.setCancelled(true);
                 }
-            }
-        } else if(remover instanceof Explosive){
-            Location origin = remover.getOrigin();
-            if(origin == null){
-                event.setCancelled(true);
-                return;
-            }
-            if(!Claim.canInteract(origin.getChunk(), event.getEntity().getChunk())){
-                event.setCancelled(true);
             }
         }
     }

@@ -9,14 +9,11 @@ import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.Collections;
-
 public class AnswerCommand extends ConsulatCommand {
 
     public AnswerCommand() {
-        super("answer", Collections.singletonList("r"), "/r <Message>", 1, Rank.JOUEUR);
-        suggest(true,
-                RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString()));
+        super("consulat.core", "answer", "r", "/r <Message>", 1, Rank.JOUEUR);
+        suggest(RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString()));
     }
 
     @Override

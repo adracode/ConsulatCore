@@ -9,8 +9,8 @@ import fr.leconsulat.api.ranks.Rank;
 public class SocialSpyCommand extends ConsulatCommand {
     
     public SocialSpyCommand(){
-        super("socialspy", "/socialspy", 0, Rank.RESPONSABLE);
-        suggest(true);
+        super("consulat.core", "socialspy", "/socialspy", 0, Rank.RESPONSABLE);
+        suggest();
     }
     
     @Override

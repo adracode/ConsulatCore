@@ -21,8 +21,8 @@ public class DelHomeCommand extends ConsulatCommand {
     
     
     public DelHomeCommand(){
-        super("delhome", "/delhome <Nom du home>", 1, Rank.JOUEUR);
-        suggest(true, RequiredArgumentBuilder.argument("home", StringArgumentType.word()).suggests((context, builder) -> {
+        super("consulat.core", "delhome", "/delhome <Nom du home>", 1, Rank.JOUEUR);
+        suggest(RequiredArgumentBuilder.argument("home", StringArgumentType.word()).suggests((context, builder) -> {
                     SurvivalPlayer player = (SurvivalPlayer)getConsulatPlayer(context.getSource());
                     if(player == null){
                         return builder.buildFuture();

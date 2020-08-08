@@ -14,8 +14,8 @@ import java.sql.SQLException;
 public class FlyCommand extends ConsulatCommand {
     
     public FlyCommand(){
-        super("fly", "/fly [start/stop/info]", 1, Rank.JOUEUR);
-        suggest(true, (listener) -> {
+        super("consulat.core", "fly", "/fly [start/stop/info]", 1, Rank.JOUEUR);
+        suggest((listener) -> {
                     SurvivalPlayer player = (SurvivalPlayer)getConsulatPlayer(listener);
                     return player != null && player.hasFly();
                 },

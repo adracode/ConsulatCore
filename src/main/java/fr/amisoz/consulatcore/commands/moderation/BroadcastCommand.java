@@ -13,10 +13,10 @@ import java.util.Arrays;
 public class BroadcastCommand extends ConsulatCommand {
     
     public BroadcastCommand(){
-        super("annonce",
+        super("consulat.core", "annonce",
                 Arrays.asList("broadcast", "bc"),
                 "/annonce <Message>", 1, Rank.RESPONSABLE);
-        suggest(true, RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString()));
+        suggest(RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString()));
     }
     
     @Override

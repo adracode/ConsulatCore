@@ -7,14 +7,11 @@ import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 
-import java.util.Collections;
-
 public class InvseeCommand extends ConsulatCommand {
     
     public InvseeCommand(){
-        super("invsee", Collections.emptyList(), "/invsee <Joueur>", 1, Rank.MODO);
-        suggest(true,
-               Arguments.playerList("joueur"));
+        super("consulat.core", "invsee", "/invsee <Joueur>", 1, Rank.MODO);
+        suggest(Arguments.playerList("joueur"));
     }
     
     @Override

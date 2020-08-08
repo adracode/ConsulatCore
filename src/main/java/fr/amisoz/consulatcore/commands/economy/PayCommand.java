@@ -17,9 +17,8 @@ import java.util.UUID;
 public class PayCommand extends ConsulatCommand {
     
     public PayCommand(){
-        super("pay", "/pay <Joueur> <Montant>", 2, Rank.JOUEUR);
-        suggest(true,
-                Arguments.playerList("joueur")
+        super("consulat.core", "pay", "/pay <Joueur> <Montant>", 2, Rank.JOUEUR);
+        suggest(Arguments.playerList("joueur")
                         .then(RequiredArgumentBuilder.argument("montant", DoubleArgumentType.doubleArg(0, 1_000_000))),
                 Arguments.word("joueur")
                         .then(RequiredArgumentBuilder.argument("montant", DoubleArgumentType.doubleArg(0, 1_000_000))));
