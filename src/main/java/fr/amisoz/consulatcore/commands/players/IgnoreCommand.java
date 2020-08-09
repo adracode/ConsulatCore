@@ -1,6 +1,7 @@
 package fr.amisoz.consulatcore.commands.players;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
@@ -41,14 +42,14 @@ public class IgnoreCommand extends ConsulatCommand {
                 }
                 UUID target = CPlayerManager.getInstance().getPlayerUUID(args[1]);
                 if(target == null){
-                    player.sendMessage("§cCe joueur n'existe pas.");
+                    player.sendMessage(Text.PLAYER_DOESNT_EXISTS);
                     return;
                 }
                 if(!player.ignorePlayer(target)){
-                    player.sendMessage("§cTu as déjà ignoré " + args[1]);
+                    player.sendMessage(Text.ALREADY_IGNORED);
                     return;
                 }
-                player.sendMessage("§a" + args[1] + " a été ignoré.");
+                player.sendMessage(Text.PLAYER_IGNORED(args[1]));
             }
             return;
             case "remove":{
@@ -57,27 +58,23 @@ public class IgnoreCommand extends ConsulatCommand {
                 }
                 UUID target = CPlayerManager.getInstance().getPlayerUUID(args[1]);
                 if(target == null){
-                    player.sendMessage("§cCe joueur n'existe pas.");
+                    player.sendMessage(Text.PLAYER_DOESNT_EXISTS);
                     return;
                 }
                 if(!player.removeIgnoredPlayer(target)){
-                    player.sendMessage("§c" + args[1] + " n'est pas ignoré.");
+                    player.sendMessage(Text.NOT_IGNORED);
                     return;
                 }
-                player.sendMessage("§a" + args[1] + " a été retiré des joueurs ingorés.");
+                player.sendMessage(Text.NO_MORE_IGNORED(args[1]));
             }
             return;
             case "list":
                 Set<UUID> ignored = player.getIgnoredPlayers();
                 if(ignored.isEmpty()){
-                    player.sendMessage("§aTu n'as ignoré personne.");
+                    player.sendMessage(Text.NOBODY_IGNORED);
                     return;
                 }
-                StringBuilder listIgnored = new StringBuilder();
-                for(UUID ignoredPlayer : ignored){
-                    listIgnored.append(Bukkit.getOfflinePlayer(ignoredPlayer)).append(", ");
-                }
-                player.sendMessage("§aJoueurs ignorés: " + listIgnored.delete(listIgnored.length() - 2, listIgnored.length()).toString());
+                player.sendMessage(Text.LIST_IGNORED(ignored));
                 return;
         }
         player.sendMessage(getUsage());

@@ -17,9 +17,9 @@ public class SocialSpyCommand extends ConsulatCommand {
     public void onCommand(ConsulatPlayer sender, String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
         if(player.isSpying()){
-            sender.sendMessage(Text.PREFIX + "Tu ne vois plus les messages.");
+            sender.sendMessage(Text.PREFIX + Text.NO_MORE_IN_SPY);
         } else {
-            sender.sendMessage(Text.PREFIX + "Tu vois désormais les messages.");
+            sender.sendMessage(Text.PREFIX + Text.NOW_IN_SPY);
         }
         player.setSpying(!player.isSpying());
     }

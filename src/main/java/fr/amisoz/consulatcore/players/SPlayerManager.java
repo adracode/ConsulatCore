@@ -66,7 +66,20 @@ public class SPlayerManager implements Listener {
                     statement.setDouble(1, player.getMoney());
                     statement.setString(2, player.getUUID().toString());
                 },
-                (SurvivalPlayer::getMoney)
+                SurvivalPlayer::getMoney
+        ));
+        saveManager.addSaveTask("player-fly", new SaveTask<>(
+                "UPDATE fly SET flyTime = ?, lastTime = ?, timeLeft = ? WHERE uuid = ?;",
+                (statement, player) -> {
+                    if(!player.hasFly()){
+                        return;
+                    }
+                    statement.setLong(1, player.getFlyTime());
+                    statement.setLong(2, player.getFlyReset());
+                    statement.setLong(3, player.getFlyTimeLeft());
+                    statement.setString(4, player.getUUID().toString());
+                },
+                SurvivalPlayer::getFly
         ));
         saveManager.addSaveTask("player-city", new SaveTask<>(
                 "UPDATE players SET city = ? WHERE player_uuid = ?;",
@@ -78,13 +91,13 @@ public class SPlayerManager implements Listener {
                     }
                     statement.setString(2, player.getUUID().toString());
                 },
-                (SurvivalPlayer::getCity)
+                SurvivalPlayer::getCity
         ));
         CPlayerManager.getInstance().onJoin((player, oldServer) -> {
             switch(oldServer){
                 case SAFARI:
                     if(player.isInventoryBlocked()){
-                        player.sendMessage("§7Chargement de l'inventaire...");
+                        player.sendMessage(Text.LOADING_INVENTORY);
                         Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
                             if(player.isInventoryBlocked()){
                                 RedisManager.getInstance().getRedis().getTopic("AskPlayerData" + (ConsulatAPI.getConsulatAPI().isDevelopment() ? "Testsafari" : "Safari")).publishAsync(player.getUUID().toString());
@@ -97,6 +110,25 @@ public class SPlayerManager implements Listener {
                 case UNKNOWN:
                     player.setInventoryBlocked(false);
             }
+        });
+        CPlayerManager.getInstance().setRankPermission(rank -> {
+            Set<String> permissions = new HashSet<>();
+            switch(rank){
+                case INVITE:
+                case JOUEUR:
+                case TOURISTE:
+                case FINANCEUR:
+                case MECENE:
+                    break;
+                case BUILDER:
+                case DEVELOPPEUR:
+                case MODO:
+                case MODPLUS:
+                case RESPONSABLE:
+                case ADMIN:
+                    permissions.add("consulat.core.staff-channel");
+            }
+            return permissions;
         });
     }
     
@@ -165,7 +197,7 @@ public class SPlayerManager implements Listener {
         if(player.isFrozen()){
             for(ConsulatPlayer onlinePlayer : CPlayerManager.getInstance().getConsulatPlayers()){
                 if(onlinePlayer.hasPower(Rank.MODO)){
-                    onlinePlayer.sendMessage(Text.MODERATION_PREFIX + ChatColor.GOLD + player.getPlayer().getName() + ChatColor.RED + " s'est déconnecté en étant freeze.");
+                    onlinePlayer.sendMessage(Text.PLAYER_LEFT_FREEZE(player.getName()));
                 }
             }
         }
@@ -192,14 +224,7 @@ public class SPlayerManager implements Listener {
             }
         }
         if(player.isFlying()){
-            Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                try {
-                    player.disableFly();
-                } catch(SQLException e){
-                    player.getPlayer().sendMessage("§cErreur lors de la sauvegarde du fly.");
-                    e.printStackTrace();
-                }
-            });
+            player.disableFly();
         }
         player.removeFromChannels();
         setPlayers.publishAsync(Bukkit.getServer().getOnlinePlayers().size() - 1);
@@ -209,12 +234,14 @@ public class SPlayerManager implements Listener {
     private void saveOnJoin(SurvivalPlayer player){
         SaveManager saveManager = SaveManager.getInstance();
         saveManager.addData("player-money", player);
+        saveManager.addData("player-fly", player);
         saveManager.addData("player-city", player);
     }
     
     private void saveOnLeave(SurvivalPlayer player){
         SaveManager saveManager = SaveManager.getInstance();
         saveManager.removeData("player-money", player, true);
+        saveManager.removeData("player-fly", player, true);
         saveManager.removeData("player-city", player, true);
     }
     
@@ -274,7 +301,7 @@ public class SPlayerManager implements Listener {
         while(resultSet.next()){
             result.put(resultSet.getString("home_name").toLowerCase(),
                     getLocations ?
-                            new Location(Bukkit.getWorlds().get(0),
+                            new Location(ConsulatCore.getInstance().getOverworld(),
                                     resultSet.getDouble("x"),
                                     resultSet.getDouble("y"),
                                     resultSet.getDouble("z"),
@@ -516,16 +543,6 @@ public class SPlayerManager implements Listener {
         resultSet.close();
         preparedStatement.close();
         return fly.getFlyTime() == 0 ? null : fly;
-    }
-    
-    public void setFly(UUID uuid, Fly fly) throws SQLException{
-        PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE fly SET flyTime = ?, lastTime = ?, timeLeft = ? WHERE uuid = ?");
-        preparedStatement.setLong(1, fly.getFlyTime());
-        preparedStatement.setLong(2, fly.getReset());
-        preparedStatement.setLong(3, fly.getTimeLeft());
-        preparedStatement.setString(4, uuid.toString());
-        preparedStatement.executeUpdate();
-        preparedStatement.close();
     }
     
     public static SPlayerManager getInstance(){

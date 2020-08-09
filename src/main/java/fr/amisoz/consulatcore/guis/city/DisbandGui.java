@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.guis.city;
 
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.zones.ZoneManager;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.leconsulat.api.gui.GuiContainer;
@@ -30,7 +31,7 @@ public class DisbandGui extends DataGui<City> {
                 return;
             case 24:
                 ZoneManager.getInstance().deleteCity(getData());
-                event.getPlayer().sendMessage("§aTu as détruit ta ville :(");
+                event.getPlayer().sendMessage(Text.CITY_DISBANDED);
                 event.getPlayer().getPlayer().closeInventory();
                 break;
         }

@@ -15,11 +15,7 @@ import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatOffline;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.sql.PreparedStatement;
@@ -50,7 +46,7 @@ public class MuteGui extends DataRelatGui<ConsulatOffline> {
                     muteHistory = getMuteHistory(consulatOffline);
                 } catch (SQLException e) {
                     Bukkit.getScheduler().runTask(ConsulatCore.getInstance(), () -> {
-                        moderator.sendMessage(ChatColor.RED + "Erreur lors du chargement du menu.");
+                        moderator.sendMessage(Text.ERROR);
                         moderator.closeInventory();
                         e.printStackTrace();
                     });
@@ -83,9 +79,8 @@ public class MuteGui extends DataRelatGui<ConsulatOffline> {
         ConsulatOffline offlineTarget = getData();
         SurvivalPlayer target = (SurvivalPlayer) CPlayerManager.getInstance().getConsulatPlayer(offlineTarget.getUUID());
         ConsulatPlayer muter = event.getPlayer();
-
-        if (target.isMuted()) {
-            event.getPlayer().sendMessage("§cJoueur déjà mute.");
+        if (target != null && target.isMuted()) {
+            event.getPlayer().sendMessage(Text.ALREADY_MUTED);
             event.getPlayer().getPlayer().closeInventory();
             return;
         }
@@ -107,21 +102,20 @@ public class MuteGui extends DataRelatGui<ConsulatOffline> {
                 ConsulatCore.getInstance().getModerationDatabase().addSanction(
                         offlineTarget.getUUID(), offlineTarget.getName(), muter.getPlayer(),
                         "MUTE", muteReason.getSanctionName(), resultTime, currentTime);
-                if (target != null) {
+                if (target != null){
                     target.setMuted(true);
                     target.setMuteExpireMillis(resultTime);
                     target.setMuteReason(muteReason.getSanctionName());
                     target.sendMessage("§cTu as été sanctionné. Tu ne peux plus parler pour : §4" + muteReason.getSanctionName());
-                }
-
-                if (target.getMuteHistory().containsKey(muteReason)) {
-                    int number = target.getMuteHistory().get(muteReason);
-                    target.getMuteHistory().put(muteReason, ++number);
-                } else {
-                    target.getMuteHistory().put(muteReason, 1);
+                    if (target.getMuteHistory().containsKey(muteReason)) {
+                        int number = target.getMuteHistory().get(muteReason);
+                        target.getMuteHistory().put(muteReason, ++number);
+                    } else {
+                        target.getMuteHistory().put(muteReason, 1);
+                    }
                 }
             } catch (SQLException e) {
-                muter.sendMessage("§cErreur lors de l'application de la sanction. (ADD_ANTECEDENTS)");
+                muter.sendMessage(Text.ERROR);
                 e.printStackTrace();
             }
         });
@@ -131,22 +125,11 @@ public class MuteGui extends DataRelatGui<ConsulatOffline> {
                 long days = ((durationRound / (1000*60*60*24)));
                 long hours = ((durationRound / (1000 * 60 * 60)) % 24);
                 long minutes = ((durationRound / (1000 * 60)) % 60);
-                sanctionMessage(onlinePlayer, offlineTarget.getName(), muteReason.getSanctionName(), days + "J" + hours + "H" + minutes + "M", muter.getName(), recidiveNumber);
+                onlinePlayer.sendMessage(Text.SANCTION_MUTED(offlineTarget.getName(), muteReason.getSanctionName(), days + "J" + hours + "H" + minutes + "M", muter.getName(), recidiveNumber));
             }
         }
         Bukkit.broadcastMessage(Text.ANNOUNCE_PREFIX + " §6" + offlineTarget.getName() + " §ea été mute.");
         muter.getPlayer().closeInventory();
-    }
-
-    private void sanctionMessage(ConsulatPlayer playerToSend, String targetName, String sanctionName, String duration, String modName, int recidive) {
-        TextComponent textComponent = new TextComponent(Text.MODERATION_PREFIX + ChatColor.YELLOW + targetName + ChatColor.GOLD + " a été mute.");
-        textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new ComponentBuilder("§7Motif : §8" + sanctionName +
-                        "§7\nPendant : §8" + duration +
-                        "§7\nPar : §8" + modName +
-                        "§7\nRécidive : §8" + recidive
-                ).create()));
-        playerToSend.sendMessage(textComponent);
     }
 
     private HashMap<MuteEnum, Integer> getMuteHistory(ConsulatOffline consulatOffline) throws SQLException {

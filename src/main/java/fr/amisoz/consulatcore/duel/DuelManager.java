@@ -1,6 +1,6 @@
 package fr.amisoz.consulatcore.duel;
 
-import org.bukkit.Bukkit;
+import fr.amisoz.consulatcore.ConsulatCore;
 import org.bukkit.Location;
 
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ public class DuelManager {
     public static List<String> removeAnnounces = new ArrayList<>();
 
     public DuelManager(){
-        Arena firstArena = new Arena(new Location(Bukkit.getWorlds().get(0), 505, 64, -678, -25, 0), new Location(Bukkit.getWorlds().get(0), 515, 64, -649, 150, 0), new Location(Bukkit.getWorlds().get(0), 511, 76, -663, -90, 0));
+        Arena firstArena = new Arena(new Location(ConsulatCore.getInstance().getOverworld(), 505, 64, -678, -25, 0), new Location(ConsulatCore.getInstance().getOverworld(), 515, 64, -649, 150, 0), new Location(ConsulatCore.getInstance().getOverworld(), 511, 76, -663, -90, 0));
         registerArena(firstArena);
     }
 

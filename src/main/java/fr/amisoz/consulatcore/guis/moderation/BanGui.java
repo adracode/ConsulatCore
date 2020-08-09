@@ -15,11 +15,7 @@ import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatOffline;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.sql.PreparedStatement;
@@ -47,7 +43,7 @@ public class BanGui extends DataRelatGui<ConsulatOffline> {
                     banHistory = getBanHistory(consulatOffline);
                 } catch (SQLException e) {
                     Bukkit.getScheduler().runTask(ConsulatCore.getInstance(), () -> {
-                        moderator.sendMessage(ChatColor.RED + "Erreur lors du chargement du menu.");
+                        moderator.sendMessage(Text.ERROR);
                         moderator.closeInventory();
                         e.printStackTrace();
                     });
@@ -103,7 +99,7 @@ public class BanGui extends DataRelatGui<ConsulatOffline> {
                         Calendar calendar = Calendar.getInstance();
                         calendar.setTimeInMillis(resultTime);
                         Date date = calendar.getTime();
-                        target.getPlayer().kickPlayer("§7§l§m ----[ §r§6§lLe Consulat §7§l§m]----\n\n§cTu as été banni.\n§cRaison : §4" + ban.getSanctionName() + "\n§cJusqu'au : §4" + ConsulatCore.getInstance().DATE_FORMAT.format(date));
+                        target.getPlayer().kickPlayer(Text.KICK_PLAYER("§4" + ban.getSanctionName() + "\n§cJusqu'au : §4" + ConsulatCore.getInstance().DATE_FORMAT.format(date)));
                     }
                     Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
                         ConsulatPlayer consulatPlayer = CPlayerManager.getInstance().getConsulatPlayer(onlinePlayer.getUniqueId());
@@ -114,30 +110,18 @@ public class BanGui extends DataRelatGui<ConsulatOffline> {
                                 long days = ((durationRound / (1000*60*60*24)));
                                 long hours = ((durationRound / (1000 * 60 * 60)) % 24);
                                 long minutes = ((durationRound / (1000 * 60)) % 60);
-                                sanctionMessage(onlinePlayer, offlineTarget.getName(), ban.getSanctionName(), days + "J" + hours + "H" + minutes + "M", banner.getName(), recidiveNumber);
+                                consulatPlayer.sendMessage(Text.SANCTION_BANNED(offlineTarget.getName(), ban.getSanctionName(), days + "J" + hours + "H" + minutes + "M", banner.getName(), recidiveNumber));
                             }
                         }
                     });
-                    Bukkit.broadcastMessage(Text.ANNOUNCE_PREFIX + " " + ChatColor.RED + offlineTarget.getName() + ChatColor.DARK_RED + " a été banni.");
-
+                    Bukkit.broadcastMessage(Text.PLAYER_BANNED(offlineTarget.getName()));
                 });
             } catch (SQLException e) {
-                banner.sendMessage("§cErreur lors de l'application de la sanction. (ADD_ANTECEDENTS)");
+                banner.sendMessage(Text.ERROR);
                 e.printStackTrace();
             }
         });
         banner.getPlayer().closeInventory();
-    }
-
-    private void sanctionMessage(Player playerToSend, String targetName, String sanctionName, String duration, String modName, int recidive) {
-        TextComponent textComponent = new TextComponent(Text.MODERATION_PREFIX + "§c" + targetName + "§4 a été banni.");
-        textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new ComponentBuilder("§7Motif : §8" + sanctionName +
-                        "§7\nPendant : §8" + duration +
-                        "§7\nPar : §8" + modName +
-                        "§7\nRécidive : §8" + recidive
-                ).create()));
-        playerToSend.spigot().sendMessage(textComponent);
     }
 
     private HashMap<BanEnum, Integer> getBanHistory(ConsulatOffline consulatOffline) throws SQLException {

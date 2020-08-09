@@ -23,10 +23,7 @@ import fr.leconsulat.api.gui.gui.IGui;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
+import fr.leconsulat.api.utils.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 
@@ -53,7 +50,7 @@ public class CityCommand extends ConsulatCommand {
                     "§6/ville access <joueur> §7- §eDonner l’accès d’un claim en particulier à un joueur.\n" +
                     "§6/ville access remove <joueur> §7- §eEnlever l’accès d’un joueur d'un claim.\n" +
                     "§6/ville access list §7- §eLister les accès du claim où tu es.\n" +
-                    "§6/ville options §7- §eDonne des informations complètes sur ta ville et te permets aussi de la gérer (permissions, claim, grade). Seulement pour le propriétaire\n" +
+                    "§6/ville [options|menu|gui] §7- §eDonne des informations complètes sur ta ville et te permets aussi de la gérer (permissions, claim, grade).\n" +
                     "§6/ville chat <message> §7- §eTe permets de parler dans un chat accessibles seulement aux membres de ta ville. Tu peux utiliser l’abréviation /ville c. \n" +
                     "§6/ville chat §7- §eChange de chat pour parler directement dans le chat de ville\n" +
                     "§6/ville info <joueur> §7- §eTe donne les informations globales sur la ville d’un joueur.\n" +
@@ -108,6 +105,8 @@ public class CityCommand extends ConsulatCommand {
                 LiteralArgumentBuilder.literal("info")
                         .then(Arguments.playerList("joueur")),
                 LiteralArgumentBuilder.literal("options"),
+                LiteralArgumentBuilder.literal("gui"),
+                LiteralArgumentBuilder.literal("menu"),
                 LiteralArgumentBuilder.literal("chat")
                         .then(RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString())),
                 LiteralArgumentBuilder.literal("c")
@@ -126,30 +125,27 @@ public class CityCommand extends ConsulatCommand {
         switch(args[0]){
             case "create":{
                 if(player.belongsToCity()){
-                    player.sendMessage("§cTu appartiens déjà à une ville, tu ne peux pas en créer une.");
+                    player.sendMessage(Text.CANT_CREATE_CITY);
                     return;
                 }
                 if(args.length < 2){
-                    player.sendMessage("§cMerci de spécifier le nom de ta ville.");
+                    player.sendMessage(Text.NO_CITY_NAME);
                     return;
                 }
-                if(args[1].length() > City.MAX_LENGTH_NAME){
-                    player.sendMessage("§cLe nom de ville est trop long.");
+                if(!City.VALID_NAME.matcher(args[1]).matches()){
+                    player.sendMessage(Text.INVALID_CITY_NAME);
                     return;
                 }
-                if(!City.TEST_NAME.matcher(args[1]).matches()){
-                    player.sendMessage("§cLe nom de ville n'est pas valide.");
-                    return;
-                }
+                String name = StringUtils.capitalize(args[1]);
                 ZoneManager cityManager = ZoneManager.getInstance();
-                if(cityManager.getCity(args[1]) != null){
-                    player.sendMessage("§cIl existe déjà une ville portant ce nom.");
+                if(cityManager.getCity(name) != null){
+                    player.sendMessage(Text.CITY_ALREADY_EXISTS);
                     return;
                 }
-                City newCity = cityManager.createCity(args[1], player.getUUID());
+                City newCity = cityManager.createCity(name, player.getUUID());
                 newCity.addPlayer(player.getUUID(), CityPermission.values());
                 newCity.setRank(player.getUUID(), newCity.getRank(0));
-                player.sendMessage("§7Tu viens de créer ta ville nommée §a" + newCity.getName() + "§7 !");
+                player.sendMessage(Text.CITY_CREATED(newCity.getName()));
             }
             break;
             case "rename":{
@@ -158,50 +154,51 @@ public class CityCommand extends ConsulatCommand {
                 if(player.hasPower(Rank.RESPONSABLE) && args.length == 3){
                     city = ZoneManager.getInstance().getCity(args[1]);
                     if(city == null){
-                        player.sendMessage("§cCette ville n'existe pas");
+                        player.sendMessage(Text.CITY_DOESNT_EXISTS);
                         return;
                     }
                     newName = args[2];
                 } else {
                     if(!player.belongsToCity()){
-                        player.sendMessage("§cTu n'es pas dans une ville.");
+                        player.sendMessage(Text.YOU_NOT_IN_CITY);
                         return;
                     }
                     city = player.getCity();
                     if(!city.canRename(player.getUUID())){
-                        player.sendMessage("§cTu ne peux pas renommer cette ville.");
+                        player.sendMessage(Text.CANT_RENAME_CITY);
                         return;
                     }
                     if(args.length < 2){
-                        player.sendMessage("§cMerci de spécifier le nouveau nom de ta ville.");
+                        player.sendMessage(Text.NO_CITY_NAME);
                         return;
                     }
                     newName = args[1];
                 }
                 if(!city.hasMoney(City.RENAME_TAX)){
-                    player.sendMessage("§cLa banque de ville n'a pas assez d'argent (argent requis: " + ConsulatCore.formatMoney(City.RENAME_TAX) + ").");
+                    player.sendMessage(Text.NOT_ENOUGH_MONEY_CITY(City.RENAME_TAX));
                     return;
                 }
-                if(newName.length() > City.MAX_LENGTH_NAME){
-                    player.sendMessage("§cLe nouveau nom est trop long.");
+                if(!City.VALID_NAME.matcher(newName).matches()){
+                    player.sendMessage(Text.INVALID_CITY_NAME);
                     return;
                 }
+                newName = StringUtils.capitalize(newName);
                 if(ZoneManager.getInstance().getCity(newName) != null){
-                    player.sendMessage("§cIl existe déjà une ville portant ce nom.");
+                    player.sendMessage(Text.CITY_ALREADY_EXISTS);
                     return;
                 }
-                player.sendMessage("§7Tu as renommé la ville §a" + newName + " §7! §8(§7Ancien nom: §e" + city.getName() + "§8)§7.");
+                player.sendMessage(Text.CITY_RENAMED(city.getName(), newName));
                 ZoneManager.getInstance().renameCity(city, newName);
             }
             break;
             case "disband":{
                 if(!player.belongsToCity()){
-                    player.sendMessage("§cTu n'es pas dans une ville.");
+                    player.sendMessage(Text.YOU_NOT_IN_CITY);
                     return;
                 }
                 City city = player.getCity();
                 if(!city.canDisband(player.getUUID())){
-                    player.sendMessage("§cTu ne peux pas détruire cette ville.");
+                    player.sendMessage(Text.CANT_DISBAND_CITY);
                     return;
                 }
                 GuiManager.getInstance().getContainer("city-disband").getGui(city).open(player);
@@ -209,7 +206,7 @@ public class CityCommand extends ConsulatCommand {
             break;
             case "leave":{
                 if(!player.belongsToCity()){
-                    player.sendMessage("§cTu n'es pas dans une ville.");
+                    player.sendMessage(Text.YOU_NOT_IN_CITY);
                     return;
                 }
                 City city = player.getCity();
@@ -232,136 +229,131 @@ public class CityCommand extends ConsulatCommand {
                     return;
                 }
                 city.removePlayer(player.getUUID());
-                player.sendMessage("§7Tu as quitté la ville §a" + city.getName() + "§7.");
-                city.sendMessage("§c" + player.getName() + " §7a quitté la ville.");
+                player.sendMessage(Text.LEFT_CITY(city.getName()));
+                city.sendMessage(Text.PLAYER_LEFT_CITY(player.getName()));
             }
             break;
             case "kick":{
                 if(!player.belongsToCity()){
-                    player.sendMessage("§cTu n'es pas dans une ville.");
+                    player.sendMessage(Text.YOU_NOT_IN_CITY);
                     return;
                 }
                 City city = player.getCity();
                 if(!city.canKick(player.getUUID())){
-                    player.sendMessage("§cTu ne peux pas kick un joueur.");
+                    player.sendMessage(Text.CANT_KICK_CITY);
                     return;
                 }
                 if(args.length < 2){
-                    player.sendMessage("§cMerci de spécifier le joueur à kick.");
+                    player.sendMessage(Text.NO_PLAYER);
                     return;
                 }
                 UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(args[1]);
                 if(targetUUID == null){
-                    player.sendMessage("§cCe joueur n'existe pas.");
+                    player.sendMessage(Text.PLAYER_DOESNT_EXISTS);
                     return;
                 }
                 if(!city.removePlayer(targetUUID)){
-                    player.sendMessage("§cCe joueur n'appartient pas à cette ville.");
+                    player.sendMessage(Text.PLAYER_DOESNT_BELONGS_CITY);
                     return;
                 }
                 ConsulatPlayer target = CPlayerManager.getInstance().getConsulatPlayer(targetUUID);
                 if(target != null){
-                    target.sendMessage("§cTu as été kick de la ville §7" + city.getName() + "§c par §7" + player.getName() + "§c.");
+                    target.sendMessage(Text.BEEN_KICKED_FROM_CITY_BY(city.getName(), player.getName()));
                 }
-                player.sendMessage("§cTu as kick §7" + (target == null ? args[1] : target.getName()) + " §ade ta ville");
-                city.sendMessage("§c" + player.getName() + " §7a kick §c" + (target == null ? args[1] : target.getName()) + "§7 la ville.");
+                player.sendMessage(Text.KICK_PLAYER_FROM_CITY(target == null ? args[1] : target.getName()));
+                city.sendMessage(Text.PLAYER_KICKED_FROM_CITY(player.getName(), (target == null ? args[1] : target.getName())));
             }
             break;
             case "invite":{
                 if(!player.belongsToCity()){
-                    player.sendMessage("§cTu n'es pas dans une ville.");
+                    player.sendMessage(Text.YOU_NOT_IN_CITY);
                     return;
                 }
                 City city = player.getCity();
                 if(!city.canInvite(player.getUUID())){
-                    player.sendMessage("§cTu ne peux pas inviter");
+                    player.sendMessage(Text.CANT_INVITE_CITY);
                     return;
                 }
                 if(args.length < 2){
-                    player.sendMessage("§cMerci de spécifier le joueur à inviter.");
+                    player.sendMessage(Text.NO_PLAYER);
                     return;
                 }
                 UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(args[1]);
                 if(targetUUID == null){
-                    player.sendMessage("§cCe joueur n'existe pas.");
+                    player.sendMessage(Text.PLAYER_DOESNT_EXISTS);
                     return;
                 }
                 SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(targetUUID);
                 if(target == null){
-                    player.sendMessage("§cCe joueur n'est pas connecté.");
+                    player.sendMessage(Text.PLAYER_NOT_CONNECTED);
                     return;
                 }
                 if(target.belongsToCity()){
-                    player.sendMessage("§cCe joueur est déjà dans une ville.");
+                    player.sendMessage(Text.PLAYER_ALREADY_BELONGS_CITY);
                     return;
                 }
                 if(!ZoneManager.getInstance().invitePlayer(city, targetUUID)){
-                    player.sendMessage("§cCe joueur est déjà invité dans la ville.");
+                    player.sendMessage(Text.ALREADY_INVITED_CITY);
                     return;
                 }
-                player.sendMessage("§aTu as invité §7" + target.getName() + " §a à rejoindre la ville §7" + city.getName() + "§a.");
-                city.sendMessage("§a" + player.getName() + "§7 a invité §a" + target.getName() + "§7.");
-                TextComponent message = new TextComponent("§aTu as été invité à rejoindre la ville §7" + city.getName() + "§a par §7" + player.getName() + "§a.");
-                message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§aClique pour rejoindre " + city.getName()).create()));
-                message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/city accept " + city.getName()));
-                target.sendMessage(message);
+                player.sendMessage(Text.YOU_INVITED_PLAYER_TO_CITY(target.getName(), city.getName()));
+                city.sendMessage(Text.HAS_INVITED_PLAYER_TO_CITY(player.getName(), target.getName()));
+                target.sendMessage(Text.YOU_BEEN_INVITED_TO_CITY(city.getName(), player.getName()));
             }
             break;
             case "accept":{
                 if(player.belongsToCity()){
-                    player.sendMessage("§cTu es déjà dans une ville.");
+                    player.sendMessage(Text.PLAYER_ALREADY_BELONGS_CITY);
                     return;
                 }
                 if(args.length < 2){
-                    player.sendMessage("§cMerci de spécifier le nom de la ville.");
+                    player.sendMessage(Text.NO_CITY_NAME);
                     return;
                 }
                 ZoneManager manager = ZoneManager.getInstance();
                 Set<City> cities = manager.getInvitations(player.getUUID());
                 City city;
                 if(cities == null || (city = manager.getCity(args[1])) == null || !cities.contains(city)){
-                    player.sendMessage("§cTu n'as pas été invité dans cette ville.");
+                    player.sendMessage(Text.YOU_NOT_BEEN_INVITED_TO_CITY);
                     return;
                 }
                 manager.removeInvitation(player.getUUID());
-                city.sendMessage("§a" + player.getName() + " §7a rejoint la ville !");
+                city.sendMessage(Text.HAS_JOINED_CITY(player.getName()));
                 if(!city.addPlayer(player.getUUID())){
-                    player.sendMessage("§cUne erreur est survenue");
-                    ConsulatAPI.getConsulatAPI().log(Level.WARNING,
-                            player + " " + city
-                    );
+                    player.sendMessage(Text.ERROR);
+                    ConsulatAPI.getConsulatAPI().log(Level.WARNING, player + " " + city);
                     return;
                 }
-                player.sendMessage("§aTu as rejoint §7" + city.getName() + "§a.");
+                player.sendMessage(Text.YOU_JOINED_CITY(city.getName()));
             }
             break;
             case "claim":{
                 if(!player.belongsToCity()){
-                    player.sendMessage("§cTu n'es pas dans une ville.");
+                    player.sendMessage(Text.YOU_NOT_IN_CITY);
                     return;
                 }
                 City city = player.getCity();
                 if(!city.canClaim(player.getUUID())){
-                    player.sendMessage("§cTu ne peux pas claim pour ta ville.");
+                    player.sendMessage(Text.YOU_CANT_CLAIM_CITY);
                     return;
                 }
-                if(sender.getPlayer().getLocation().getWorld() != Bukkit.getWorlds().get(0)){
-                    sender.sendMessage(Text.PREFIX + "§cIl faut être dans le monde de base pour claim.");
+                if(sender.getPlayer().getLocation().getWorld() != ConsulatCore.getInstance().getOverworld()){
+                    sender.sendMessage(Text.YOU_CANT_CLAIM_DIMENSION);
                     return;
                 }
                 if(!city.hasMoney(Claim.BUY_CITY_CLAIM)){
-                    player.sendMessage("§cTa ville n'a pas assez d'argent pour acheter ce claim.");
+                    player.sendMessage(Text.NOT_ENOUGH_MONEY_CITY(Claim.BUY_CITY_CLAIM));
                     return;
                 }
                 Chunk chunk = player.getPlayer().getChunk();
                 Claim claim = player.getClaim();
                 if(claim != null){
                     if(claim.getOwner() instanceof City){
-                        player.sendMessage("§cCe claim appartient déjà à une ville");
+                        player.sendMessage(Text.CHUNK_ALREADY_CLAIM);
                         return;
                     }
                     if(!city.isMember(claim.getOwnerUUID())){
-                        player.sendMessage("§cCe claim n'appartient pas à un membre de ta ville.");
+                        player.sendMessage(Text.CLAIM_NOT_BELONGS_TO_CITY_MEMBER);
                         return;
                     }
                 }
@@ -374,60 +366,60 @@ public class CityCommand extends ConsulatCommand {
                         }
                     }
                     if(!canClaim){
-                        player.sendMessage("§cTu ne peux pas claim un chunk isolé.");
+                        player.sendMessage(Text.CANT_CLAIM_ALONE_CHUNK);
                         return;
                     }
                 }
                 city.removeMoney(Claim.BUY_CITY_CLAIM);
                 ClaimManager.getInstance().cityClaim(chunk.getX(), chunk.getZ(), city);
-                player.sendMessage("§aTu as claim ce chunk pour ta ville.");
+                player.sendMessage(Text.YOU_CLAIMED_CHUNK_FOR_CITY(Claim.BUY_CITY_CLAIM));
             }
             break;
             case "unclaim":{
                 if(!player.belongsToCity()){
-                    player.sendMessage("§cTu n'es pas dans une ville.");
+                    player.sendMessage(Text.YOU_NOT_IN_CITY);
                     return;
                 }
                 City city = player.getCity();
                 if(!city.canClaim(player.getUUID())){
-                    player.sendMessage("§cTu ne peux pas unclaim pour ta ville.");
+                    player.sendMessage(Text.YOU_CANT_UNCLAIM_CITY);
                     return;
                 }
                 Claim claim = player.getClaim();
                 if(claim == null || !city.isClaim(claim)){
-                    player.sendMessage("§cCe claim n'appartient pas à ta ville");
+                    player.sendMessage(Text.NOT_CLAIM_CITY);
                     return;
                 }
                 if(!city.areClaimsConnected(claim)){
-                    player.sendMessage("§cTu ne peux pas unclaim ce claim, les chunks de ta ville ne serait plus connectées.");
+                    player.sendMessage(Text.CANT_UNCLAIM_CITY_CHUNK_ALONE);
                     return;
                 }
                 if(city.isHomeIn(claim)){
-                    player.sendMessage("§cCe claim contient le home de la ville.");
+                    player.sendMessage(Text.HOME_IN_CITY_CLAIM);
                     return;
                 }
                 ClaimManager.getInstance().unClaim(claim);
-                player.sendMessage("§aTu as unclaim ce chunk de ta ville.");
+                player.sendMessage(Text.UNCLAIM_CITY);
             }
             break;
             case "sethome":{
                 if(!player.belongsToCity()){
-                    player.sendMessage("§cTu n'es pas dans une ville.");
+                    player.sendMessage(Text.YOU_NOT_IN_CITY);
                     return;
                 }
                 City city = player.getCity();
                 if(!city.canSetSpawn(player.getUUID())){
-                    player.sendMessage("§cTu ne peux pas définir le spawn de ta ville.");
+                    player.sendMessage(Text.CANT_SET_HOME_CITY);
                     return;
                 }
                 Claim claim = player.getClaim();
                 if(claim == null || !city.isClaim(claim)){
-                    player.sendMessage("§cCe claim n'appartient pas à ta ville");
+                    player.sendMessage(Text.NOT_CLAIM_CITY);
                     return;
                 }
                 if(!city.hasHome()){
                     ZoneManager.getInstance().setHome(city, player.getPlayer().getLocation());
-                    player.sendMessage("§aTu as déplacé le home de ta ville.");
+                    player.sendMessage(Text.YOU_SET_HOME_CITY);
                 } else {
                     ((CityGui)GuiManager.getInstance().getContainer("city").getGui(city)).confirmSethome(player);
                 }
@@ -436,196 +428,193 @@ public class CityCommand extends ConsulatCommand {
             case "h":
             case "home":{
                 if(!player.belongsToCity()){
-                    player.sendMessage("§cTu n'es pas dans une ville.");
+                    player.sendMessage(Text.YOU_NOT_IN_CITY);
                     return;
                 }
                 City city = player.getCity();
                 if(!city.hasHome()){
-                    player.sendMessage("§cLe spawn de ta ville n'est pas définie");
+                    player.sendMessage(Text.HOME_CITY_NOT_SET);
                     return;
                 }
                 player.getPlayer().teleportAsync(city.getHome());
-                player.sendMessage("§aTéléportation à ta ville en cours...");
+                player.sendMessage(Text.TELEPORTATION);
             }
             break;
             case "banque":
             case "bank":{
                 if(!player.belongsToCity()){
-                    player.sendMessage("§cTu n'es pas dans une ville.");
+                    player.sendMessage(Text.YOU_NOT_IN_CITY);
                     return;
                 }
                 if(args.length < 2){
-                    player.sendMessage("§c" + getUsage());
+                    player.sendMessage(Text.COMMAND_USAGE(this));
                     return;
                 }
                 switch(args[1]){
                     case "add":{
                         if(args.length < 3){
-                            player.sendMessage("§c" + getUsage());
+                            player.sendMessage(Text.COMMAND_USAGE(this));
                             return;
                         }
                         double moneyToGive;
                         try {
                             moneyToGive = Double.parseDouble(args[2]);
                         } catch(NumberFormatException exception){
-                            player.sendMessage("§cCe nombre n'est pas valide.");
+                            player.sendMessage(Text.INVALID_NUMBER);
                             return;
                         }
-                        if(moneyToGive <= 0 || moneyToGive > 1_000_000){
-                            sender.sendMessage(Text.PREFIX + "§cTu ne peux pas donner " + ConsulatCore.formatMoney(moneyToGive) + " à la banque de ta ville.");
+                        if(moneyToGive <= 0 || moneyToGive >= 1_000_000){
+                            sender.sendMessage(Text.INVALID_MONEY);
                             return;
                         }
                         if(!player.hasMoney(moneyToGive)){
-                            sender.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent !");
+                            sender.sendMessage(Text.NOT_ENOUGH_MONEY);
                             return;
                         }
                         player.removeMoney(moneyToGive);
                         player.getCity().addMoney(moneyToGive);
-                        player.sendMessage("§aTu as ajouté §7" + ConsulatCore.formatMoney(moneyToGive) + " §aà ta ville");
+                        player.sendMessage(Text.ADD_MONEY_CITY(moneyToGive));
                     }
                     break;
                     case "withdraw":{
                         City city = player.getCity();
                         if(!city.canWithdraw(player.getUUID())){
-                            player.sendMessage("§cTu ne peux pas retirer de l'argent de la banque.");
+                            player.sendMessage(Text.CANT_WITHDRAW_MONEY_CITY);
                             return;
                         }
                         if(args.length < 3){
-                            player.sendMessage("§c" + getUsage());
+                            player.sendMessage(Text.COMMAND_USAGE(this));
                             return;
                         }
                         double moneyToWithdraw;
                         try {
                             moneyToWithdraw = Double.parseDouble(args[2]);
                         } catch(NumberFormatException exception){
-                            player.sendMessage("§cCe nombre n'est pas valide.");
+                            player.sendMessage(Text.INVALID_NUMBER);
                             return;
                         }
-                        if(moneyToWithdraw <= 0 || moneyToWithdraw > 1_000_000){
-                            sender.sendMessage(Text.PREFIX + "§cTu ne peux pas retirer " + ConsulatCore.formatMoney(moneyToWithdraw) + " de la banque de ta ville.");
+                        if(moneyToWithdraw <= 0 || moneyToWithdraw >= 1_000_000){
+                            sender.sendMessage(Text.INVALID_MONEY);
                             return;
                         }
                         if(!city.hasMoney(moneyToWithdraw)){
-                            player.sendMessage("§cLa banque de ville n'a pas assez d'argent pour retirer ce montant.");
+                            player.sendMessage(Text.NOT_ENOUGH_MONEY_CITY);
                             return;
                         }
                         city.removeMoney(moneyToWithdraw);
                         player.addMoney(moneyToWithdraw);
-                        player.sendMessage("§aTu as retiré §7" + ConsulatCore.formatMoney(moneyToWithdraw) + " §ade ta ville");
+                        player.sendMessage(Text.WITHDRAW_MONEY_CITY(moneyToWithdraw));
                     }
                     break;
                     case "info":{
-                        player.sendMessage("§aTa ville a §e" + ConsulatCore.formatMoney(player.getCity().getMoney()));
+                        player.sendMessage(Text.MONEY_CITY(player.getCity().getMoney()));
                     }
                     break;
                     default:
-                        player.sendMessage("§c" + getUsage());
+                        player.sendMessage(Text.COMMAND_USAGE(this));
                 }
             }
             break;
             case "access":{
                 if(!player.belongsToCity()){
-                    player.sendMessage("§cTu n'es pas dans une ville.");
+                    player.sendMessage(Text.YOU_NOT_IN_CITY);
                     return;
                 }
                 City city = player.getCity();
                 if(!city.canManageAccesses(player.getUUID())){
-                    player.sendMessage("§cTu ne peux pas gérer les accès.");
+                    player.sendMessage(Text.CANT_MANAGE_ACCESS);
                     return;
                 }
                 Claim claim = player.getClaim();
                 if(claim == null || !city.isClaim(claim)){
-                    player.sendMessage("§cCe claim n'appartient pas à ta ville.");
+                    player.sendMessage(Text.NOT_CLAIM_CITY);
                     return;
                 }
                 if(args.length < 2){
-                    player.sendMessage("§c" + getUsage());
+                    player.sendMessage(Text.COMMAND_USAGE(this));
                     return;
                 }
                 switch(args[1].toLowerCase()){
                     case "add":{
                         if(args.length < 3){
-                            player.sendMessage("§c" + getUsage());
+                            player.sendMessage(Text.COMMAND_USAGE(this));
                             return;
                         }
                         UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(args[2]);
                         if(targetUUID == null){
-                            player.sendMessage("§cCe joueur n'existe pas.");
+                            player.sendMessage(Text.PLAYER_DOESNT_EXISTS);
                             return;
                         }
                         if(!city.isMember(targetUUID)){
-                            player.sendMessage("§cCe joueur n'est pas membre de la ville");
+                            player.sendMessage(Text.PLAYER_DOESNT_BELONGS_CITY);
                             return;
                         }
                         if((targetUUID.equals(player.getUUID()) || targetUUID.equals(city.getOwner())) && !ConsulatAPI.getConsulatAPI().isDebug()){
-                            player.sendMessage("§cTu ne peux pas modifier l'accès de ce joueur.");
+                            player.sendMessage(Text.CANT_MANAGE_ACCESS_PLAYER);
                             return;
                         }
                         if(!claim.addPlayer(targetUUID)){
-                            player.sendMessage("§cCe joueur a déjà accès à ce claim.");
+                            player.sendMessage(Text.PLAYER_ALREADY_ACCESS_CLAIM);
                             return;
                         }
-                        player.sendMessage("§aTu as ajouté " + args[2] + " à ce claim");
+                        player.sendMessage(Text.ADD_PLAYER_CLAIM(args[2]));
                     }
                     break;
                     case "remove":{
                         if(args.length < 3){
-                            player.sendMessage("§c" + getUsage());
+                            player.sendMessage(Text.COMMAND_USAGE(this));
                             return;
                         }
                         UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(args[2]);
                         if(targetUUID == null){
-                            player.sendMessage("§cCe joueur n'existe pas.");
+                            player.sendMessage(Text.PLAYER_DOESNT_EXISTS);
                             return;
                         }
                         if((targetUUID.equals(player.getUUID()) || targetUUID.equals(city.getOwner())) && !ConsulatAPI.getConsulatAPI().isDebug()){
-                            player.sendMessage("§cTu ne peux pas modifier l'accès de ce joueur.");
+                            player.sendMessage(Text.CANT_MANAGE_ACCESS_PLAYER);
                             return;
                         }
                         if(!claim.removePlayer(targetUUID)){
-                            player.sendMessage("§cCe joueur n'a pas accès à ce claim.");
+                            player.sendMessage(Text.PLAYER_NOT_ACCESS_CLAIM);
                             return;
                         }
-                        player.sendMessage("§aTu as retiré " + args[2] + " de ce claim");
+                        player.sendMessage(Text.REMOVE_PLAYER_CLAIM(args[2]));
                     }
                     break;
                     case "list":{
-                        StringBuilder builder = new StringBuilder();
-                        for(UUID uuid : claim.getPlayers()){
-                            builder.append(Bukkit.getOfflinePlayer(uuid).getName()).append(", ");
-                        }
-                        if(builder.length() == 0){
-                            sender.sendMessage("§cAucun joueur n'a accès à ce claim.");
+                        Set<UUID> accesses = claim.getPlayers();
+                        if(accesses.isEmpty()){
+                            sender.sendMessage(Text.NOBODY_ACCESS_CLAIM);
                             return;
                         }
-                        sender.sendMessage("§6Liste des joueurs ayant accès à ce claim : §e" + builder.substring(0, builder.length() - 2));
+                        sender.sendMessage(Text.LIST_ACCESS_CLAIM(accesses));
                     }
                     break;
                     default:
-                        player.sendMessage("§c" + getUsage());
+                        player.sendMessage(Text.COMMAND_USAGE(this));
                 }
             }
             break;
             case "info":{
                 if(args.length < 2){
-                    player.sendMessage("§cMerci de spécifier le joueur.");
+                    player.sendMessage(Text.NO_PLAYER);
                     return;
                 }
                 SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[1]);
                 if(target != null){
                     if(!target.belongsToCity()){
-                        player.sendMessage("§cCe joueur n'appartient pas à une ville.");
+                        player.sendMessage(Text.PLAYER_DOESNT_BELONGS_A_CITY);
                         return;
                     }
                     GuiManager.getInstance().getContainer("city-info").getGui(target.getCity()).open(player);
                 } else {
                     SPlayerManager.getInstance().fetchOffline(args[1], offlineTarget -> {
                         if(offlineTarget == null){
-                            player.sendMessage("§cCe joueur n'existe pas.");
+                            player.sendMessage(Text.PLAYER_DOESNT_EXISTS);
                             return;
                         }
                         if(offlineTarget.getCity() == null){
-                            player.sendMessage("§cCe joueur n'appartient pas à une ville.");
+                            player.sendMessage(Text.PLAYER_DOESNT_BELONGS_A_CITY);
                             return;
                         }
                         GuiManager.getInstance().getContainer("city-info").getGui(offlineTarget.getCity()).open(player);
@@ -636,16 +625,16 @@ public class CityCommand extends ConsulatCommand {
             case "chat":
             case "c":{
                 if(!player.belongsToCity()){
-                    player.sendMessage("§cTu n'appartiens pas à une ville");
+                    player.sendMessage(Text.YOU_NOT_IN_CITY);
                     return;
                 }
                 if(args.length < 2){
                     if(player.getCurrentChannel() == null){
                         player.setCurrentChannel(player.getCity().getChannel());
-                        player.sendMessage("§aTu parles maintenant dans le chat de ville.");
+                        player.sendMessage(Text.NOW_SPEAK_IN_CITY_CHAT);
                     } else {
                         player.setCurrentChannel(null);
-                        player.sendMessage("§aTu parles maintenant dans le chat global.");
+                        player.sendMessage(Text.NOW_SPEAK_IN_GLOBAL_CHAT);
                     }
                     return;
                 }
@@ -658,14 +647,14 @@ public class CityCommand extends ConsulatCommand {
                     return;
                 }
                 City city = player.getCity();
-                city.sendMessage("§8[§d" + city.getName() + "§8] "
-                        + "§7(§d" + city.getCityPlayer(player.getUUID()).getRank().getRankName()
-                        + "§7) §a" + player.getName() + "§7 > §e" + chat);
+                city.sendMessage(city.getChannel().speak(player, chat));
             }
             break;
+            case "gui":
+            case "menu":
             case "options":{
                 if(!player.belongsToCity()){
-                    player.sendMessage("§cTu n'as pas de ville.");
+                    player.sendMessage(Text.YOU_NOT_IN_CITY);
                     return;
                 }
                 IGui cityGui = GuiManager.getInstance().getContainer("city").getGui(player.getCity());
@@ -674,12 +663,12 @@ public class CityCommand extends ConsulatCommand {
             break;
             case "desc":{
                 if(!player.belongsToCity()){
-                    player.sendMessage("§cTu n'as pas de ville.");
+                    player.sendMessage(Text.YOU_NOT_IN_CITY);
                     return;
                 }
                 City city = player.getCity();
                 if(!city.isOwner(player.getUUID())){
-                    sender.sendMessage(Text.PREFIX + "§cTu ne peux pas changer la description de ta ville.");
+                    sender.sendMessage(Text.CANT_CHANGE_DESCRIPTION_CITY);
                     return;
                 }
                 final String description;
@@ -694,34 +683,37 @@ public class CityCommand extends ConsulatCommand {
                 }
                 city.setDescription(description);
                 if(description == null){
-                    sender.sendMessage("§aTu as reset la description de ta ville.");
+                    sender.sendMessage(Text.YOU_RESET_DESCRIPTION_CITY);
                 } else {
-                    sender.sendMessage("§aTu as ajouté la description suivante à ta ville:");
-                    sender.sendMessage("§7" + description);
+                    sender.sendMessage(Text.YOU_CHANGE_DESCRIPTION_CITY(description));
                 }
             }
             break;
             case "lead":{
                 if(!player.belongsToCity()){
-                    player.sendMessage("§cTu n'as pas de ville.");
+                    player.sendMessage(Text.YOU_NOT_IN_CITY);
                     return;
                 }
                 City city = player.getCity();
                 if(!city.isOwner(player.getUUID())){
-                    player.sendMessage("§cTu ne peux pas changer le propriétaire de ta ville.");
+                    player.sendMessage(Text.CANT_CHANGE_LEADER_CITY);
                     return;
                 }
                 if(args.length < 2){
-                    player.sendMessage("§cMerci de spécifier le joueur.");
+                    player.sendMessage(Text.NO_PLAYER);
                     return;
                 }
                 UUID newOwner = CPlayerManager.getInstance().getPlayerUUID(args[1]);
                 if(!city.isMember(newOwner)){
-                    player.sendMessage("§cCe joueur n'appartient pas à ta ville.");
+                    player.sendMessage(Text.PLAYER_DOESNT_BELONGS_CITY);
+                    return;
+                }
+                if(city.isOwner(newOwner)){
+                    player.sendMessage(Text.ALREADY_LEADER_CITY);
                     return;
                 }
                 city.setOwner(newOwner);
-                city.sendMessage("§a" + Bukkit.getOfflinePlayer(newOwner).getName() + " §7est passé §epropriétaire §7de la ville par §a" + player.getName());
+                city.sendMessage(Text.CHANGE_LEADER_CITY(Bukkit.getOfflinePlayer(newOwner).getName(), player.getName()));
             }
             break;
             case "help":{

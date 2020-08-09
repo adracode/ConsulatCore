@@ -1,6 +1,7 @@
 package fr.amisoz.consulatcore.listeners.world;
 
 import com.destroystokyo.paper.event.entity.ProjectileCollideEvent;
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.chunks.CChunk;
 import fr.amisoz.consulatcore.chunks.ChunkManager;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
@@ -71,7 +72,7 @@ public class ClaimCancelListener implements Listener {
                     UUID owner = blockClaim.getProtectedContainer(CoordinatesUtils.convertCoordinates(event.getBlock().getLocation()));
                     if(owner != null){
                         if(!owner.equals(opener)){
-                            event.getPlayer().sendActionBar("§cCe coffre est privé");
+                            event.getPlayer().sendActionBar(Text.CHEST_IS_PRIVATE);
                             event.setCancelled(true);
                             return;
                         } else {
@@ -149,6 +150,12 @@ public class ClaimCancelListener implements Listener {
         for(Iterator<Block> iterator = event.blockList().iterator(); iterator.hasNext(); ){
             Block block = iterator.next();
             CChunk blockChunk = chunkManager.getChunk(block);
+            if(ClaimManager.PROTECTABLE.contains(block.getType()) &&
+                    blockChunk instanceof Claim &&
+                    ((Claim)blockChunk).getProtectedContainer(CoordinatesUtils.convertCoordinates(block.getLocation())) != null){
+                iterator.remove();
+                continue;
+            }
             if(!Claim.canInteract(originChunk, blockChunk)){
                 iterator.remove();
                 continue;
@@ -384,7 +391,7 @@ public class ClaimCancelListener implements Listener {
             }
         }
         if(!blockChunk.incrementLimit(event.getBlockPlaced().getType())){
-            event.getPlayer().sendActionBar("§cCe chunk à atteint la limite pour ce bloc.");
+            event.getPlayer().sendActionBar(Text.BLOCK_LIMIT_CHUNK);
             event.setCancelled(true);
         }
     }
@@ -588,6 +595,12 @@ public class ClaimCancelListener implements Listener {
         for(Iterator<Block> iterator = event.blockList().iterator(); iterator.hasNext(); ){
             Block block = iterator.next();
             CChunk blockChunk = chunkManager.getChunk(block);
+            if(ClaimManager.PROTECTABLE.contains(block.getType()) &&
+                    blockChunk instanceof Claim &&
+                    ((Claim)blockChunk).getProtectedContainer(CoordinatesUtils.convertCoordinates(block.getLocation())) != null){
+                iterator.remove();
+                continue;
+            }
             if(!Claim.canInteract(originChunk, blockChunk)){
                 iterator.remove();
                 continue;
@@ -893,7 +906,7 @@ public class ClaimCancelListener implements Listener {
             if(nearbyPlayers.size() > 1 ||
                     (nearbyPlayers.size() == 1 && !nearbyPlayers.get(0).getUniqueId().equals(event.getPlayer().getUniqueId()))){
                 event.setCancelled(true);
-                event.getPlayer().sendMessage("§cUn autre joueur est à proximité.");
+                event.getPlayer().sendMessage(Text.ANOTHER_PLAYER_NEAR);
                 return;
             }
         }
@@ -1142,7 +1155,7 @@ public class ClaimCancelListener implements Listener {
                 return;
             }
             if(!owner.equals(opener)){
-                event.getPlayer().sendActionBar("§cCe coffre est privé");
+                event.getPlayer().sendActionBar(Text.CHEST_IS_PRIVATE);
                 event.setCancelled(true);
             }
         }

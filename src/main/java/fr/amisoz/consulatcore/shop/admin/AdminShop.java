@@ -1,10 +1,11 @@
 package fr.amisoz.consulatcore.shop.admin;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.guis.shop.admin.AdminShopGui;
 import fr.amisoz.consulatcore.shop.Shop;
+import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.amisoz.consulatcore.utils.CoordinatesUtils;
 import fr.leconsulat.api.nbt.CompoundTag;
-import org.bukkit.Bukkit;
 import org.bukkit.block.Chest;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +23,11 @@ public abstract class AdminShop implements Shop, Comparable<Shop> {
     public AdminShop(long coords, double price){
         this.coords = coords;
         this.price = price;
-        this.item = ((Chest)Bukkit.getWorlds().get(0).getBlockAt(getX(), getY(), getZ()).getState()).getBlockInventory().getItem(0);
+        try {
+            this.item = ((Chest)ConsulatCore.getInstance().getOverworld().getBlockAt(getX(), getY(), getZ()).getState()).getBlockInventory().getItem(0);
+        } catch(ClassCastException e){
+            ShopManager.getInstance().removeAdminShop(this);
+        }
     }
     
     @Override

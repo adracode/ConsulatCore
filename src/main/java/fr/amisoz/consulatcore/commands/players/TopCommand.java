@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.commands.players;
 
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -22,12 +23,12 @@ public class TopCommand extends ConsulatCommand {
     public void onCommand(ConsulatPlayer sender, String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
         if(!player.hasPerkTop()){
-            sender.sendMessage("§cTu n'as pas ce privilège.");
+            sender.sendMessage(Text.DONT_HAVE_PERK);
             return;
         }
         Location playerLocation = sender.getPlayer().getLocation();
         Block higherBlock = sender.getPlayer().getWorld().getHighestBlockAt(playerLocation);
         sender.getPlayer().teleportAsync(new Location(playerLocation.getWorld(), playerLocation.getX(), higherBlock.getY(), playerLocation.getZ()));
-        sender.sendMessage("§aTu as été téléporté en haut !");
+        sender.sendMessage(Text.TOP_TELEPORTED);
     }
 }

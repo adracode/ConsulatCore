@@ -1,7 +1,7 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.guis.moderation.AntecedentsGuiContainer;
+import fr.amisoz.consulatcore.guis.moderation.AntecedentsGui;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
@@ -18,7 +18,7 @@ public class AntecedentsComand extends ConsulatCommand {
     public AntecedentsComand() {
         super("consulat.core", "antecedents", "/antecedents <Joueur>", 1, Rank.RESPONSABLE);
         suggest(Arguments.playerList("joueur"));
-        new AntecedentsGuiContainer();
+        new AntecedentsGui.Container();
     }
 
     @Override
@@ -26,7 +26,7 @@ public class AntecedentsComand extends ConsulatCommand {
         SurvivalPlayer player = (SurvivalPlayer)sender;
         UUID uuid = CPlayerManager.getInstance().getPlayerUUID(args[0]);
         if(uuid == null){
-            player.sendMessage(Text.PREFIX + "§cCe joueur ne s'est jamais connecté.");
+            player.sendMessage(Text.PLAYER_DOESNT_EXISTS);
             return;
         }
         GuiManager.getInstance().getContainer("antecedents").getGui(new ConsulatOffline(0, uuid, args[0], Rank.INVITE, null)).open(sender);

@@ -15,10 +15,8 @@ import org.bukkit.Location;
 
 import java.sql.SQLException;
 import java.util.Map;
-import java.util.UUID;
 
 public class DelHomeCommand extends ConsulatCommand {
-    
     
     public DelHomeCommand(){
         super("consulat.core", "delhome", "/delhome <Nom du home>", 1, Rank.JOUEUR);
@@ -43,47 +41,43 @@ public class DelHomeCommand extends ConsulatCommand {
         if(args.length == 2 && survivalSender.hasPower(Rank.MODPLUS)){
             Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
                 try {
-                    UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(args[0]);
-                    if(targetUUID != null){
-                        SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(targetUUID);
-                        if(target != null){
-                            if(target.hasHome(args[1])){
-                                target.removeHome(args[1]);
-                                sender.sendMessage("§aHome supprimé avec succès.");
-                            } else {
-                                sender.sendMessage("§cCe joueur ne possède pas ce home.");
-                            }
-                            return;
+                    SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[0]);
+                    if(target != null){
+                        if(target.hasHome(args[1])){
+                            target.removeHome(args[1]);
+                            sender.sendMessage(Text.HOME_DELETED);
+                        } else {
+                            sender.sendMessage(Text.PLAYER_HAS_NO_HOME);
                         }
+                        return;
                     }
-                    //Sera utile lors de la refonte des commandes
                     Map<String, Location> homes = SPlayerManager.getInstance().getHomes(args[0], false);
                     if(!homes.containsKey(args[1].toLowerCase())){
-                        sender.sendMessage("§cCe joueur ne possède pas ce home.");
+                        sender.sendMessage(Text.PLAYER_HAS_NO_HOME);
                     } else {
                         if(SPlayerManager.getInstance().removeHome(args[0], args[1])){
-                            sender.sendMessage("§aHome supprimé avec succès.");
+                            sender.sendMessage(Text.HOME_DELETED);
                         } else {
-                            sender.sendMessage("§cCe joueur ne possède pas ce home.");
+                            sender.sendMessage(Text.PLAYER_HAS_NO_HOME);
                         }
                     }
                 } catch(SQLException e){
-                    sender.sendMessage("§cUne erreur interne est survenue.");
+                    sender.sendMessage(Text.ERROR);
                     e.printStackTrace();
                 }
             });
             return;
         }
         if(!survivalSender.hasHome(args[0])){
-            sender.sendMessage("§cHome introuvable !");
+            sender.sendMessage(Text.UNKNOWN_HOME);
             return;
         }
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
                 survivalSender.removeHome(args[0]);
-                sender.sendMessage(Text.PREFIX + "§aTon home a bien été supprimé.");
+                sender.sendMessage(Text.HOME_DELETED);
             } catch(SQLException e){
-                sender.sendMessage(Text.PREFIX + "§cErreur lors de la suppression.");
+                sender.sendMessage(Text.ERROR);
                 e.printStackTrace();
             }
         });

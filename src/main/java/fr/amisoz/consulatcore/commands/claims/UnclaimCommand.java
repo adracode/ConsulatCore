@@ -1,6 +1,5 @@
 package fr.amisoz.consulatcore.commands.claims;
 
-import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
@@ -24,16 +23,16 @@ public class UnclaimCommand extends ConsulatCommand {
         SurvivalPlayer player = (SurvivalPlayer)sender;
         Claim claim = player.getClaim();
         if(claim == null || (!claim.isOwner(sender.getUUID()) && !sender.hasPower(Rank.MODPLUS))){
-            sender.sendMessage(Text.PREFIX + "§cTu n'es pas dans ton claim.");
+            sender.sendMessage(Text.NOT_IN_YOUR_CLAIM);
             return;
         }
         if(claim.getOwner() instanceof City){
-            sender.sendMessage(Text.PREFIX + "§cTu ne peux pas unclaim ce chunk.");
+            sender.sendMessage(Text.YOU_CANT_UNCLAIM);
             return;
         }
         ClaimManager.getInstance().unClaim(claim);
         if(claim.isOwner(sender.getUUID())){
-            sender.sendMessage(Text.PREFIX + "§aChunk unclaim, tu as récupéré " + ConsulatCore.formatMoney(Claim.REFUND) + ".");
+            sender.sendMessage(Text.CHUNK_UNCLAIM(Claim.REFUND));
             player.addMoney(Claim.REFUND);
         } else {
             SurvivalPlayer survivalTarget = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(claim.getOwnerUUID());
@@ -42,7 +41,7 @@ public class UnclaimCommand extends ConsulatCommand {
             } else {
                 SPlayerManager.getInstance().addMoney(claim.getOwnerUUID(), Claim.REFUND);
             }
-            sender.sendMessage(Text.PREFIX + "§aChunk unclaim.");
+            sender.sendMessage(Text.CHUNK_UNCLAIM);
         }
     }
 }

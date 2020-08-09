@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
@@ -19,12 +20,12 @@ public class EnderchestCommand extends ConsulatCommand {
     public void onCommand(ConsulatPlayer sender, String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
         if(sender.getRank() == Rank.MODO && (!player.isInModeration() || sender.getPlayer().getGameMode() != GameMode.SPECTATOR)){
-            player.sendMessage("§cTu dois être en spectateur pour regarder les enderchest.");
+            player.sendMessage(Text.NEED_SPECTATOR);
             return;
         }
         SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[0]);
         if(target == null){
-            sender.sendMessage("§cJoueur invalide.");
+            sender.sendMessage(Text.PLAYER_NOT_CONNECTED);
             return;
         }
         sender.getPlayer().openInventory(target.getPlayer().getEnderChest());

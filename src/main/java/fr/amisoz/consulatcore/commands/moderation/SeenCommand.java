@@ -14,9 +14,8 @@ import java.sql.SQLException;
 public class SeenCommand extends ConsulatCommand {
     
     public SeenCommand(){
-        super("consulat.core", "seen", "/seen <Pseudo>", 1, Rank.ADMIN);
-        suggest(Arguments.playerList("joueur"),
-                Arguments.word("joueur"));
+        super("consulat.core", "seen", "/seen <joueur>", 1, Rank.ADMIN);
+        suggest(Arguments.playerList("joueur"));
     }
     
     @Override

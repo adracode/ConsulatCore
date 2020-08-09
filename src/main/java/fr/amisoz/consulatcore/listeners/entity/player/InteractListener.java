@@ -3,16 +3,17 @@ package fr.amisoz.consulatcore.listeners.entity.player;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.events.blocks.PlayerInteractSignEvent;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -33,29 +34,32 @@ public class InteractListener implements Listener {
         this.consulatCore = consulatCore;
     }
     
-    @SuppressWarnings("unchecked")
     @EventHandler
+    public void onClickSign(PlayerInteractSignEvent event){
+        Player player = event.getPlayer();
+        Sign sign = (Sign)event.getBlock().getState();
+        String[] lines = sign.getLines();
+        if(lines[0].equals("§9[Téléportation]")){
+            try {
+                int x = Integer.parseInt(lines[1]);
+                int y = Integer.parseInt(lines[2]);
+                int z = Integer.parseInt(lines[3]);
+                Location result = new Location(ConsulatCore.getInstance().getOverworld(), x, y, z);
+                player.teleportAsync(result);
+                player.sendMessage("§aTu as été téléporté à la zone.");
+            } catch(NumberFormatException e){
+                player.sendMessage("§cErreur de coordonnées");
+            }
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent event){
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
         if(event.getClickedBlock() != null){
             if(event.getClickedBlock().getType() == Material.SPAWNER){
                 event.setCancelled(true);
-            }
-            if(event.getClickedBlock().getType() == Material.OAK_WALL_SIGN){
-                Sign sign = (Sign)event.getClickedBlock().getState();
-                String[] lines = sign.getLines();
-                if(lines[0].equals("§9[Téléportation]")){
-                    try {
-                        int x = Integer.parseInt(lines[1]);
-                        int y = Integer.parseInt(lines[2]);
-                        int z = Integer.parseInt(lines[3]);
-                        Location result = new Location(Bukkit.getWorlds().get(0), x, y, z);
-                        player.getPlayer().teleportAsync(result);
-                        player.sendMessage("§aTu as été téléporté à la zone.");
-                    } catch(NumberFormatException e){
-                        player.sendMessage("§cErreur de coordonnées");
-                    }
-                }
             }
         }
         if(event.getItem() == null || event.getItem().getItemMeta() == null){
@@ -67,24 +71,24 @@ public class InteractListener implements Listener {
             if(itemMeta.getDisplayName().contains("Se téléporter aléatoirement")){
                 List<Player> online = (List<Player>)Bukkit.getOnlinePlayers();
                 if(online.size() == 1){
-                    player.sendMessage(ChatColor.RED + "Tu es seul.... désolé");
+                    player.sendMessage(Text.YOUR_ALONE);
                     event.setCancelled(true);
                     return;
                 }
                 int random = ConsulatCore.getRandom().nextInt(online.size());
-                Player resultedPlayer = online.get(random);
-                if(resultedPlayer.getUniqueId().equals(player.getUUID())){
-                    resultedPlayer = random == 0 ? online.get(1) : online.get(random - 1);
+                Player resultPlayer = online.get(random);
+                if(resultPlayer.getUniqueId().equals(player.getUUID())){
+                    resultPlayer = random == 0 ? online.get(1) : online.get(random - 1);
                 }
-                player.getPlayer().teleportAsync(resultedPlayer.getLocation());
-                player.sendMessage(ChatColor.GREEN + "Tu as été téléporté à : " + resultedPlayer.getName());
+                player.getPlayer().teleportAsync(resultPlayer.getLocation());
+                player.sendMessage(Text.YOU_TELEPORTED_TO(resultPlayer.getName()));
                 event.setCancelled(true);
             }
             if(itemMeta.getDisplayName().contains("Changer son statut d'invisibilité")){
                 if(player.isVanished()){
                     Bukkit.getOnlinePlayers().forEach(onlinePlayer -> onlinePlayer.showPlayer(consulatCore, player.getPlayer()));
                     player.setVanished(false);
-                    player.sendMessage("§aTu es désormais visible.");
+                    player.sendMessage(Text.NOW_VISIBLE);
                     for(PotionEffect effect : player.getPlayer().getActivePotionEffects()){
                         if(effect.getType().equals(PotionEffectType.INVISIBILITY))
                             player.getPlayer().removePotionEffect(effect.getType());
@@ -99,8 +103,8 @@ public class InteractListener implements Listener {
                             }
                         }
                     });
-                    player.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 2, false, false));
-                    player.sendMessage("§cTu es désormais invisible.");
+                    player.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 1, false, false));
+                    player.sendMessage(Text.NOW_INVISIBLE);
                 }
             }
         }
@@ -126,11 +130,11 @@ public class InteractListener implements Listener {
         if(itemMeta.getDisplayName().contains("Freeze") && event.getHand().equals(EquipmentSlot.HAND)){
             SurvivalPlayer survivalPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(target.getUniqueId());
             if(survivalPlayer.isFrozen()){
-                target.sendMessage(Text.ANNOUNCE_PREFIX + " Tu as été un-freeze.");
-                player.sendMessage(Text.ANNOUNCE_PREFIX + " Joueur un-freeze");
+                target.sendMessage(Text.BEEN_UNFROZEN);
+                player.sendMessage(Text.PLAYER_UNFREEZE);
             } else {
-                target.sendMessage(Text.ANNOUNCE_PREFIX + " Tu as été freeze par un modérateur.");
-                player.sendMessage(Text.ANNOUNCE_PREFIX + " Joueur freeze");
+                target.sendMessage(Text.BEEN_FROZEN);
+                player.sendMessage(Text.PLAYER_FREEZE);
             }
             survivalPlayer.setFrozen(!survivalPlayer.isFrozen());
         }

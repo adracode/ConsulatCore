@@ -2,6 +2,7 @@ package fr.amisoz.consulatcore.commands.moderation;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
@@ -21,7 +22,7 @@ public class KickCommand extends ConsulatCommand {
     public void onCommand(ConsulatPlayer sender, String[] args){
         SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[0]);
         if(target == null){
-            sender.sendMessage("§cJoueur hors-ligne");
+            sender.sendMessage(Text.PLAYER_NOT_CONNECTED);
             return;
         }
         StringBuilder stringBuilder = new StringBuilder();
@@ -29,7 +30,7 @@ public class KickCommand extends ConsulatCommand {
             stringBuilder.append(" ").append(args[i]);
         }
         String reason = stringBuilder.toString();
-        target.getPlayer().kickPlayer("§7§l§m ----[ §r§6§lLe Consulat §7§l§m]----\n\n§cTu as été exclu.\n§cRaison : §4" + reason);
-        sender.sendMessage("§aJoueur exclu !");
+        target.getPlayer().kickPlayer(Text.KICK_PLAYER(reason));
+        sender.sendMessage(Text.YOU_KICKED_PLAYER);
     }
 }

@@ -3,6 +3,7 @@ package fr.amisoz.consulatcore.guis.shop.admin;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.amisoz.consulatcore.shop.admin.AdminShop;
 import fr.leconsulat.api.gui.GuiItem;
 import fr.leconsulat.api.gui.event.GuiClickEvent;
@@ -85,18 +86,18 @@ public class BuyGui extends AdminShopGui {
             amount = spaceAvailable;
         }
         if(spaceAvailable < amount || spaceAvailable == 0){
-            player.sendMessage("§cTu n'as pas assez de place dans ton inventaire.");
+            player.sendMessage(Text.NOT_ENOUGH_SPACE_INVENTORY);
             player.getPlayer().closeInventory();
             return;
         }
         double buyPrice = amount * shop.getPrice();
         if(player.hasMoney(buyPrice)){
             player.removeMoney(buyPrice);
-            player.sendMessage(Text.PREFIX + "Tu as acheté §e" + shop.getItem().getType().name() + " x" + amount + " §6pour §e" + ConsulatCore.formatMoney(buyPrice) + ".");
+            player.sendMessage(ShopManager.getInstance().formatShopMessage(shop.getItem(), amount, buyPrice, ShopManager.ShopAction.BUY));
             player.addItemInInventory(amount, toBuy);
             onOpened(new GuiOpenEvent(player));
         } else {
-            player.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent");
+            player.sendMessage(Text.NOT_ENOUGH_MONEY);
             player.getPlayer().closeInventory();
         }
     }

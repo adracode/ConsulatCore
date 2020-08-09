@@ -20,7 +20,7 @@ public class UnbanCommand extends ConsulatCommand {
         String playerName = args[0];
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             ConsulatCore.getInstance().getModerationDatabase().unban(playerName);
-            sender.sendMessage(Text.MODERATION_PREFIX + "Si le joueur était banni, il a été dé-banni.");
+            sender.sendMessage(Text.MAYBE_UNBAN_PLAYER);
         });
     }
 }

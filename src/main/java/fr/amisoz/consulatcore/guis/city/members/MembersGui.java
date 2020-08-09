@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.guis.city.members;
 
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.guis.city.members.member.MemberGui;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.zones.ZoneManager;
@@ -18,10 +19,6 @@ import fr.leconsulat.api.gui.gui.module.api.Relationnable;
 import fr.leconsulat.api.gui.gui.template.DataRelatPagedGui;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
@@ -133,35 +130,32 @@ public class MembersGui extends DataRelatPagedGui<City> {
                 GuiManager.getInstance().userInput(event.getPlayer(), input -> {
                     UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(input);
                     if(targetUUID == null){
-                        player.sendMessage("§cCe joueur n'existe pas.");
+                        player.sendMessage(Text.PLAYER_DOESNT_EXISTS);
                         return;
                     }
                     SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(targetUUID);
                     if(target == null){
-                        player.sendMessage("§cCe joueur n'est pas connecté.");
+                        player.sendMessage(Text.PLAYER_NOT_CONNECTED);
                         return;
                     }
                     if(target.belongsToCity()){
-                        player.sendMessage("§cCe joueur est déjà dans une ville.");
+                        player.sendMessage(Text.PLAYER_ALREADY_BELONGS_CITY);
                         return;
                     }
                     if(!ZoneManager.getInstance().invitePlayer(city, targetUUID)){
-                        player.sendMessage("§cCe joueur est déjà invité dans la ville.");
+                        player.sendMessage(Text.ALREADY_INVITED_CITY);
                         return;
                     }
-                    player.sendMessage("§aTu as invité §7" + target.getName() + " §a à rejoindre la ville §7" + city.getName() + "§a.");
-                    city.sendMessage("§a" + player.getName() + "§7 a invité §a" + target.getName() + "§7.");
-                    TextComponent message = new TextComponent("§aTu as été invité à rejoindre la ville §7" + city.getName() + "§a par §7" + player.getName() + "§a.");
-                    message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§aClique pour rejoindre " + city.getName()).create()));
-                    message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/city accept " + city.getName()));
-                    target.sendMessage(message);
+                    player.sendMessage(Text.YOU_INVITED_PLAYER_TO_CITY(target.getName(), city.getName()));
+                    city.sendMessage(Text.HAS_INVITED_PLAYER_TO_CITY(player.getName(), target.getName()));
+                    target.sendMessage(Text.YOU_BEEN_INVITED_TO_CITY(city.getName(), player.getName()));
                 }, new String[]{"", "^^^^^^^^^^^^^^", "Entre le nom", "du joueur"}, 0);
             }
             return;
         }
         if(event.getSlot() >= 19 && event.getSlot() <= 44 && clickedItem.getType() == Material.PLAYER_HEAD){
             if(!ConsulatAPI.getConsulatAPI().isDebug() && (city.getOwner().equals(clickedItem.getAttachedObject()) || player.getUUID().equals(clickedItem.getAttachedObject()))){
-                player.sendMessage("§cLes permissions du proriétaire de la ville ne peuvent pas changer.");
+                player.sendActionBar(Text.CANT_CHANGE_PERMISSION);
                 return;
             }
             UUID playerUUID = (UUID)clickedItem.getAttachedObject();

@@ -2,7 +2,6 @@ package fr.amisoz.consulatcore.commands.economy;
 
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
@@ -31,37 +30,37 @@ public class PayCommand extends ConsulatCommand {
         try {
             moneyToGive = Double.parseDouble(args[1]);
         } catch(NumberFormatException exception){
-            sender.sendMessage("§c" + getUsage());
+            sender.sendMessage(Text.COMMAND_USAGE(this));
             return;
         }
-        if(moneyToGive <= 0 || moneyToGive > 1_000_000){
-            sender.sendMessage(Text.PREFIX + "§cTu ne peux pas donner " + ConsulatCore.formatMoney(moneyToGive) + ".");
+        if(moneyToGive <= 0 || moneyToGive >= 1_000_000){
+            sender.sendMessage(Text.INVALID_MONEY);
             return;
         }
         if(!player.hasMoney(moneyToGive)){
-            sender.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent !");
+            sender.sendMessage(Text.NOT_ENOUGH_MONEY);
             return;
         }
         UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(args[0]);
         if(targetUUID == null){
-            sender.sendMessage(Text.PREFIX + "§cCe joueur ne s'est jamais connecté sur le serveur !");
             return;
         }
         SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(targetUUID);
         if(target != null){
             target.addMoney(moneyToGive);
-            target.getPlayer().sendMessage(Text.PREFIX + "§aTu as reçu §2" + ConsulatCore.formatMoney(moneyToGive) + " §ade §2" + player.getName());
+            target.getPlayer().sendMessage(Text.YOU_RECEIVED_MONEY_FROM(moneyToGive, player.getName()));
+            sender.sendMessage(Text.YOU_SEND_MONEY_TO(moneyToGive, target.getName()));
         } else {
             SPlayerManager.getInstance().fetchOffline(args[1], survivalOffline -> {
                 //Le joueur existe forcément, donc erreur BDD
                 if(survivalOffline == null){
-                    sender.sendMessage(Text.PREFIX + "§cUne erreur interne est survenue.");
+                    sender.sendMessage(Text.ERROR);
                     return;
                 }
                 SPlayerManager.getInstance().addMoney(survivalOffline.getUUID(), moneyToGive);
+                sender.sendMessage(Text.YOU_SEND_MONEY_TO(moneyToGive, survivalOffline.getName()));
             });
         }
         player.removeMoney(moneyToGive);
-        sender.sendMessage(Text.PREFIX + "§aTu as envoyé §2" + ConsulatCore.formatMoney(moneyToGive) + " §aà §2" + args[0]);
     }
 }

@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.guis.city.changehome;
 
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.zones.ZoneManager;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.leconsulat.api.gui.event.GuiClickEvent;
@@ -45,16 +46,16 @@ public class ChangeHomeGui extends DataRelatGui<City> {
         switch(event.getSlot()){
             case 20:
                 player.getPlayer().closeInventory();
-                player.sendMessage("§cTu as annulé le déplacement du home.");
+                player.sendActionBar(Text.SET_HOME_CANCELLED);
                 return;
             case 24:
                 Location newSpawn = newHomeByPlayer.remove(player.getUUID());
                 if(newSpawn == null){
                     player.getPlayer().closeInventory();
-                    player.sendMessage("§cUne erreur est survenue");
+                    player.sendMessage(Text.ERROR);
                     return;
                 }
-                player.sendMessage("§aTu as déplacé le home de ta ville.");
+                player.sendMessage(Text.YOU_SET_HOME_CITY);
                 player.getPlayer().closeInventory();
                 ZoneManager.getInstance().setHome(getData(), newSpawn);
                 break;

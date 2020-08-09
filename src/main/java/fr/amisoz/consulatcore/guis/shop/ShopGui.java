@@ -15,7 +15,6 @@ import fr.leconsulat.api.gui.gui.IGui;
 import fr.leconsulat.api.gui.gui.module.api.Datable;
 import fr.leconsulat.api.gui.gui.module.api.Pageable;
 import fr.leconsulat.api.gui.gui.template.DataPagedGui;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
@@ -101,18 +100,18 @@ public class ShopGui extends DataPagedGui<ShopItemType> {
                                 player.getPlayer().teleportAsync(block);
                             }
                         } else {
-                            player.sendMessage(Text.PREFIX + "§cCe shop n'a pas été trouvé");
+                            player.sendMessage(Text.SHOP_NOT_FOUND);
                             ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Shop not found in list: " + getItem(event.getSlot()));
                             ConsulatAPI.getConsulatAPI().logFile("Shop not found in list: " + getItem(event.getSlot()));
                         }
                     } catch(NullPointerException e){
-                        player.sendMessage("Erreur lors de la téléportation");
+                        player.sendMessage(Text.ERROR);
                         return;
                     }
-                    player.sendMessage(ChatColor.YELLOW + "Téléportation réussie pour §c" + ConsulatCore.formatMoney(10) + ".");
+                    player.sendMessage(Text.TELEPORTATION(10));
                     player.removeMoney(10.0);
                 } else {
-                    player.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent.");
+                    player.sendMessage(Text.NOT_ENOUGH_MONEY(10));
                 }
         }
     }

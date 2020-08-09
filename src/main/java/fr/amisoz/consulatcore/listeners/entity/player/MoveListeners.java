@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.listeners.entity.player;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.events.ClaimChangeEvent;
 import fr.amisoz.consulatcore.guis.city.CityGui;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
@@ -26,10 +27,8 @@ public class MoveListeners implements Listener {
         if(survivalPlayer.isFrozen()){
             event.setCancelled(true);
         }
-        
         Location from = event.getFrom();
         Location to = event.getTo();
-        
         if(from.getYaw() != to.getYaw() || from.getPitch() != to.getPitch()){
             survivalPlayer.setLastMove(System.currentTimeMillis());
         }
@@ -44,14 +43,11 @@ public class MoveListeners implements Listener {
         if(player == null){
             return;
         }
-        
         Location to = event.getTo();
         Location from = event.getFrom();
-        
-        if(to.getWorld().equals(Bukkit.getWorlds().get(0)) && from.getWorld().equals(Bukkit.getWorlds().get(1))){
+        if(to.getWorld().equals(ConsulatCore.getInstance().getOverworld()) && from.getWorld().equals(Bukkit.getWorlds().get(1))){
             player.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10 * 20, 10));
         }
-        
         player.setOldLocation(event.getFrom());
         player.setLastTeleport(System.currentTimeMillis());
         Chunk chunkTo = to.getChunk();
@@ -70,5 +66,4 @@ public class MoveListeners implements Listener {
             cityGui.updateHome(player, claim != null && cityGui.getData().isClaim(claim));
         }
     }
-    
 }

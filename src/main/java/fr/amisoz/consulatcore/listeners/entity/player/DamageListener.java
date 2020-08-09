@@ -32,7 +32,7 @@ public class DamageListener implements Listener {
             if((cooldownTeleport > 2 && cooldownTeleport < 10) || (cooldownTeleport <= 2 && player.getPlayer().getHealth() <= 2)){
                 player.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 40, 10));
                 player.getPlayer().teleport(ConsulatCore.getInstance().getSpawn());
-                player.sendMessage(Text.PREFIX + "§aTu as été téléporté au spawn pour cause de suffocation.");
+                player.sendMessage(Text.TP_BECAUSE_STUCK);
             }
         }
     }

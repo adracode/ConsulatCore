@@ -214,7 +214,7 @@ public class ClaimManager implements Listener {
     }
     
     public @Nullable Claim getClaim(Chunk chunk){
-        if(chunk.getWorld() != Bukkit.getWorlds().get(0)){
+        if(chunk.getWorld() != ConsulatCore.getInstance().getOverworld()){
             return null;
         }
         return getClaim(chunk.getX(), chunk.getZ());
@@ -273,16 +273,6 @@ public class ClaimManager implements Listener {
         }
         itemInHand.setAmount(itemInHand.getAmount() - 1);
         event.getPlayer().sendActionBar("§aCe coffre est maintenant privé");
-    }
-    
-    public void setDescription(Claim claim, String description) throws SQLException{
-        claim.setDescription(description);
-        PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE claims SET description = ? WHERE claim_x = ? AND claim_z = ?;");
-        preparedStatement.setString(1, description);
-        preparedStatement.setInt(2, claim.getX());
-        preparedStatement.setInt(3, claim.getZ());
-        preparedStatement.executeUpdate();
-        preparedStatement.close();
     }
     
     private void addClaimDatabase(final int x, final int z, final Zone owner){
@@ -359,7 +349,7 @@ public class ClaimManager implements Listener {
     @EventHandler
     public void enterLeaveZone(PlayerMoveEvent event){
         Player player = event.getPlayer();
-        if(player.getWorld() != Bukkit.getWorlds().get(0)){
+        if(player.getWorld() != ConsulatCore.getInstance().getOverworld()){
             return;
         }
         Chunk chunkFrom = event.getFrom().getChunk();
@@ -385,9 +375,9 @@ public class ClaimManager implements Listener {
             String description = claimTo.getDescription();
             if(description != null)
                 if(claimFrom != null && !description.equals(claimFrom.getDescription())){
-                    player.sendMessage(Text.PREFIX + "§7" + description);
+                    player.sendMessage(Text.CLAIM_DESCRIPTION(description));
                 } else if(claimFrom == null){
-                    player.sendMessage(Text.PREFIX + "§7" + description);
+                    player.sendMessage(Text.CLAIM_DESCRIPTION(description));
                 }
         }
     }

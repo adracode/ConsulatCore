@@ -1,6 +1,5 @@
 package fr.amisoz.consulatcore.listeners.entity.player;
 
-import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.guis.shop.admin.AdminShopGui;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.gui.event.GuiOpenEvent;
@@ -16,9 +15,6 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 
 public class InventoryListeners implements Listener {
-    
-    public InventoryListeners(ConsulatCore consulatCore){
-    }
     
     @EventHandler
     public void onDrop(PlayerDropItemEvent event){

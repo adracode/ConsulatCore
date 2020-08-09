@@ -3,6 +3,8 @@ package fr.amisoz.consulatcore.commands.economy;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.amisoz.consulatcore.shop.admin.AdminShop;
 import fr.amisoz.consulatcore.shop.admin.AdminShopBuy;
@@ -10,7 +12,6 @@ import fr.amisoz.consulatcore.shop.admin.AdminShopSell;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -38,36 +39,36 @@ public class AdminShopCommand extends ConsulatCommand {
     @Override
     public void onCommand(ConsulatPlayer sender, String[] args){
         Player bukkitPlayer = sender.getPlayer();
-        if(bukkitPlayer.getWorld() != Bukkit.getWorlds().get(0)){
-            sender.sendMessage("§cUn Shop doit être placé dans l'overworld.");
+        if(bukkitPlayer.getWorld() != ConsulatCore.getInstance().getOverworld()){
+            sender.sendMessage(Text.DIMENSION_SHOP);
             return;
         }
         ItemStack item = bukkitPlayer.getInventory().getItemInMainHand().clone();
         item.setAmount(1);
         if(item.getType() == Material.AIR){
-            sender.sendMessage("§cMerci de tenir l'item concerné en main.");
+            sender.sendMessage(Text.NO_ITEM_IN_HAND);
             return;
         }
         Block shopBlock = bukkitPlayer.getTargetBlock(5);
         if(shopBlock != null){
             shopBlock = shopBlock.getRelative(BlockFace.UP);
         } else {
-            sender.sendMessage("§cUn bloc doit être visé pour créer le shop.");
+            sender.sendMessage(Text.NO_TARGETED_BLOCK);
             return;
         }
         double price;
         try {
             price = Double.parseDouble(args[1]);
         } catch(NumberFormatException e){
-            sender.sendMessage("§cCe nombre n'est pas valide.");
+            sender.sendMessage(Text.INVALID_NUMBER);
             return;
         }
         if(price <= 0 || price >= 1_000_000){
-            sender.sendMessage("§cCe prix n'est pas valide.");
+            sender.sendMessage(Text.INVALID_MONEY);
             return;
         }
         if(!SUB_COMMAND.contains(args[0])){
-            sender.sendMessage("§c" + getUsage());
+            sender.sendMessage(Text.COMMAND_USAGE(this));
             return;
         }
         shopBlock.setType(Material.CHEST);

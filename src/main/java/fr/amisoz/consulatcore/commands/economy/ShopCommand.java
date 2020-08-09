@@ -6,12 +6,12 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.amisoz.consulatcore.shop.player.ShopItemType;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.gui.GuiManager;
+import fr.leconsulat.api.gui.gui.IGui;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
@@ -25,6 +25,12 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.potion.PotionEffectType;
 
 public class ShopCommand extends ConsulatCommand {
+    
+    private final String help =
+            Text.PREFIX + "§cListe des commandes:\n" +
+            Text.PREFIX + "§c- §e/shop help §cte permet de savoir comment créer un shop !\n" +
+            Text.PREFIX + "§c- §e/shop locate §cte permet de voir la liste des shops d'un certain item, enchantement ou potion !\n" +
+            Text.PREFIX + "§c- §e/shop list §cte permet de voir la liste des shops !";
     
     public ShopCommand(){
         super("consulat.core", "shop", "/shop list | help | locate <item>", 0, Rank.JOUEUR);
@@ -54,21 +60,15 @@ public class ShopCommand extends ConsulatCommand {
     @Override
     public void onCommand(ConsulatPlayer sender, String[] args){
         if(args.length == 0){
-            sender.sendMessage(Text.PREFIX + "§cListe des commandes:");
-            sender.sendMessage(Text.PREFIX + "§c- §e/shop help §cte permet de savoir comment créer un shop !");
-            sender.sendMessage(Text.PREFIX + "§c- §e/shop locate §cte permet de voir la liste des shops d'un certain item, enchantement ou potion !");
-            sender.sendMessage(Text.PREFIX + "§c- §e/shop list §cte permet de voir la liste des shops !");
+            sender.sendMessage(help);
             return;
         }
         switch(args[0].toLowerCase()){
             case "list":
-                /*if(!){
-                    sender.sendMessage(Text.PREFIX + "§cIl n'y a aucun shop.");
-                }*/
                 GuiManager.getInstance().getContainer("shop").getGui(ShopItemType.ALL).open(sender);
                 return;
             case "help":
-                ShopManager.getInstance().tutorial((SurvivalPlayer)sender);
+                sender.sendMessage(Text.TUTORIAL_SHOP);
                 return;
             case "locate":
                 if(args.length < 2){
@@ -83,7 +83,7 @@ public class ShopCommand extends ConsulatCommand {
                     if(enchantment == null){
                         PotionEffectType effectType = PotionEffectType.getByName(itemType);
                         if(effectType == null){
-                            sender.sendMessage(Text.PREFIX + "§cItem invalide §7(" + args[1] + ")§c.");
+                            sender.sendMessage(Text.INVALID_ITEM(args[1]));
                             return;
                         }
                         type = new ShopItemType.PotionItem(effectType);
@@ -93,10 +93,12 @@ public class ShopCommand extends ConsulatCommand {
                 } else {
                     type = new ShopItemType.MaterialItem(material);
                 }
-                /*if(!GuiManager.getInstance().getRootGui("shop").open(sender, type)){
-                    sender.sendMessage(Text.PREFIX + "§cL'item §7" + args[1] + " §cn'est pas en vente actuellement.");
-                }*/
-                GuiManager.getInstance().getContainer("shop").getGui(type).open(sender);
+                IGui shop = GuiManager.getInstance().getContainer("shop").getGui(false, type);
+                if(shop == null){
+                    sender.sendMessage(Text.ITEM_NOT_IN_SELL(args[1]));
+                } else {
+                    shop.open(sender);
+                }
                 return;
             case "create":
                 if(!ConsulatAPI.getConsulatAPI().isDebug() || !sender.hasPower(Rank.MODO)){
@@ -108,12 +110,12 @@ public class ShopCommand extends ConsulatCommand {
                 }
                 return;
         }
-        sender.sendMessage("§c" + getUsage());
+        sender.sendMessage(Text.COMMAND_USAGE(this));
     }
     
     private void createShop(ConsulatPlayer sender, Block block){
         if(block.getType() != Material.AIR){
-            sender.sendMessage("§cIl y a un bloc ici !");
+            sender.sendMessage(Text.BLOCK_HERE);
             return;
         }
         block.setType(Material.CHEST);

@@ -59,7 +59,6 @@ public class SurvivalPlayer extends ConsulatPlayer {
     private boolean inModeration = false;
     private ItemStack[] stockedInventory = null;
     private boolean lookingInventory;
-    private String sanctionTarget;
     private boolean spying;
     private boolean isMuted;
     private long muteExpireMillis;
@@ -262,14 +261,6 @@ public class SurvivalPlayer extends ConsulatPlayer {
         this.lookingInventory = lookingInventory;
     }
     
-    public void setSanctionTarget(String sanctionTarget){
-        this.sanctionTarget = sanctionTarget;
-    }
-    
-    public String getSanctionTarget(){
-        return sanctionTarget;
-    }
-    
     public boolean isSpying(){
         return spying;
     }
@@ -328,10 +319,8 @@ public class SurvivalPlayer extends ConsulatPlayer {
         return hasFly() && fly.hasInfiniteFly();
     }
     
-    public void setFly(Fly fly) throws SQLException{
-        Fly newFly = new Fly(fly);
-        SPlayerManager.getInstance().setFly(getUUID(), newFly);
-        this.fly = newFly;
+    public void setFly(Fly fly){
+        this.fly = new Fly(fly);
     }
     
     public CustomEnum getPersoState(){
@@ -414,20 +403,17 @@ public class SurvivalPlayer extends ConsulatPlayer {
         player.setFlying(true);
     }
     
-    public void disableFly() throws SQLException{
+    public void disableFly(){
         if(!hasFly()){
             return;
         }
         this.fly.setFlying(false);
-        SPlayerManager.getInstance().setFly(getUUID(), this.fly);
         FlyManager.getInstance().removeFlyingPlayer(this);
         if(!isInModeration()){
-            Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
-                Player player = getPlayer();
-                player.setAllowFlight(false);
-                player.setFlying(false);
-                player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10 * 20, 100));
-            });
+            Player player = getPlayer();
+            player.setAllowFlight(false);
+            player.setFlying(false);
+            player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10 * 20, 100));
         }
     }
     
@@ -517,6 +503,10 @@ public class SurvivalPlayer extends ConsulatPlayer {
         return hasFly() ? fly.getFlyTime() : 0;
     }
     
+    public Fly getFly(){
+        return hasFly() ? fly : null;
+    }
+    
     public boolean belongsToCity(){
         return city != null;
     }
@@ -570,6 +560,9 @@ public class SurvivalPlayer extends ConsulatPlayer {
         if(belongsToCity()){
             city.getChannel().addPlayer(this);
         }
+        if(hasPermission("consulat.core.staff-channel")){
+            ConsulatCore.getInstance().getStaffChannel().addPlayer(this);
+        }
     }
     
     public void removeFromChannels(){
@@ -578,6 +571,9 @@ public class SurvivalPlayer extends ConsulatPlayer {
         }
         if(isSpying()){
             ConsulatCore.getInstance().getSpy().removePlayer(this);
+        }
+        if(hasPermission("consulat.core.staff-channel")){
+            ConsulatCore.getInstance().getStaffChannel().removePlayer(this);
         }
     }
     
@@ -697,7 +693,6 @@ public class SurvivalPlayer extends ConsulatPlayer {
                 ", inModeration=" + inModeration +
                 ", stockedInventory=" + Arrays.toString(stockedInventory) +
                 ", lookingInventory=" + lookingInventory +
-                ", sanctionTarget='" + sanctionTarget + '\'' +
                 ", spying=" + spying +
                 ", isMuted=" + isMuted +
                 ", muteExpireMillis=" + muteExpireMillis +

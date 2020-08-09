@@ -11,13 +11,14 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
 
 public class ShopCommand implements CommandExecutor {
     
     @Override
-    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args){
+    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args){
         if(commandSender instanceof Player){
             ((Player)commandSender).performCommand("help");
             return false;
@@ -67,37 +68,16 @@ public class ShopCommand implements CommandExecutor {
                 });
                 break;
             case "fly5":
-                Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                    try {
-                        target.setFly(Fly.FLY_5);
-                        target.sendMessage(Text.FLY + "Suite à ton achat tu as maintenant accès au /fly qui dure 5minutes toute les heures !");
-                    } catch(SQLException e){
-                        target.sendMessage(Text.FLY + "La sauvegarde de ton Fly a échoué, contacte un administrateur.");
-                        e.printStackTrace();
-                    }
-                });
+                target.setFly(Fly.FLY_5);
+                target.sendMessage(Text.FLY + "Suite à ton achat tu as maintenant accès au /fly qui dure 5minutes toute les heures !");
                 break;
             case "fly25":
-                Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                    try {
-                        target.setFly(Fly.FLY_25);
-                        target.sendMessage(Text.FLY + "Suite à ton achat tu as maintenant accès au /fly qui dure 25 minutes toute les heures !");
-                    } catch(SQLException e){
-                        target.sendMessage(Text.FLY + "La sauvegarde de ton Fly a échoué, contacte un administrateur.");
-                        e.printStackTrace();
-                    }
-                });
+                target.setFly(Fly.FLY_25);
+                target.sendMessage(Text.FLY + "Suite à ton achat tu as maintenant accès au /fly qui dure 25 minutes toute les heures !");
                 break;
             case "infinite":
-                Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                    try {
-                        target.setFly(Fly.FLY_INFINITE);
-                        target.sendMessage(Text.FLY + "Suite à ton achat tu as maintenant accès au /fly infini !");
-                    } catch(SQLException e){
-                        target.sendMessage(Text.FLY + "La sauvegarde de ton Fly a échoué, contacte un administrateur.");
-                        e.printStackTrace();
-                    }
-                });
+                target.setFly(Fly.FLY_INFINITE);
+                target.sendMessage(Text.FLY + "Suite à ton achat tu as maintenant accès au /fly infini !");
                 break;
             case "perso":
                 Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {

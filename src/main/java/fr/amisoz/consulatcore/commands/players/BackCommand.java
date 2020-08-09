@@ -1,10 +1,10 @@
 package fr.amisoz.consulatcore.commands.players;
 
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
-import org.bukkit.Bukkit;
 
 public class BackCommand extends ConsulatCommand {
 
@@ -17,11 +17,10 @@ public class BackCommand extends ConsulatCommand {
     public void onCommand(ConsulatPlayer sender, String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
         if(player.getOldLocation() == null){
-            player.sendMessage("§cTu n'as pas encore été téléporté.");
+            player.sendMessage(Text.NOT_YET_TELEPORTED);
             return;
         }
-        Bukkit.getWorlds().get(0).getChunkAt(player.getOldLocation()).load(true);
         sender.getPlayer().teleportAsync(player.getOldLocation());
-        sender.sendMessage("§aTu as été téléporté ! ");
+        sender.sendMessage(Text.TELEPORTATION);
     }
 }

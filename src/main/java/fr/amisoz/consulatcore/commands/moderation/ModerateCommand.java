@@ -16,8 +16,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import java.sql.SQLException;
-
 public class ModerateCommand extends ConsulatCommand {
     
     public ModerateCommand(){
@@ -31,7 +29,7 @@ public class ModerateCommand extends ConsulatCommand {
         Player bukkitPlayer = sender.getPlayer();
         player.setInModeration(!player.isInModeration());
         if(!player.isInModeration()){
-            sender.sendMessage(Text.MODERATION_PREFIX + "§cTu n'es plus en mode modérateur.");
+            sender.sendMessage(Text.NO_MORE_IN_STAFF_MODE);
             for(PotionEffect effect : bukkitPlayer.getActivePotionEffects()){
                 if(effect.getType().equals(PotionEffectType.NIGHT_VISION) || effect.getType().equals(PotionEffectType.INVISIBILITY)){
                     bukkitPlayer.removePotionEffect(effect.getType());
@@ -46,7 +44,7 @@ public class ModerateCommand extends ConsulatCommand {
                 bukkitPlayer.setFlying(false);
             }
         } else {
-            sender.sendMessage(Text.MODERATION_PREFIX + "§aTu es désormais en mode modérateur.");
+            sender.sendMessage(Text.NOW_IN_STAFF_MODE);
             player.setVanished(true);
             player.setStockedInventory(bukkitPlayer.getInventory().getContents());
             for(ConsulatPlayer onlinePlayer : CPlayerManager.getInstance().getConsulatPlayers()){
@@ -91,13 +89,7 @@ public class ModerateCommand extends ConsulatCommand {
             bukkitPlayer.getInventory().setItem(5, invsee);
             bukkitPlayer.getInventory().setItem(6, freeze);
             if(player.isFlying()){
-                Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                    try {
-                        player.disableFly();
-                    } catch(SQLException e){
-                        e.printStackTrace();
-                    }
-                });
+                player.disableFly();
             } else {
                 bukkitPlayer.setAllowFlight(true);
                 bukkitPlayer.setFlying(true);

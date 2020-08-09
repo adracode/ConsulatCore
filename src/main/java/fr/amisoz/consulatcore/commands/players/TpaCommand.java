@@ -1,7 +1,6 @@
 package fr.amisoz.consulatcore.commands.players;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.Arguments;
@@ -45,47 +44,46 @@ public class TpaCommand extends ConsulatCommand {
         if(args.length == 1){
             SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[0]);
             if(target == null){
-                sender.sendMessage(Text.PREFIX + "§cLe joueur n'est pas connecté.");
+                sender.sendMessage(Text.PLAYER_NOT_CONNECTED);
                 return;
             }
-            if(!survivalSender.hasMoney(10.0) && !survivalSender.hasPower(Rank.MECENE)){
-                sender.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent.");
+            if(!survivalSender.hasMoney(10) && !survivalSender.hasPower(Rank.MECENE)){
+                sender.sendMessage(Text.NOT_ENOUGH_MONEY(10));
                 return;
             }
             if(target.getUUID().equals(request.get(sender.getUUID()))){
-                sender.sendMessage(Text.PREFIX + "§cTu as déjà fait une demande de téléportation à " + target.getName());
+                sender.sendMessage(Text.ALREADY_ASK_TPA(target.getName()));
                 return;
             }
             request.put(sender.getUUID(), target.getUUID());
-            sender.sendMessage(Text.PREFIX + "§aTu as fait une demande de téléportation à " + target.getName());
-            target.sendMessage(Text.PREFIX + "§eTu as reçu une demande de téléportation de " + sender.getName());
-            target.sendMessage(Text.PREFIX + "§eFais /tpa accept " + sender.getName());
+            sender.sendMessage(Text.TPA_TO(target.getName()));
+            target.sendMessage(Text.TPA_FROM(sender.getName()));
         } else if(args.length == 2){
             if(args[0].equalsIgnoreCase("accept")){
                 SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[1]);
                 if(target == null){
-                    sender.sendMessage(Text.PREFIX + "§cCe joueur n'est pas connecté.");
+                    sender.sendMessage(Text.PLAYER_NOT_CONNECTED);
                     return;
                 }
                 if(!sender.getUUID().equals(request.get(target.getUUID()))){
-                    sender.sendMessage(Text.PREFIX + "§cCe joueur ne t'a pas demandé en téléportation.");
+                    sender.sendMessage(Text.DIDNT_TPA);
                     return;
                 }
                 if(!target.hasPower(Rank.MECENE)){
                     request.remove(target.getUUID());
                     target.removeMoney(10D);
                     target.getPlayer().teleportAsync(sender.getPlayer().getLocation());
-                    target.sendMessage("§aTu as été téléporté à " + sender.getName() + " pour " + ConsulatCore.formatMoney(10) + ".");
+                    target.sendMessage(Text.HAVE_BEEN_TPA(10, sender.getName()));
                 } else {
                     target.getPlayer().teleportAsync(sender.getPlayer().getLocation());
                     request.remove(target.getUUID());
-                    target.sendMessage("§aTu as été téléporté à " + sender.getName() + ".");
+                    target.sendMessage(Text.HAVE_BEEN_TPA(sender.getName()));
                 }
             } else {
-                sender.sendMessage(Text.PREFIX + "§c/tpa accept <joueur>");
+                sender.sendMessage(Text.COMMAND_USAGE(this));
             }
         } else {
-            sender.sendMessage("§c" + getUsage());
+            sender.sendMessage(Text.COMMAND_USAGE(this));
         }
     }
 }

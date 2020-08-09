@@ -1,6 +1,7 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
@@ -8,7 +9,6 @@ import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 
 public class UnmuteCommand extends ConsulatCommand {
     
@@ -19,17 +19,18 @@ public class UnmuteCommand extends ConsulatCommand {
     
     @Override
     public void onCommand(ConsulatPlayer sender, String[] args){
-        SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[0]);
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             ConsulatCore.getInstance().getModerationDatabase().unmute(args[0]);
+            SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[0]);
             if(target != null){
-                SurvivalPlayer targetPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(target.getUUID());
-                if(targetPlayer.isMuted()){
-                    targetPlayer.setMuted(false);
-                    sender.sendMessage(ChatColor.GREEN + "Joueur démute !");
+                if(target.isMuted()){
+                    target.setMuted(false);
+                    sender.sendMessage(Text.UNMUTE_PLAYER);
                 } else {
-                    sender.sendMessage("§cCe joueur n'est pas mute.");
+                    sender.sendMessage(Text.PLAYER_NOT_MUTE);
                 }
+            } else {
+                sender.sendMessage(Text.MAYBE_UNMUTE_PLAYER);
             }
         });
     }

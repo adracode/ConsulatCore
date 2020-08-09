@@ -1,6 +1,7 @@
 package fr.amisoz.consulatcore.guis.city;
 
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.guis.city.bank.BankGui;
 import fr.amisoz.consulatcore.guis.city.changehome.ChangeHomeGui;
 import fr.amisoz.consulatcore.guis.city.claimlist.ClaimsGui;
@@ -25,6 +26,7 @@ import fr.leconsulat.api.gui.gui.module.api.Relationnable;
 import fr.leconsulat.api.gui.gui.template.DataRelatGui;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
+import fr.leconsulat.api.utils.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -136,7 +138,7 @@ public class CityGui extends DataRelatGui<City> {
                 }
                 if(!city.hasHome()){
                     ZoneManager.getInstance().setHome(city, player.getPlayer().getLocation());
-                    player.sendMessage("§aTu as déplacé le home de ta ville.");
+                    player.sendMessage(Text.YOU_SET_HOME_CITY);
                 } else {
                     confirmSethome(player);
                 }
@@ -163,24 +165,20 @@ public class CityGui extends DataRelatGui<City> {
                 }
                 if(!getData().hasMoney(City.RENAME_TAX)){
                     player.getPlayer().closeInventory();
-                    player.sendMessage("§cLa banque de ville n'a pas assez d'argent (argent requis: " + ConsulatCore.formatMoney(City.RENAME_TAX) + ").");
+                    player.sendMessage(Text.NOT_ENOUGH_MONEY_CITY(City.RENAME_TAX));
                     return;
                 }
                 GuiManager.getInstance().userInput(player, (input) -> {
-                    input = input.trim().replaceAll(" +", " ");
-                    if(input.length() > City.MAX_LENGTH_NAME){
-                        player.sendMessage("§cLe nouveau nom est trop long.");
+                    if(!City.VALID_NAME.matcher(input).matches()){
+                        player.sendMessage(Text.INVALID_CITY_NAME);
                         return;
                     }
-                    if(!City.TEST_NAME.matcher(input).matches()){
-                        player.sendMessage("§cLe nouveau nom de ville n'est pas valide.");
-                        return;
-                    }
+                    input = StringUtils.capitalize(input);
                     if(ZoneManager.getInstance().getCity(input) != null){
-                        player.sendMessage("§cIl existe déjà une ville portant ce nom.");
+                        player.sendMessage(Text.CITY_ALREADY_EXISTS);
                         return;
                     }
-                    player.sendMessage("§7Tu as renommé la ville §a" + input + " §7! §8(§7Ancien nom: §e" + city.getName() + "§8)§7.");
+                    player.sendMessage(Text.CITY_RENAMED(city.getName(), input));
                     ZoneManager.getInstance().renameCity(city, input);
                 }, new String[]{"", "", "^^^^^^^^^^^^^^", "Nouveau nom"}, 0, 1);
             }
@@ -232,7 +230,7 @@ public class CityGui extends DataRelatGui<City> {
         ChangeHomeGui changeHomeGui = (ChangeHomeGui)getLegacyChild(HOME);
         if(changeHomeGui != null){
             for(HumanEntity player : changeHomeGui.getInventory().getViewers()){
-                player.sendMessage("§cLe home de la ville a été changé.");
+                player.sendMessage(Text.CITY_HOME_CHANGED);
             }
         }
     }

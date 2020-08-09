@@ -38,8 +38,10 @@ public class CityChannel extends Channel implements Speakable {
     @Override
     public String speak(ConsulatPlayer consulatPlayer, String message){
         SurvivalPlayer survivalPlayer = (SurvivalPlayer)consulatPlayer;
-        return "§8[§d" + survivalPlayer.getCity().getName() + "§8] "
-                + "§7(§d" + survivalPlayer.getCity().getCityPlayer(survivalPlayer.getUUID()).getRank().getRankName()
+        City city = survivalPlayer.getCity();
+        CityRank rank = city.getCityPlayer(survivalPlayer.getUUID()).getRank();
+        return "§8[§d" + city.getName() + "§8] "
+                + "§7("+ rank.getColor() + rank.getRankName()
                 + "§7) §a" + survivalPlayer.getName() + "§7 > §e" + message;
     }
 }

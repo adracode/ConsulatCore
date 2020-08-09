@@ -1,6 +1,7 @@
 package fr.amisoz.consulatcore;
 
 
+import fr.amisoz.consulatcore.channel.StaffChannel;
 import fr.amisoz.consulatcore.chunks.ChunkManager;
 import fr.amisoz.consulatcore.commands.cities.CityCommand;
 import fr.amisoz.consulatcore.commands.claims.AccessCommand;
@@ -81,11 +82,13 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     private static Random random;
     
     private Location spawn;
+    private World overworld;
     public SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy 'à' HH:mm");
     private DecimalFormat moneyFormat;
     private ModerationDatabase moderationDatabase;
     private boolean chat = true;
     private Channel spy;
+    private StaffChannel staffChannel;
     private SafariServer safari;
     private HubServer hub;
     
@@ -107,10 +110,12 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         DecimalFormatSymbols custom = new DecimalFormatSymbols();
         custom.setGroupingSeparator(' ');
         moneyFormat = new DecimalFormat("###,###,###,###.## ¢", custom);
-        spawn = new Location(Bukkit.getWorlds().get(0), 330, 65, -438, -145, 0);
+        overworld = Bukkit.getWorlds().get(0);
+        spawn = new Location(overworld, 330, 65, -438, -145, 0);
         new DuelManager();
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         spy = new SpyChannel();
+        staffChannel = new StaffChannel();
         new ZoneManager();
         try {
             ChunkManager chunkManager = ChunkManager.getInstance();
@@ -236,7 +241,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     private void registerEvents(){
         Bukkit.getPluginManager().registerEvents(this, this);
         Bukkit.getPluginManager().registerEvents(new ChatListeners(), this);
-        Bukkit.getPluginManager().registerEvents(new InventoryListeners(this), this);
+        Bukkit.getPluginManager().registerEvents(new InventoryListeners(), this);
         Bukkit.getPluginManager().registerEvents(new InteractListener(this), this);
         Bukkit.getPluginManager().registerEvents(new DamageListener(), this);
         Bukkit.getPluginManager().registerEvents(new MobListeners(), this);
@@ -285,6 +290,10 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         this.spawn = spawn;
     }
     
+    public World getOverworld(){
+        return overworld;
+    }
+    
     public boolean isCustomRankForbidden(String rank){
         return forbiddenPerso.contains(rank.toLowerCase());
     }
@@ -299,6 +308,10 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     
     public Channel getSpy(){
         return spy;
+    }
+    
+    public StaffChannel getStaffChannel(){
+        return staffChannel;
     }
     
     public SafariServer getSafari(){

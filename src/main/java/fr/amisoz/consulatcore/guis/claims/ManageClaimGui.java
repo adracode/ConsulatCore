@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.guis.claims;
 
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.guis.city.CityGui;
 import fr.amisoz.consulatcore.guis.city.claimlist.ClaimsGui;
 import fr.amisoz.consulatcore.guis.claims.permissions.AccessPermissionsGui;
@@ -25,7 +26,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.Objects;
+import java.util.UUID;
 
 public class ManageClaimGui extends DataRelatPagedGui<Claim> {
     
@@ -125,9 +128,9 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
         if(allow){
             page.getGui().setFakeItem(MANAGE_INTERACT_SLOT, null, player);
         } else {
-            List<String> description = page.getGui().getItem(MANAGE_INTERACT_SLOT).getDescription();
-            description.addAll(Arrays.asList("", "§cTu ne peux pas", "§cchanger l'interaction"));
-            setDescriptionPlayer(MANAGE_INTERACT_SLOT, player, description.toArray(new String[0]));
+            setDescriptionPlayer(MANAGE_INTERACT_SLOT, player, GuiItem.getDescription(
+                    page.getGui().getItem(MANAGE_INTERACT_SLOT),
+                    "", "§cTu ne peux pas", "§cchanger l'interaction"));
         }
     }
     
@@ -175,22 +178,22 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
                 GuiManager.getInstance().userInput(event.getPlayer(), (input) -> {
                     UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(input);
                     if(targetUUID == null){
-                        player.sendMessage("§cCe joueur n'existe pas.");
+                        player.sendMessage(Text.PLAYER_DOESNT_EXISTS);
                         return;
                     }
                     if(zone instanceof City && !((City)zone).isMember(targetUUID)){
-                        player.sendMessage("§cCe joueur n'est pas membre de la ville");
+                        player.sendMessage(Text.PLAYER_DOESNT_BELONGS_CITY);
                         return;
                     }
                     if((targetUUID.equals(player.getUUID()) || targetUUID.equals(zone.getOwner())) && !ConsulatAPI.getConsulatAPI().isDebug()){
-                        player.sendMessage("§cTu ne peux pas modifier l'accès de ce joueur.");
+                        player.sendMessage(Text.CANT_MANAGE_ACCESS_PLAYER);
                         return;
                     }
                     if(!getData().addPlayer(targetUUID)){
-                        player.sendMessage("§cCe joueur a déjà accès à ce claim.");
+                        player.sendMessage(Text.PLAYER_ALREADY_ACCESS_CLAIM);
                         return;
                     }
-                    player.sendMessage("§aTu as ajouté " + input + " à ce claim");
+                    player.sendMessage(Text.ADD_PLAYER_CLAIM(input));
                 }, new String[]{"", "^^^^^^^^^^^^^^", "Entre le joueur", "à ajouter"}, 0);
             }
             return;

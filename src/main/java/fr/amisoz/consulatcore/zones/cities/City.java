@@ -43,8 +43,8 @@ import java.util.regex.Pattern;
 @SuppressWarnings({"UnusedReturnValue", "BooleanMethodIsAlwaysInverted"})
 public class City extends Zone {
     
-    public static final Pattern TEST_NAME = Pattern.compile("^[ a-zA-Z0-9_'àçéèêîïùÀÇÉÈÊÎÏÙ]+$");
-    public static final int MAX_LENGTH_NAME = 32;
+    public static final Pattern VALID_NAME = Pattern.compile("[a-zA-ZàçéèêîïùÀÇÉÈÊÎÏÙ]{3,16}");
+    public static final Pattern VALID_RANK = Pattern.compile("[a-zA-ZàçéèêîïùÀÇÉÈÊÎÏÙ]{3,16}");
     public static final int RENAME_TAX = 5_000;
     
     private double bank;
@@ -611,7 +611,7 @@ public class City extends Zone {
             if(city.has("Home")){
                 CompoundTag home = city.getCompound("Home");
                 this.home = new Location(
-                        Bukkit.getWorlds().get(0),
+                        ConsulatCore.getInstance().getOverworld(),
                         home.getDouble("x"),
                         home.getDouble("y"),
                         home.getDouble("z"),

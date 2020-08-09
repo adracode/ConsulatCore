@@ -17,14 +17,12 @@ import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
-import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 
-import java.sql.SQLException;
 import java.util.Set;
 
 public class ClaimCommand extends ConsulatCommand {
-
+    
     public ClaimCommand(){
         super("consulat.core", "claim", "/claim | /claim kick <Joueur> | /claim desc <Description> | /claim list", 0, Rank.JOUEUR);
         suggest(LiteralArgumentBuilder.literal("kick")
@@ -40,24 +38,23 @@ public class ClaimCommand extends ConsulatCommand {
                         })
                         .then(Arguments.playerList("joueur")));
     }
-
+    
     @Override
     public void onCommand(ConsulatPlayer sender, String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
         if(args.length == 0){
-            if(sender.getPlayer().getLocation().getWorld() != Bukkit.getWorlds().get(0)){
-                sender.sendMessage(Text.PREFIX + "§cIl faut être dans le monde de base pour claim.");
+            if(sender.getPlayer().getLocation().getWorld() != ConsulatCore.getInstance().getOverworld()){
+                sender.sendMessage(Text.YOU_CANT_CLAIM_DIMENSION);
                 return;
             }
             if(player.getClaim() != null){
-                sender.sendMessage(Text.PREFIX + "§cCe chunk est déjà claim.");
+                sender.sendMessage(Text.CHUNK_ALREADY_CLAIM);
                 return;
             }
             if(!player.hasMoney(Claim.BUY_CLAIM)){
-                sender.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent pour claim ce chunk, il te faut " + ConsulatCore.formatMoney(Claim.BUY_CLAIM));
+                sender.sendMessage(Text.NOT_ENOUGH_MONEY(Claim.BUY_CLAIM));
                 return;
             }
-            sender.sendMessage("§aClaim du chunk en cours...");
             Chunk chunk = sender.getPlayer().getChunk();
             Zone zone = player.getZone();
             if(zone == null){
@@ -66,54 +63,50 @@ public class ClaimCommand extends ConsulatCommand {
             }
             ClaimManager.getInstance().playerClaim(chunk.getX(), chunk.getZ(), zone);
             player.removeMoney(Claim.BUY_CLAIM);
-            sender.sendMessage(Text.PREFIX + "§aTu as claim ce chunk pour un prix de " + ConsulatCore.formatMoney(Claim.BUY_CLAIM) + ".");
+            sender.sendMessage(Text.YOU_CLAIMED_CHUNK(Claim.BUY_CLAIM));
             return;
         }
         switch(args[0].toLowerCase()){
             case "kick":{
                 if(args.length == 1){
-                    sender.sendMessage(Text.PREFIX + "§cMerci de spécifier le joueur à kick.");
+                    sender.sendMessage(Text.NO_PLAYER);
                     return;
                 }
                 SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(CPlayerManager.getInstance().getPlayerUUID(args[1]));
                 if(target == null){
-                    sender.sendMessage(Text.PREFIX + "§cCe joueur n'est pas connecté.");
+                    sender.sendMessage(Text.PLAYER_NOT_CONNECTED);
                     return;
                 }
                 if(sender.equals(target)){
-                    sender.sendMessage(Text.PREFIX + "§cTu ne peux pas te kick toi-même.");
+                    sender.sendMessage(Text.CANT_KICK_YOURSELF);
                     return;
                 }
                 Claim chunkTarget = target.getClaim();
                 if(sender.hasPower(Rank.RESPONSABLE)){
                     if(chunkTarget == null){
-                        sender.sendMessage(Text.PREFIX + "§cCe joueur n'est pas sur un claim.");
+                        sender.sendMessage(Text.PLAYER_NOT_IN_CLAIM);
                         return;
                     }
                 } else {
                     if(chunkTarget == null || !chunkTarget.isOwner(sender.getUUID())){
-                        sender.sendMessage(Text.PREFIX + "§cCe joueur n'est pas sur l'un de tes claims.");
+                        sender.sendMessage(Text.PLAYER_NOT_IN_YOUR_CLAIM);
                         return;
                     }
                 }
-                if(target.hasPower(Rank.RESPONSABLE)){
-                    sender.sendMessage(Text.PREFIX + "§cTu ne peux pas kick ce joueur.");
+                if(target.hasPower(Rank.RESPONSABLE) || target.isInModeration()){
+                    sender.sendMessage(Text.CANT_KICK_PLAYER);
                     return;
                 }
                 target.getPlayer().teleportAsync(ConsulatCore.getInstance().getSpawn());
-                sender.sendMessage(Text.PREFIX + "§aTu as kick §e" + target.getName() + "§a de tes claims.");
-                target.sendMessage(Text.PREFIX + "§e" + sender.getName() + "§c t'a kick du claim dans lequel tu te trouvais. Tu as été téléporté au spawn.");
+                sender.sendMessage(Text.YOU_KICKED_PLAYER_CLAIM(target.getName()));
+                target.sendMessage(Text.YOU_BEEN_KICKED_BY(sender.getName()));
                 return;
             }
             case "desc":
             case "description":{
                 Claim claim = player.getClaim();
-                if(claim == null){
-                    sender.sendMessage(Text.PREFIX + "§cCe chunk n'est pas claim.");
-                    return;
-                }
-                if(!player.hasPower(Rank.RESPONSABLE) && !claim.isOwner(sender.getUUID())){
-                    sender.sendMessage(Text.PREFIX + "§cCe claim ne t'appartient pas.");
+                if(claim == null || !player.hasPower(Rank.RESPONSABLE) && !claim.isOwner(sender.getUUID())){
+                    sender.sendMessage(Text.NOT_IN_YOUR_CLAIM);
                     return;
                 }
                 final String description;
@@ -126,20 +119,12 @@ public class ClaimCommand extends ConsulatCommand {
                     }
                     description = descriptionBuilder.toString();
                 }
-                Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                    try {
-                        ClaimManager.getInstance().setDescription(claim, description);
-                        if(description == null){
-                            sender.sendMessage(Text.PREFIX + "§aTu as reset la description de ce claim.");
-                        } else {
-                            sender.sendMessage(Text.PREFIX + "§aTu as ajouté la description suivante à ce claim:");
-                            sender.sendMessage(Text.PREFIX + "§7" + description);
-                        }
-                    } catch(SQLException e){
-                        sender.sendMessage("§cUne erreur interne est survenue.");
-                        e.printStackTrace();
-                    }
-                });
+                if(description == null){
+                    sender.sendMessage(Text.YOU_RESET_DESCRIPTION_CLAIM);
+                } else {
+                    sender.sendMessage(Text.YOU_CHANGE_DESCRIPTION_CLAIM(description));
+                }
+                claim.setDescription(description);
                 return;
             }
             case "info":
@@ -150,7 +135,7 @@ public class ClaimCommand extends ConsulatCommand {
                 if(args.length == 1){
                     Claim claim = player.getClaim();
                     if(claim == null){
-                        sender.sendMessage(Text.PREFIX + "§cCette zone n'est pas claim.");
+                        sender.sendMessage(Text.NOT_CLAIM);
                         return;
                     }
                     target = claim.getOwnerName();
@@ -159,39 +144,31 @@ public class ClaimCommand extends ConsulatCommand {
                 }
                 SPlayerManager.getInstance().fetchOffline(target, survivalOffline -> {
                     if(survivalOffline == null){
-                        sender.sendMessage(Text.PREFIX + "§cLe joueur " + target + " ne s'est jamais connecté");
+                        sender.sendMessage(Text.PLAYER_DOESNT_EXISTS);
                         return;
                     }
-                    sender.sendMessage(Text.PREFIX + "§7Informations sur §a" + survivalOffline.getName() + "§7: ");
-                    sender.sendMessage(Text.PREFIX + "§eGrade: §a" + survivalOffline.getRank().getRankName());
-                    sender.sendMessage(Text.PREFIX + "§eArgent: §a" + survivalOffline.getMoney());
-                    sender.sendMessage(Text.PREFIX + "§eA rejoint le: §a" + survivalOffline.getRegistered());
-                    sender.sendMessage(Text.PREFIX + "§eDernière connexion: §a" + survivalOffline.getLastConnection());
-
+                    sender.sendMessage(Text.INFO_CLAIM(survivalOffline));
                 });
                 return;
             case "list":
                 Zone zone = player.getZone();
                 Set<Claim> claims;
-                if(zone == null || (claims = zone.getZoneClaims()).size() == 0){
-                    sender.sendMessage("§eTu ne possèdes aucun claim.");
+                if(zone == null || (claims = zone.getZoneClaims()).isEmpty()){
+                    sender.sendMessage(Text.YOU_NO_CLAIM);
                     return;
                 }
-                int i = 0;
-                for(Claim claim : claims){
-                    sender.sendMessage("§6Claim §e" + (++i) + "§6: §eX:§c " + (claim.getX() * 16) + " §eY:§c " + (claim.getZ() * 16));
-                }
+                sender.sendMessage(Text.LIST_CLAIM(claims));
                 return;
             case "options":{
                 Claim claim = player.getClaim();
                 if(claim == null || !claim.isOwner(player.getUUID())){
-                    player.sendMessage("§cTu dois être dans un de tes claims pour effectuer cette commande.");
+                    player.sendMessage(Text.NOT_IN_YOUR_CLAIM);
                     return;
                 }
                 GuiManager.getInstance().getContainer("claim").getGui(claim).open(player);
             }
             break;
         }
-        sender.sendMessage("§c" + getUsage());
+        sender.sendMessage(Text.COMMAND_USAGE(this));
     }
 }

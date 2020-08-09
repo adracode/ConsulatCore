@@ -7,9 +7,6 @@ import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
-import org.bukkit.Bukkit;
-
-import java.sql.SQLException;
 
 public class FlyCommand extends ConsulatCommand {
     
@@ -29,40 +26,40 @@ public class FlyCommand extends ConsulatCommand {
     public void onCommand(ConsulatPlayer sender, String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
         if(!player.hasFly()){
-            sender.sendMessage(Text.FLY + "Erreur | Tu n'as pas acheté le fly !");
+            sender.sendMessage(Text.NO_FLY);
             return;
         }
-        if(sender.getPlayer().getWorld() != Bukkit.getWorlds().get(0)){
-            sender.sendMessage(Text.FLY + "Erreur | Tu dois être dans le monde de base !");
+        if(sender.getPlayer().getWorld() != ConsulatCore.getInstance().getOverworld()){
+            sender.sendMessage(Text.CANT_FLY_DIMENSION);
             return;
         }
         if(player.isInModeration()){
-            sender.sendMessage(Text.PREFIX + "§cTu ne peux pas utiliser cette commande en modération");
+            sender.sendMessage(Text.CANT_USE_COMMAND_STAFF_MODE);
             return;
         }
         switch(args[0].toLowerCase()){
             case "start":
                 if(player.isFlying()){
-                    sender.sendMessage(Text.FLY + "Erreur | Ton fly est déjà actif !");
+                    sender.sendMessage(Text.FLY_ALREADY_ON);
                     return;
                 }
                 if(!player.isFlyAvailable()){
                     long timeWait = (player.getFlyReset() - System.currentTimeMillis()) / 1000;
                     long minutes = ((timeWait / 60) % 60);
                     long seconds = (timeWait % 60);
-                    player.sendMessage(Text.FLY + "Erreur | Tu n'as pas attendu assez longtemps ! Tu dois encore attendre " + minutes + "m" + seconds + "s.");
+                    player.sendMessage(Text.WAIT_FLY(minutes, seconds));
                     return;
                 }
                 if(!player.canFlyHere()){
-                    sender.sendMessage(Text.FLY + "Erreur | Tu ne peux pas fly dans un autre claim que le tien ou ceux que tu as accès !");
+                    sender.sendMessage(Text.CANT_FLY_HERE);
                     return;
                 }
                 player.enableFly();
-                sender.sendMessage(Text.FLY + "Tu as activé ton fly !");
+                sender.sendMessage(Text.FLY_ON);
                 break;
             case "info":{
                 if(player.hasInfiniteFly()){
-                    player.sendMessage(Text.FLY + "§aTu as le fly infini.");
+                    player.sendMessage(Text.INFINITE_FLY);
                     return;
                 }
                 int timeLeft;
@@ -73,31 +70,20 @@ public class FlyCommand extends ConsulatCommand {
                 }
                 long minutes = ((timeLeft / 60) % 60);
                 long seconds = timeLeft % 60;
-                sender.sendMessage(Text.FLY + "Tu as encore ton fly pendant " + minutes + "m " + seconds + "s.");
+                sender.sendMessage(Text.FLY_INFO(minutes, seconds));
             }
             break;
             case "stop":{
-                if(!player.hasFly()){
-                    sender.sendMessage(Text.FLY + "Erreur | Tu n'as pas de fly.");
-                    return;
-                }
                 if(!player.isFlying()){
-                    sender.sendMessage(Text.FLY + "Erreur | Tu n'es pas en fly.");
+                    sender.sendMessage(Text.NOT_IN_FLY);
                     return;
                 }
-                Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                    try {
-                        player.disableFly();
-                        sender.sendMessage(Text.FLY + (player.hasInfiniteFly() ? "Tu as enlevé ton fly infini" : "Ton fly est en pause !"));
-                    } catch(SQLException e){
-                        sender.sendMessage("§cUne erreur interne est survenue");
-                        e.printStackTrace();
-                    }
-                });
+                player.disableFly();
+                sender.sendMessage(Text.FLY + (player.hasInfiniteFly() ? Text.FLY_INFINITE_OFF : Text.FLY_OFF));
             }
             break;
             default:
-                sender.sendMessage(Text.FLY + getUsage());
+                sender.sendMessage(Text.COMMAND_USAGE(this));
                 break;
         }
     }

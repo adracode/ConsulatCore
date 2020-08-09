@@ -1,12 +1,12 @@
 package fr.amisoz.consulatcore.shop.player;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.guis.shop.ShopGui;
 import fr.amisoz.consulatcore.shop.Shop;
 import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.amisoz.consulatcore.utils.CoordinatesUtils;
 import fr.leconsulat.api.gui.GuiContainer;
 import fr.leconsulat.api.gui.GuiManager;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -176,7 +176,7 @@ public class PlayerShop implements Shop {
     }
     
     public Location getLocation(){
-        return new Location(Bukkit.getWorlds().get(0), getX(), getY(), getZ());
+        return new Location(ConsulatCore.getInstance().getOverworld(), getX(), getY(), getZ());
     }
     
     public Material getItemType(){

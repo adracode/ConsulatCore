@@ -1,12 +1,16 @@
 package fr.amisoz.consulatcore.guis.moderation;
 
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.moderation.SanctionObject;
 import fr.amisoz.consulatcore.moderation.SanctionType;
 import fr.leconsulat.api.ConsulatAPI;
+import fr.leconsulat.api.gui.GuiContainer;
 import fr.leconsulat.api.gui.GuiItem;
+import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.gui.event.GuiOpenEvent;
 import fr.leconsulat.api.gui.gui.IGui;
+import fr.leconsulat.api.gui.gui.module.api.Datable;
 import fr.leconsulat.api.gui.gui.template.DataGui;
 import fr.leconsulat.api.player.ConsulatOffline;
 import org.bukkit.Bukkit;
@@ -37,7 +41,7 @@ public class AntecedentsGui extends DataGui<ConsulatOffline> {
                 Bukkit.getScheduler().runTask(ConsulatCore.getInstance(), () -> {
                     if (sanctions.size() == 0) {
                         player.closeInventory();
-                        player.sendMessage("§cCe joueur n'a pas d'antécédents.");
+                        player.sendMessage(Text.NO_ANTECEDENT);
                         return;
                     }
                     for (int i = 0; i < sanctions.size(); i++) {
@@ -56,7 +60,7 @@ public class AntecedentsGui extends DataGui<ConsulatOffline> {
             } catch (SQLException e) {
                 Bukkit.getScheduler().runTask(ConsulatCore.getInstance(), () -> {
                     player.closeInventory();
-                    player.sendMessage("§cUne erreur s'est produite.");
+                    player.sendMessage(Text.ERROR);
                     e.printStackTrace();
                 });
             }
@@ -88,4 +92,23 @@ public class AntecedentsGui extends DataGui<ConsulatOffline> {
 
         return sanctions;
     }
+    
+    public static class Container extends GuiContainer<ConsulatOffline> {
+    
+        private static Container instance;
+    
+        public Container(){
+            if(instance != null){
+                throw new IllegalStateException();
+            }
+            instance = this;
+            GuiManager.getInstance().addContainer("antecedents", this);
+        }
+    
+        @Override
+        public Datable<ConsulatOffline> createGui(ConsulatOffline player){
+            return new AntecedentsGui(player);
+        }
+    }
+    
 }

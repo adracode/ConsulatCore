@@ -1,6 +1,7 @@
 package fr.amisoz.consulatcore.commands.players;
 
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.utils.CustomEnum;
 import fr.leconsulat.api.commands.ConsulatCommand;
@@ -28,16 +29,17 @@ public class PersoCommand extends ConsulatCommand {
     public void onCommand(ConsulatPlayer sender, String[] args){
         SurvivalPlayer survivalPlayer = (SurvivalPlayer)sender;
         if(!survivalPlayer.hasCustomRank()){
-            sender.sendMessage("§cTu n'as pas de grade personnalisé.");
+            sender.sendMessage(Text.NO_CUSTOM_RANK);
             return;
         }
         if(args.length == 1 && args[0].equalsIgnoreCase("reset")){
             Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
                 try {
                     survivalPlayer.resetCustomRank();
-                    sender.sendMessage("§aTon grade personnalisé a été réinitialisé.");
+                    sender.sendMessage(Text.CUSTOM_RANK_RESET);
                 } catch(SQLException e){
-                    sender.sendMessage("§cUne erreur interne est survenue.");
+                    e.printStackTrace();
+                    sender.sendMessage(Text.ERROR);
                 }
             });
             return;
@@ -45,7 +47,7 @@ public class PersoCommand extends ConsulatCommand {
         switch(survivalPlayer.getPersoState()){
             case START:
                 survivalPlayer.setPersoState(CustomEnum.PREFIX_COLOR);
-                sender.sendMessage("§6Choisis la couleur de ton grade : ");
+                sender.sendMessage(Text.CHOOSE_CUSTOM_RANK_COLOR);
                 TextComponent[] textComponents = ConsulatCore.getInstance().getTextPerso().toArray(new TextComponent[0]);
                 sender.sendMessage(textComponents);
                 break;
@@ -53,21 +55,21 @@ public class PersoCommand extends ConsulatCommand {
                 if(args.length != 1){
                     return;
                 }
-                survivalPlayer.setColorPrefix(ChatColor.getByChar(args[0]));
+                ChatColor color = ChatColor.getByChar(args[0]);
+                survivalPlayer.setColorPrefix(color);
                 survivalPlayer.setPersoState(CustomEnum.PREFIX);
-                sender.sendMessage("§7Tu as choisi §" + args[0] + "cette couleur !");
-                sender.sendMessage("§6Écris dans le chat le nom de ton grade : §o(10 caractères maximum, celui-ci aura des crochets par défaut)");
+                sender.sendMessage(Text.CUSTOM_RANK_COLOR_CHOSEN(color));
                 break;
             case NAME_COLOR:
                 if(args.length != 1){
                     return;
                 }
                 survivalPlayer.setColorName(ChatColor.getByChar(args[0]));
-                sender.sendMessage("§6Voilà ton nouveau grade : " + ChatColor.translateAlternateColorCodes('&', survivalPlayer.getCustomRank()) + sender.getName());
+                sender.sendMessage(Text.NEW_CUSTOM_RANK(survivalPlayer));
                 try {
                     survivalPlayer.applyCustomRank();
                 } catch(SQLException e){
-                    sender.sendMessage("§cErreur lors de la sauvegarde de ton grade !");
+                    sender.sendMessage(Text.ERROR);
                     e.printStackTrace();
                 }
                 survivalPlayer.setPersoState(CustomEnum.START);

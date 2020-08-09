@@ -3,6 +3,7 @@ package fr.amisoz.consulatcore.guis.shop.admin;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.amisoz.consulatcore.shop.admin.AdminShop;
 import fr.leconsulat.api.gui.GuiItem;
 import fr.leconsulat.api.gui.event.GuiClickEvent;
@@ -106,13 +107,13 @@ public class SellGui extends AdminShopGui {
             amount = numberToSell;
         }
         if(numberToSell < amount || numberToSell == 0){
-            player.sendMessage("§cTu n'as pas d'item à vendre.");
+            player.sendMessage(Text.NO_ITEM_TO_SELL);
             player.getPlayer().closeInventory();
             return;
         }
         player.removeSimilarItems(toSell, amount);
         player.addMoney(sellPrice);
-        player.sendMessage(Text.PREFIX + "Tu as vendu §e" + toSell.getType().name() + " x" + amount + " §6pour §e" + ConsulatCore.formatMoney(sellPrice * amount));
+        player.sendMessage(ShopManager.getInstance().formatShopMessage(shop.getItem(), amount, sellPrice * amount, ShopManager.ShopAction.SELL));
         onOpened(new GuiOpenEvent(player));
     }
 }

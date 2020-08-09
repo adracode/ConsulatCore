@@ -61,20 +61,20 @@ public class BankGui extends DataRelatGui<City> {
                     try {
                         moneyToGive = Double.parseDouble(input);
                     } catch(NumberFormatException exception){
-                        player.sendMessage("§cCe nombre n'est pas valide.");
+                        player.sendMessage(Text.INVALID_NUMBER);
                         return;
                     }
                     if(moneyToGive <= 0 || moneyToGive > 1_000_000){
-                        player.sendMessage(Text.PREFIX + "§cTu ne peux pas donner " + ConsulatCore.formatMoney(moneyToGive) + " à la banque de ta ville.");
+                        player.sendMessage(Text.INVALID_MONEY);
                         return;
                     }
                     if(!player.hasMoney(moneyToGive)){
-                        player.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent !");
+                        player.sendMessage(Text.NOT_ENOUGH_MONEY);
                         return;
                     }
                     player.removeMoney(moneyToGive);
                     player.getCity().addMoney(moneyToGive);
-                    player.sendMessage("§aTu as ajouté §7" + ConsulatCore.formatMoney(moneyToGive) + " §aà ta ville");
+                    player.sendMessage(Text.ADD_MONEY_CITY(moneyToGive));
                 }, new String[]{"", "^^^^^^^^^^^^^^", "Entre le montant", "à ajouter"}, 0);
                 break;
             case WITHDRAW_SLOT:
@@ -87,21 +87,21 @@ public class BankGui extends DataRelatGui<City> {
                     try {
                         moneyToWithdraw = Double.parseDouble(input);
                     } catch(NumberFormatException exception){
-                        player.sendMessage("§cCe nombre n'est pas valide.");
+                        player.sendMessage(Text.INVALID_NUMBER);
                         return;
                     }
                     if(moneyToWithdraw <= 0 || moneyToWithdraw > 1_000_000){
-                        player.sendMessage(Text.PREFIX + "§cTu ne peux pas retirer " + ConsulatCore.formatMoney(moneyToWithdraw) + " de la banque de ta ville.");
+                        player.sendMessage(Text.INVALID_MONEY);
                         return;
                     }
                     City city = player.getCity();
                     if(!city.hasMoney(moneyToWithdraw)){
-                        player.sendMessage("§cLa banque de ville n'a pas assez d'argent pour retirer ce montant.");
+                        player.sendMessage(Text.NOT_ENOUGH_MONEY_CITY);
                         return;
                     }
                     city.removeMoney(moneyToWithdraw);
                     player.addMoney(moneyToWithdraw);
-                    player.sendMessage("§aTu as retiré §7" + ConsulatCore.formatMoney(moneyToWithdraw) + " §ade ta ville");
+                    player.sendMessage(Text.WITHDRAW_MONEY_CITY(moneyToWithdraw));
                 }, new String[]{"", "^^^^^^^^^^^^^^", "Entre le montant", "à retirer"}, 0);
                 break;
         }

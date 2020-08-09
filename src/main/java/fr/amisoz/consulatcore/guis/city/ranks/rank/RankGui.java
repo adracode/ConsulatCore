@@ -1,6 +1,7 @@
 package fr.amisoz.consulatcore.guis.city.ranks.rank;
 
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.CityPermission;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.zones.cities.City;
@@ -123,8 +124,8 @@ public class RankGui extends DataRelatGui<CityRank> {
                 City city = getCity();
                 GuiManager.getInstance().userInput(player,
                         input -> {
-                            if(input.isEmpty()){
-                                player.sendMessage("§cLe grade entré n'est pas valide.");
+                            if(!City.VALID_RANK.matcher(input).matches()){
+                                player.sendMessage(Text.INVALID_RANK);
                                 return;
                             }
                             city.setRankName(getData().getId(), input);

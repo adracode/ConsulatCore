@@ -2,6 +2,7 @@ package fr.amisoz.consulatcore.commands.players;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.moderation.MuteObject;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.ConsulatCommand;
@@ -28,7 +29,7 @@ public class AdvertCommand extends ConsulatCommand {
         long delay = this.delay.getLong(sender.getUUID());
         if(delay != -1){
             if((System.currentTimeMillis() - delay) < 3 * 60 * 60 * 1000){
-                sender.sendMessage("§cTu dois attendre pour refaire cette commande.");
+                sender.sendMessage(Text.NEED_WAIT);
                 return;
             }
         }
@@ -36,16 +37,15 @@ public class AdvertCommand extends ConsulatCommand {
         if(survivalSender.isMuted()){
             MuteObject muteInfo = survivalSender.getMute();
             if(muteInfo != null){
-                sender.sendMessage("§cTu es actuellement mute.\n§4Raison : §c" + muteInfo.getReason() + "\n§4Jusqu'au : §c" + muteInfo.getEndDate());
+                sender.sendMessage(Text.YOU_MUTE(muteInfo));
                 return;
             }
         }
         this.delay.put(sender.getUUID(), System.currentTimeMillis());
-        StringBuilder builder = new StringBuilder(args[0]);
+        StringBuilder message = new StringBuilder(args[0]);
         for(int i = 1; i < args.length; ++i){
-            builder.append(" ").append(args[i]);
+            message.append(" ").append(args[i]);
         }
-        String message = builder.toString();
-        Bukkit.broadcastMessage("§e[Annonce] §6" + sender.getName() + "§7 : §r" + message);
+        Bukkit.broadcastMessage(Text.ADVERT(sender.getName(), message.toString()));
     }
 }

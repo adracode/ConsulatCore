@@ -25,7 +25,6 @@ public class BroadcastCommand extends ConsulatCommand {
         for(int i = 1; i < args.length; ++i){
             builder.append(" ").append(args[i]);
         }
-        String message = builder.toString();
-        Bukkit.broadcastMessage(Text.BROADCAST_PREFIX + "§4" + sender.getName() + "§7 : §b" + message);
+        Bukkit.broadcastMessage(Text.BRODCAST(sender.getName(), builder.toString()));
     }
 }
