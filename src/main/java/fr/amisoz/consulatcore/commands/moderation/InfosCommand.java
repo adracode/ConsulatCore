@@ -17,6 +17,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,73 +30,12 @@ import java.util.Optional;
 public class InfosCommand extends ConsulatCommand {
     
     public InfosCommand(){
-        super("consulat.core", "infos", "/infos <Joueur>", 1, Rank.RESPONSABLE);
-        suggest(Arguments.playerList("joueur"));
-    }
-    
-    @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
-        SurvivalPlayer player = (SurvivalPlayer)sender;
-        
-        player.sendMessage(ChatColor.GRAY + "========" + ChatColor.YELLOW + " INFOS " + ChatColor.GRAY + "========");
-        player.sendMessage(ChatColor.GRAY + "Pseudo ⤗ " + ChatColor.AQUA + args[0]);
-        
-        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[0]);
-        player.sendMessage(ChatColor.GRAY + "Statut ⤗ " + (offlinePlayer.isOnline() ? ChatColor.GREEN + "Connecté" : ChatColor.RED + "Déconnecté"));
-        if(!offlinePlayer.hasPlayedBefore()){
-            player.sendMessage(ChatColor.GRAY + "Le joueur ne s'est jamais connecté.");
-            return;
-        }
-        
-        Date date = new Date(offlinePlayer.getFirstPlayed());
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy 'à' HH:mm:ss");
-        String firstPlayed = simpleDateFormat.format(date);
-        
-        player.sendMessage(ChatColor.GRAY + "Première connexion ⤗ " + ChatColor.DARK_PURPLE + firstPlayed);
-        
-        if(offlinePlayer.isOnline()){
-            Player target = offlinePlayer.getPlayer();
-            SurvivalPlayer survivalTarget = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[0]);
-            int flyTime = survivalTarget.getFlyTimeLeft();
-            
-            if(survivalTarget.hasInfiniteFly()){
-                player.sendMessage(ChatColor.GRAY + "Fly ⤗ " + ChatColor.YELLOW + "Infini" + ChatColor.GRAY + " • " + (survivalTarget.isFlying() ? ChatColor.GREEN + "Fly activé" : ChatColor.RED + "Fly désactivé"));
-            } else {
-                player.sendMessage(ChatColor.GRAY + "Fly ⤗ " + ChatColor.YELLOW + (flyTime / 60) + " minutes" + ChatColor.GRAY + " • " + (survivalTarget.isFlying() ? ChatColor.GREEN + "Fly activé" : ChatColor.RED + "Fly désactivé"));
-            }
-            
-            player.sendMessage(ChatColor.GRAY + "Grade ⤗ " + survivalTarget.getRank().getRankColor() + survivalTarget.getRank().getRankName() + ChatColor.GRAY + " ↭ Argent ⤗ " + ChatColor.BLUE + ConsulatCore.formatMoney(survivalTarget.getMoney()));
-        }
-        
-        
-        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-            try {
-                player.sendMessage(ChatColor.GRAY + "Dernières connexions : ");
-                sendConnections(args[0], player.getPlayer());
-                if(!offlinePlayer.isOnline()){
-                    Optional<SurvivalOffline> offlineConsulat = SPlayerManager.getInstance().fetchOffline(args[0]);
-                    if(!offlineConsulat.isPresent()){
-                        return;
-                    }
-                    SurvivalOffline offlineTarget = offlineConsulat.get();
-                    sendBan(args[0], player.getPlayer());
-                    player.sendMessage(ChatColor.GRAY + "Grade ⤗ " + offlineTarget.getRank().getRankColor() + offlineTarget.getRank().getRankName() + ChatColor.GRAY + " ↭ Argent ⤗ " + ChatColor.BLUE + ConsulatCore.formatMoney(offlineTarget.getMoney()));
-                }
-            } catch(SQLException e){
-                player.sendMessage(ChatColor.RED + "Erreur lors de la récupération de certaines informations.");
-                e.printStackTrace();
-            }
-            
-            TextComponent textComponent = new TextComponent(ChatColor.GRAY + "[" + ChatColor.GOLD + "Voir les homes" + ChatColor.GRAY + "]");
-            textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GRAY + "Clique pour voir les homes !").create()));
-            textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/home " + args[0] + ":"));
-            
-            TextComponent antecedentsComponent = new TextComponent(ChatColor.GRAY + "[" + ChatColor.GOLD + "Voir les antécédents" + ChatColor.GRAY + "]");
-            antecedentsComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GRAY + "Clique pour voir les antécédents !").create()));
-            antecedentsComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/antecedents " + args[0]));
-            
-            player.getPlayer().spigot().sendMessage(textComponent, antecedentsComponent);
-        });
+        super(ConsulatCore.getInstance(), "infos");
+        setDescription("Voir les informations d'un joueur").
+                setUsage("/infos <joueur> - Voir les informations d'un joueur").
+                setArgsMin(1).
+                setRank(Rank.RESPONSABLE).
+                suggest(Arguments.playerList("joueur"));
     }
     
     private void sendConnections(String playerName, Player moderator) throws SQLException{
@@ -132,5 +72,70 @@ public class InfosCommand extends ConsulatCommand {
         } else {
             moderator.sendMessage(ChatColor.GRAY + "Banni ⤗ " + ChatColor.GREEN + "Non");
         }
+    }
+    
+    @Override
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
+        SurvivalPlayer player = (SurvivalPlayer)sender;
+        
+        player.sendMessage(ChatColor.GRAY + "========" + ChatColor.YELLOW + " INFOS " + ChatColor.GRAY + "========");
+        player.sendMessage(ChatColor.GRAY + "Pseudo ⤗ " + ChatColor.AQUA + args[0]);
+        
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[0]);
+        player.sendMessage(ChatColor.GRAY + "Statut ⤗ " + (offlinePlayer.isOnline() ? ChatColor.GREEN + "Connecté" : ChatColor.RED + "Déconnecté"));
+        if(!offlinePlayer.hasPlayedBefore()){
+            player.sendMessage(ChatColor.GRAY + "Le joueur ne s'est jamais connecté.");
+            return;
+        }
+        
+        Date date = new Date(offlinePlayer.getFirstPlayed());
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy 'à' HH:mm:ss");
+        String firstPlayed = simpleDateFormat.format(date);
+        
+        player.sendMessage(ChatColor.GRAY + "Première connexion ⤗ " + ChatColor.DARK_PURPLE + firstPlayed);
+        
+        if(offlinePlayer.isOnline()){
+            Player target = offlinePlayer.getPlayer();
+            SurvivalPlayer survivalTarget = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[0]);
+            int flyTime = survivalTarget.getFlyTimeLeft();
+            
+            if(survivalTarget.hasInfiniteFly()){
+                player.sendMessage(ChatColor.GRAY + "Fly ⤗ " + ChatColor.YELLOW + "Infini" + ChatColor.GRAY + " • " + (survivalTarget.isFlying() ? ChatColor.GREEN + "Fly activé" : ChatColor.RED + "Fly désactivé"));
+            } else {
+                player.sendMessage(ChatColor.GRAY + "Fly ⤗ " + ChatColor.YELLOW + (flyTime / 60) + " minutes" + ChatColor.GRAY + " • " + (survivalTarget.isFlying() ? ChatColor.GREEN + "Fly activé" : ChatColor.RED + "Fly désactivé"));
+            }
+            
+            player.sendMessage(ChatColor.GRAY + "Grade ⤗ " + survivalTarget.getRank().getRankColor() + survivalTarget.getRank().getRankName() + ChatColor.GRAY + " ↭ Argent ⤗ " + ChatColor.BLUE + ConsulatCore.formatMoney(survivalTarget.getMoney()));
+        }
+        
+        
+        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
+            try {
+                player.sendMessage(ChatColor.GRAY + "Dernières connexions: ");
+                sendConnections(args[0], player.getPlayer());
+                if(!offlinePlayer.isOnline()){
+                    Optional<SurvivalOffline> offlineConsulat = SPlayerManager.getInstance().fetchOffline(args[0]);
+                    if(!offlineConsulat.isPresent()){
+                        return;
+                    }
+                    SurvivalOffline offlineTarget = offlineConsulat.get();
+                    sendBan(args[0], player.getPlayer());
+                    player.sendMessage(ChatColor.GRAY + "Grade ⤗ " + offlineTarget.getRank().getRankColor() + offlineTarget.getRank().getRankName() + ChatColor.GRAY + " ↭ Argent ⤗ " + ChatColor.BLUE + ConsulatCore.formatMoney(offlineTarget.getMoney()));
+                }
+            } catch(SQLException e){
+                player.sendMessage(ChatColor.RED + "Erreur lors de la récupération de certaines informations.");
+                e.printStackTrace();
+            }
+            
+            TextComponent textComponent = new TextComponent(ChatColor.GRAY + "[" + ChatColor.GOLD + "Voir les homes" + ChatColor.GRAY + "]");
+            textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GRAY + "Clique pour voir les homes !").create()));
+            textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/home " + args[0] + ":"));
+            
+            TextComponent antecedentsComponent = new TextComponent(ChatColor.GRAY + "[" + ChatColor.GOLD + "Voir les antécédents" + ChatColor.GRAY + "]");
+            antecedentsComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GRAY + "Clique pour voir les antécédents !").create()));
+            antecedentsComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/antecedents " + args[0]));
+            
+            player.getPlayer().spigot().sendMessage(textComponent, antecedentsComponent);
+        });
     }
 }

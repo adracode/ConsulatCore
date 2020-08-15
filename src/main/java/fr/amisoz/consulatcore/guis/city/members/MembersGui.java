@@ -6,7 +6,6 @@ import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.zones.ZoneManager;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.amisoz.consulatcore.zones.cities.CityPlayer;
-import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.gui.GuiItem;
 import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.gui.event.GuiClickEvent;
@@ -154,7 +153,7 @@ public class MembersGui extends DataRelatPagedGui<City> {
             return;
         }
         if(event.getSlot() >= 19 && event.getSlot() <= 44 && clickedItem.getType() == Material.PLAYER_HEAD){
-            if(!ConsulatAPI.getConsulatAPI().isDebug() && (city.getOwner().equals(clickedItem.getAttachedObject()) || player.getUUID().equals(clickedItem.getAttachedObject()))){
+            if((city.getOwner().equals(clickedItem.getAttachedObject()) || player.getUUID().equals(clickedItem.getAttachedObject()))){
                 player.sendActionBar(Text.CANT_CHANGE_PERMISSION);
                 return;
             }

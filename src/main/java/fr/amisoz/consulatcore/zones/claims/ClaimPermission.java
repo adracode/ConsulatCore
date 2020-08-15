@@ -1,16 +1,17 @@
 package fr.amisoz.consulatcore.zones.claims;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.leconsulat.api.player.Permission;
 
 public enum ClaimPermission implements Permission {
     
-    INTERACT_DOOR("consulat.core.claim.interact-door"),
-    PLACE_BLOCK("consulat.core.claim.place-block"),
-    BREAK_BLOCK("consulat.core.claim.break-block"),
-    OPEN_CONTAINER("consulat.core.claim.open-container"),
-    INTERACT_REDSTONE("consulat.core.claim.interact-redstone"),
-    FLY("consulat.core.claim.fly"),
-    COLLIDE("consulat.core.claim.collide");
+    INTERACT_DOOR(ConsulatCore.getInstance().getPermission("claim.interact-door")),
+    PLACE_BLOCK(ConsulatCore.getInstance().getPermission("claim.place-block")),
+    BREAK_BLOCK(ConsulatCore.getInstance().getPermission("claim.break-block")),
+    OPEN_CONTAINER(ConsulatCore.getInstance().getPermission("claim.open-container")),
+    INTERACT_REDSTONE(ConsulatCore.getInstance().getPermission("claim.interact-redstone")),
+    FLY(ConsulatCore.getInstance().getPermission("claim.fly")),
+    COLLIDE(ConsulatCore.getInstance().getPermission("claim.collide"));
     
     private String permission;
     

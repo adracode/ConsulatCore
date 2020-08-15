@@ -2,6 +2,7 @@ package fr.amisoz.consulatcore.commands.economy;
 
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
@@ -10,21 +11,24 @@ import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
 public class PayCommand extends ConsulatCommand {
     
     public PayCommand(){
-        super("consulat.core", "pay", "/pay <Joueur> <Montant>", 2, Rank.JOUEUR);
-        suggest(Arguments.playerList("joueur")
-                        .then(RequiredArgumentBuilder.argument("montant", DoubleArgumentType.doubleArg(0, 1_000_000))),
-                Arguments.word("joueur")
+        super(ConsulatCore.getInstance(), "pay");
+        setDescription("Payer un autre joueur").
+                setUsage("/pay <joueur> <montant> - Payer un joueur").
+                setArgsMin(2).
+                setRank(Rank.JOUEUR).
+                suggest(Arguments.playerList("joueur")
                         .then(RequiredArgumentBuilder.argument("montant", DoubleArgumentType.doubleArg(0, 1_000_000))));
     }
     
     @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
         double moneyToGive;
         try {

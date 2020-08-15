@@ -1,6 +1,7 @@
 package fr.amisoz.consulatcore.commands.claims;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.zones.Zone;
@@ -11,6 +12,7 @@ import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 import java.util.UUID;
@@ -18,25 +20,28 @@ import java.util.UUID;
 public class AccessCommand extends ConsulatCommand {
     
     public AccessCommand(){
-        super("consulat.core", "access", "/access [add <Joueur>, remove <Joueur>, list, addall <Joueur>, removeall <Joueur>]", 1, Rank.JOUEUR);
-        suggest(LiteralArgumentBuilder.literal("list"),
-                LiteralArgumentBuilder.literal("add")
-                        .then(Arguments.playerList("player"))
-                        .then(Arguments.word("player")),
-                LiteralArgumentBuilder.literal("addall")
-                        .then(Arguments.playerList("player"))
-                        .then(Arguments.word("player")),
-                LiteralArgumentBuilder.literal("remove")
-                        .then(Arguments.playerList("player"))
-                        .then(Arguments.word("player")),
-                LiteralArgumentBuilder.literal("removeall")
-                        .then(Arguments.playerList("player"))
-                        .then(Arguments.word("player"))
-        );
+        super(ConsulatCore.getInstance(), "access");
+        setDescription("Gérer les accès de tes claims").
+                setUsage("/access add <joueur> - Ajoute un joueur au claim\n" +
+                        "/access addll <joueur> - Ajoute un joueur à tous tes claims\n" +
+                        "/access list - Affiche les joueurs ayant accès\n" +
+                        "/access remove <joueur> - Retire un joueur du claim\n" +
+                        "/access removeall <joueur> - Retire un joueur de tous tes claims").
+                setArgsMin(1).
+                setRank(Rank.JOUEUR).
+                suggest(LiteralArgumentBuilder.literal("list"),
+                        LiteralArgumentBuilder.literal("add").
+                                then(Arguments.playerList("player")),
+                        LiteralArgumentBuilder.literal("addall").
+                                then(Arguments.playerList("player")),
+                        LiteralArgumentBuilder.literal("remove").
+                                then(Arguments.playerList("player")),
+                        LiteralArgumentBuilder.literal("removeall").
+                                then(Arguments.playerList("player")));
     }
     
     @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         ClaimManager claimManager = ClaimManager.getInstance();
         SurvivalPlayer player = (SurvivalPlayer)sender;
         switch(args[0].toLowerCase()){

@@ -15,6 +15,9 @@ public class FoodListener implements Listener {
             return;
         }
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getEntity().getUniqueId());
+        if(player == null){
+            return;
+        }
         if(player.isInModeration()){
             event.setCancelled(true);
         }

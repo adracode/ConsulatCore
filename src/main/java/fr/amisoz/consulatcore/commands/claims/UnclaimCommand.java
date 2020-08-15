@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.commands.claims;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
@@ -10,16 +11,20 @@ import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
+import org.jetbrains.annotations.NotNull;
 
 public class UnclaimCommand extends ConsulatCommand {
     
     public UnclaimCommand(){
-        super("consulat.core", "unclaim", "/unclaim", 0, Rank.JOUEUR);
-        suggest();
+        super(ConsulatCore.getInstance(), "unclaim");
+        setDescription("Unclaim le claim où tu es").
+                setUsage("/unclaim - Unclaim un claim").
+                setRank(Rank.JOUEUR).
+                suggest();
     }
-
+    
     @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
         Claim claim = player.getClaim();
         if(claim == null || (!claim.isOwner(sender.getUUID()) && !sender.hasPower(Rank.MODPLUS))){

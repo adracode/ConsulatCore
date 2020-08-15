@@ -6,16 +6,20 @@ import fr.amisoz.consulatcore.server.SafariServer;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
+import org.jetbrains.annotations.NotNull;
 
 public class SafariCommand extends ConsulatCommand {
     
     public SafariCommand(){
-        super("consulat.core", "safari", "/safari", 0, Rank.JOUEUR);
-        suggest();
+        super(ConsulatCore.getInstance(), "safari");
+        setDescription("Se téléporter au Safari").
+                setUsage("/safari - Se TP au Safari").
+                setRank(Rank.JOUEUR).
+                suggest();
     }
     
     @Override
-    public void onCommand(ConsulatPlayer player, String[] args){
+    public void onCommand(@NotNull ConsulatPlayer player, @NotNull String[] args){
         SafariServer safari = ConsulatCore.getInstance().getSafari();
         switch(safari.queuePlayer(player)){
             case IN_QUEUE:

@@ -1,11 +1,11 @@
 package fr.amisoz.consulatcore.moderation;
 
-public class MuteObject {
+public class MutedPlayer {
 
     private String reason;
     private String endDate;
 
-    public MuteObject(String reason, String endDate) {
+    public MutedPlayer(String reason, String endDate) {
         this.reason = reason;
         this.endDate = endDate;
     }

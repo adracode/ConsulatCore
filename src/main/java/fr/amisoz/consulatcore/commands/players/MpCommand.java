@@ -4,7 +4,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.moderation.MuteObject;
+import fr.amisoz.consulatcore.moderation.MutedPlayer;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
@@ -12,22 +12,23 @@ import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.apache.commons.lang.StringUtils;
-
-import java.util.Arrays;
+import org.jetbrains.annotations.NotNull;
 
 public class MpCommand extends ConsulatCommand {
     
     public MpCommand(){
-        super("consulat.core", "msg",
-                Arrays.asList("mp", "whisper", "tell"),
-                "/msg <Joueur> <Message>", 2, Rank.JOUEUR);
-        suggest(Arguments.playerList("joueur")
-                .then(RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString()))
-        );
+        super(ConsulatCore.getInstance(), "msg");
+        setDescription("Envoyer un message privé").
+                setUsage("/msg <joueur> <message> - Envoyer un message privé").
+                setAliases("mp", "whisper", "tell").
+                setArgsMin(2).
+                setRank(Rank.JOUEUR).
+                suggest(Arguments.playerList("joueur")
+                        .then(RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString())));
     }
     
     @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[0]);
         if(target == null){
             sender.sendMessage(Text.PLAYER_NOT_CONNECTED);
@@ -35,7 +36,7 @@ public class MpCommand extends ConsulatCommand {
         }
         SurvivalPlayer survivalSender = (SurvivalPlayer)sender;
         if(survivalSender.isMuted()){
-            MuteObject muteInfo = survivalSender.getMute();
+            MutedPlayer muteInfo = survivalSender.getMute();
             if(muteInfo != null){
                 sender.sendMessage(Text.YOU_MUTE(muteInfo));
                 return;

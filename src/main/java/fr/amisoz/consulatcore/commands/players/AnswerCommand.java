@@ -10,16 +10,22 @@ import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 public class AnswerCommand extends ConsulatCommand {
-
-    public AnswerCommand() {
-        super("consulat.core", "answer", "r", "/r <Message>", 1, Rank.JOUEUR);
-        suggest(RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString()));
+    
+    public AnswerCommand(){
+        super(ConsulatCore.getInstance(), "answer");
+        setDescription("Répondre à un message privé").
+                setUsage("/r <message> - Répondre à un MP").
+                setAliases("r").
+                setArgsMin(1).
+                setRank(Rank.JOUEUR).
+                suggest(RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString()));
     }
-
+    
     @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         SurvivalPlayer survivalSender = (SurvivalPlayer)sender;
         SurvivalPlayer target = survivalSender.getLastPrivate() == null ?
                 null : (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(survivalSender.getLastPrivate());

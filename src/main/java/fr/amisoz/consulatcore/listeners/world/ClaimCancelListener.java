@@ -573,17 +573,6 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    private void removeProjectile(Projectile projectile){
-        if(projectile.getType() == EntityType.ARROW || projectile.getType() == EntityType.SPECTRAL_ARROW){
-            projectile.remove();
-            return;
-        }
-    }
-    
-    //EntityDamageEvent
-    //EntityDeathEvent
-    //EntityDropItemEvent
-    
     @EventHandler(priority = EventPriority.LOW)
     public void onEntityExplode(EntityExplodeEvent event){
         Location locOrigin = event.getEntity().getOrigin();
@@ -609,7 +598,9 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    //EntityInteractEvent
+    //EntityDamageEvent
+    //EntityDeathEvent
+    //EntityDropItemEvent
     
     //https://hub.spigotmc.org/jira/browse/SPIGOT-5243?jql=labels%20%3D%20Arrow
     //@EventHandler
@@ -618,6 +609,20 @@ public class ClaimCancelListener implements Listener {
         if(arrowClaim != null && !arrowClaim.canInteract((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId()))){
             event.setCancelled(true);
         }*/
+    }
+    
+    //EntityInteractEvent
+    
+    @EventHandler
+    public void onUnleash(EntityUnleashEvent event){
+        if(!(event instanceof PlayerUnleashEntityEvent)){
+            return;
+        }
+        PlayerUnleashEntityEvent entityEvent = (PlayerUnleashEntityEvent)event;
+        Claim entityLeashed = claimManager.getClaim(entityEvent.getPlayer().getChunk());
+        if(entityLeashed != null && !entityLeashed.canInteract((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(entityEvent.getPlayer().getUniqueId()))){
+            entityEvent.setCancelled(true);
+        }
     }
     //EntityPortalEnterEvent
     //EntityPortalEvent
@@ -637,27 +642,6 @@ public class ClaimCancelListener implements Listener {
     //EntityTransformEvent
     
     @EventHandler
-    public void onUnleash(EntityUnleashEvent event){
-        if(!(event instanceof PlayerUnleashEntityEvent)){
-            return;
-        }
-        PlayerUnleashEntityEvent entityEvent = (PlayerUnleashEntityEvent)event;
-        Claim entityLeashed = claimManager.getClaim(entityEvent.getPlayer().getChunk());
-        if(entityLeashed != null && !entityLeashed.canInteract((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(entityEvent.getPlayer().getUniqueId()))){
-            entityEvent.setCancelled(true);
-        }
-    }
-    
-    //ExpBottleEvent
-    //ExplosionPrimeEvent
-    //FireworkExplodeEvent
-    //FoodLevelChangeEvent
-    //HorseJumpEvent
-    //ItemDespawnEvent
-    //ItemMergeEvent
-    //ItemSpawnEvent
-    
-    @EventHandler
     public void onProjectileHit(LingeringPotionSplashEvent event){
         Projectile projectile = event.getEntity();
         if(projectile.getShooter() instanceof BlockProjectileSource){
@@ -673,9 +657,14 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    //PigZapEvent
-    //PigZombieAngerEvent
-    //PlayerDeathEvent
+    //ExpBottleEvent
+    //ExplosionPrimeEvent
+    //FireworkExplodeEvent
+    //FoodLevelChangeEvent
+    //HorseJumpEvent
+    //ItemDespawnEvent
+    //ItemMergeEvent
+    //ItemSpawnEvent
     
     @EventHandler
     public void onPlayerLeashEntity(PlayerLeashEntityEvent event){
@@ -684,6 +673,10 @@ public class ClaimCancelListener implements Listener {
             event.setCancelled(true);
         }
     }
+    
+    //PigZapEvent
+    //PigZombieAngerEvent
+    //PlayerDeathEvent
     
     @EventHandler
     public void onProjectileHit(PotionSplashEvent event){
@@ -726,14 +719,6 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    //SheepDyeWoolEvent
-    //SheepRegrowWoolEvent
-    //SlimeSplitEvent
-    //SpawnerSpawnEvent
-    //VillagerAcquireTradeEvent
-    //VillagerCareerChangeEvent
-    //VillagerReplenishTradeEvent
-    
     @EventHandler
     public void onHangingEntityDamageByEntity(HangingBreakByEntityEvent event){
         Entity remover = event.getRemover();
@@ -770,8 +755,13 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    //HangingBreakEvent
-    //HangingEvent
+    //SheepDyeWoolEvent
+    //SheepRegrowWoolEvent
+    //SlimeSplitEvent
+    //SpawnerSpawnEvent
+    //VillagerAcquireTradeEvent
+    //VillagerCareerChangeEvent
+    //VillagerReplenishTradeEvent
     
     @EventHandler
     public void onPlaceHanging(HangingPlaceEvent event){
@@ -825,17 +815,8 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    //BrewEvent
-    //BrewingStandFuelEvent
-    //CraftItemEvent
-    //FurnaceBurnEvent
-    //FurnaceExtractEvent
-    //FurnaceSmeltEvent
-    //InventoryClickEvent
-    //InventoryCloseEvent
-    //InventoryCreativeEvent
-    //InventoryDragEvent
-    //InventoryInteractEvent
+    //HangingBreakEvent
+    //HangingEvent
     
     @EventHandler
     public void onInventoryMove(InventoryMoveItemEvent event){
@@ -876,6 +857,26 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
+    //BrewEvent
+    //BrewingStandFuelEvent
+    //CraftItemEvent
+    //FurnaceBurnEvent
+    //FurnaceExtractEvent
+    //FurnaceSmeltEvent
+    //InventoryClickEvent
+    //InventoryCloseEvent
+    //InventoryCreativeEvent
+    //InventoryDragEvent
+    //InventoryInteractEvent
+    
+    @EventHandler
+    public void onInteractArmorStand(PlayerArmorStandManipulateEvent event){
+        Claim standClaim = claimManager.getClaim(event.getRightClicked().getChunk());
+        if(standClaim != null && !standClaim.canInteract((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId()))){
+            event.setCancelled(true);
+        }
+    }
+    
     //InventoryOpenEvent
     //InventoryPickupItemEvent
     //PrepareAnvilEvent
@@ -886,18 +887,6 @@ public class ClaimCancelListener implements Listener {
     //AsyncPlayerPreLoginEvent
     //PlayerAdvancementDoneEvent
     //PlayerAnimationEvent
-    
-    @EventHandler
-    public void onInteractArmorStand(PlayerArmorStandManipulateEvent event){
-        Claim standClaim = claimManager.getClaim(event.getRightClicked().getChunk());
-        if(standClaim != null && !standClaim.canInteract((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId()))){
-            event.setCancelled(true);
-        }
-    }
-    
-    //PlayerAttemptPickupItemEvent
-    //PlayerBedEnterEvent -> Déjà traitée par l'interaction avec le lit
-    //PlayerBedLeaveEvent
     
     @EventHandler
     public void onEmptyBucket(PlayerBucketEmptyEvent event){
@@ -913,17 +902,29 @@ public class ClaimCancelListener implements Listener {
         onEmptyBucket((PlayerBucketEvent)event);
     }
     
-    private void onEmptyBucket(PlayerBucketEvent event){
-        Player player = event.getPlayer();
-        Claim claim = claimManager.getClaim(event.getBlock().getChunk());
-        if(claim != null && !claim.canInteract((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId()))){
+    //PlayerAttemptPickupItemEvent
+    //PlayerBedEnterEvent -> Déjà traitée par l'interaction avec le lit
+    //PlayerBedLeaveEvent
+    
+    @EventHandler
+    public void onEmptyBucket(PlayerBucketFillEvent event){
+        onEmptyBucket((PlayerBucketEvent)event);
+    }
+    
+    @EventHandler
+    public void onShears(PlayerShearEntityEvent event){
+        Claim entityShearedClaim = claimManager.getClaim(event.getEntity().getChunk());
+        if(entityShearedClaim != null && !entityShearedClaim.canInteract((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId()))){
             event.setCancelled(true);
         }
     }
     
     @EventHandler
-    public void onEmptyBucket(PlayerBucketFillEvent event){
-        onEmptyBucket((PlayerBucketEvent)event);
+    public void onTakeBook(PlayerTakeLecternBookEvent event){
+        Claim bookClaim = claimManager.getClaim(event.getLectern().getChunk());
+        if(bookClaim != null && !bookClaim.canInteract((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId()))){
+            event.setCancelled(true);
+        }
     }
     
     //PlayerChangedMainHandEvent
@@ -963,38 +964,6 @@ public class ClaimCancelListener implements Listener {
     //PlayerRiptideEvent
     
     @EventHandler
-    public void onShears(PlayerShearEntityEvent event){
-        Claim entityShearedClaim = claimManager.getClaim(event.getEntity().getChunk());
-        if(entityShearedClaim != null && !entityShearedClaim.canInteract((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId()))){
-            event.setCancelled(true);
-        }
-    }
-    
-    //PlayerStatisticIncrementEvent
-    //PlayerSwapHandItemsEvent
-    
-    @EventHandler
-    public void onTakeBook(PlayerTakeLecternBookEvent event){
-        Claim bookClaim = claimManager.getClaim(event.getLectern().getChunk());
-        if(bookClaim != null && !bookClaim.canInteract((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId()))){
-            event.setCancelled(true);
-        }
-    }
-    
-    //PlayerTeleportEvent
-    //PlayerToggleFlightEvent
-    //PlayerToggleSneakEvent
-    //PlayerToggleSprintEvent
-    //PlayerUnleashEntity
-    //PlayerUnregisterChannelEvent
-    //PlayerVelocityEvent
-    
-    //RaidEvent
-    //RaidFinishEvent
-    //RaidSpawnWaveEvent
-    //RaidStopEvent
-    
-    @EventHandler
     public void onTriggerRaid(RaidTriggerEvent event){
         Claim centerOfRaidClaim = claimManager.getClaim(event.getRaid().getLocation().getChunk());
         if(centerOfRaidClaim != null && !centerOfRaidClaim.canInteract((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId()))){
@@ -1002,9 +971,8 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    //VehicleBlockCollisionEvent
-    //VehicleCollisionEvent
-    //VehicleCreateEvent
+    //PlayerStatisticIncrementEvent
+    //PlayerSwapHandItemsEvent
     
     @EventHandler
     public void onVehicleDamaged(VehicleDamageEvent event){
@@ -1033,7 +1001,18 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    //VehicleDestroyEvent
+    //PlayerTeleportEvent
+    //PlayerToggleFlightEvent
+    //PlayerToggleSneakEvent
+    //PlayerToggleSprintEvent
+    //PlayerUnleashEntity
+    //PlayerUnregisterChannelEvent
+    //PlayerVelocityEvent
+    
+    //RaidEvent
+    //RaidFinishEvent
+    //RaidSpawnWaveEvent
+    //RaidStopEvent
     
     @EventHandler
     public void onEnterVehicle(VehicleEnterEvent event){
@@ -1045,6 +1024,10 @@ public class ClaimCancelListener implements Listener {
             event.setCancelled(true);
         }
     }
+    
+    //VehicleBlockCollisionEvent
+    //VehicleCollisionEvent
+    //VehicleCreateEvent
     
     @EventHandler
     public void onCollision(VehicleEntityCollisionEvent event){
@@ -1058,10 +1041,7 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    //VehicleEvent
-    //VehicleExitEvent
-    //VehicleMoveEvent
-    //VehicleUpdateEvent
+    //VehicleDestroyEvent
     
     @EventHandler
     public void onStructureGrow(StructureGrowEvent event){
@@ -1076,6 +1056,11 @@ public class ClaimCancelListener implements Listener {
     public void onBell(PlayerInteractBellEvent event){
         onBlockInteract(event);
     }
+    
+    //VehicleEvent
+    //VehicleExitEvent
+    //VehicleMoveEvent
+    //VehicleUpdateEvent
     
     @EventHandler(priority = EventPriority.LOW)
     public void onBlockInteract(PlayerInteractBlockEvent event){
@@ -1161,7 +1146,6 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    
     @EventHandler()
     public void onInteractLever(PlayerInteractLeverEvent event){
         Claim blockClaim = claimManager.getClaim(event.getBlock().getChunk());
@@ -1223,6 +1207,21 @@ public class ClaimCancelListener implements Listener {
     public void onPlayerPlaceItem(PlayerPlaceItemEvent event){
         Claim clicked = claimManager.getClaim(event.getClickedLocation().getChunk());
         if(clicked != null && !clicked.canInteract((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId()))){
+            event.setCancelled(true);
+        }
+    }
+    
+    private void removeProjectile(Projectile projectile){
+        if(projectile.getType() == EntityType.ARROW || projectile.getType() == EntityType.SPECTRAL_ARROW){
+            projectile.remove();
+            return;
+        }
+    }
+    
+    private void onEmptyBucket(PlayerBucketEvent event){
+        Player player = event.getPlayer();
+        Claim claim = claimManager.getClaim(event.getBlock().getChunk());
+        if(claim != null && !claim.canInteract((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId()))){
             event.setCancelled(true);
         }
     }

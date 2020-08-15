@@ -6,16 +6,21 @@ import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.NotNull;
 
 public class ToggleChatCommand extends ConsulatCommand {
     
     public ToggleChatCommand(){
-        super("consulat.core", "chat", "/chat", 0, Rank.RESPONSABLE);
-        suggest();
+        super(ConsulatCore.getInstance(), "togglechat");
+        setDescription("Activer ou désactiver le chat").
+                setUsage("/chat - Switcher le chat").
+                setAliases("chat").
+                setRank(Rank.RESPONSABLE).
+                suggest();
     }
     
     @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         ConsulatCore core = ConsulatCore.getInstance();
         core.setChat(!core.isChatActivated());
         if(core.isChatActivated()){

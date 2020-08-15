@@ -10,6 +10,7 @@ import fr.leconsulat.api.ranks.Rank;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
 
@@ -17,16 +18,18 @@ import java.sql.SQLException;
 public class PersoCommand extends ConsulatCommand {
     
     public PersoCommand(){
-        super("consulat.core", "perso", "/perso", 0, Rank.JOUEUR);
-        suggest((listener) -> {
-                    ConsulatPlayer player = getConsulatPlayer(listener);
-                    return player != null && player.hasCustomRank();
-                }
-        );
+        super(ConsulatCore.getInstance(), "perso");
+        setDescription("Gérer son grade personnalisé").
+                setUsage("/perso - Gérer son grade").
+                setRank(Rank.JOUEUR).
+                suggest((listener) -> {
+                            ConsulatPlayer player = getConsulatPlayer(listener);
+                            return player != null && player.hasCustomRank();
+                        });
     }
     
     @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         SurvivalPlayer survivalPlayer = (SurvivalPlayer)sender;
         if(!survivalPlayer.hasCustomRank()){
             sender.sendMessage(Text.NO_CUSTOM_RANK);

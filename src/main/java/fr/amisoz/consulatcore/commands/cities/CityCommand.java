@@ -24,103 +24,154 @@ import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import fr.leconsulat.api.utils.StringUtils;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 
 public class CityCommand extends ConsulatCommand {
     
-    private String help =
-            "§6/ville create <nom> §7- §eCréer une ville.\n" +
-                    "§6/ville rename <nom> §7- §eChanger le nom de ta ville.\n" +
-                    "§6/ville disband <nom> §7- §eSupprimer ta ville (C’est définitif fais attention).\n" +
-                    "§6/ville invite <pseudo> §7- §eInviter une personne dans ta ville.\n" +
-                    "§6/ville kick <pseudo> §7- §eExclure une personne de ta ville.\n" +
-                    "§6/ville accept <nom de la ville> §7- §eAccepter la demande d’invitation d'une ville.\n" +
-                    "§6/ville leave §7- §eQuitter la ville dans laquelle tu es.\n" +
-                    "§6/ville claim §7- §eClaim un chunk pour " + ConsulatCore.formatMoney(180) + " au nom de ta ville (Assure toi d’avoir de l’argent dans la banque de ville). Tu peux claim le chunk d’un de tes membres.\n" +
-                    "§6/ville unclaim §7- §eSupprimer un claim de ta ville.\n" +
-                    "§6/ville sethome §7- §eCréer le point d’apparition de ta ville.\n" +
-                    "§6/ville home §7- §eTe téléporter au point d’apparition de ta ville. Tu peux utiliser l’abréviation /ville h\n" +
-                    "§6/ville banque add <montant> §7- §eDéposer de l’argent dans la banque de ville pour pouvoir claim des chunks.\n" +
-                    "§6/ville banque info §7- §eMontre combien d’argent il reste dans la banque de ville.\n" +
-                    "§6/ville access <joueur> §7- §eDonner l’accès d’un claim en particulier à un joueur.\n" +
-                    "§6/ville access remove <joueur> §7- §eEnlever l’accès d’un joueur d'un claim.\n" +
-                    "§6/ville access list §7- §eLister les accès du claim où tu es.\n" +
-                    "§6/ville [options|menu|gui] §7- §eDonne des informations complètes sur ta ville et te permets aussi de la gérer (permissions, claim, grade).\n" +
-                    "§6/ville chat <message> §7- §eTe permets de parler dans un chat accessibles seulement aux membres de ta ville. Tu peux utiliser l’abréviation /ville c. \n" +
-                    "§6/ville chat §7- §eChange de chat pour parler directement dans le chat de ville\n" +
-                    "§6/ville info <joueur> §7- §eTe donne les informations globales sur la ville d’un joueur.\n" +
-                    "§6/ville desc <description> §7- §eChange la description de ville.\n" +
-                    "§6/ville lead <joueur> §7- §eChange le propriétaire de la ville.\n" +
-                    "§6/ville help §7- §eAffiche toutes les commandes utiles pour ta ville. C’est ce que tu lis ;).";
+    private List<List<TextComponent>> titles = new ArrayList<>();
+    private TextComponent close = new TextComponent("    §3§m-§e§m--§c§m---§e§m--§3§m-§a§m---------------§3§m-§e§m--§c§m---§e§m--§3§m-");
+    private List<TextComponent> previous = new ArrayList<>();
+    private List<TextComponent> next = new ArrayList<>();
+    private SubCommand[] subCommand;
     
     public CityCommand(){
-        super("consulat.core", "ville", "city", "/ville help", 1, Rank.JOUEUR);
-        suggest(LiteralArgumentBuilder.literal("create")
-                        .then(Arguments.word("nom")),
-                LiteralArgumentBuilder.literal("rename")
-                        .then(Arguments.word("nom")),
-                LiteralArgumentBuilder.literal("disband"),
-                LiteralArgumentBuilder.literal("leave"),
-                LiteralArgumentBuilder.literal("kick")
-                        .then(Arguments.playerList("joueur")),
-                LiteralArgumentBuilder.literal("invite")
-                        .then(Arguments.playerList("joueur")),
-                LiteralArgumentBuilder.literal("accept")
-                        .then(RequiredArgumentBuilder.argument("ville",
-                                StringArgumentType.word()).suggests(((context, builder) -> {
-                            ConsulatPlayer player = CPlayerManager.getInstance().getConsulatPlayerFromContextSource(context.getSource());
-                            if(player == null){
-                                return builder.buildFuture();
-                            }
-                            Set<City> invitations = ZoneManager.getInstance().getInvitations(player.getUUID());
-                            if(invitations == null){
-                                return builder.buildFuture();
-                            }
-                            Arguments.suggest(invitations,
-                                    City::getName, (city -> true), builder);
-                            return builder.buildFuture();
-                        }))),
-                LiteralArgumentBuilder.literal("claim"),
-                LiteralArgumentBuilder.literal("unclaim"),
-                LiteralArgumentBuilder.literal("sethome"),
-                LiteralArgumentBuilder.literal("home"),
-                LiteralArgumentBuilder.literal("h"),
-                LiteralArgumentBuilder.literal("banque")
-                        .then(LiteralArgumentBuilder.literal("info"))
-                        .then(LiteralArgumentBuilder.literal("add")
-                                .then(RequiredArgumentBuilder.argument("montant", DoubleArgumentType.doubleArg(0, 1_000_000))))
-                        .then(LiteralArgumentBuilder.literal("withdraw")
-                                .then(RequiredArgumentBuilder.argument("montant", DoubleArgumentType.doubleArg(0, 1_000_000)))),
-                LiteralArgumentBuilder.literal("access")
-                        .then(LiteralArgumentBuilder.literal("add")
-                                .then(Arguments.playerList("joueur")))
-                        .then(LiteralArgumentBuilder.literal("remove")
-                                .then(Arguments.playerList("joueur")))
-                        .then(LiteralArgumentBuilder.literal("list")),
-                LiteralArgumentBuilder.literal("info")
-                        .then(Arguments.playerList("joueur")),
-                LiteralArgumentBuilder.literal("options"),
-                LiteralArgumentBuilder.literal("gui"),
-                LiteralArgumentBuilder.literal("menu"),
-                LiteralArgumentBuilder.literal("chat")
-                        .then(RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString())),
-                LiteralArgumentBuilder.literal("c")
-                        .then(RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString())),
-                LiteralArgumentBuilder.literal("desc")
-                        .then(RequiredArgumentBuilder.argument("description", StringArgumentType.greedyString())),
-                LiteralArgumentBuilder.literal("lead")
-                        .then(Arguments.playerList("joueur")),
-                LiteralArgumentBuilder.literal("help")
-        );
+        super(ConsulatCore.getInstance(), "ville");
+        setDescription("Gérer la ville").
+                setUsage("/ville help - Affiche toutes les commandes de ville").
+                setAliases("city").
+                setArgsMin(1).
+                setRank(Rank.JOUEUR).
+                suggest(LiteralArgumentBuilder.literal("create").
+                                then(Arguments.word("nom")),
+                        LiteralArgumentBuilder.literal("rename").
+                                then(Arguments.word("nom")),
+                        LiteralArgumentBuilder.literal("disband"),
+                        LiteralArgumentBuilder.literal("leave"),
+                        LiteralArgumentBuilder.literal("kick").
+                                then(Arguments.playerList("joueur")),
+                        LiteralArgumentBuilder.literal("invite").
+                                then(Arguments.playerList("joueur")),
+                        LiteralArgumentBuilder.literal("accept").
+                                then(RequiredArgumentBuilder.argument("ville",
+                                        StringArgumentType.word()).suggests(((context, builder) -> {
+                                    ConsulatPlayer player = getConsulatPlayerFromContext(context.getSource());
+                                    if(player == null){
+                                        return builder.buildFuture();
+                                    }
+                                    Set<City> invitations = ZoneManager.getInstance().getInvitations(player.getUUID());
+                                    if(invitations == null){
+                                        return builder.buildFuture();
+                                    }
+                                    Arguments.suggest(invitations,
+                                            City::getName, (city -> true), builder);
+                                    return builder.buildFuture();
+                                }))),
+                        LiteralArgumentBuilder.literal("claim"),
+                        LiteralArgumentBuilder.literal("unclaim"),
+                        LiteralArgumentBuilder.literal("sethome"),
+                        LiteralArgumentBuilder.literal("home"),
+                        LiteralArgumentBuilder.literal("h"),
+                        LiteralArgumentBuilder.literal("bank").
+                                then(LiteralArgumentBuilder.literal("info")).
+                                then(LiteralArgumentBuilder.literal("add").
+                                        then(RequiredArgumentBuilder.argument("montant", DoubleArgumentType.doubleArg(0, 1_000_000)))).
+                                then(LiteralArgumentBuilder.literal("withdraw").
+                                        then(RequiredArgumentBuilder.argument("montant", DoubleArgumentType.doubleArg(0, 1_000_000)))),
+                        LiteralArgumentBuilder.literal("access").
+                                then(LiteralArgumentBuilder.literal("add").
+                                        then(Arguments.playerList("joueur"))).
+                                then(LiteralArgumentBuilder.literal("remove").
+                                        then(Arguments.playerList("joueur"))).
+                                then(LiteralArgumentBuilder.literal("list")),
+                        LiteralArgumentBuilder.literal("info").
+                                then(Arguments.playerList("joueur")),
+                        LiteralArgumentBuilder.literal("options"),
+                        LiteralArgumentBuilder.literal("gui"),
+                        LiteralArgumentBuilder.literal("menu"),
+                        LiteralArgumentBuilder.literal("chat").
+                                then(RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString())),
+                        LiteralArgumentBuilder.literal("c").
+                                then(RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString())),
+                        LiteralArgumentBuilder.literal("desc").
+                                then(RequiredArgumentBuilder.argument("description", StringArgumentType.greedyString())),
+                        LiteralArgumentBuilder.literal("lead").
+                                then(Arguments.playerList("joueur")),
+                        LiteralArgumentBuilder.literal("help"));
+        this.subCommand = new TreeSet<>(Arrays.asList(
+                new SubCommand("create <nom>", "Créer une nouvelle ville"),
+                new SubCommand("rename <nom>", "Changer le nom de ville (" + ConsulatCore.formatMoney(City.RENAME_TAX) + ")"),
+                new SubCommand("disband", "Détruire la ville (fenêtre de confirmation)"),
+                new SubCommand("leave", "Quitter une ville"),
+                new SubCommand("kick <joueur>", "Expulser un membre"),
+                new SubCommand("invite <joueur>", "Inviter un joueur"),
+                new SubCommand("accept <ville>", "Rejoindre une ville"),
+                new SubCommand("claim", "Claim un chunk pour la ville"),
+                new SubCommand("unclaim", "Unclaim un chunk de ville"),
+                new SubCommand("sethome", "Définir un home de ville"),
+                new SubCommand("home", "Se TP au home de ville"),
+                new SubCommand("bank add <montant>", "Ajouter de l'argent"),
+                new SubCommand("bank withdraw <montant>", "Retirer de l'argent"),
+                new SubCommand("bank info", "Affiche l'argent de la banque"),
+                new SubCommand("access add <joueur>", "Ajoute un joueur à un claim"),
+                new SubCommand("access remove <joueur>", "Retire un joueur d'un claim"),
+                new SubCommand("access list", "Affiche les membres d'un claim"),
+                new SubCommand("info <joueur>", "Affiche les membres d'un claim"),
+                new SubCommand("chat", "Switch de chat (global ↔ ville)"),
+                new SubCommand("chat <message>", "Parler dans le chat de ville"),
+                new SubCommand("options", "Ouvrir le menu de ville"),
+                new SubCommand("desc <description>", "Définir une description de ville"),
+                new SubCommand("desc", "Supprimer la description de ville"),
+                new SubCommand("lead <joueur>", "Changer le propriétaire de ville"))).toArray(new SubCommand[0]);
+    }
+    
+    private TextComponent getTitle(int page, int size){
+        while(size >= titles.size()){
+            titles.add(new ArrayList<>());
+        }
+        List<TextComponent> pageTitles = titles.get(size);
+        for(int i = pageTitles.size(); i <= page; ++i){
+            pageTitles.add(new TextComponent("    §3§m-§e§m--§c§m---§e§m--§3§m-§a Commandes [" + i + "/" + size + "] §3§m-§e§m--§c§m---§e§m--§3§m-"));
+        }
+        return pageTitles.get(page);
+    }
+    
+    private TextComponent getPrevious(int page){
+        if(page < 0){
+            return null;
+        }
+        for(int i = previous.size(); i <= page; ++i){
+            TextComponent current = new TextComponent("                          §b« Précédent");
+            current.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                    new ComponentBuilder("Page précédente").color(ChatColor.GRAY).create()));
+            current.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/city help " + i));
+            previous.add(current);
+        }
+        return previous.get(page);
+    }
+    
+    private TextComponent getNext(int page){
+        for(int i = next.size(); i <= page; ++i){
+            TextComponent current = new TextComponent("                          §bSuivant »");
+            current.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                    new ComponentBuilder("Page suivante").color(ChatColor.GRAY).create()));
+            current.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/city help " + i));
+            next.add(current);
+        }
+        return next.get(page);
     }
     
     @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
         switch(args[0]){
             case "create":{
@@ -303,7 +354,7 @@ public class CityCommand extends ConsulatCommand {
             break;
             case "accept":{
                 if(player.belongsToCity()){
-                    player.sendMessage(Text.PLAYER_ALREADY_BELONGS_CITY);
+                    player.sendMessage(Text.YOU_ALREADY_BELONGS_CITY);
                     return;
                 }
                 if(args.length < 2){
@@ -549,7 +600,7 @@ public class CityCommand extends ConsulatCommand {
                             player.sendMessage(Text.PLAYER_DOESNT_BELONGS_CITY);
                             return;
                         }
-                        if((targetUUID.equals(player.getUUID()) || targetUUID.equals(city.getOwner())) && !ConsulatAPI.getConsulatAPI().isDebug()){
+                        if((targetUUID.equals(player.getUUID()) || targetUUID.equals(city.getOwner()))){
                             player.sendMessage(Text.CANT_MANAGE_ACCESS_PLAYER);
                             return;
                         }
@@ -570,7 +621,7 @@ public class CityCommand extends ConsulatCommand {
                             player.sendMessage(Text.PLAYER_DOESNT_EXISTS);
                             return;
                         }
-                        if((targetUUID.equals(player.getUUID()) || targetUUID.equals(city.getOwner())) && !ConsulatAPI.getConsulatAPI().isDebug()){
+                        if((targetUUID.equals(player.getUUID()) || targetUUID.equals(city.getOwner()))){
                             player.sendMessage(Text.CANT_MANAGE_ACCESS_PLAYER);
                             return;
                         }
@@ -717,7 +768,49 @@ public class CityCommand extends ConsulatCommand {
             }
             break;
             case "help":{
-                player.sendMessage(help);
+                int page;
+                if(args.length == 1){
+                    page = 1;
+                } else {
+                    try {
+                        page = Integer.parseInt(args[1]);
+                    } catch(NumberFormatException e){
+                        sender.sendMessage(Text.INVALID_NUMBER);
+                        return;
+                    }
+                }
+                int pages;
+                float nbCmd = subCommand.length;
+                if((nbCmd / 5) > (int)(nbCmd / 5)){
+                    pages = (int)(nbCmd / 5) + 1;
+                } else {
+                    pages = (int)(nbCmd / 5);
+                }
+                if(page > pages){
+                    page = pages;
+                }
+                sender.sendMessage("");
+                sender.sendMessage(getTitle(page, pages));
+                if(page != 1){
+                    sender.sendMessage(getPrevious(page - 1));
+                } else {
+                    sender.sendMessage("");
+                }
+                for(int i = (page - 1) * 5; i < page * 5; i++){
+                    if(i < subCommand.length){
+                        SubCommand command = subCommand[i];
+                        sender.sendMessage(new ComponentBuilder(
+                                " §e/" + getName() + " " + command.getArgument() + " - §7" + command.getDescription())
+                                .event(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/" + command.getSuggestion()))
+                                .create());
+                    }
+                }
+                if(page != pages){
+                    sender.sendMessage(getNext(page + 1));
+                } else {
+                    sender.sendMessage("");
+                }
+                sender.sendMessage(close);
             }
             break;
             default:
@@ -725,4 +818,42 @@ public class CityCommand extends ConsulatCommand {
         }
         
     }
+    
+    public class SubCommand implements Comparable<SubCommand> {
+        
+        private final String argument;
+        private final String description;
+        private final String suggestion;
+        
+        public SubCommand(String argument, String description){
+            this.argument = argument;
+            this.description = description;
+            StringBuilder builder = new StringBuilder(CityCommand.this.getName() + ' ');
+            for(String sub : argument.split(" ")){
+                if(sub.indexOf('<') != -1 && sub.indexOf('>') != -1){
+                    break;
+                }
+                builder.append(sub).append(' ');
+            }
+            this.suggestion = builder.toString();
+        }
+        
+        public String getArgument(){
+            return argument;
+        }
+        
+        public String getDescription(){
+            return description;
+        }
+        
+        public String getSuggestion(){
+            return suggestion;
+        }
+        
+        @Override
+        public int compareTo(@NotNull CityCommand.SubCommand o){
+            return argument.compareTo(o.argument);
+        }
+    }
+    
 }

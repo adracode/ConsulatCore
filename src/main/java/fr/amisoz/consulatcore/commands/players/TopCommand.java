@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.commands.players;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.ConsulatCommand;
@@ -7,20 +8,23 @@ import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.jetbrains.annotations.NotNull;
 
 public class TopCommand extends ConsulatCommand {
-
-    public TopCommand() {
-        super("consulat.core", "top", "/top", 0, Rank.JOUEUR);
-        suggest((listener) -> {
+    
+    public TopCommand(){
+        super(ConsulatCore.getInstance(), "top");
+        setDescription("Se téléporter à la surface").
+                setUsage("/top - Se TP à la surface").
+                setRank(Rank.JOUEUR).
+                suggest((listener) -> {
                     SurvivalPlayer player = (SurvivalPlayer)getConsulatPlayer(listener);
                     return player != null && player.hasPerkTop();
-                }
-        );
+                });
     }
-
+    
     @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
         if(!player.hasPerkTop()){
             sender.sendMessage(Text.DONT_HAVE_PERK);

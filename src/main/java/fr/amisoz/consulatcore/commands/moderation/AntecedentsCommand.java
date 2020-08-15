@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.guis.moderation.AntecedentsGui;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
@@ -10,19 +11,24 @@ import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatOffline;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-public class AntecedentsComand extends ConsulatCommand {
-
-    public AntecedentsComand() {
-        super("consulat.core", "antecedents", "/antecedents <Joueur>", 1, Rank.RESPONSABLE);
-        suggest(Arguments.playerList("joueur"));
+public class AntecedentsCommand extends ConsulatCommand {
+    
+    public AntecedentsCommand(){
+        super(ConsulatCore.getInstance(), "antecedents");
+        setDescription("Voir les antécédents d'un joueur").
+                setUsage("/antecedents <joueur> - Voir les antécédents d'un joueur").
+                setArgsMin(1).
+                setRank(Rank.RESPONSABLE).
+                suggest(Arguments.playerList("joueur"));
         new AntecedentsGui.Container();
     }
-
+    
     @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
         UUID uuid = CPlayerManager.getInstance().getPlayerUUID(args[0]);
         if(uuid == null){

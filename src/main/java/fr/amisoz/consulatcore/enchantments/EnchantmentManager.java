@@ -65,7 +65,7 @@ public class EnchantmentManager implements Listener {
             old = null;
         }
         if(oldArmor != null && old == null || oldArmor == null && old != null || oldArmor != null && !oldArmor.getHandle().equals(old)){
-            ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Armors doesn't correspond (" + old + "§f / " + oldArmor + ")");
+            ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Armors doesn't correspond (" + old + "§f / " + oldArmor + ") (can occur at connection)");
             return;
         }
         ItemStack equipped = event.getNewItem();

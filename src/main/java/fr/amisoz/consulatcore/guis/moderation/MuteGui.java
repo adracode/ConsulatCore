@@ -2,7 +2,7 @@ package fr.amisoz.consulatcore.guis.moderation;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.moderation.MuteEnum;
+import fr.amisoz.consulatcore.moderation.MuteReason;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.gui.GuiItem;
@@ -39,7 +39,7 @@ public class MuteGui extends DataRelatGui<ConsulatOffline> {
         Player moderator = event.getPlayer().getPlayer();
 
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-            HashMap<MuteEnum, Integer> muteHistory;
+            HashMap<MuteReason, Integer> muteHistory;
 
             if (target == null) {
                 try {
@@ -57,12 +57,12 @@ public class MuteGui extends DataRelatGui<ConsulatOffline> {
                 muteHistory = survivalPlayer.getMuteHistory();
             }
 
-            MuteEnum[] values = MuteEnum.values();
+            MuteReason[] values = MuteReason.values();
             for (int i = 0; i < values.length; ++i) {
-                MuteEnum mute = values[i];
+                MuteReason mute = values[i];
                 GuiItem item = IGui.getItem("§e" + mute.getSanctionName(), i, mute.getGuiMaterial());
 
-                item.setDescription("§eDurée : §6" + mute.getFormatDuration(), "§7Récidive : " + (muteHistory.containsKey(mute) ? muteHistory.get(mute) : "0"));
+                item.setDescription("§eDurée: §6" + mute.getFormatDuration(), "§7Récidive: " + (muteHistory.containsKey(mute) ? muteHistory.get(mute) : "0"));
                 item.setAttachedObject(mute);
                 setItem(i, item);
             }
@@ -94,7 +94,7 @@ public class MuteGui extends DataRelatGui<ConsulatOffline> {
         if (multiply == 0) multiply = 1;
 
         long currentTime = System.currentTimeMillis();
-        MuteEnum muteReason = (MuteEnum) getItem(event.getSlot()).getAttachedObject();
+        MuteReason muteReason = (MuteReason) getItem(event.getSlot()).getAttachedObject();
         double durationMute = (muteReason.getDurationSanction() * 1000) * multiply;
         long resultTime = currentTime + Math.round(durationMute);
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
@@ -106,7 +106,7 @@ public class MuteGui extends DataRelatGui<ConsulatOffline> {
                     target.setMuted(true);
                     target.setMuteExpireMillis(resultTime);
                     target.setMuteReason(muteReason.getSanctionName());
-                    target.sendMessage("§cTu as été sanctionné. Tu ne peux plus parler pour : §4" + muteReason.getSanctionName());
+                    target.sendMessage("§cTu as été sanctionné. Tu ne peux plus parler pour: §4" + muteReason.getSanctionName());
                     if (target.getMuteHistory().containsKey(muteReason)) {
                         int number = target.getMuteHistory().get(muteReason);
                         target.getMuteHistory().put(muteReason, ++number);
@@ -132,15 +132,15 @@ public class MuteGui extends DataRelatGui<ConsulatOffline> {
         muter.getPlayer().closeInventory();
     }
 
-    private HashMap<MuteEnum, Integer> getMuteHistory(ConsulatOffline consulatOffline) throws SQLException {
+    private HashMap<MuteReason, Integer> getMuteHistory(ConsulatOffline consulatOffline) throws SQLException {
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("SELECT reason FROM antecedents WHERE playeruuid = ? AND sanction = 'MUTE' AND cancelled = 0");
         preparedStatement.setString(1, consulatOffline.getUUID().toString());
         ResultSet resultSet = preparedStatement.executeQuery();
 
-        HashMap<MuteEnum, Integer> muteHistory = new HashMap<>();
+        HashMap<MuteReason, Integer> muteHistory = new HashMap<>();
         while (resultSet.next()) {
             String reason = resultSet.getString("reason");
-            MuteEnum muteReason = Arrays.stream(MuteEnum.values()).filter(ban -> ban.getSanctionName().equals(reason)).findFirst().orElse(null);
+            MuteReason muteReason = Arrays.stream(MuteReason.values()).filter(ban -> ban.getSanctionName().equals(reason)).findFirst().orElse(null);
 
             if (muteReason != null) {
                 if (muteHistory.containsKey(muteReason)) {

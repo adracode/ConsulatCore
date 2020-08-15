@@ -11,6 +11,7 @@ import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -19,24 +20,27 @@ import java.util.Set;
 public class HomeCommand extends ConsulatCommand {
     
     public HomeCommand(){
-        super("consulat.core", "home", "/home <Nom du home>", 0, Rank.JOUEUR);
-        suggest(RequiredArgumentBuilder.argument("home", StringArgumentType.word()).suggests((context, builder) -> {
-                    SurvivalPlayer player = (SurvivalPlayer)getConsulatPlayer(context.getSource());
-                    if(player == null){
-                        return builder.buildFuture();
-                    }
-                    for(String home : player.getNameHomes()){
-                        if(home.toLowerCase().startsWith(builder.getRemaining().toLowerCase())){
-                            builder.suggest(home);
-                        }
-                    }
-                    return builder.buildFuture();
-                })
-        );
+        super(ConsulatCore.getInstance(), "home");
+        setDescription("Se téléporter à un home").
+                setUsage("/home <home> - Se TP à un home").
+                setRank(Rank.JOUEUR).
+                suggest(RequiredArgumentBuilder.argument("home", StringArgumentType.word()).
+                        suggests((context, builder) -> {
+                            SurvivalPlayer player = (SurvivalPlayer)getConsulatPlayer(context.getSource());
+                            if(player == null){
+                                return builder.buildFuture();
+                            }
+                            for(String home : player.getNameHomes()){
+                                if(home.toLowerCase().startsWith(builder.getRemaining().toLowerCase())){
+                                    builder.suggest(home);
+                                }
+                            }
+                            return builder.buildFuture();
+                        }));
     }
     
     @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         SurvivalPlayer survivalPlayer = (SurvivalPlayer)sender;
         if(args.length == 0){
             Set<String> homes = survivalPlayer.getNameHomes();

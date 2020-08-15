@@ -18,29 +18,37 @@ import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Chunk;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 
 public class ClaimCommand extends ConsulatCommand {
     
     public ClaimCommand(){
-        super("consulat.core", "claim", "/claim | /claim kick <Joueur> | /claim desc <Description> | /claim list", 0, Rank.JOUEUR);
-        suggest(LiteralArgumentBuilder.literal("kick")
-                        .then(Arguments.playerList("joueur")),
-                LiteralArgumentBuilder.literal("desc")
-                        .then(RequiredArgumentBuilder.argument("description", StringArgumentType.greedyString())),
-                LiteralArgumentBuilder.literal("list"),
-                LiteralArgumentBuilder.literal("options"),
-                LiteralArgumentBuilder.literal("info")
-                        .requires((t) -> {
-                            ConsulatPlayer player = getConsulatPlayer(t);
-                            return player != null && player.hasPower(Rank.RESPONSABLE);
-                        })
-                        .then(Arguments.playerList("joueur")));
+        super(ConsulatCore.getInstance(), "claim");
+        setDescription("Gérer tes claims").
+                setUsage("/claim - Claim un chunk (" + ConsulatCore.formatMoney(Claim.BUY_CLAIM) + ")\n" +
+                        "/claim kick <joueur> - Renvoie au spawn un joueur se trouvant sur ta zone\n" +
+                        "/claim desc - Reset la description du claim\n" +
+                        "/claim desc <description> - Changer la description du claim\n" +
+                        "/claim list - Voir tous tes claims").
+                setRank(Rank.JOUEUR).
+                suggest(LiteralArgumentBuilder.literal("kick").
+                                then(Arguments.playerList("joueur")),
+                        LiteralArgumentBuilder.literal("desc").
+                                then(RequiredArgumentBuilder.argument("description", StringArgumentType.greedyString())),
+                        LiteralArgumentBuilder.literal("list"),
+                        LiteralArgumentBuilder.literal("options"),
+                        LiteralArgumentBuilder.literal("info").
+                                requires((t) -> {
+                                    ConsulatPlayer player = getConsulatPlayer(t);
+                                    return player != null && player.hasPower(Rank.RESPONSABLE);
+                                }).
+                                then(Arguments.playerList("joueur")));
     }
     
     @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
         if(args.length == 0){
             if(sender.getPlayer().getLocation().getWorld() != ConsulatCore.getInstance().getOverworld()){

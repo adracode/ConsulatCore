@@ -16,9 +16,8 @@ import java.util.logging.Level;
 public class BaltopManager implements Listener {
     
     private static BaltopManager instance;
-    
-    private SortedSet<MoneyOwner> rank = new TreeSet<>();
     private final int max = 10;
+    private SortedSet<MoneyOwner> rank = new TreeSet<>();
     private long lastUpdate = System.currentTimeMillis();
     private int timeBetweenUpdate = 5 * 60 * 1000;
     
@@ -29,6 +28,17 @@ public class BaltopManager implements Listener {
         instance = this;
         Bukkit.getPluginManager().registerEvents(this, ConsulatCore.getInstance());
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), this::updateBaltop);
+    }
+    
+    public SortedSet<MoneyOwner> getBaltop(){
+        if(System.currentTimeMillis() - lastUpdate > timeBetweenUpdate){
+            updateBaltop();
+        }
+        return Collections.unmodifiableSortedSet(rank);
+    }
+    
+    public static BaltopManager getInstance(){
+        return instance;
     }
     
     private void updateBaltop(){
@@ -58,32 +68,34 @@ public class BaltopManager implements Listener {
         });
     }
     
-    public SortedSet<MoneyOwner> getBaltop(){
-        if(System.currentTimeMillis() - lastUpdate > timeBetweenUpdate){
-            updateBaltop();
-        }
-        return Collections.unmodifiableSortedSet(rank);
-    }
-    
-    public static BaltopManager getInstance(){
-        return instance;
-    }
-    
-    public static class MoneyOwner implements Comparable<MoneyOwner>{
-    
+    public static class MoneyOwner implements Comparable<MoneyOwner> {
+        
         private final double money;
         private final String name;
-    
+        
         private MoneyOwner(double money, String name){
             this.money = money;
             this.name = name;
         }
-    
+        
+        public double getMoney(){
+            return money;
+        }
+        
+        public String getName(){
+            return name;
+        }
+        
         @Override
         public int compareTo(MoneyOwner o){
             return Double.compare(o.money, money);
         }
-    
+        
+        @Override
+        public int hashCode(){
+            return name.hashCode();
+        }
+        
         @Override
         public boolean equals(Object o){
             if(this == o){
@@ -94,19 +106,6 @@ public class BaltopManager implements Listener {
             }
             MoneyOwner that = (MoneyOwner)o;
             return name.equals(that.name);
-        }
-    
-        @Override
-        public int hashCode(){
-            return name.hashCode();
-        }
-    
-        public double getMoney(){
-            return money;
-        }
-    
-        public String getName(){
-            return name;
         }
     }
     

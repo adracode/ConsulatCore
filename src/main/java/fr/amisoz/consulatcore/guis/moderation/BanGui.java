@@ -2,7 +2,7 @@ package fr.amisoz.consulatcore.guis.moderation;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.moderation.BanEnum;
+import fr.amisoz.consulatcore.moderation.BanReason;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.gui.GuiItem;
@@ -36,7 +36,7 @@ public class BanGui extends DataRelatGui<ConsulatOffline> {
         Player moderator = event.getPlayer().getPlayer();
 
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-            HashMap<BanEnum, Integer> banHistory;
+            HashMap<BanReason, Integer> banHistory;
 
             if (target == null) {
                 try {
@@ -55,12 +55,12 @@ public class BanGui extends DataRelatGui<ConsulatOffline> {
             }
 
 
-            BanEnum[] values = BanEnum.values();
+            BanReason[] values = BanReason.values();
             for (int i = 0; i < values.length; ++i) {
-                BanEnum ban = values[i];
+                BanReason ban = values[i];
                 GuiItem item = IGui.getItem("§c" + ban.getSanctionName(), i, ban.getGuiMaterial());
 
-                item.setDescription("§cDurée : §4" + ban.getFormatDuration(), "§7Récidive : " + (banHistory.containsKey(ban) ? banHistory.get(ban) : "0"));
+                item.setDescription("§cDurée: §4" + ban.getFormatDuration(), "§7Récidive: " + (banHistory.containsKey(ban) ? banHistory.get(ban) : "0"));
                 item.setAttachedObject(ban);
                 setItem(i, item);
             }
@@ -83,7 +83,7 @@ public class BanGui extends DataRelatGui<ConsulatOffline> {
         if (multiply == 0) multiply = 1;
 
         long currentTime = System.currentTimeMillis();
-        BanEnum ban = (BanEnum) getItem(event.getSlot()).getAttachedObject();
+        BanReason ban = (BanReason) getItem(event.getSlot()).getAttachedObject();
         double durationBan = (ban.getDurationSanction() * 1000) * multiply;
         long resultTime = currentTime + Math.round(durationBan);
         ConsulatPlayer banner = event.getPlayer();
@@ -99,7 +99,7 @@ public class BanGui extends DataRelatGui<ConsulatOffline> {
                         Calendar calendar = Calendar.getInstance();
                         calendar.setTimeInMillis(resultTime);
                         Date date = calendar.getTime();
-                        target.getPlayer().kickPlayer(Text.KICK_PLAYER("§4" + ban.getSanctionName() + "\n§cJusqu'au : §4" + ConsulatCore.getInstance().DATE_FORMAT.format(date)));
+                        target.getPlayer().kickPlayer(Text.KICK_PLAYER("§4" + ban.getSanctionName() + "\n§cJusqu'au: §4" + ConsulatCore.getInstance().DATE_FORMAT.format(date)));
                     }
                     Bukkit.getOnlinePlayers().forEach(onlinePlayer -> {
                         ConsulatPlayer consulatPlayer = CPlayerManager.getInstance().getConsulatPlayer(onlinePlayer.getUniqueId());
@@ -124,15 +124,15 @@ public class BanGui extends DataRelatGui<ConsulatOffline> {
         banner.getPlayer().closeInventory();
     }
 
-    private HashMap<BanEnum, Integer> getBanHistory(ConsulatOffline consulatOffline) throws SQLException {
+    private HashMap<BanReason, Integer> getBanHistory(ConsulatOffline consulatOffline) throws SQLException {
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("SELECT reason FROM antecedents WHERE playeruuid = ? AND sanction = 'BAN' AND cancelled = 0");
         preparedStatement.setString(1, consulatOffline.getUUID().toString());
         ResultSet resultSet = preparedStatement.executeQuery();
 
-        HashMap<BanEnum, Integer> banHistory = new HashMap<>();
+        HashMap<BanReason, Integer> banHistory = new HashMap<>();
         while (resultSet.next()) {
             String reason = resultSet.getString("reason");
-            BanEnum banReason = Arrays.stream(BanEnum.values()).filter(ban -> ban.getSanctionName().equals(reason)).findFirst().orElse(null);
+            BanReason banReason = Arrays.stream(BanReason.values()).filter(ban -> ban.getSanctionName().equals(reason)).findFirst().orElse(null);
 
             if (banReason != null) {
                 if (banHistory.containsKey(banReason)) {

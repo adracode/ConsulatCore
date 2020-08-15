@@ -11,18 +11,14 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
+@SuppressWarnings({"unused", "CopyConstructorMissesField"})
 public class CChunk implements Comparable<CChunk> {
     
+    public static final String TYPE = "CHUNK";
     private static final int SHIFT = 25 - 4; //Max coordonnées MC - Taille du chunk
     private static final int LIMIT_X = 1 << SHIFT; //2 097 152 > 30 000 000 / 16 = 1 875 000
     private static final int LIMIT_Z = 1 << SHIFT; //2 097 152 > 30 000 000 / 16 = 1 875 000
     private static final int CONVERT = (1 << SHIFT + 1) - 1; //1111111111111111111111
-    
-    public static final String TYPE = "CHUNK";
-    
-    public static long convert(int x, int z){
-        return (((long)z + LIMIT_Z) << SHIFT + 1) | (x + LIMIT_X);
-    }
     
     private final long coords;
     private Map<Material, AtomicInteger> limits = new EnumMap<>(Material.class);
@@ -41,22 +37,6 @@ public class CChunk implements Comparable<CChunk> {
         this.limits = chunk.limits;
     }
     
-    public void addLimit(Material type){
-        limits.put(type, new AtomicInteger(0));
-    }
-    
-    public boolean hasLimit(Material type){
-        return limits.containsKey(type);
-    }
-    
-    public void changeLimit(Material type, int amount){
-        limits.get(type).addAndGet(amount);
-    }
-    
-    public int getLimit(Material type){
-        return limits.get(type).get();
-    }
-    
     public int getLimitSize(){
         return limits.size();
     }
@@ -73,35 +53,37 @@ public class CChunk implements Comparable<CChunk> {
         return (int)((coords >> SHIFT + 1) - LIMIT_Z);
     }
     
-    @Override
-    public boolean equals(Object o){
-        if(this == o){
-            return true;
+    public String getType(){
+        return TYPE;
+    }
+    
+    public boolean isNeedLimitSync(){
+        return needLimitSync;
+    }
+    
+    public void setNeedLimitSync(boolean needLimitSync){
+        if(needLimitSync){
+            for(AtomicInteger limit : limits.values()){
+                limit.set(0);
+            }
         }
-        if(!(o instanceof CChunk)){
-            return false;
-        }
-        CChunk cChunk = (CChunk)o;
-        return coords == cChunk.coords;
+        this.needLimitSync = needLimitSync;
     }
     
-    @Override
-    public int hashCode(){
-        return Long.hashCode(coords);
+    public void addLimit(Material type){
+        limits.put(type, new AtomicInteger(0));
     }
     
-    @Override
-    public int compareTo(@NotNull CChunk o){
-        return Long.compare(this.coords, o.coords);
+    public boolean hasLimit(Material type){
+        return limits.containsKey(type);
     }
     
-    @Override
-    public String toString(){
-        return "CChunk{" +
-                "coords=" + coords +
-                ", limits=" + limits +
-                ", needLimitSync=" + needLimitSync +
-                '}';
+    public void changeLimit(Material type, int amount){
+        limits.get(type).addAndGet(amount);
+    }
+    
+    public int getLimit(Material type){
+        return limits.get(type).get();
     }
     
     public void loadNBT(CompoundTag chunk){
@@ -136,10 +118,6 @@ public class CChunk implements Comparable<CChunk> {
             chunk.putByte("NeedSync", (byte)1);
         }
         return chunk;
-    }
-    
-    public String getType(){
-        return TYPE;
     }
     
     public void set(CChunk chunk){
@@ -194,16 +172,38 @@ public class CChunk implements Comparable<CChunk> {
         }
     }
     
-    public boolean isNeedLimitSync(){
-        return needLimitSync;
+    @Override
+    public int hashCode(){
+        return Long.hashCode(coords);
     }
     
-    public void setNeedLimitSync(boolean needLimitSync){
-        if(needLimitSync){
-            for(AtomicInteger limit : limits.values()){
-                limit.set(0);
-            }
+    @Override
+    public boolean equals(Object o){
+        if(this == o){
+            return true;
         }
-        this.needLimitSync = needLimitSync;
+        if(!(o instanceof CChunk)){
+            return false;
+        }
+        CChunk cChunk = (CChunk)o;
+        return coords == cChunk.coords;
+    }
+    
+    @Override
+    public String toString(){
+        return "CChunk{" +
+                "coords=" + coords +
+                ", limits=" + limits +
+                ", needLimitSync=" + needLimitSync +
+                '}';
+    }
+    
+    @Override
+    public int compareTo(@NotNull CChunk o){
+        return Long.compare(this.coords, o.coords);
+    }
+    
+    public static long convert(int x, int z){
+        return (((long)z + LIMIT_Z) << SHIFT + 1) | (x + LIMIT_X);
     }
 }

@@ -6,10 +6,10 @@ import org.bukkit.ChunkSnapshot;
 
 public class ChunkScanner implements Task {
     
+    private int x = 0, y = 0, z = 0;
     private Chunk chunk;
     private ChunkSnapshot snapshot;
     private ScanAction action;
-    int x = 0, y = 0, z = 0;
     
     public ChunkScanner(Chunk chunk, ScanAction action){
         this.chunk = chunk;

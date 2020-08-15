@@ -1,19 +1,23 @@
 package fr.amisoz.consulatcore.commands.players;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
-import fr.leconsulat.api.ranks.Rank;
+import org.jetbrains.annotations.NotNull;
 
 public class DuelCommand extends ConsulatCommand {
-
-    public DuelCommand() {
-        super("consulat.core", "duel", "/duel spectate ou /duel <Joueur> <Mise> ou /duel accept/reject ou /duel annonce on/off", 0, Rank.JOUEUR);
+    
+    public DuelCommand(){
+        super(ConsulatCore.getInstance(), "duel"
+                /*"/duel spectate ou /duel <Joueur> <Mise> ou /duel accept/reject ou /duel annonce on/off"*/);
+        setDescription("En maintenance").
+                setUsage("En maintenance").
+                suggest();
     }
-
+    
     @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         sender.sendMessage("§7[§b§lDuel§r§7] §cLes duels sont actuellement en cours de maintenance.");
-        return;
 
         /*if(args.length == 1){
 

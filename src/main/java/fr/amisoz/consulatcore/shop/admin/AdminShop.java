@@ -7,6 +7,7 @@ import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.amisoz.consulatcore.utils.CoordinatesUtils;
 import fr.leconsulat.api.nbt.CompoundTag;
 import org.bukkit.block.Chest;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -99,6 +100,13 @@ public abstract class AdminShop implements Shop, Comparable<Shop> {
     
     public ItemStack getItem(){
         return item;
+    }
+    
+    protected void setItem(ItemStack item){
+        Inventory chest = ((Chest)ConsulatCore.getInstance().getOverworld().getBlockAt(getX(), getY(), getZ()).getState()).getBlockInventory();
+        chest.clear();
+        chest.addItem(item);
+        this.item = item;
     }
     
     public double getPrice(){

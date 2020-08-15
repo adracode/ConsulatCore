@@ -8,6 +8,9 @@ import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.shop.admin.AdminShop;
 import fr.amisoz.consulatcore.shop.admin.AdminShopBuy;
 import fr.amisoz.consulatcore.shop.admin.AdminShopSell;
+import fr.amisoz.consulatcore.shop.admin.custom.ASFly;
+import fr.amisoz.consulatcore.shop.admin.custom.ASHome;
+import fr.amisoz.consulatcore.shop.admin.custom.ASTouriste;
 import fr.amisoz.consulatcore.shop.player.PlayerShop;
 import fr.amisoz.consulatcore.shop.player.ShopItemType;
 import fr.amisoz.consulatcore.utils.ChestUtils;
@@ -24,7 +27,10 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.TranslatableComponent;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
@@ -34,11 +40,13 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ItemFrame;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.*;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.hanging.HangingBreakEvent;
@@ -46,8 +54,6 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -69,6 +75,9 @@ public class ShopManager implements Listener {
         ShopManager shopManager = new ShopManager();
         shopManager.register(AdminShopBuy.TYPE, AdminShopBuy::new);
         shopManager.register(AdminShopSell.TYPE, AdminShopSell::new);
+        shopManager.register(ASFly.TYPE, ASFly::new);
+        shopManager.register(ASHome.TYPE, ASHome::new);
+        shopManager.register(ASTouriste.TYPE, ASTouriste::new);
     }
     
     private final Map<String, ShopConstructor> createShop = new HashMap<>();
@@ -545,7 +554,7 @@ public class ShopManager implements Listener {
             return;
         }
         if(shop.getOwner().equals(player.getUUID())){
-            if(!ConsulatAPI.getConsulatAPI().isDebug()){
+            if(!ConsulatAPI.getConsulatAPI().isDevelopment()){
                 player.sendMessage(Text.CANT_BUY_OWN_SHOP);
                 return;
             }
@@ -817,95 +826,6 @@ public class ShopManager implements Listener {
         preparedStatement.close();
     }
     
-    @EventHandler
-    public void onSign(SignChangeEvent event){
-        Player player = event.getPlayer();
-        if(player.isOp()){
-            if(event.getLines()[0].equals("[ConsulatShop]")){
-                event.setLine(0, "§8[§aConsulatShop§8]");
-            }
-            if(event.getLines()[2].equals("X")){
-                event.setLine(2, "§cAchat impossible");
-            }
-            if(event.getLines()[3].equals("X")){
-                event.setLine(3, "§cVente impossible");
-            }
-        }
-    }
-    
-    @EventHandler
-    public void onInteract(PlayerInteractEvent event){
-        if(event.getHand() != EquipmentSlot.HAND){
-            return;
-        }
-        if(event.getClickedBlock() == null){
-            return;
-        }
-        if(event.getClickedBlock().getType() != Material.OAK_WALL_SIGN){
-            return;
-        }
-        Sign sign = (Sign)event.getClickedBlock().getState();
-        String[] lines = sign.getLines();
-        if(!lines[0].equals("§8[§aConsulatShop§8]")){
-            return;
-        }
-        if(event.getAction() == Action.LEFT_CLICK_BLOCK){
-            SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
-            event.setCancelled(true);
-            boolean hasBuyedOnce = player.getLimitHome() >= 1;
-            if(sign.getLines()[2].contains("Achat impossible")){
-                player.sendMessage(Text.PREFIX + "Item non disponible à l'achat.");
-                return;
-            }
-            double buyPrice = Double.parseDouble(sign.getLines()[2]);
-            if(sign.getLines()[1].equalsIgnoreCase("home")){
-                if(player.hasMoney(buyPrice)){
-                    if(hasBuyedOnce){
-                        player.sendMessage(Text.PREFIX + "Tu as déjà acheté un home supplémentaire!");
-                    } else {
-                        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                            try {
-                                player.removeMoney(buyPrice);
-                                player.incrementLimitHome();
-                                player.sendMessage(Text.PREFIX + "Tu as acheté un home supplémentaire pour " + buyPrice + "§.");
-                            } catch(SQLException e){
-                                e.printStackTrace();
-                                player.sendMessage(Text.PREFIX + "Il y a eu une erreur durant l'achat de ton home!");
-                            }
-                        });
-                    }
-                } else {
-                    player.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent");
-                }
-                return;
-            } else if(sign.getLines()[1].equalsIgnoreCase("TOURISTE_GRADE")){
-                if(player.hasMoney(buyPrice)){
-                    if(player.getRank() != Rank.JOUEUR){
-                        player.sendMessage(Text.PREFIX + "Tu ne peux pas acheter ce grade !");
-                        return;
-                    }
-                    player.removeMoney(buyPrice);
-                    player.setRank(Rank.TOURISTE);
-                    player.sendMessage(Text.PREFIX + "Tu es désormais touriste !");
-                } else {
-                    player.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent");
-                }
-                return;
-            } else if(sign.getLines()[1].equalsIgnoreCase("FLY_5")){
-                if(player.hasMoney(buyPrice)){
-                    if(!player.hasFly()){
-                        player.removeMoney(buyPrice);
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "boutique fly5 " + player.getName());
-                    } else {
-                        player.sendMessage(ChatColor.RED + "Tu as déjà le fly.");
-                    }
-                } else {
-                    player.sendMessage(Text.PREFIX + "§cTu n'as pas assez d'argent");
-                }
-            }
-        }
-    }
-    
     private void updateShop(Location old, Location loc) throws SQLException{
         PreparedStatement update = ConsulatAPI.getDatabase().prepareStatement("UPDATE shopinfo SET shop_x = ?, shop_y = ?, shop_z = ? WHERE shop_x = ? AND shop_y = ? AND shop_z = ?");
         update.setInt(1, loc.getBlockX());
@@ -926,7 +846,7 @@ public class ShopManager implements Listener {
             }
         }
         TextComponent message = new TextComponent(Text.PREFIX + "Tu as " + action.message + " §e");
-        message.addExtra(new TranslatableComponent(ConsulatAPI.getNMS().getItemNMS().getItemNameId(item)));
+        message.addExtra(new TranslatableComponent(ConsulatAPI.getNMS().getItem().getItemNameId(item)));
         message.addExtra(" x" + amount + " §6pour §e" + ConsulatCore.formatMoney(price) + ".");
         return message;
     }

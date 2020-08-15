@@ -15,16 +15,21 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.NotNull;
 
 public class ModerateCommand extends ConsulatCommand {
     
     public ModerateCommand(){
-        super("consulat.core", "staff", "/staff", 0, Rank.MODO);
-        suggest();
+        super(ConsulatCore.getInstance(), "staff");
+        setDescription("Switcher de mode entre joueur et staff").
+                setUsage("/staff - Switcher de mode").
+                setAliases("moderate").
+                setRank(Rank.MODO).
+                suggest();
     }
     
     @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
         Player bukkitPlayer = sender.getPlayer();
         player.setInModeration(!player.isInModeration());

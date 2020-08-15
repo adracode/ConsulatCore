@@ -12,6 +12,7 @@ import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -19,24 +20,27 @@ import java.util.Map;
 public class DelHomeCommand extends ConsulatCommand {
     
     public DelHomeCommand(){
-        super("consulat.core", "delhome", "/delhome <Nom du home>", 1, Rank.JOUEUR);
-        suggest(RequiredArgumentBuilder.argument("home", StringArgumentType.word()).suggests((context, builder) -> {
-                    SurvivalPlayer player = (SurvivalPlayer)getConsulatPlayer(context.getSource());
-                    if(player == null){
-                        return builder.buildFuture();
-                    }
-                    for(String home : player.getNameHomes()){
-                        if(home.toLowerCase().startsWith(builder.getRemaining().toLowerCase())){
-                            builder.suggest(home);
-                        }
-                    }
-                    return builder.buildFuture();
-                })
-        );
+        super(ConsulatCore.getInstance(), "delhome");
+        setDescription("Supprimer un home").
+                setUsage("/delhome <home> - Supprimer un home").
+                setArgsMin(1).
+                setRank(Rank.JOUEUR).
+                suggest(RequiredArgumentBuilder.argument("home", StringArgumentType.word()).suggests((context, builder) -> {
+                            SurvivalPlayer player = (SurvivalPlayer)getConsulatPlayer(context.getSource());
+                            if(player == null){
+                                return builder.buildFuture();
+                            }
+                            for(String home : player.getNameHomes()){
+                                if(home.toLowerCase().startsWith(builder.getRemaining().toLowerCase())){
+                                    builder.suggest(home);
+                                }
+                            }
+                            return builder.buildFuture();
+                        }));
     }
     
     @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         SurvivalPlayer survivalSender = (SurvivalPlayer)sender;
         if(args.length == 2 && survivalSender.hasPower(Rank.MODPLUS)){
             Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {

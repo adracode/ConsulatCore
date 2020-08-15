@@ -2,7 +2,7 @@ package fr.amisoz.consulatcore.moderation;
 
 import org.bukkit.Material;
 
-public enum BanEnum {
+public enum BanReason {
 
     CHEAT("Cheat", Material.GOLDEN_APPLE, 60*60*24*30L, "1 mois"),
     PILLAGE("Tentative de pillage", Material.BARRIER, 60*60*24*3L, "3 jours"),
@@ -22,7 +22,7 @@ public enum BanEnum {
     private long durationSanction;
     private String formatDuration;
 
-    BanEnum(String sanctionName, Material guiMaterial, long durationSanction, String formatDuration) {
+    BanReason(String sanctionName, Material guiMaterial, long durationSanction, String formatDuration) {
         this.sanctionName = sanctionName;
         this.guiMaterial = guiMaterial;
         this.durationSanction = durationSanction;

@@ -35,18 +35,6 @@ public class Fly {
         return timeLeft;
     }
     
-    public void decrementTimeLeft(){
-        --this.timeLeft;
-    }
-    
-    public boolean canFly(){
-        return hasInfiniteFly() || reset < System.currentTimeMillis() || timeLeft > 0;
-    }
-    
-    public boolean hasInfiniteFly(){
-        return flyTime == -1;
-    }
-    
     public boolean isFlying(){
         return flying;
     }
@@ -59,9 +47,26 @@ public class Fly {
         }
     }
     
+    public void decrementTimeLeft(){
+        --this.timeLeft;
+    }
+    
+    public boolean canFly(){
+        return hasInfiniteFly() || reset < System.currentTimeMillis() || timeLeft > 0;
+    }
+    
+    public boolean hasInfiniteFly(){
+        return flyTime == -1;
+    }
+    
+    @Override
+    public int hashCode(){
+        return Objects.hash(flying, flyTime, reset, timeLeft);
+    }
+    
     @Override
     public boolean equals(Object o){
-        if(this == o) {
+        if(this == o){
             return true;
         }
         if(!(o instanceof Fly)){
@@ -72,10 +77,5 @@ public class Fly {
                 flyTime == fly.flyTime &&
                 reset == fly.reset &&
                 timeLeft == fly.timeLeft;
-    }
-    
-    @Override
-    public int hashCode(){
-        return Objects.hash(flying, flyTime, reset, timeLeft);
     }
 }

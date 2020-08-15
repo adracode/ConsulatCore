@@ -3,14 +3,11 @@ package fr.amisoz.consulatcore.listeners.entity.player;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
-import fr.leconsulat.api.events.blocks.PlayerInteractSignEvent;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -28,33 +25,8 @@ import java.util.List;
 
 public class InteractListener implements Listener {
     
-    private ConsulatCore consulatCore;
-    
-    public InteractListener(ConsulatCore consulatCore){
-        this.consulatCore = consulatCore;
-    }
-    
-    @EventHandler
-    public void onClickSign(PlayerInteractSignEvent event){
-        Player player = event.getPlayer();
-        Sign sign = (Sign)event.getBlock().getState();
-        String[] lines = sign.getLines();
-        if(lines[0].equals("§9[Téléportation]")){
-            try {
-                int x = Integer.parseInt(lines[1]);
-                int y = Integer.parseInt(lines[2]);
-                int z = Integer.parseInt(lines[3]);
-                Location result = new Location(ConsulatCore.getInstance().getOverworld(), x, y, z);
-                player.teleportAsync(result);
-                player.sendMessage("§aTu as été téléporté à la zone.");
-            } catch(NumberFormatException e){
-                player.sendMessage("§cErreur de coordonnées");
-            }
-        }
-    }
-    
     @SuppressWarnings("unchecked")
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onInteract(PlayerInteractEvent event){
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
         if(event.getClickedBlock() != null){
@@ -84,9 +56,10 @@ public class InteractListener implements Listener {
                 player.sendMessage(Text.YOU_TELEPORTED_TO(resultPlayer.getName()));
                 event.setCancelled(true);
             }
+            ConsulatCore core = ConsulatCore.getInstance();
             if(itemMeta.getDisplayName().contains("Changer son statut d'invisibilité")){
                 if(player.isVanished()){
-                    Bukkit.getOnlinePlayers().forEach(onlinePlayer -> onlinePlayer.showPlayer(consulatCore, player.getPlayer()));
+                    Bukkit.getOnlinePlayers().forEach(onlinePlayer -> onlinePlayer.showPlayer(core, player.getPlayer()));
                     player.setVanished(false);
                     player.sendMessage(Text.NOW_VISIBLE);
                     for(PotionEffect effect : player.getPlayer().getActivePotionEffects()){
@@ -99,7 +72,7 @@ public class InteractListener implements Listener {
                         if(onlinePlayer != player.getPlayer()){
                             ConsulatPlayer consulatPlayer = CPlayerManager.getInstance().getConsulatPlayer(onlinePlayer.getUniqueId());
                             if(!consulatPlayer.hasPower(Rank.MODO)){
-                                onlinePlayer.hidePlayer(consulatCore, player.getPlayer());
+                                onlinePlayer.hidePlayer(core, player.getPlayer());
                             }
                         }
                     });

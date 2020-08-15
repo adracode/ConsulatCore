@@ -7,23 +7,29 @@ import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
+import org.jetbrains.annotations.NotNull;
 
 public class FlyCommand extends ConsulatCommand {
     
     public FlyCommand(){
-        super("consulat.core", "fly", "/fly [start/stop/info]", 1, Rank.JOUEUR);
-        suggest((listener) -> {
-                    SurvivalPlayer player = (SurvivalPlayer)getConsulatPlayer(listener);
-                    return player != null && player.hasFly();
-                },
-                LiteralArgumentBuilder.literal("start"),
-                LiteralArgumentBuilder.literal("stop"),
-                LiteralArgumentBuilder.literal("info")
-        );
+        super(ConsulatCore.getInstance(), "fly");
+        setDescription("Gérer son fly").
+                setUsage("/fly info - Voir les informations sur ton fly\n" +
+                        "/fly start - Activer le fly\n" +
+                        "/fly stop - Désactiver le fly").
+                setArgsMin(1).
+                setRank(Rank.JOUEUR).
+                suggest((listener) -> {
+                            SurvivalPlayer player = (SurvivalPlayer)getConsulatPlayer(listener);
+                            return player != null && player.hasFly();
+                        },
+                        LiteralArgumentBuilder.literal("start"),
+                        LiteralArgumentBuilder.literal("stop"),
+                        LiteralArgumentBuilder.literal("info"));
     }
     
     @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
         if(!player.hasFly()){
             sender.sendMessage(Text.NO_FLY);

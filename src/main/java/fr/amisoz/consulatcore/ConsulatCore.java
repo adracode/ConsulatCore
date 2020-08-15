@@ -1,6 +1,5 @@
 package fr.amisoz.consulatcore;
 
-
 import fr.amisoz.consulatcore.channel.StaffChannel;
 import fr.amisoz.consulatcore.chunks.ChunkManager;
 import fr.amisoz.consulatcore.commands.cities.CityCommand;
@@ -38,18 +37,13 @@ import fr.amisoz.consulatcore.zones.ZoneManager;
 import fr.amisoz.consulatcore.zones.claims.ClaimManager;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.channel.Channel;
-import fr.leconsulat.api.events.PostInitEvent;
 import fr.leconsulat.api.redis.RedisManager;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.Connection;
@@ -59,31 +53,13 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
 
-/**
- * CREATE TABLE cities (
- * id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
- * uuid CHAR(36) NOT NULL,
- * name VARCHAR(255) NOT NULL,
- * money DOUBLE NOT NULL DEFAULT 0,
- * owner CHAR(36) NOT NULL
- * );
- * CREATE TABLE zones (
- * id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
- * uuid CHAR(36) NOT NULL,
- * name VARCHAR(255) NOT NULL,
- * owner CHAR(36) NOT NULL
- * );
- * ALTER TABLE players ADD city CHAR(36);
- */
-
 public class ConsulatCore extends JavaPlugin implements Listener {
     
     private static ConsulatCore instance;
     private static Random random;
-    
+    public SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy 'à' HH:mm");
     private Location spawn;
     private World overworld;
-    public SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy 'à' HH:mm");
     private DecimalFormat moneyFormat;
     private ModerationDatabase moderationDatabase;
     private boolean chat = true;
@@ -97,6 +73,150 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     private Set<String> forbiddenPerso = new HashSet<>(Arrays.asList(
             "modo", "moderateur", "modérateur", "admin", "animateur", "partenaire", "youtubeur", "streamer", "ami",
             "fonda", "dev", "builder", "fondateur"));
+    
+    public Connection getDatabaseConnection(){
+        return ConsulatAPI.getDatabase();
+    }
+    
+    public ModerationDatabase getModerationDatabase(){
+        return moderationDatabase;
+    }
+    
+    public boolean isChatActivated(){
+        return chat;
+    }
+    
+    public List<TextComponent> getTextPerso(){
+        return textPerso;
+    }
+    
+    public static ConsulatCore getInstance(){
+        return instance;
+    }
+    
+    public Location getSpawn(){
+        return spawn;
+    }
+    
+    public void setSpawn(Location spawn){
+        this.spawn = spawn;
+    }
+    
+    public World getOverworld(){
+        return overworld;
+    }
+    
+    public static Random getRandom(){
+        return random;
+    }
+    
+    public Channel getSpy(){
+        return spy;
+    }
+    
+    public StaffChannel getStaffChannel(){
+        return staffChannel;
+    }
+    
+    public SafariServer getSafari(){
+        return safari;
+    }
+    
+    public HubServer getHub(){
+        return hub;
+    }
+    
+    public void setChat(boolean chat){
+        this.chat = chat;
+    }
+    
+    public boolean isCustomRankForbidden(String rank){
+        return forbiddenPerso.contains(rank.toLowerCase());
+    }
+    
+    public String getPermission(String permission){
+        return getName().toLowerCase() + "." + permission;
+    }
+    
+    @SuppressWarnings("ConstantConditions")
+    private void registerCommands(){
+        new AccessCommand().register();
+        new AdminShopCommand().register();
+        new AdvertCommand().register();
+        new AnswerCommand().register();
+        new BackCommand().register();
+        new BaltopCommand().register();
+        new BroadcastCommand().register();
+        new CDebugCommand().register();
+        new CEnchantCommand().register();
+        new ClaimCommand().register();
+        new DelHomeCommand().register();
+        new DiscordCommand().register();
+        new DuelCommand().register();
+        new EnderchestCommand().register();
+        new FlyCommand().register();
+        new GamemodeCommand().register();
+        new GetkeyCommand().register();
+        new ConsulatHelpCommand().register();
+        new HomeCommand().register();
+        new HubCommand().register();
+        new IgnoreCommand().register();
+        new InfosCommand().register();
+        new InvseeCommand().register();
+        new KickCommand().register();
+        new ModerateCommand().register();
+        new MoneyCommand().register();
+        new MpCommand().register();
+        new PayCommand().register();
+        new PersoCommand().register();
+        new ReportCommand().register();
+        new SafariCommand().register();
+        new SanctionCommand().register();
+        new SeenCommand().register();
+        new SetHomeCommand().register();
+        getCommand("boutique").setExecutor(new ShopCommand());
+        new fr.amisoz.consulatcore.commands.economy.ShopCommand().register();
+        new SiteCommand().register();
+        new SocialSpyCommand().register();
+        new SpawnCommand().register();
+        new StaffChatCommand().register();
+        new StaffListCommand().register();
+        new ToggleChatCommand().register();
+        new TopCommand().register();
+        new TpaCommand().register();
+        new TpmodCommand().register();
+        new UnbanCommand().register();
+        new UnmuteCommand().register();
+        new UnclaimCommand().register();
+        new AntecedentsCommand().register();
+        new CityCommand().register();
+    }
+    
+    private void registerEvents(){
+        Bukkit.getPluginManager().registerEvents(this, this);
+        Bukkit.getPluginManager().registerEvents(new ChatListeners(), this);
+        Bukkit.getPluginManager().registerEvents(new InventoryListeners(), this);
+        Bukkit.getPluginManager().registerEvents(new InteractListener(), this);
+        Bukkit.getPluginManager().registerEvents(new DamageListener(), this);
+        Bukkit.getPluginManager().registerEvents(new MobListeners(), this);
+        Bukkit.getPluginManager().registerEvents(new MoveListeners(), this);
+        Bukkit.getPluginManager().registerEvents(new ExperienceListener(), this);
+        Bukkit.getPluginManager().registerEvents(new FoodListener(), this);
+        Bukkit.getPluginManager().registerEvents(new SignListener(), this);
+        //Bukkit.getPluginManager().registerEvents(new DuelListeners(), this);
+        Bukkit.getPluginManager().registerEvents(new ClaimCancelListener(), this);
+        Bukkit.getPluginManager().registerEvents(ClaimManager.getInstance(), this);
+        Bukkit.getPluginManager().registerEvents(SPlayerManager.getInstance(), this);
+        Bukkit.getPluginManager().registerEvents(ShopManager.getInstance(), this);
+    }
+    
+    @Override
+    public void onDisable(){
+        RedisManager.getInstance().getRedis().getTopic(ConsulatAPI.getConsulatAPI().isDevelopment() ? "PlayerTestsurvie" : "PlayerSurvie").publish(-1);
+        ZoneManager.getInstance().saveZones();
+        ChunkManager.getInstance().saveChunks();
+        ShopManager.getInstance().saveAdminShops();
+    }
     
     @Override
     public void onEnable(){
@@ -162,163 +282,12 @@ public class ConsulatCore extends JavaPlugin implements Listener {
             textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/perso " + color.getChar()));
             textPerso.add(textComponent);
         }
-        if(ConsulatAPI.getConsulatAPI().isDebug()){
-            for(Player p : Bukkit.getOnlinePlayers()){
-                getServer().getPluginManager().callEvent(new PlayerJoinEvent(p, ""));
-            }
-        }
+        registerCommands();
         ConsulatAPI.getConsulatAPI().log(Level.INFO, "ConsulatCore loaded in " + (System.currentTimeMillis() - startLoading) + " ms.");
         RedisManager.getInstance().getRedis().getTopic(ConsulatAPI.getConsulatAPI().isDevelopment() ? "PlayerTestsurvie" : "PlayerSurvie").publish(0);
     }
     
-    @Override
-    public void onDisable(){
-        RedisManager.getInstance().getRedis().getTopic(ConsulatAPI.getConsulatAPI().isDevelopment() ? "PlayerTestsurvie" : "PlayerSurvie").publish(-1);
-        ZoneManager.getInstance().saveZones();
-        ChunkManager.getInstance().saveChunks();
-        ShopManager.getInstance().saveAdminShops();
-    }
-    
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onPostInit(PostInitEvent event){
-        registerCommands();
-    }
-    
-    @SuppressWarnings("ConstantConditions")
-    private void registerCommands(){
-        new AccessCommand();
-        new AdminShopCommand();
-        new AdvertCommand();
-        new AnswerCommand();
-        new BackCommand();
-        new BaltopCommand();
-        new BroadcastCommand();
-        new CDebugCommand();
-        new CEnchantCommand();
-        new ClaimCommand();
-        new DelHomeCommand();
-        new DiscordCommand();
-        new DuelCommand();
-        new EnderchestCommand();
-        new FlyCommand();
-        new GamemodeCommand();
-        new GetkeyCommand();
-        new HelpCommand();
-        new HomeCommand();
-        new HubCommand();
-        new IgnoreCommand();
-        new InfosCommand();
-        new InvseeCommand();
-        new KickCommand();
-        new ModerateCommand();
-        new MoneyCommand();
-        new MpCommand();
-        new PayCommand();
-        new PersoCommand();
-        new ReportCommand();
-        new SafariCommand();
-        new SanctionCommand();
-        new SeenCommand();
-        new SetHomeCommand();
-        getCommand("boutique").setExecutor(new ShopCommand());
-        new fr.amisoz.consulatcore.commands.economy.ShopCommand();
-        new SiteCommand();
-        new SocialSpyCommand();
-        new SpawnCommand();
-        new StaffChatCommand();
-        new StaffListCommand();
-        new ToggleChatCommand();
-        new TopCommand();
-        new TpaCommand();
-        new TpmodCommand();
-        new UnbanCommand();
-        new UnmuteCommand();
-        new UnclaimCommand();
-        new AntecedentsComand();
-        new CityCommand();
-    }
-    
-    private void registerEvents(){
-        Bukkit.getPluginManager().registerEvents(this, this);
-        Bukkit.getPluginManager().registerEvents(new ChatListeners(), this);
-        Bukkit.getPluginManager().registerEvents(new InventoryListeners(), this);
-        Bukkit.getPluginManager().registerEvents(new InteractListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new DamageListener(), this);
-        Bukkit.getPluginManager().registerEvents(new MobListeners(), this);
-        Bukkit.getPluginManager().registerEvents(new MoveListeners(), this);
-        Bukkit.getPluginManager().registerEvents(new ExperienceListener(), this);
-        Bukkit.getPluginManager().registerEvents(new FoodListener(), this);
-        Bukkit.getPluginManager().registerEvents(new SignListener(), this);
-        Bukkit.getPluginManager().registerEvents(new ModeratorInteraction(), this);
-        //Bukkit.getPluginManager().registerEvents(new DuelListeners(), this);
-        Bukkit.getPluginManager().registerEvents(new ChunkChangeListener(), this);
-        Bukkit.getPluginManager().registerEvents(new ClaimCancelListener(), this);
-        Bukkit.getPluginManager().registerEvents(ClaimManager.getInstance(), this);
-        Bukkit.getPluginManager().registerEvents(SPlayerManager.getInstance(), this);
-        Bukkit.getPluginManager().registerEvents(ShopManager.getInstance(), this);
-    }
-    
-    public Connection getDatabaseConnection(){
-        return ConsulatAPI.getDatabase();
-    }
-    
-    public ModerationDatabase getModerationDatabase(){
-        return moderationDatabase;
-    }
-    
-    public boolean isChatActivated(){
-        return chat;
-    }
-    
-    public void setChat(boolean chat){
-        this.chat = chat;
-    }
-    
-    public List<TextComponent> getTextPerso(){
-        return textPerso;
-    }
-    
-    public static ConsulatCore getInstance(){
-        return instance;
-    }
-    
-    public Location getSpawn(){
-        return spawn;
-    }
-    
-    public void setSpawn(Location spawn){
-        this.spawn = spawn;
-    }
-    
-    public World getOverworld(){
-        return overworld;
-    }
-    
-    public boolean isCustomRankForbidden(String rank){
-        return forbiddenPerso.contains(rank.toLowerCase());
-    }
-    
     public synchronized static String formatMoney(double money){
         return getInstance().moneyFormat.format(money);
-    }
-    
-    public static Random getRandom(){
-        return random;
-    }
-    
-    public Channel getSpy(){
-        return spy;
-    }
-    
-    public StaffChannel getStaffChannel(){
-        return staffChannel;
-    }
-    
-    public SafariServer getSafari(){
-        return safari;
-    }
-    
-    public HubServer getHub(){
-        return hub;
     }
 }

@@ -1,6 +1,6 @@
 package fr.amisoz.consulatcore.moderation;
 
-public class SanctionObject {
+public class SanctionedPlayer {
 
     private SanctionType sanctionType;
     private String sanctionName;
@@ -10,7 +10,7 @@ public class SanctionObject {
     private boolean isActive;
     private boolean isCancelled;
 
-    public SanctionObject(SanctionType sanctionType, String sanctionName, String sanctionAt, String expire, String mod_name, boolean isActive, boolean isCancelled) {
+    public SanctionedPlayer(SanctionType sanctionType, String sanctionName, String sanctionAt, String expire, String mod_name, boolean isActive, boolean isCancelled) {
         this.sanctionType = sanctionType;
         this.sanctionName = sanctionName;
         this.sanctionAt = sanctionAt;

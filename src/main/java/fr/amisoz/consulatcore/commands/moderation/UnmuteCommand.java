@@ -9,16 +9,21 @@ import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.NotNull;
 
 public class UnmuteCommand extends ConsulatCommand {
     
     public UnmuteCommand(){
-        super("consulat.core", "unmute", "/unmute <Joueur>", 1, Rank.RESPONSABLE);
-        suggest(Arguments.playerList("joueur"), Arguments.word("joueur"));
+        super(ConsulatCore.getInstance(), "unmute");
+        setDescription("Démuter un joueur").
+                setUsage("/unmute <joueur> - Démute un joueur").
+                setArgsMin(1).
+                setRank(Rank.RESPONSABLE).
+                suggest(Arguments.playerList("joueur"), Arguments.word("joueur"));
     }
     
     @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             ConsulatCore.getInstance().getModerationDatabase().unmute(args[0]);
             SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[0]);

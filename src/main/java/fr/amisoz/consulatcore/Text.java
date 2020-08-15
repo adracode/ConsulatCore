@@ -1,7 +1,7 @@
 package fr.amisoz.consulatcore;
 
 import fr.amisoz.consulatcore.economy.BaltopManager;
-import fr.amisoz.consulatcore.moderation.MuteObject;
+import fr.amisoz.consulatcore.moderation.MutedPlayer;
 import fr.amisoz.consulatcore.players.SurvivalOffline;
 import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.leconsulat.api.commands.ConsulatCommand;
@@ -49,7 +49,12 @@ final public class Text {
     public static final String PLAYER_DOESNT_BELONGS_CITY = PREFIX + "§cCe joueur n'appartient pas à la ville.";
     public static final String PLAYER_DOESNT_BELONGS_A_CITY = PREFIX + "§cCe joueur n'appartient pas à une ville.";
     public static final String PLAYER_ALREADY_BELONGS_CITY = PREFIX + "§cCe joueur est déjà dans une ville.";
-    public static String COMMAND_USAGE(ConsulatCommand command){ return PREFIX + "§c" + command.getUsage();}
+    public static final String YOU_ALREADY_BELONGS_CITY = PREFIX + "§cTu es déjà dans une ville.";
+    public static TextComponent COMMAND_USAGE(ConsulatCommand command){
+        TextComponent usage = new TextComponent("§c§lErreur: §7Mauvaise syntaxe §o(survolez pour voir)§7.");
+        usage.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§cUtilisation:\n§7" + command.getUsage()).create()));
+        return usage;
+    }
     public static String BEEN_KICKED_FROM_CITY_BY(String city, String player){return PREFIX + "§cTu as été kick de la ville §7" + city + "§c par §7" + player + "§c.";}
     public static String KICK_PLAYER_FROM_CITY(String player){return PREFIX + "§cTu as kick §7" + player + " §ade la ville";}
     public static String PLAYER_KICKED_FROM_CITY(String kicker, String kicked){return PREFIX + "§c" + kicker + " §7a kick §c" + kicked + "§7 la ville.";}
@@ -100,7 +105,7 @@ final public class Text {
     public static final String PLAYER_NOT_ACCESS_CLAIM = PREFIX + "§cCe joueur n'a pas accès à ce claim.";
     public static final String PLAYER_NOT_ACCESS_CLAIMS = PREFIX + "§cCe joueur n'a pas accès à tes claim.";
     public static final String NOBODY_ACCESS_CLAIM = PREFIX + "§cAucun joueur n'a accès à ce claim.";
-    public static <E> String LIST_ACCESS_CLAIM(Collection<UUID> toShow){ return PREFIX + "§6Liste des joueurs ayant accès à ce claim : §e" + toString(toShow, uuid -> Bukkit.getOfflinePlayer(uuid).getName()); }
+    public static <E> String LIST_ACCESS_CLAIM(Collection<UUID> toShow){ return PREFIX + "§6Liste des joueurs ayant accès à ce claim: §e" + toString(toShow, uuid -> Bukkit.getOfflinePlayer(uuid).getName()); }
     public static final String NOW_SPEAK_IN_CITY_CHAT = PREFIX + "§aTu parles maintenant dans le chat de ville.";
     public static final String NOW_SPEAK_IN_GLOBAL_CHAT = PREFIX + "§aTu parles maintenant dans le chat global.";
     public static final String CANT_CHANGE_DESCRIPTION_CITY = PREFIX + "§cTu ne peux pas changer la description de la ville.";
@@ -158,15 +163,15 @@ final public class Text {
     public static String BRODCAST(String player, String message){return BROADCAST_PREFIX + "§4" + player + "§7: §b" + message;}
     public static final String NEED_SPECTATOR = PREFIX + "§cTu dois être en spectateur pour regarder les enderchest.";
     public static final String NEED_STAFF_MODE = PREFIX + "§cTu dois être en staff mode.";
-    public static String KICK_PLAYER(String reason){return PREFIX + "§7§l§m ----[§r §6§lLe Consulat §7§l§m]----\n\n§cTu as été exclu.\n§cRaison: §4" + reason;}
+    public static String KICK_PLAYER(String reason){return "§7§l§m ----[§r §6§lLe Consulat §7§l§m]----\n\n§cTu as été exclu.\n§cRaison: §4" + reason;}
     public static final String YOU_KICKED_PLAYER = PREFIX + "§aJoueur exclu !";
     public static final String NO_MORE_IN_STAFF_MODE = MODERATION_PREFIX + "§cTu n'es plus en mode modérateur.";
     public static final String NOW_IN_STAFF_MODE = MODERATION_PREFIX + "§aTu es désormais en mode modérateur.";
     public static TextComponent REPORT(String toReport, String reporter, String reason){
         TextComponent textComponent = new TextComponent(Text.MODERATION_PREFIX + "§a" + toReport + "§2 a été report.");
         textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new ComponentBuilder("§2Raison : §a" + reason +
-                        "\n§2Par : §a" + reporter +
+                new ComponentBuilder("§2Raison: §a" + reason +
+                        "\n§2Par: §a" + reporter +
                         "\n§7§oClique pour te téléporter au joueur concerné"
                 ).create()));
         textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpmod " + toReport));
@@ -189,18 +194,18 @@ final public class Text {
     public static final String UNMUTE_PLAYER = PREFIX + "§aJoueur démute." ;
     public static final String PLAYER_NOT_MUTE = PREFIX + "§cCe joueur n'est pas mute.";
     public static final String NEED_WAIT = PREFIX + "§cTu dois attendre pour refaire cette commande.";
-    public static String YOU_MUTE(MuteObject muteInfo){return PREFIX + "§cTu es actuellement mute.\n§4Raison : §c" + muteInfo.getReason() + "\n§4Jusqu'au : §c" + muteInfo.getEndDate();}
-    public static String ADVERT(String sender, String message){return  "§e[Annonce] §6" + sender + "§7 : §r" + message;}
+    public static String YOU_MUTE(MutedPlayer muteInfo){return PREFIX + "§cTu es actuellement mute.\n§4Raison: §c" + muteInfo.getReason() + "\n§4Jusqu'au: §c" + muteInfo.getEndDate();}
+    public static String ADVERT(String sender, String message){return  "§e[Annonce] §6" + sender + "§7: §r" + message;}
     public static final String CANT_MP = PREFIX + "§cTu ne peux pas MP ce joueur.";
     public static TextComponent[] MP_FROM(String sender, String rawMessage){
-        TextComponent message = new TextComponent("§7[§6MP§7] §6§l" + sender + "§r§7 >> §6Toi§r§7 : §f" + rawMessage);
+        TextComponent message = new TextComponent("§7[§6MP§7] §6§l" + sender + "§r§7 >> §6Toi§r§7: §f" + rawMessage);
         TextComponent answer = new TextComponent("\n§a[Répondre]");
-        answer.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§7§oRépondre à : §6" + sender).create()));
+        answer.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§7§oRépondre à: §6" + sender).create()));
         answer.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/msg " + sender + " "));
         return new TextComponent[]{message, answer};
     }
-    public static String MP_TO(String to, String rawMessage){return "§7[§6MP§7] §r§6Toi §7>> §6§l" + to + "§r§7 : §f" + rawMessage;}
-    public static String SPY(String from, String to, String message){return "§2(Spy) §a" + from + "§7 > §a" + to + "§7 : " + message;}
+    public static String MP_TO(String to, String rawMessage){return "§7[§6MP§7] §r§6Toi §7>> §6§l" + to + "§r§7: §f" + rawMessage;}
+    public static String SPY(String from, String to, String message){return "§2(Spy) §a" + from + "§7 > §a" + to + "§7: " + message;}
     public static final String NOT_YET_TELEPORTED = PREFIX + "§cTu n'as pas encore été téléporté.";
     public static final String HOME_DELETED = PREFIX + "§aHome supprimé avec succès.";
     public static final String PLAYER_HAS_NO_HOME = PREFIX + "§cCe joueur ne possède pas ce home.";
@@ -220,7 +225,7 @@ final public class Text {
     public static final String NO_HOME = PREFIX + "§cTu ne possèdes aucun home.";
     public static String LIST_HOME(Collection<String> homes){return PREFIX + "§eVoici la liste de tes homes: " + toString(homes, home -> home);}
     public static TextComponent LIST_HOME_PLAYER(Map<String, Location> homes, String player){
-        TextComponent message = new TextComponent("§6Liste des homes de : §c" + player + "\n§7---------------------------------");
+        TextComponent message = new TextComponent("§6Liste des homes de: §c" + player + "\n§7---------------------------------");
         for(Map.Entry<String, Location> home : homes.entrySet()){
             TextComponent textComponent = new TextComponent("§a" + home.getKey() + " §7| §cX§7:§6" + home.getValue().getBlockX() + " §cY§7:§6" + home.getValue().getBlockY() + " §cZ§7:§6" + home.getValue().getBlockZ());
             textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§7Clique pour t'y téléporter.").create()));
@@ -237,7 +242,7 @@ final public class Text {
     public static final String NO_CUSTOM_RANK = PREFIX + "§cTu n'as pas de grade personnalisé.";
     public static final String CUSTOM_RANK_RESET = PREFIX + "§aTon grade personnalisé a été réinitialisé.";
     public static final String CHOOSE_CUSTOM_RANK_COLOR = PREFIX + "§6Choisis la couleur de ton grade: ";
-    public static String CUSTOM_RANK_COLOR_CHOSEN(ChatColor color){return PREFIX + "§7Tu as choisi §" + color + "cette couleur !\n§6Écris dans le chat le nom de ton grade : §o(10 caractères maximum, celui-ci aura des crochets par défaut)";}
+    public static String CUSTOM_RANK_COLOR_CHOSEN(ChatColor color){return PREFIX + "§7Tu as choisi §" + color + "cette couleur !\n§6Écris dans le chat le nom de ton grade: §o(10 caractères maximum, celui-ci aura des crochets par défaut)";}
     public static String NEW_CUSTOM_RANK(ConsulatPlayer player){return PREFIX + "§6Voilà ton nouveau grade: " + player.getCustomRank() + player.getName();}
     public static final String INVALID_HOME_NAME = PREFIX + "§cNom de home invalide.";
     public static final String DIMENSION_HOME = PREFIX + "§cTu ne peux pas mettre de home dans cette dimension.";
@@ -306,24 +311,26 @@ final public class Text {
     public static final String ALREADY_MUTED = PREFIX + "§cCe joueur est déjà mute.";
     public static final String NO_ITEM_TO_SELL = PREFIX + "§cTu n'as pas d'item à vendre.";
     public static final String SHOP_NOT_FOUND = PREFIX + "§cCe shop n'a pas été trouvé.";
+    public static final String BUY_HOME = PREFIX + "Tu as acheté un home supplémentaire.";
+    public static final String NOW_TOURISTE = PREFIX + "Tu es désormais touriste !";
     public static String TELEPORTATION(double money){return "§eTéléportation réussie pour §c" + ConsulatCore.formatMoney(money) + ".";}
     public static TextComponent SANCTION_BANNED(String targetName, String sanctionName, String duration, String modName, int recidive){
         TextComponent textComponent = new TextComponent(Text.MODERATION_PREFIX + "§c" + targetName + "§4 a été banni.");
         textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new ComponentBuilder("§7Motif : §8" + sanctionName +
-                        "§7\nPendant : §8" + duration +
-                        "§7\nPar : §8" + modName +
-                        "§7\nRécidive : §8" + recidive
+                new ComponentBuilder("§7Motif: §8" + sanctionName +
+                        "§7\nPendant: §8" + duration +
+                        "§7\nPar: §8" + modName +
+                        "§7\nRécidive: §8" + recidive
                 ).create()));
         return textComponent;
     }
     public static TextComponent SANCTION_MUTED(String targetName, String sanctionName, String duration, String modName, int recidive){
         TextComponent textComponent = new TextComponent(Text.MODERATION_PREFIX + "§e" + targetName + "§6 a été mute.");
         textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new ComponentBuilder("§7Motif : §8" + sanctionName +
-                        "§7\nPendant : §8" + duration +
-                        "§7\nPar : §8" + modName +
-                        "§7\nRécidive : §8" + recidive
+                new ComponentBuilder("§7Motif: §8" + sanctionName +
+                        "§7\nPendant: §8" + duration +
+                        "§7\nPar: §8" + modName +
+                        "§7\nRécidive: §8" + recidive
                 ).create()));
         return textComponent;
     }

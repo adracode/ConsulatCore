@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.runnable;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.player.CPlayerManager;
@@ -13,7 +14,7 @@ public class AFKRunnable implements Runnable {
         for(Player player : Bukkit.getOnlinePlayers()){
             SurvivalPlayer survivalPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
             if(survivalPlayer != null){
-                if((System.currentTimeMillis() - survivalPlayer.getLastMove()) > 10 * 60 * 1000 && survivalPlayer.getLastMove() != 0 && !survivalPlayer.hasPermission("consulat.core.bypass-afk")){
+                if((System.currentTimeMillis() - survivalPlayer.getLastMove()) > 10 * 60 * 1000 && survivalPlayer.getLastMove() != 0 && !survivalPlayer.hasPermission(ConsulatCore.getInstance().getPermission("bypass-afk"))){
                     player.kickPlayer(Text.KICK_PLAYER("§4AFK"));
                 }
             }

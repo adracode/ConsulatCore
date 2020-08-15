@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.ConsulatCommand;
@@ -7,16 +8,20 @@ import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class GamemodeCommand extends ConsulatCommand {
     
     public GamemodeCommand(){
-        super("consulat.core", "gm", "/gm", 0, Rank.MODO);
-        suggest();
+        super(ConsulatCore.getInstance(), "gm");
+        setDescription("Switcher de gamemode entre survie et spectator").
+                setUsage("/gm - Switcher de gamemode").
+                setRank(Rank.MODO).
+                suggest();
     }
     
     @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         if(!((SurvivalPlayer)sender).isInModeration()){
             sender.sendMessage(Text.NEED_STAFF_MODE);
             return;

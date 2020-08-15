@@ -22,8 +22,10 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 
+@SuppressWarnings("UnusedReturnValue")
 public class ChunkManager implements Listener {
     
+    private static final int SHIFT_CLAIMS = 5;
     private static ChunkManager instance;
     
     static{
@@ -31,8 +33,6 @@ public class ChunkManager implements Listener {
         chunkManager.register(CChunk.TYPE, CChunk::new);
         chunkManager.register(Claim.TYPE, Claim::new);
     }
-    
-    private static final int SHIFT_CLAIMS = 5;
     
     private final Map<String, ChunkConstructor> createChunk = new HashMap<>(2);
     
@@ -63,6 +63,14 @@ public class ChunkManager implements Listener {
             }
         }
         ConsulatCore.getInstance().getServer().getPluginManager().registerEvents(this, ConsulatCore.getInstance());
+    }
+    
+    public Map<Material, Integer> getLimitedBlocks(){
+        return Collections.unmodifiableMap(limits);
+    }
+    
+    public static ChunkManager getInstance(){
+        return instance;
     }
     
     public void register(String type, ChunkConstructor create){
@@ -191,21 +199,9 @@ public class ChunkManager implements Listener {
         }
     }
     
-    public Map<Material, Integer> getLimitedBlocks(){
-        return Collections.unmodifiableMap(limits);
-    }
-    
     public int getMaxLimit(Material material){
         Integer max = limits.get(material);
         return max == null ? -1 : max;
-    }
-    
-    public static ChunkManager getInstance(){
-        return instance;
-    }
-    
-    public Collection<CChunk> getChunks(World world){
-        return Collections.unmodifiableCollection(chunks.get(world.getUID()).values());
     }
     
     @EventHandler

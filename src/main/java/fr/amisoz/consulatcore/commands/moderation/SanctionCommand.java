@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.guis.moderation.SanctionGui;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
@@ -10,20 +11,24 @@ import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatOffline;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
 public class SanctionCommand extends ConsulatCommand {
     
-    
     public SanctionCommand(){
-        super("consulat.core", "sanction", "/sanction <Joueur>", 1, Rank.MODO);
-        suggest(Arguments.playerList("joueur"));
+        super(ConsulatCore.getInstance(), "sanction");
+        setDescription("Sanctionner un joueur (mute/ban)").
+                setUsage("/sanction <joueur> - Sanctionner un joueur").
+                setArgsMin(1).
+                setRank(Rank.MODO).
+                suggest(Arguments.playerList("joueur"));
         new SanctionGui.Container();
     }
     
     @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
         UUID uuid = CPlayerManager.getInstance().getPlayerUUID(args[0]);
         if(uuid == null){

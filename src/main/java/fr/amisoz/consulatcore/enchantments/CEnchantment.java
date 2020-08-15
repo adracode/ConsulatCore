@@ -48,19 +48,19 @@ public class CEnchantment {
     }
     
     public enum Type {
-        GLOWING(PotionEffectType.GLOWING, "Surbrillance", false, (byte)1),
-        WATER_BREATHING(PotionEffectType.WATER_BREATHING, "Respiration aquatique", false, (byte)1),
-        CONDUIT_POWER(PotionEffectType.CONDUIT_POWER, "Force de conduit", false, (byte)1),
-        DOLPHIN_GRACE(PotionEffectType.DOLPHINS_GRACE, "Grâce du dophin", false, (byte)1),
-        NIGHT_VISION(PotionEffectType.NIGHT_VISION, "Vision nocturne", false, (byte)1),
-        FIRE_RESISTANCE(PotionEffectType.FIRE_RESISTANCE, "Résistance au feu", false, (byte)1),
-        HEALTH_BOOST(PotionEffectType.HEALTH_BOOST, "Augmentation de vie", false, (byte)1),
-        INVISIBILITY(PotionEffectType.INVISIBILITY, "Invisibilité", false, (byte)1),
-        HASTE(PotionEffectType.FAST_DIGGING, "Vitesse de minage", false, (byte)2),
-        LUCK(PotionEffectType.LUCK, "Chance", false, (byte)1),
-        SLOW_FALLING(PotionEffectType.SLOW_FALLING, "Chute lente", false, (byte)1),
-        SPEED(PotionEffectType.SPEED, "Vitesse", false, (byte)2),
-        JUMP_BOOST(PotionEffectType.JUMP, "Sauts augmentés", false, (byte)1);
+        RADIOACTIVE(PotionEffectType.GLOWING, "Radioactif", false, (byte)1),
+        DIVING(PotionEffectType.WATER_BREATHING, "Plongée", false, (byte)1),
+        AQUA_FORCE(PotionEffectType.CONDUIT_POWER, "Force aquatique", false, (byte)1),
+        DOLPHIN_FIN(PotionEffectType.DOLPHINS_GRACE, "Nageoire du dauphin", false, (byte)1),
+        INFRARED_VISION(PotionEffectType.NIGHT_VISION, "Vision infrarouge", false, (byte)1),
+        FIRE_ENDURANCE(PotionEffectType.FIRE_RESISTANCE, "Endurance au feu", false, (byte)1),
+        INCREASED_HEALTH(PotionEffectType.HEALTH_BOOST, "Augmentation de vie", false, (byte)1),
+        STEALTH(PotionEffectType.INVISIBILITY, "Furtivité", false, (byte)1),
+        MINER_HAND(PotionEffectType.FAST_DIGGING, "Main du mineur", false, (byte)2),
+        FISHER_LUCK(PotionEffectType.LUCK, "Chance du pêcheur", false, (byte)1),
+        MOON_FALL(PotionEffectType.SLOW_FALLING, "Chute lunaire", false, (byte)1),
+        CHEETAH_STRENGTH(PotionEffectType.SPEED, "Force du guépard", false, (byte)2),
+        MOON_JUMP(PotionEffectType.JUMP, "Sauts lunaire", false, (byte)1);
     
         private final PotionEffectType effect;
         private final String display;
@@ -79,44 +79,44 @@ public class CEnchantment {
             switch(armor){
                 case HEAD:
                     switch(this){
-                        case GLOWING:
-                        case WATER_BREATHING:
-                        case CONDUIT_POWER:
-                        case DOLPHIN_GRACE:
-                        case NIGHT_VISION:
-                        case FIRE_RESISTANCE:
+                        case RADIOACTIVE:
+                        case DIVING:
+                        case AQUA_FORCE:
+                        case DOLPHIN_FIN:
+                        case INFRARED_VISION:
+                        case FIRE_ENDURANCE:
                             return true;
                     }
                     break;
                 case CHEST:
                     switch(this){
-                        case GLOWING:
-                        case HEALTH_BOOST:
-                        case INVISIBILITY:
-                        case HASTE:
-                        case LUCK:
-                        case FIRE_RESISTANCE:
+                        case RADIOACTIVE:
+                        case INCREASED_HEALTH:
+                        case STEALTH:
+                        case MINER_HAND:
+                        case FISHER_LUCK:
+                        case FIRE_ENDURANCE:
                             return true;
                     }
                     break;
                 case LEGS:
                     switch(this){
-                        case GLOWING:
-                        case HEALTH_BOOST:
-                        case FIRE_RESISTANCE:
-                        case LUCK:
-                        case INVISIBILITY:
-                        case HASTE:
+                        case RADIOACTIVE:
+                        case INCREASED_HEALTH:
+                        case FIRE_ENDURANCE:
+                        case FISHER_LUCK:
+                        case STEALTH:
+                        case MINER_HAND:
                             return true;
                     }
                     break;
                 case FEET:
                     switch(this){
-                        case GLOWING:
-                        case FIRE_RESISTANCE:
-                        case SLOW_FALLING:
-                        case SPEED:
-                        case JUMP_BOOST:
+                        case RADIOACTIVE:
+                        case FIRE_ENDURANCE:
+                        case MOON_FALL:
+                        case CHEETAH_STRENGTH:
+                        case MOON_JUMP:
                             return true;
                     }
                     break;

@@ -2,7 +2,7 @@ package fr.amisoz.consulatcore.moderation;
 
 import org.bukkit.Material;
 
-public enum MuteEnum {
+public enum MuteReason {
 
     FLOOD("Flood", Material.PAPER, 15*60L, "15 minutes"),
     SPAM("Spam", Material.MAP, 30*60L, "30 minutes"),
@@ -21,7 +21,7 @@ public enum MuteEnum {
     private long durationSanction;
     private String formatDuration;
 
-    MuteEnum(String sanctionName, Material guiMaterial, long durationSanction, String formatDuration) {
+    MuteReason(String sanctionName, Material guiMaterial, long durationSanction, String formatDuration) {
         this.sanctionName = sanctionName;
         this.guiMaterial = guiMaterial;
         this.durationSanction = durationSanction;

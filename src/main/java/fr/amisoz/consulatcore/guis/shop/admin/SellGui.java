@@ -112,8 +112,8 @@ public class SellGui extends AdminShopGui {
             return;
         }
         player.removeSimilarItems(toSell, amount);
-        player.addMoney(sellPrice);
-        player.sendMessage(ShopManager.getInstance().formatShopMessage(shop.getItem(), amount, sellPrice * amount, ShopManager.ShopAction.SELL));
-        onOpened(new GuiOpenEvent(player));
+        player.addMoney(sellPrice *= amount);
+        player.sendMessage(ShopManager.getInstance().formatShopMessage(shop.getItem(), amount, sellPrice, ShopManager.ShopAction.SELL));
+        refresh(player);
     }
 }

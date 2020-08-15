@@ -1,15 +1,16 @@
 package fr.amisoz.consulatcore.players;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.leconsulat.api.player.Permission;
 
 public enum CityPermission implements Permission {
 
-    MANAGE_PLAYER("consulat.core.city.manage-player"),
-    MANAGE_CLAIM("consulat.core.city.manage-claim"),
-    MANAGE_ACCESS("consulat.core.city.manage-access"),
-    MANAGE_BANK("consulat.core.city.manage-bank"),
-    MANAGE_HOME("consulat.core.city.manage-home"),
-    INTERACT("consulat.core.city.interact");
+    MANAGE_PLAYER(ConsulatCore.getInstance().getPermission("city.manage-player")),
+    MANAGE_CLAIM(ConsulatCore.getInstance().getPermission("city.manage-claim")),
+    MANAGE_ACCESS(ConsulatCore.getInstance().getPermission("city.manage-access")),
+    MANAGE_BANK(ConsulatCore.getInstance().getPermission("city.manage-bank")),
+    MANAGE_HOME(ConsulatCore.getInstance().getPermission("city.manage-home")),
+    INTERACT(ConsulatCore.getInstance().getPermission("city.interact"));
     
     private String permission;
     

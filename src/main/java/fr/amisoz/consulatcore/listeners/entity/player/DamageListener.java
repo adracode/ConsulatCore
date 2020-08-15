@@ -46,6 +46,9 @@ public class DamageListener implements Listener {
             return;
         }
         SurvivalPlayer damager = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getDamager().getUniqueId());
+        if(damager == null){
+            return;
+        }
         if(damager.isInModeration()){
             event.setCancelled(true);
         }

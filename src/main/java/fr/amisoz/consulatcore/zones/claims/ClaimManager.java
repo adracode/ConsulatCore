@@ -183,12 +183,16 @@ public class ClaimManager implements Listener {
         if(claim != null && claim.getOwner().getClass() == Zone.class){
             claim.setOwner(city);
             changeOwner(x, z, claim);
+            ClaimsGui claimsGui = (ClaimsGui)GuiManager.getInstance().getContainer("city").getGui(false, city, CityGui.CLAIMS);
+            if(claimsGui != null){
+                claimsGui.addItemClaim(claim);
+            }
             return claim;
         }
         claim = claim(x, z, city);
-        IGui iClaimsGui = GuiManager.getInstance().getContainer("city").getGui(false, city, CityGui.CLAIMS);
-        if(iClaimsGui != null){
-            ((ClaimsGui)iClaimsGui).addItemClaim(claim);
+        ClaimsGui claimsGui = (ClaimsGui)GuiManager.getInstance().getContainer("city").getGui(false, city, CityGui.CLAIMS);
+        if(claimsGui != null){
+            claimsGui.addItemClaim(claim);
         }
         return claim;
     }

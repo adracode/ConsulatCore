@@ -7,7 +7,6 @@ import fr.amisoz.consulatcore.guis.claims.permissions.AccessPermissionsGui;
 import fr.amisoz.consulatcore.zones.Zone;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.amisoz.consulatcore.zones.claims.Claim;
-import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.gui.GuiContainer;
 import fr.leconsulat.api.gui.GuiItem;
 import fr.leconsulat.api.gui.GuiManager;
@@ -185,7 +184,7 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
                         player.sendMessage(Text.PLAYER_DOESNT_BELONGS_CITY);
                         return;
                     }
-                    if((targetUUID.equals(player.getUUID()) || targetUUID.equals(zone.getOwner())) && !ConsulatAPI.getConsulatAPI().isDebug()){
+                    if((targetUUID.equals(player.getUUID()) || targetUUID.equals(zone.getOwner()))){
                         player.sendMessage(Text.CANT_MANAGE_ACCESS_PLAYER);
                         return;
                     }

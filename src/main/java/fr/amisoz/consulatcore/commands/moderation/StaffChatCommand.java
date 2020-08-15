@@ -7,16 +7,22 @@ import fr.amisoz.consulatcore.channel.StaffChannel;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
+import org.jetbrains.annotations.NotNull;
 
 public class StaffChatCommand extends ConsulatCommand {
     
     public StaffChatCommand(){
-        super("consulat.core", "staffchat", "sc", "/sc <Message>", 1, Rank.MODO);
-        suggest(RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString()));
+        super(ConsulatCore.getInstance(), "staffchat");
+        setDescription("Envoyer un message dans le chat de staff").
+                setUsage("/staffchat <message> - Envoyer un message").
+                setAliases("sc").
+                setArgsMin(1).
+                setRank(Rank.BUILDER).
+                suggest(RequiredArgumentBuilder.argument("message", StringArgumentType.greedyString()));
     }
     
     @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         StringBuilder builder = new StringBuilder(args[0]);
         for(int i = 1; i < args.length; i++){
             builder.append(' ').append(args[i]);

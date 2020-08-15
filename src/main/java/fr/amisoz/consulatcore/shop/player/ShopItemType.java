@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.shop.player;
 
+import fr.amisoz.consulatcore.enchantments.CEnchantment;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.potion.PotionEffectType;
@@ -70,6 +71,32 @@ public class ShopItemType {
         @Override
         public String toString(){
             return enchantment.getKey().getKey().toLowerCase();
+        }
+    }
+    
+    public static class CEnchantmentItem extends ShopItemType {
+        private CEnchantment.Type enchantment;
+        
+        public CEnchantmentItem(CEnchantment.Type enchantment){
+            this.enchantment = enchantment;
+        }
+        
+        @Override
+        public boolean equals(Object o){
+            if(this == o) return true;
+            if(o == null || getClass() != o.getClass()) return false;
+            CEnchantmentItem that = (CEnchantmentItem)o;
+            return enchantment.equals(that.enchantment);
+        }
+        
+        @Override
+        public int hashCode(){
+            return enchantment.hashCode();
+        }
+        
+        @Override
+        public String toString(){
+            return enchantment.toString().toLowerCase();
         }
     }
     

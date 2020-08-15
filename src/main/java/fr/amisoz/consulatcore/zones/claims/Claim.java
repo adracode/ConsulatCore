@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.zones.claims;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.chunks.CChunk;
 import fr.amisoz.consulatcore.guis.city.CityGui;
 import fr.amisoz.consulatcore.guis.city.members.member.MemberGui;
@@ -117,7 +118,7 @@ public class Claim extends CChunk {
         if(player == null || !player.isInitialized()){
             return false;
         }
-        if(player.hasPermission("consulat.core.interact")){
+        if(player.hasPermission(ConsulatCore.getInstance().getPermission("interact"))){
             return true;
         }
         return player.hasPower(Rank.MODPLUS) ||

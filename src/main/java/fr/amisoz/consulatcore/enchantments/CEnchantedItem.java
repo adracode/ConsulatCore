@@ -54,14 +54,6 @@ public class CEnchantedItem {
     private static final NamespacedKey KEY_ENCHANT = new NamespacedKey(ConsulatCore.getInstance(), "enchantments");
     private static final NamespacedKey NB_ENCHANT = new NamespacedKey(ConsulatCore.getInstance(), "cardinality");
     
-    private static NamespacedKey getKey(int i){
-        return new NamespacedKey(ConsulatCore.getInstance(), Integer.toString(i));
-    }
-    
-    public static boolean isEnchanted(@Nullable ItemStack item){
-        return item != null && item.hasItemMeta() && item.getItemMeta().getPersistentDataContainer().has(KEY_ENCHANT, PersistentDataType.TAG_CONTAINER);
-    }
-    
     private ItemStack handle;
     
     public CEnchantedItem(ItemStack item){
@@ -77,6 +69,23 @@ public class CEnchantedItem {
     
     public Material getType(){
         return handle.getType();
+    }
+    
+    public CEnchantment[] getEnchants(){
+        PersistentDataContainer tag = getTag();
+        byte size = getNumberOfEnchant(tag);
+        CEnchantment[] enchants = new CEnchantment[size];
+        for(byte i = 0; i < size; ++i){
+            enchants[i] = tag.get(getKey(i), DATA_TYPE);
+        }
+        return enchants;
+    }
+    
+    private PersistentDataContainer getTag(){
+        ItemMeta meta = handle.getItemMeta();
+        PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
+        PersistentDataContainer allEnchantments = dataContainer.get(KEY_ENCHANT, PersistentDataType.TAG_CONTAINER);
+        return allEnchantments == null ? dataContainer.getAdapterContext().newPersistentDataContainer() : allEnchantments;
     }
     
     public boolean addEnchantment(@NotNull CEnchantment.Type enchantment, int level){
@@ -140,16 +149,6 @@ public class CEnchantedItem {
         return true;
     }
     
-    public CEnchantment[] getEnchants(){
-        PersistentDataContainer tag = getTag();
-        byte size = getNumberOfEnchant(tag);
-        CEnchantment[] enchants = new CEnchantment[size];
-        for(byte i = 0; i < size; ++i){
-            enchants[i] = tag.get(getKey(i), DATA_TYPE);
-        }
-        return enchants;
-    }
-    
     public boolean isEnchantedWith(CEnchantment.Type enchant){
         PersistentDataContainer tag = getTag();
         byte size = getNumberOfEnchant(tag);
@@ -173,11 +172,21 @@ public class CEnchantedItem {
         return false;
     }
     
-    private PersistentDataContainer getTag(){
+    public void removeEnchants(){
         ItemMeta meta = handle.getItemMeta();
-        PersistentDataContainer dataContainer = meta.getPersistentDataContainer();
-        PersistentDataContainer allEnchantments = dataContainer.get(KEY_ENCHANT, PersistentDataType.TAG_CONTAINER);
-        return allEnchantments == null ? dataContainer.getAdapterContext().newPersistentDataContainer() : allEnchantments;
+        PersistentDataContainer data = meta.getPersistentDataContainer();
+        List<String> description = meta.getLore();
+        if(description == null){
+            ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Enchanted item without lore");
+            return;
+        }
+        System.out.println(description);
+        for(byte i = 0, size = getNumberOfEnchant(getTag()); i < size; ++i){
+            description.remove(0);
+        }
+        data.remove(KEY_ENCHANT);
+        meta.setLore(description);
+        handle.setItemMeta(meta);
     }
     
     private byte getNumberOfEnchant(PersistentDataContainer tag){
@@ -187,22 +196,6 @@ public class CEnchantedItem {
     
     private void addEnchantment(PersistentDataContainer tag, byte index, CEnchantment.Type type, int level){
         tag.set(getKey(index), DATA_TYPE, new CEnchantment(type, level));
-    }
-    
-    public void removeEnchants(){
-        ItemMeta meta = handle.getItemMeta();
-        PersistentDataContainer data = meta.getPersistentDataContainer();
-        List<String> description = meta.getLore();
-        if(description == null){
-            ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Enchanted item without lore");
-            return;
-        }
-        for(byte i = 0, size = getNumberOfEnchant(getTag()); i < size; ++i){
-            description.remove(i);
-        }
-        data.remove(KEY_ENCHANT);
-        meta.setLore(description);
-        handle.setItemMeta(meta);
     }
     
     private @NotNull EquipmentSlot getSlot(Material material){
@@ -242,5 +235,13 @@ public class CEnchantedItem {
         return "CEnchantedItem{" +
                 "handle=" + handle +
                 '}';
+    }
+    
+    public static boolean isEnchanted(@Nullable ItemStack item){
+        return item != null && item.hasItemMeta() && item.getItemMeta().getPersistentDataContainer().has(KEY_ENCHANT, PersistentDataType.TAG_CONTAINER);
+    }
+    
+    private static NamespacedKey getKey(int i){
+        return new NamespacedKey(ConsulatCore.getInstance(), Integer.toString(i));
     }
 }

@@ -1,6 +1,8 @@
 package fr.amisoz.consulatcore.shop.player;
 
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.enchantments.CEnchantedItem;
+import fr.amisoz.consulatcore.enchantments.CEnchantment;
 import fr.amisoz.consulatcore.guis.shop.ShopGui;
 import fr.amisoz.consulatcore.shop.Shop;
 import fr.amisoz.consulatcore.shop.ShopManager;
@@ -51,18 +53,28 @@ public class PlayerShop implements Shop {
         List<ShopItemType> types = new ArrayList<>();
         Material material = forSale.getType();
         if(forSale.getEnchantments().size() != 0){
-            for(Enchantment enchantment : forSale.getEnchantments().keySet()){
-                types.add(new ShopItemType.EnchantmentItem(enchantment));
+            for(Map.Entry<Enchantment, Integer> enchantment : forSale.getEnchantments().entrySet()){
+                if(enchantment.getValue() != 0){
+                    types.add(new ShopItemType.EnchantmentItem(enchantment.getKey()));
+                }
             }
         }
         if(forSale.getItemMeta() instanceof EnchantmentStorageMeta){
-            for(Enchantment enchantment : ((EnchantmentStorageMeta)forSale.getItemMeta()).getStoredEnchants().keySet()){
-                types.add(new ShopItemType.EnchantmentItem(enchantment));
+            for(Map.Entry<Enchantment, Integer> enchantment : ((EnchantmentStorageMeta)forSale.getItemMeta()).getStoredEnchants().entrySet()){
+                if(enchantment.getValue() != 0){
+                    types.add(new ShopItemType.EnchantmentItem(enchantment.getKey()));
+                }
             }
         } else if(forSale.getItemMeta() instanceof PotionMeta){
             PotionEffectType effectType = ((PotionMeta)forSale.getItemMeta()).getBasePotionData().getType().getEffectType();
             if(effectType != null){
                 types.add(new ShopItemType.PotionItem(effectType));
+            }
+        }
+        if(CEnchantedItem.isEnchanted(forSale)){
+            CEnchantedItem item = new CEnchantedItem(forSale);
+            for(CEnchantment enchantment : item.getEnchants()){
+                types.add(new ShopItemType.CEnchantmentItem(enchantment.getEnchantment()));
             }
         }
         types.add(new ShopItemType.MaterialItem(material));

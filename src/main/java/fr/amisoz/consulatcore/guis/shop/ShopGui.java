@@ -19,6 +19,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
+import org.bukkit.inventory.ItemFlag;
 
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -38,11 +39,12 @@ public class ShopGui extends DataPagedGui<ShopItemType> {
             return;
         }
         GuiItem item = new GuiItem(shop.getItem(), 0);
-        item.setDescription("§eVendu par: §c" + shop.getOwnerName(),
+        item.setDescription(GuiItem.getDescription(item, "", "§eVendu par: §c" + shop.getOwnerName(),
                 "§ePrix unitaire: §c" + ConsulatCore.formatMoney(shop.getPrice()),
                 "§eCoordonnées: X: §c" + shop.getX() + "§e Y: §c" + shop.getY() + "§e Z: §c" + shop.getZ(),
-                "§eTéléportation pour: §c" + ConsulatCore.formatMoney(10) + ".");
+                "§eTéléportation pour: §c" + ConsulatCore.formatMoney(10) + "."));
         item.setAttachedObject(shop);
+        item.removeItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
         addItem(item);
     }
     

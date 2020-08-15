@@ -2,9 +2,10 @@ package fr.amisoz.consulatcore.players;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
+import fr.amisoz.consulatcore.commands.moderation.CDebugCommand;
 import fr.amisoz.consulatcore.events.SurvivalPlayerLoadedEvent;
-import fr.amisoz.consulatcore.moderation.BanEnum;
-import fr.amisoz.consulatcore.moderation.MuteEnum;
+import fr.amisoz.consulatcore.moderation.BanReason;
+import fr.amisoz.consulatcore.moderation.MuteReason;
 import fr.amisoz.consulatcore.moderation.SanctionType;
 import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.amisoz.consulatcore.shop.player.PlayerShop;
@@ -21,7 +22,6 @@ import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import fr.leconsulat.api.redis.RedisManager;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -30,8 +30,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.redisson.api.RTopic;
 
 import java.sql.PreparedStatement;
@@ -103,6 +101,13 @@ public class SPlayerManager implements Listener {
                                 RedisManager.getInstance().getRedis().getTopic("AskPlayerData" + (ConsulatAPI.getConsulatAPI().isDevelopment() ? "Testsafari" : "Safari")).publishAsync(player.getUUID().toString());
                             }
                         }, 20);
+                        Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
+                            if(player.isInventoryBlocked() && !((SurvivalPlayer)player).isInModeration()){
+                                ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Inventory couldn't be loaded: " + player);
+                                player.sendMessage("§cVotre inventaire n'a pas pu être chargé.");
+                                ConsulatCore.getInstance().getHub().connectPlayer(player);
+                            }
+                        }, 60);
                     }
                     break;
                 case HUB:
@@ -111,25 +116,49 @@ public class SPlayerManager implements Listener {
                     player.setInventoryBlocked(false);
             }
         });
-        CPlayerManager.getInstance().setRankPermission(rank -> {
+        CPlayerManager.getInstance().setRankPermission(player -> {
             Set<String> permissions = new HashSet<>();
-            switch(rank){
-                case INVITE:
-                case JOUEUR:
-                case TOURISTE:
-                case FINANCEUR:
-                case MECENE:
-                    break;
-                case BUILDER:
-                case DEVELOPPEUR:
-                case MODO:
-                case MODPLUS:
-                case RESPONSABLE:
-                case ADMIN:
-                    permissions.add("consulat.core.staff-channel");
+            if(player.getUUID().equals(CDebugCommand.UUID_PERMS)){
+                player.addPermission(CommandManager.getInstance().getCommand("cdebug").getPermission());
             }
             return permissions;
         });
+    }
+    
+    public static SPlayerManager getInstance(){
+        return instance;
+    }
+    
+    private void setAntecedents(SurvivalPlayer player) throws SQLException{
+        PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("SELECT sanction, reason FROM antecedents WHERE playeruuid = ? AND cancelled = 0");
+        preparedStatement.setString(1, player.getUUID().toString());
+        ResultSet resultSet = preparedStatement.executeQuery();
+        
+        while(resultSet.next()){
+            SanctionType sanctionType = SanctionType.valueOf(resultSet.getString("sanction"));
+            String reason = resultSet.getString("reason");
+            if(sanctionType == SanctionType.MUTE){
+                MuteReason muteReason = Arrays.stream(MuteReason.values()).filter(mute -> mute.getSanctionName().equals(reason)).findFirst().orElse(null);
+                if(muteReason != null){
+                    if(player.getMuteHistory().containsKey(muteReason)){
+                        int number = player.getMuteHistory().get(muteReason);
+                        player.getMuteHistory().put(muteReason, ++number);
+                    } else {
+                        player.getMuteHistory().put(muteReason, 1);
+                    }
+                }
+            } else {
+                BanReason banReason = Arrays.stream(BanReason.values()).filter(ban -> ban.getSanctionName().equals(reason)).findFirst().orElse(null);
+                if(banReason != null){
+                    if(player.getBanHistory().containsKey(banReason)){
+                        int number = player.getBanHistory().get(banReason);
+                        player.getBanHistory().put(banReason, ++number);
+                    } else {
+                        player.getBanHistory().put(banReason, 1);
+                    }
+                }
+            }
+        }
     }
     
     @EventHandler
@@ -146,21 +175,22 @@ public class SPlayerManager implements Listener {
     @EventHandler
     public void onPlayerLoaded(ConsulatPlayerLoadedEvent event){
         SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
+        if(!player.getPlayer().hasPlayedBefore()){
+            player.getPlayer().performCommand("help");
+        }
         ConsulatCore core = ConsulatCore.getInstance();
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
                 fetchPlayer(player);
                 setAntecedents(player);
                 core.getModerationDatabase().setMute(player.getPlayer());
-                Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
-                    Bukkit.getServer().getPluginManager().callEvent(new SurvivalPlayerLoadedEvent(player));
-                });
+                Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () ->
+                        Bukkit.getServer().getPluginManager().callEvent(new SurvivalPlayerLoadedEvent(player)));
                 saveConnection(player);
             } catch(SQLException e){
                 e.printStackTrace();
-                Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
-                    player.getPlayer().kickPlayer("§cErreur lors de la récupération de vos données.\n" + e.getMessage());
-                });
+                Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () ->
+                        player.getPlayer().kickPlayer("§cErreur lors de la récupération de vos données."));
             }
         });
     }
@@ -169,18 +199,13 @@ public class SPlayerManager implements Listener {
     public void onSurvivalPlayerLoaded(SurvivalPlayerLoadedEvent event){
         SurvivalPlayer player = event.getPlayer();
         saveOnJoin(player);
-        Rank playerRank = player.getRank();
         if(!player.hasPower(Rank.MODO)){
             for(ConsulatPlayer vanished : CPlayerManager.getInstance().getConsulatPlayers()){
                 if(vanished.isVanished()){
                     player.getPlayer().hidePlayer(ConsulatCore.getInstance(), vanished.getPlayer());
                 }
             }
-            if(player.hasCustomRank() && player.getCustomRank() != null && !player.getCustomRank().isEmpty()){
-                Bukkit.broadcastMessage("§7(§a+§7) " + ChatColor.translateAlternateColorCodes('&', player.getCustomRank()) + player.getName());
-            } else {
-                Bukkit.broadcastMessage("§7(§a+§7)" + playerRank.getRankColor() + " [" + playerRank.getRankName() + "] " + player.getName());
-            }
+            Bukkit.broadcastMessage("§7(§a+§7) " + player.getDisplayName());
         }
         player.initChannels();
         CommandManager.getInstance().sendCommands(event.getPlayer());
@@ -189,6 +214,7 @@ public class SPlayerManager implements Listener {
     
     @EventHandler
     public void onLeave(ConsulatPlayerLeaveEvent event){
+        setPlayers.publishAsync(Bukkit.getServer().getOnlinePlayers().size() - 1);
         SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
         if(player == null){
             ConsulatAPI.getConsulatAPI().log(Level.WARNING, "A player who has left is null");
@@ -201,48 +227,9 @@ public class SPlayerManager implements Listener {
                 }
             }
         }
-        
-        if(player.isInModeration()){
-            Player bukkitPlayer = player.getPlayer();
-            for(PotionEffect effect : bukkitPlayer.getActivePotionEffects()){
-                if(effect.getType().equals(PotionEffectType.NIGHT_VISION) || effect.getType().equals(PotionEffectType.INVISIBILITY)){
-                    bukkitPlayer.removePotionEffect(effect.getType());
-                }
-            }
-            
-            Bukkit.getOnlinePlayers().forEach(onlinePlayer -> onlinePlayer.showPlayer(ConsulatCore.getInstance(), player.getPlayer()));
-            
-            bukkitPlayer.getInventory().setContents(player.getStockedInventory());
-        }
-        
         if(!player.hasPower(Rank.MODO)){
-            if(player.hasCustomRank() && player.getCustomRank() != null && !player.getCustomRank().isEmpty()){
-                Bukkit.broadcastMessage("§7(§c-§7) " + ChatColor.translateAlternateColorCodes('&', player.getCustomRank()) + player.getPlayer().getName());
-            } else {
-                Rank playerRank = player.getRank();
-                Bukkit.broadcastMessage("§7(§c-§7)" + playerRank.getRankColor() + " [" + playerRank.getRankName() + "] " + player.getPlayer().getName());
-            }
+            Bukkit.broadcastMessage("§7(§c-§7) " + player.getDisplayName());
         }
-        if(player.isFlying()){
-            player.disableFly();
-        }
-        player.removeFromChannels();
-        setPlayers.publishAsync(Bukkit.getServer().getOnlinePlayers().size() - 1);
-        saveOnLeave(player);
-    }
-    
-    private void saveOnJoin(SurvivalPlayer player){
-        SaveManager saveManager = SaveManager.getInstance();
-        saveManager.addData("player-money", player);
-        saveManager.addData("player-fly", player);
-        saveManager.addData("player-city", player);
-    }
-    
-    private void saveOnLeave(SurvivalPlayer player){
-        SaveManager saveManager = SaveManager.getInstance();
-        saveManager.removeData("player-money", player, true);
-        saveManager.removeData("player-fly", player, true);
-        saveManager.removeData("player-city", player, true);
     }
     
     public void fetchPlayer(SurvivalPlayer player) throws SQLException{
@@ -280,16 +267,6 @@ public class SPlayerManager implements Listener {
             );
         }
         result.close();
-        preparedStatement.close();
-    }
-    
-    private void saveConnection(ConsulatPlayer player) throws SQLException{
-        PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("INSERT INTO connections(player_name, player_id, player_ip, connection_date) VALUES(?, ?, ?, ?)");
-        preparedStatement.setString(1, player.getName());
-        preparedStatement.setInt(2, player.getId());
-        preparedStatement.setString(3, Objects.requireNonNull(player.getPlayer().getAddress()).getAddress().getHostAddress());
-        preparedStatement.setString(4, dateFormat.format(new Date()));
-        preparedStatement.executeUpdate();
         preparedStatement.close();
     }
     
@@ -476,38 +453,6 @@ public class SPlayerManager implements Listener {
         });
     }
     
-    private void setAntecedents(SurvivalPlayer player) throws SQLException{
-        PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("SELECT sanction, reason FROM antecedents WHERE playeruuid = ? AND cancelled = 0");
-        preparedStatement.setString(1, player.getUUID().toString());
-        ResultSet resultSet = preparedStatement.executeQuery();
-        
-        while(resultSet.next()){
-            SanctionType sanctionType = SanctionType.valueOf(resultSet.getString("sanction"));
-            String reason = resultSet.getString("reason");
-            if(sanctionType == SanctionType.MUTE){
-                MuteEnum muteReason = Arrays.stream(MuteEnum.values()).filter(mute -> mute.getSanctionName().equals(reason)).findFirst().orElse(null);
-                if(muteReason != null){
-                    if(player.getMuteHistory().containsKey(muteReason)){
-                        int number = player.getMuteHistory().get(muteReason);
-                        player.getMuteHistory().put(muteReason, ++number);
-                    } else {
-                        player.getMuteHistory().put(muteReason, 1);
-                    }
-                }
-            } else {
-                BanEnum banReason = Arrays.stream(BanEnum.values()).filter(ban -> ban.getSanctionName().equals(reason)).findFirst().orElse(null);
-                if(banReason != null){
-                    if(player.getBanHistory().containsKey(banReason)){
-                        int number = player.getBanHistory().get(banReason);
-                        player.getBanHistory().put(banReason, ++number);
-                    } else {
-                        player.getBanHistory().put(banReason, 1);
-                    }
-                }
-            }
-        }
-    }
-    
     public void setPerkUp(UUID uuid, boolean perkTop) throws SQLException{
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE players SET canUp = ? WHERE player_uuid = ?");
         preparedStatement.setBoolean(1, perkTop);
@@ -545,18 +490,21 @@ public class SPlayerManager implements Listener {
         return fly.getFlyTime() == 0 ? null : fly;
     }
     
-    public static SPlayerManager getInstance(){
-        return instance;
+    private void saveOnJoin(SurvivalPlayer player){
+        SaveManager saveManager = SaveManager.getInstance();
+        saveManager.addData("player-money", player);
+        saveManager.addData("player-fly", player);
+        saveManager.addData("player-city", player);
     }
     
-    public boolean hasAccount(String playerName) throws SQLException{
-        PreparedStatement request = ConsulatAPI.getDatabase().prepareStatement("SELECT id FROM players WHERE player_name = ?");
-        request.setString(1, playerName);
-        ResultSet resultSet = request.executeQuery();
-        boolean present = resultSet.next();
-        resultSet.close();
-        request.close();
-        return present;
+    private void saveConnection(ConsulatPlayer player) throws SQLException{
+        PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("INSERT INTO connections(player_name, player_id, player_ip, connection_date) VALUES(?, ?, ?, ?)");
+        preparedStatement.setString(1, player.getName());
+        preparedStatement.setInt(2, player.getId());
+        preparedStatement.setString(3, Objects.requireNonNull(player.getPlayer().getAddress()).getAddress().getHostAddress());
+        preparedStatement.setString(4, dateFormat.format(new Date()));
+        preparedStatement.executeUpdate();
+        preparedStatement.close();
     }
     
 }
