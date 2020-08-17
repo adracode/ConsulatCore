@@ -13,14 +13,6 @@ public class AccessPermissionsGui extends DataRelatGui<Claim> {
     
     private IGui link;
     
-    public IGui getLink(){
-        return link;
-    }
-    
-    public void setLink(IGui link){
-        this.link = link;
-    }
-    
     public AccessPermissionsGui(DataRelatGui<UUID> link, Claim claim){
         super(claim, (claim.getX() << 4) + " " + (claim.getZ() << 4), link.getLine());
         setLink(link);
@@ -43,7 +35,15 @@ public class AccessPermissionsGui extends DataRelatGui<Claim> {
     
     @Override
     public void onClick(GuiClickEvent event){
-       link.onClick(event);
+        link.onClick(event);
     }
-  
+    
+    public IGui getLink(){
+        return link;
+    }
+    
+    public void setLink(IGui link){
+        this.link = link;
+    }
+    
 }

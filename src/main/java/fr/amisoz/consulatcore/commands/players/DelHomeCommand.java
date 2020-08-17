@@ -26,17 +26,17 @@ public class DelHomeCommand extends ConsulatCommand {
                 setArgsMin(1).
                 setRank(Rank.JOUEUR).
                 suggest(RequiredArgumentBuilder.argument("home", StringArgumentType.word()).suggests((context, builder) -> {
-                            SurvivalPlayer player = (SurvivalPlayer)getConsulatPlayer(context.getSource());
-                            if(player == null){
-                                return builder.buildFuture();
-                            }
-                            for(String home : player.getNameHomes()){
-                                if(home.toLowerCase().startsWith(builder.getRemaining().toLowerCase())){
-                                    builder.suggest(home);
-                                }
-                            }
-                            return builder.buildFuture();
-                        }));
+                    SurvivalPlayer player = (SurvivalPlayer)getConsulatPlayer(context.getSource());
+                    if(player == null){
+                        return builder.buildFuture();
+                    }
+                    for(String home : player.getNameHomes()){
+                        if(home.toLowerCase().startsWith(builder.getRemaining().toLowerCase())){
+                            builder.suggest(home);
+                        }
+                    }
+                    return builder.buildFuture();
+                }));
     }
     
     @Override

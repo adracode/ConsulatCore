@@ -52,24 +52,8 @@ public class ClaimManager implements Listener {
         new ClaimManager();
     }
     
-    public static boolean isKey(ItemStack item){
-        if(item == null || item.getType() != Material.TRIPWIRE_HOOK || !item.hasItemMeta()){
-            return false;
-        }
-        ItemMeta meta = item.getItemMeta();
-        return meta.hasDisplayName() && meta.getDisplayName().equals("§6[§7Clé§6]");
-    }
-    
-    public static ItemStack getKey(){
-        ItemStack item = new ItemStack(Material.TRIPWIRE_HOOK);
-        ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName("§6[§7Clé§6]");
-        item.setItemMeta(meta);
-        return item;
-    }
-    
-    private ChunkManager chunkManager = ChunkManager.getInstance();
     private final World world;
+    private ChunkManager chunkManager = ChunkManager.getInstance();
     
     private ClaimManager(){
         if(instance == null){
@@ -82,6 +66,147 @@ public class ClaimManager implements Listener {
             Bukkit.shutdown();
         }
         loadClaims();
+    }
+    
+    public void removeClaim(Zone claimOwner){
+        for(Claim claim : new ArrayList<>(claimOwner.getZoneClaims())){
+            removeClaim(claim);
+        }
+    }
+    
+    public Claim playerClaim(int x, int z, Zone zone){
+        return claim(x, z, zone);
+    }
+    
+    public Claim cityClaim(int x, int z, City city){
+        Claim claim = getClaim(x, z);
+        if(claim != null && claim.getOwner().getClass() == Zone.class){
+            claim.setOwner(city);
+            changeOwner(x, z, claim);
+            ClaimsGui claimsGui = (ClaimsGui)GuiManager.getInstance().getContainer("city").getGui(false, city, CityGui.CLAIMS);
+            if(claimsGui != null){
+                claimsGui.addItemClaim(claim);
+            }
+            return claim;
+        }
+        claim = claim(x, z, city);
+        ClaimsGui claimsGui = (ClaimsGui)GuiManager.getInstance().getContainer("city").getGui(false, city, CityGui.CLAIMS);
+        if(claimsGui != null){
+            claimsGui.addItemClaim(claim);
+        }
+        return claim;
+    }
+    
+    public Claim unClaim(Claim claim){
+        removeClaimDatabase(claim.getX(), claim.getZ());
+        removeClaim(claim);
+        return claim;
+    }
+    
+    public boolean isClaimed(Chunk chunk){
+        return getClaim(chunk) != null;
+    }
+    
+    public @Nullable Claim getClaim(Block block){
+        return getClaim(block.getChunk());
+    }
+    
+    public @Nullable Claim getClaim(Chunk chunk){
+        if(chunk.getWorld() != ConsulatCore.getInstance().getOverworld()){
+            return null;
+        }
+        return getClaim(chunk.getX(), chunk.getZ());
+    }
+    
+    public @Nullable Claim getClaim(int x, int z){
+        return getClaim(CChunk.convert(x, z));
+    }
+    
+    public @Nullable Claim getClaim(long coords){
+        CChunk chunk = chunkManager.getChunk(world, coords);
+        return chunk instanceof Claim ? (Claim)chunk : null;
+    }
+    
+    @EventHandler
+    public void enterLeaveZone(PlayerMoveEvent event){
+        Player player = event.getPlayer();
+        if(player.getWorld() != ConsulatCore.getInstance().getOverworld()){
+            return;
+        }
+        Chunk chunkFrom = event.getFrom().getChunk();
+        Chunk chunkTo = event.getTo().getChunk();
+        if(chunkFrom != chunkTo){
+            Bukkit.getPluginManager().callEvent(new ClaimChangeEvent((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId()), getClaim(chunkFrom), getClaim(chunkTo)));
+        }
+    }
+    
+    @EventHandler
+    public void chunkChangeEvent(ClaimChangeEvent event){
+        SurvivalPlayer player = event.getPlayer();
+        Claim claimFrom = event.getClaimFrom();
+        Claim claimTo = event.getClaimTo();
+        if(claimTo == null && claimFrom != null){
+            player.sendMessage(claimFrom.getOwner().getLeaveMessage());
+            return;
+        }
+        if(claimTo != null){
+            if(claimFrom == null || !claimFrom.isOwner(claimTo.getOwner())){
+                player.sendMessage(claimTo.getOwner().getEnterMessage());
+            }
+            String description = claimTo.getDescription();
+            if(description != null)
+                if(claimFrom != null && !description.equals(claimFrom.getDescription())){
+                    player.sendMessage(Text.CLAIM_DESCRIPTION(description));
+                } else if(claimFrom == null){
+                    player.sendMessage(Text.CLAIM_DESCRIPTION(description));
+                }
+        }
+    }
+    
+    @EventHandler
+    public void setChestPrivate(PlayerClickBlockEvent event){
+        ItemStack itemInHand = event.getItemInHand();
+        if(!isKey(itemInHand)){
+            return;
+        }
+        if(!PROTECTABLE.contains(event.getBlock().getType())){
+            return;
+        }
+        event.setCancelled(true);
+        SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
+        Claim claim = getClaim(event.getBlock());
+        if(claim == null || !player.belongsToCity() || !player.getCity().equals(claim.getOwner())){
+            event.getPlayer().sendActionBar("§cCe claim n'appartiens pas à ta ville");
+            return;
+        }
+        if(!claim.canInteract(player, ClaimPermission.OPEN_CONTAINER)){
+            event.getPlayer().sendActionBar("§cTu ne peux pas mettre un coffre en privé ici");
+            return;
+        }
+        if(ShopManager.getInstance().getPlayerShop(event.getBlock().getLocation()) != null){
+            event.getPlayer().sendActionBar("§cTu ne peux pas mettre un shop en privé");
+            return;
+        }
+        if(!claim.protectContainer(CoordinatesUtils.convertCoordinates(event.getBlock().getLocation()), event.getPlayer().getUniqueId())){
+            event.getPlayer().sendActionBar("§cCe coffre est déjà privé");
+            return;
+        }
+        Block chestClicked = event.getBlock();
+        Block nextChest = ChestUtils.getNextChest(chestClicked);
+        if(ChestUtils.isDoubleChest((Chest)chestClicked.getState())){
+            if(nextChest != null){
+                claim.protectContainer(CoordinatesUtils.convertCoordinates(nextChest.getLocation()), event.getPlayer().getUniqueId());
+            }
+        } else {
+            if(nextChest != null && !nextChest.getLocation().equals(chestClicked.getLocation())){
+                UUID nextChestOwner = claim.getProtectedContainer(CoordinatesUtils.convertCoordinates(nextChest.getLocation()));
+                if(event.getPlayer().getUniqueId().equals(nextChestOwner)){
+                    ChestUtils.setChestDouble(chestClicked, nextChest);
+                }
+            }
+        }
+        itemInHand.setAmount(itemInHand.getAmount() - 1);
+        event.getPlayer().sendActionBar("§aCe coffre est maintenant privé");
     }
     
     private void loadClaims(){
@@ -155,12 +280,6 @@ public class ClaimManager implements Listener {
         return claim;
     }
     
-    public void removeClaim(Zone claimOwner){
-        for(Claim claim : new ArrayList<>(claimOwner.getZoneClaims())){
-            removeClaim(claim);
-        }
-    }
-    
     private void removeClaim(Claim claim){
         chunkManager.removeChunk(world, claim, true);
         Zone owner = claim.getOwner();
@@ -174,109 +293,10 @@ public class ClaimManager implements Listener {
         GuiManager.getInstance().getContainer("claim").removeGui(claim);
     }
     
-    public Claim playerClaim(int x, int z, Zone zone){
-        return claim(x, z, zone);
-    }
-    
-    public Claim cityClaim(int x, int z, City city){
-        Claim claim = getClaim(x, z);
-        if(claim != null && claim.getOwner().getClass() == Zone.class){
-            claim.setOwner(city);
-            changeOwner(x, z, claim);
-            ClaimsGui claimsGui = (ClaimsGui)GuiManager.getInstance().getContainer("city").getGui(false, city, CityGui.CLAIMS);
-            if(claimsGui != null){
-                claimsGui.addItemClaim(claim);
-            }
-            return claim;
-        }
-        claim = claim(x, z, city);
-        ClaimsGui claimsGui = (ClaimsGui)GuiManager.getInstance().getContainer("city").getGui(false, city, CityGui.CLAIMS);
-        if(claimsGui != null){
-            claimsGui.addItemClaim(claim);
-        }
-        return claim;
-    }
-    
     private Claim claim(int x, int z, Zone owner){
         Claim claim = addClaim(x, z, owner, null);
         addClaimDatabase(x, z, owner);
         return claim;
-    }
-    
-    public Claim unClaim(Claim claim){
-        removeClaimDatabase(claim.getX(), claim.getZ());
-        removeClaim(claim);
-        return claim;
-    }
-    
-    public boolean isClaimed(Chunk chunk){
-        return getClaim(chunk) != null;
-    }
-    
-    public @Nullable Claim getClaim(Block block){
-        return getClaim(block.getChunk());
-    }
-    
-    public @Nullable Claim getClaim(Chunk chunk){
-        if(chunk.getWorld() != ConsulatCore.getInstance().getOverworld()){
-            return null;
-        }
-        return getClaim(chunk.getX(), chunk.getZ());
-    }
-    
-    public @Nullable Claim getClaim(int x, int z){
-        return getClaim(CChunk.convert(x, z));
-    }
-    
-    public @Nullable Claim getClaim(long coords){
-        CChunk chunk = chunkManager.getChunk(world, coords);
-        return chunk instanceof Claim ? (Claim)chunk : null;
-    }
-    
-    @EventHandler
-    public void setChestPrivate(PlayerClickBlockEvent event){
-        ItemStack itemInHand = event.getItemInHand();
-        if(!isKey(itemInHand)){
-            return;
-        }
-        if(!PROTECTABLE.contains(event.getBlock().getType())){
-            return;
-        }
-        event.setCancelled(true);
-        SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
-        Claim claim = getClaim(event.getBlock());
-        if(claim == null || !player.belongsToCity() || !player.getCity().equals(claim.getOwner())){
-            event.getPlayer().sendActionBar("§cCe claim n'appartiens pas à ta ville");
-            return;
-        }
-        if(!claim.canInteract(player, ClaimPermission.OPEN_CONTAINER)){
-            event.getPlayer().sendActionBar("§cTu ne peux pas mettre un coffre en privé ici");
-            return;
-        }
-        if(ShopManager.getInstance().getPlayerShop(event.getBlock().getLocation()) != null){
-            event.getPlayer().sendActionBar("§cTu ne peux pas mettre un shop en privé");
-            return;
-        }
-        if(!claim.protectContainer(CoordinatesUtils.convertCoordinates(event.getBlock().getLocation()), event.getPlayer().getUniqueId())){
-            event.getPlayer().sendActionBar("§cCe coffre est déjà privé");
-            return;
-        }
-        Block chestClicked = event.getBlock();
-        Block nextChest = ChestUtils.getNextChest(chestClicked);
-        if(ChestUtils.isDoubleChest((Chest)chestClicked.getState())){
-            if(nextChest != null){
-                claim.protectContainer(CoordinatesUtils.convertCoordinates(nextChest.getLocation()), event.getPlayer().getUniqueId());
-            }
-        } else {
-            if(nextChest != null && !nextChest.getLocation().equals(chestClicked.getLocation())){
-                UUID nextChestOwner = claim.getProtectedContainer(CoordinatesUtils.convertCoordinates(nextChest.getLocation()));
-                if(event.getPlayer().getUniqueId().equals(nextChestOwner)){
-                    ChestUtils.setChestDouble(chestClicked, nextChest);
-                }
-            }
-        }
-        itemInHand.setAmount(itemInHand.getAmount() - 1);
-        event.getPlayer().sendActionBar("§aCe coffre est maintenant privé");
     }
     
     private void addClaimDatabase(final int x, final int z, final Zone owner){
@@ -350,40 +370,20 @@ public class ClaimManager implements Listener {
         });
     }
     
-    @EventHandler
-    public void enterLeaveZone(PlayerMoveEvent event){
-        Player player = event.getPlayer();
-        if(player.getWorld() != ConsulatCore.getInstance().getOverworld()){
-            return;
+    public static boolean isKey(ItemStack item){
+        if(item == null || item.getType() != Material.TRIPWIRE_HOOK || !item.hasItemMeta()){
+            return false;
         }
-        Chunk chunkFrom = event.getFrom().getChunk();
-        Chunk chunkTo = event.getTo().getChunk();
-        if(chunkFrom != chunkTo){
-            Bukkit.getPluginManager().callEvent(new ClaimChangeEvent((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId()), getClaim(chunkFrom), getClaim(chunkTo)));
-        }
+        ItemMeta meta = item.getItemMeta();
+        return meta.hasDisplayName() && meta.getDisplayName().equals("§6[§7Clé§6]");
     }
     
-    @EventHandler
-    public void chunkChangeEvent(ClaimChangeEvent event){
-        SurvivalPlayer player = event.getPlayer();
-        Claim claimFrom = event.getClaimFrom();
-        Claim claimTo = event.getClaimTo();
-        if(claimTo == null && claimFrom != null){
-            player.sendMessage(claimFrom.getOwner().getLeaveMessage());
-            return;
-        }
-        if(claimTo != null){
-            if(claimFrom == null || !claimFrom.isOwner(claimTo.getOwner())){
-                player.sendMessage(claimTo.getOwner().getEnterMessage());
-            }
-            String description = claimTo.getDescription();
-            if(description != null)
-                if(claimFrom != null && !description.equals(claimFrom.getDescription())){
-                    player.sendMessage(Text.CLAIM_DESCRIPTION(description));
-                } else if(claimFrom == null){
-                    player.sendMessage(Text.CLAIM_DESCRIPTION(description));
-                }
-        }
+    public static ItemStack getKey(){
+        ItemStack item = new ItemStack(Material.TRIPWIRE_HOOK);
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName("§6[§7Clé§6]");
+        item.setItemMeta(meta);
+        return item;
     }
     
     public static ClaimManager getInstance(){

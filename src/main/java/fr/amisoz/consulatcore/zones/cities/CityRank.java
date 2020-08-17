@@ -10,34 +10,17 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class CityRank {
-
+    
     private final int id;
     @NotNull private String rankName;
     @NotNull private Set<CityPermission> defaultPermissions = new HashSet<>(1);
     @NotNull private ChatColor color;
-
+    
     public CityRank(int id, @NotNull String rankName, @NotNull ChatColor color, CityPermission... defaultPermissions){
         this.id = id;
         this.rankName = rankName;
         this.color = color;
         this.defaultPermissions.addAll(Arrays.asList(defaultPermissions));
-    }
-
-    @NotNull
-    public String getRankName(){
-        return rankName;
-    }
-
-    public void setRankName(@NotNull String rankName){
-        this.rankName = rankName;
-    }
-    
-    public int getId(){
-        return id;
-    }
-    
-    public Set<CityPermission> getDefaultPermissions(){
-        return Collections.unmodifiableSet(defaultPermissions);
     }
     
     public boolean hasPermission(CityPermission permission){
@@ -50,6 +33,23 @@ public class CityRank {
     
     public boolean removePermission(CityPermission permission){
         return defaultPermissions.remove(permission);
+    }
+    
+    @NotNull
+    public String getRankName(){
+        return rankName;
+    }
+    
+    public void setRankName(@NotNull String rankName){
+        this.rankName = rankName;
+    }
+    
+    public int getId(){
+        return id;
+    }
+    
+    public Set<CityPermission> getDefaultPermissions(){
+        return Collections.unmodifiableSet(defaultPermissions);
     }
     
     @NotNull

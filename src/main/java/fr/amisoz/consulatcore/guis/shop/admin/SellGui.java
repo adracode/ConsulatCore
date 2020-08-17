@@ -30,13 +30,13 @@ public class SellGui extends AdminShopGui {
         GuiItem sell16 = new GuiItem(getData().getItem(), ITEM_16_SLOT);
         sell16.setAmount(16);
         sell16.setDisplayName("§eVendre 16");
-        sell16.setDescription(GuiItem.getDescription(item,"", "§7Prix: §e" + ConsulatCore.formatMoney(getData().getPrice() * 16)));
+        sell16.setDescription(GuiItem.getDescription(item, "", "§7Prix: §e" + ConsulatCore.formatMoney(getData().getPrice() * 16)));
         setItem(sell16);
         
         GuiItem sell64 = new GuiItem(getData().getItem(), ITEM_64_SLOT);
         sell64.setAmount(64);
         sell64.setDisplayName("§eVendre 64");
-        sell64.setDescription(GuiItem.getDescription(item,"", "§7Prix: §e" + ConsulatCore.formatMoney(getData().getPrice() * 64)));
+        sell64.setDescription(GuiItem.getDescription(item, "", "§7Prix: §e" + ConsulatCore.formatMoney(getData().getPrice() * 64)));
         setItem(sell64);
         
         GuiItem allInventory = new GuiItem(getData().getItem(), ITEM_ALL_SLOT);
@@ -69,23 +69,6 @@ public class SellGui extends AdminShopGui {
         }
     }
     
-    private double getPrice(SurvivalPlayer player){
-        double sellPrice = getData().getPrice();
-        switch(player.getRank()){
-            case TOURISTE:
-                sellPrice *= 1.12;
-                break;
-            case FINANCEUR:
-                sellPrice *= 1.15;
-                break;
-            default:
-                if(player.hasPower(Rank.MECENE)){
-                    sellPrice *= 1.20;
-                }
-        }
-        return sellPrice;
-    }
-    
     @Override
     public void onClick(GuiClickEvent event){
         int amount = -1;
@@ -115,5 +98,22 @@ public class SellGui extends AdminShopGui {
         player.addMoney(sellPrice *= amount);
         player.sendMessage(ShopManager.getInstance().formatShopMessage(shop.getItem(), amount, sellPrice, ShopManager.ShopAction.SELL));
         refresh(player);
+    }
+    
+    private double getPrice(SurvivalPlayer player){
+        double sellPrice = getData().getPrice();
+        switch(player.getRank()){
+            case TOURISTE:
+                sellPrice *= 1.12;
+                break;
+            case FINANCEUR:
+                sellPrice *= 1.15;
+                break;
+            default:
+                if(player.hasPower(Rank.MECENE)){
+                    sellPrice *= 1.20;
+                }
+        }
+        return sellPrice;
     }
 }

@@ -38,6 +38,11 @@ import java.util.UUID;
 
 public class CityGui extends DataRelatGui<City> {
     
+    public static final String CLAIMS = "city.claims";
+    public static final String HOME = "city.home";
+    public static final String MEMBERS = "city.members";
+    public static final String RANKS = "city.ranks";
+    public static final String BANK = "city.bank";
     private static final byte CITY_SLOT = 4;
     private static final byte CLAIM_SLOT = 19;
     private static final byte HOME_SLOT = 21;
@@ -45,12 +50,6 @@ public class CityGui extends DataRelatGui<City> {
     private static final byte RANK_SLOT = 25;
     private static final byte PERMISSION_SLOT = 40;
     private static final byte DISBAND_SLOT = 43;
-    
-    public static final String CLAIMS = "city.claims";
-    public static final String HOME = "city.home";
-    public static final String MEMBERS = "city.members";
-    public static final String RANKS = "city.ranks";
-    public static final String BANK = "city.bank";
     
     public CityGui(City city){
         super(city, "<ville>", 6,
@@ -74,26 +73,6 @@ public class CityGui extends DataRelatGui<City> {
     }
     
     @Override
-    public Relationnable createChild(@Nullable Object key){
-        if(key instanceof String){
-            switch((String)key){
-                case CLAIMS:
-                    return new ClaimsGui(getData());
-                case HOME:
-                    return new ChangeHomeGui(getData());
-                case MEMBERS:
-                    return new MembersGui(getData());
-                case RANKS:
-                    return new RanksGui(getData());
-                case BANK:
-                    return new BankGui(getData());
-            }
-            throw new IllegalArgumentException();
-        }
-        return super.createChild(key);
-    }
-    
-    @Override
     public void onOpened(GuiOpenEvent event){
         SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
         Claim claim = player.getClaim();
@@ -102,22 +81,6 @@ public class CityGui extends DataRelatGui<City> {
         updateHome(player, claim != null && city.isClaim(claim));
         updateRank(player, city.isOwner(player.getUUID()));
         updateDisband(player, city.canDisband(player.getUUID()));
-    }
-    
-    public void updateDisband(SurvivalPlayer player, boolean allow){
-        if(allow){
-            setFakeItem(DISBAND_SLOT, null, player);
-        } else {
-            setDescriptionPlayer(DISBAND_SLOT, player, "", "§cTu ne peux pas", "§cdétruire la ville");
-        }
-    }
-    
-    public void updateInfo(SurvivalPlayer player, boolean allow){
-        if(allow){
-            setFakeItem(CITY_SLOT, null, player);
-        } else {
-            setDescriptionPlayer(CITY_SLOT, player, "", "§7Propriétaire: §a" + Bukkit.getOfflinePlayer(getData().getOwner()).getName());
-        }
     }
     
     @Override
@@ -194,6 +157,42 @@ public class CityGui extends DataRelatGui<City> {
         }
     }
     
+    @Override
+    public Relationnable createChild(@Nullable Object key){
+        if(key instanceof String){
+            switch((String)key){
+                case CLAIMS:
+                    return new ClaimsGui(getData());
+                case HOME:
+                    return new ChangeHomeGui(getData());
+                case MEMBERS:
+                    return new MembersGui(getData());
+                case RANKS:
+                    return new RanksGui(getData());
+                case BANK:
+                    return new BankGui(getData());
+            }
+            throw new IllegalArgumentException();
+        }
+        return super.createChild(key);
+    }
+    
+    public void updateDisband(SurvivalPlayer player, boolean allow){
+        if(allow){
+            setFakeItem(DISBAND_SLOT, null, player);
+        } else {
+            setDescriptionPlayer(DISBAND_SLOT, player, "", "§cTu ne peux pas", "§cdétruire la ville");
+        }
+    }
+    
+    public void updateInfo(SurvivalPlayer player, boolean allow){
+        if(allow){
+            setFakeItem(CITY_SLOT, null, player);
+        } else {
+            setDescriptionPlayer(CITY_SLOT, player, "", "§7Propriétaire: §a" + Bukkit.getOfflinePlayer(getData().getOwner()).getName());
+        }
+    }
+    
     public void updateName(){
         City city = getData();
         setName("§2" + city.getName() + "§8");
@@ -213,9 +212,11 @@ public class CityGui extends DataRelatGui<City> {
             UUID owner = getData().getOwner();
             for(Relationnable child : membersGui.getChildren()){
                 child.getGui().refresh();
-                MemberGui gui = (MemberGui)child;
-                if(gui.getData().equals(owner)){
-                    gui.onCreate();
+                if(child instanceof MemberGui){
+                    MemberGui gui = (MemberGui)child;
+                    if(gui.getData().equals(owner)){
+                        gui.onCreate();
+                    }
                 }
             }
         }

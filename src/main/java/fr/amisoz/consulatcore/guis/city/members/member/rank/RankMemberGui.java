@@ -44,35 +44,6 @@ public class RankMemberGui extends DataRelatGui<UUID> {
         setDescription(slot);
     }
     
-    private int slotByRank(CityRank rank){
-        switch(rank.getId()){
-            case 1:
-                return RANK2_SLOT;
-            case 2:
-                return RANK3_SLOT;
-            case 3:
-                return RANK4_SLOT;
-        }
-        return -1;
-    }
-    
-    public void setRank(CityRank oldRank, CityRank rank){
-        int slot = slotByRank(oldRank);
-        setGlowing(slot, false);
-        setDescription(slot, GIVE_RANK_DESCRIPTION);
-        setGlowing(slotByRank(rank), true);
-        setDescription(CURRENT_SLOT, "§a" + rank.getRankName());
-        setDescription(slotByRank(rank));
-    }
-    
-    public void updateRank(CityRank rank){
-        int slot = slotByRank(rank);
-        if(slot == -1){
-            return;
-        }
-        setDisplayName(slot, rank.getColor() + rank.getRankName());
-    }
-    
     @Override
     public void onClick(GuiClickEvent event){
         City city = getCity();
@@ -96,8 +67,37 @@ public class RankMemberGui extends DataRelatGui<UUID> {
         city.setRank(getData(), rank);
     }
     
+    public void setRank(CityRank oldRank, CityRank rank){
+        int slot = slotByRank(oldRank);
+        setGlowing(slot, false);
+        setDescription(slot, GIVE_RANK_DESCRIPTION);
+        setGlowing(slotByRank(rank), true);
+        setDescription(CURRENT_SLOT, "§a" + rank.getRankName());
+        setDescription(slotByRank(rank));
+    }
+    
+    public void updateRank(CityRank rank){
+        int slot = slotByRank(rank);
+        if(slot == -1){
+            return;
+        }
+        setDisplayName(slot, rank.getColor() + rank.getRankName());
+    }
+    
     @SuppressWarnings("unchecked")
     private City getCity(){
         return ((Datable<City>)getFather().getFather()).getData();
+    }
+    
+    private int slotByRank(CityRank rank){
+        switch(rank.getId()){
+            case 1:
+                return RANK2_SLOT;
+            case 2:
+                return RANK3_SLOT;
+            case 3:
+                return RANK4_SLOT;
+        }
+        return -1;
     }
 }

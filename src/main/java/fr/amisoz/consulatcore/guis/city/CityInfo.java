@@ -24,7 +24,7 @@ public class CityInfo extends DataPagedGui<City> {
     private static final byte HOME_SLOT = 6;
     
     public CityInfo(City city){
-        super(city, "<ville>",6,
+        super(city, "<ville>", 6,
                 IGui.getItem("§e<ville>", CITY_SLOT, Material.PAPER),
                 IGui.getItem("§eHome", HOME_SLOT, Material.COMPASS));
         setDeco(Material.BLACK_STAINED_GLASS_PANE, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53);
@@ -90,16 +90,16 @@ public class CityInfo extends DataPagedGui<City> {
     
     public void updateHome(){
         City city = getData();
-            if(city.hasHome()){
-                Location home = city.getHome();
-                for(Pageable page : getPages())
-                    page.getGui().setDescription(HOME_SLOT, "",
+        if(city.hasHome()){
+            Location home = city.getHome();
+            for(Pageable page : getPages())
+                page.getGui().setDescription(HOME_SLOT, "",
                         "§7x: " + home.getBlockX(), "§7y: " + home.getBlockY(), "§7z: " + home.getBlockZ());
-            } else {
-                for(Pageable page : getPages()){
-                    page.getGui().setDescription(HOME_SLOT, "", "§cAucun");
-                }
+        } else {
+            for(Pageable page : getPages()){
+                page.getGui().setDescription(HOME_SLOT, "", "§cAucun");
             }
+        }
     }
     
     public void updateRanks(){
@@ -113,10 +113,10 @@ public class CityInfo extends DataPagedGui<City> {
     }
     
     public static class Container extends GuiContainer<City> {
-    
+        
         private static Container instance;
         
-         public Container(){
+        public Container(){
             if(instance != null){
                 throw new IllegalStateException();
             }

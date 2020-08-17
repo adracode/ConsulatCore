@@ -59,31 +59,6 @@ public class AccessibleClaimGui extends DataRelatPagedGui<UUID> {
     }
     
     @Override
-    public void onPageOpened(GuiOpenEvent event, Pageable page){
-        update(event.getPlayer(), canSetPermission(event.getPlayer()), GIVE_ALL_SLOT);
-        update(event.getPlayer(), canSetPermission(event.getPlayer()), REMOVE_ALL_SLOT);
-    }
-    
-    private boolean canSetPermission(ConsulatPlayer player){
-        return !getData().equals(player.getUUID());
-    }
-    
-    public void update(ConsulatPlayer player, boolean allow, int slot){
-        if(allow){
-            setFakeItem(slot, null, player);
-        } else {
-            setDescriptionPlayer(slot, player, "", "§cTu ne peux pas", "§cfaire cette action");
-        }
-    }
-    
-    @Override
-    public void onPageRemoved(GuiRemoveEvent event, Pageable page){
-        if(page.getPage() != 0){
-            getPage(page.getPage() - 1).getGui().setDeco(Material.BLACK_STAINED_GLASS_PANE, NEXT);
-        }
-    }
-    
-    @Override
     public void onPageClick(GuiClickEvent event, Pageable page){
         City city = getPlayerCity();
         GuiItem clickedItem = page.getGui().getItem(event.getSlot());
@@ -118,6 +93,19 @@ public class AccessibleClaimGui extends DataRelatPagedGui<UUID> {
     }
     
     @Override
+    public void onPageOpened(GuiOpenEvent event, Pageable page){
+        update(event.getPlayer(), canSetPermission(event.getPlayer()), GIVE_ALL_SLOT);
+        update(event.getPlayer(), canSetPermission(event.getPlayer()), REMOVE_ALL_SLOT);
+    }
+    
+    @Override
+    public void onPageRemoved(GuiRemoveEvent event, Pageable page){
+        if(page.getPage() != 0){
+            getPage(page.getPage() - 1).getGui().setDeco(Material.BLACK_STAINED_GLASS_PANE, NEXT);
+        }
+    }
+    
+    @Override
     public Relationnable createChild(@Nullable Object key){
         if(key instanceof Claim){
             Claim claim = (Claim)key;
@@ -127,6 +115,14 @@ public class AccessibleClaimGui extends DataRelatPagedGui<UUID> {
             );
         }
         return super.createChild(key);
+    }
+    
+    public void update(ConsulatPlayer player, boolean allow, int slot){
+        if(allow){
+            setFakeItem(slot, null, player);
+        } else {
+            setDescriptionPlayer(slot, player, "", "§cTu ne peux pas", "§cfaire cette action");
+        }
     }
     
     public void addItemClaim(Claim claim){
@@ -148,6 +144,10 @@ public class AccessibleClaimGui extends DataRelatPagedGui<UUID> {
     @SuppressWarnings("unchecked")
     private City getPlayerCity(){
         return ((Datable<City>)getFather().getFather()).getData();
+    }
+    
+    private boolean canSetPermission(ConsulatPlayer player){
+        return !getData().equals(player.getUUID());
     }
     
 }

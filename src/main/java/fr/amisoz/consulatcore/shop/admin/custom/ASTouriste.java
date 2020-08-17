@@ -12,15 +12,10 @@ public class ASTouriste extends AdminShopCustom {
     public static final String TYPE = "ADMIN_CUSTOM_TOURISTE";
     private static final ItemStack item = new ItemStack(Material.BEACON);
     
-    static {
+    static{
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName("§6Touriste");
         item.setItemMeta(meta);
-    }
-    
-    @Override
-    public String getType(){
-        return TYPE;
     }
     
     public ASTouriste(int x, int y, int z, double price){
@@ -33,6 +28,11 @@ public class ASTouriste extends AdminShopCustom {
     
     public ASTouriste(long coords, double price){
         super(coords, price);
+    }
+    
+    @Override
+    public String getType(){
+        return TYPE;
     }
     
     @Override

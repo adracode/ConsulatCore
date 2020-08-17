@@ -42,7 +42,7 @@ public class CityChannel extends Channel implements Speakable {
         City city = survivalPlayer.getCity();
         CityRank rank = city.getCityPlayer(survivalPlayer.getUUID()).getRank();
         return Text.PREFIX_CITY(city)
-                + "§7("+ rank.getColor() + rank.getRankName()
+                + "§7(" + rank.getColor() + rank.getRankName()
                 + "§7) §a" + survivalPlayer.getName() + "§7 > §e" + message;
     }
 }

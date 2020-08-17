@@ -6,24 +6,23 @@ import org.bukkit.event.HandlerList;
 
 public class SurvivalPlayerLoadedEvent extends Event {
     
+    private static HandlerList handlers = new HandlerList();
     private final SurvivalPlayer player;
     
     public SurvivalPlayerLoadedEvent(SurvivalPlayer player){
         this.player = player;
     }
     
+    @Override
+    public HandlerList getHandlers(){
+        return handlers;
+    }
+    
     public SurvivalPlayer getPlayer(){
         return player;
     }
     
-    private static HandlerList handlers = new HandlerList();
-    
     public static HandlerList getHandlerList(){
-        return handlers;
-    }
-    
-    @Override
-    public HandlerList getHandlers(){
         return handlers;
     }
     

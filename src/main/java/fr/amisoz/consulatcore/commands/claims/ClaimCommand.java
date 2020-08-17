@@ -169,7 +169,7 @@ public class ClaimCommand extends ConsulatCommand {
                 return;
             case "options":{
                 Claim claim = player.getClaim();
-                if(claim == null || (!claim.canManageAccesses(player.getUUID()) && !claim.hasAccess(player.getUUID()))){
+                if(claim == null || !claim.hasAccess(player.getUUID())){
                     player.sendMessage(Text.NOT_IN_YOUR_CLAIM);
                     return;
                 }

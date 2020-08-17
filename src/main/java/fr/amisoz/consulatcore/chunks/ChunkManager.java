@@ -65,14 +65,6 @@ public class ChunkManager implements Listener {
         ConsulatCore.getInstance().getServer().getPluginManager().registerEvents(this, ConsulatCore.getInstance());
     }
     
-    public Map<Material, Integer> getLimitedBlocks(){
-        return Collections.unmodifiableMap(limits);
-    }
-    
-    public static ChunkManager getInstance(){
-        return instance;
-    }
-    
     public void register(String type, ChunkConstructor create){
         this.createChunk.put(type, create);
     }
@@ -228,5 +220,13 @@ public class ChunkManager implements Listener {
             }
         });
         TaskManager.getInstance().addTask(scanner);
+    }
+    
+    public Map<Material, Integer> getLimitedBlocks(){
+        return Collections.unmodifiableMap(limits);
+    }
+    
+    public static ChunkManager getInstance(){
+        return instance;
     }
 }

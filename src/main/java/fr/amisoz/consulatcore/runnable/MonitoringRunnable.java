@@ -11,15 +11,15 @@ import java.util.Date;
 import java.util.Locale;
 
 public class MonitoringRunnable implements Runnable {
-
+    
     private ConsulatCore consulatCore;
-
-    public MonitoringRunnable(ConsulatCore consulatCore) {
+    
+    public MonitoringRunnable(ConsulatCore consulatCore){
         this.consulatCore = consulatCore;
     }
-
+    
     @Override
-    public void run() {
+    public void run(){
         try {
             PreparedStatement preparedStatement = consulatCore.getDatabaseConnection().prepareStatement("INSERT INTO monitoring(players, insert_date) VALUES(?, ?)");
             preparedStatement.setInt(1, Bukkit.getOnlinePlayers().size());
@@ -27,10 +27,10 @@ public class MonitoringRunnable implements Runnable {
                     DateFormat.SHORT,
                     DateFormat.SHORT, new Locale("FR", "fr"));
             preparedStatement.setString(2, shortDateFormat.format(new Date()));
-
+            
             preparedStatement.executeUpdate();
             preparedStatement.close();
-        } catch (SQLException e) {
+        } catch(SQLException e){
             e.printStackTrace();
         }
     }

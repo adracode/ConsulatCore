@@ -47,90 +47,6 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
         setTemplateItems(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 26, 27, 35, 36, 44, 46, 47, 48, 49, 50, 51, 52, 53);
     }
     
-    
-    private void setManageInteractSlot(boolean interaction){
-        if(interaction){
-            setTypePages(MANAGE_INTERACT_SLOT, Material.WATER_BUCKET);
-            setDisplayNamePages(MANAGE_INTERACT_SLOT, "§aInteraction");
-            setDescriptionPages(MANAGE_INTERACT_SLOT, "",
-                    "§7Interdire les claims dont " + (getData().getOwner() instanceof City ? "la ville est" : "le joueur est"),
-                    "§7propriétaire autour de ce claim",
-                    "§7à interagir avec celui ci",
-                    "§7§oExemple: écoulement d'eau", "", "§7Statut: §aActivé");
-        } else {
-            setTypePages(MANAGE_INTERACT_SLOT, Material.LAVA_BUCKET);
-            setDisplayNamePages(MANAGE_INTERACT_SLOT, "§cInteraction");
-            setDescriptionPages(MANAGE_INTERACT_SLOT, "",
-                    "§7Autoriser les claims dont " + (getData().getOwner() instanceof City ? "la ville est" : "le joueur est"),
-                    "§7propriétaire autour de ce claim",
-                    "§7à interagir avec celui ci",
-                    "§7§oExemple: écoulement d'eau", "", "§7Statut: §cDésactivé");
-        }
-    }
-    
-    public void updatePermissions(ConsulatPlayer player, Pageable page){
-        UUID uuid = player.getUUID();
-        Zone zone = getData().getOwner();
-        boolean allow = zone instanceof City ? ((City)zone).canManageAccesses(uuid) : zone.isOwner(uuid);
-        for(GuiItem item : page){
-            if(allow || uuid.equals(item.getAttachedObject())){
-                setFakeItem(item.getSlot(), null, player);
-            } else {
-                setDescriptionPlayer(item.getSlot(), player, "", "§cTu ne peux pas", "§cgérer les permissions", "§cde ce joueur");
-            }
-        }
-    }
-    
-    public void updateInteract(ConsulatPlayer player, Pageable page, boolean allow){
-        if(allow){
-            page.getGui().setFakeItem(MANAGE_INTERACT_SLOT, null, player);
-        } else {
-            setDescriptionPlayer(MANAGE_INTERACT_SLOT, player, GuiItem.getDescription(
-                    page.getGui().getItem(MANAGE_INTERACT_SLOT),
-                    "", "§cTu ne peux pas", "§cchanger l'interaction"));
-        }
-    }
-    
-    public void updateAccess(ConsulatPlayer player, Pageable page, boolean allow){
-        if(allow){
-            page.getGui().setFakeItem(ADD_SLOT, null, player);
-        } else {
-            setDescriptionPlayer(ADD_SLOT, player, "", "§cTu ne peux pas", "§cajouter un joueur");
-        }
-    }
-    
-    public void addPlayerToClaim(UUID uuid, String name){
-        GuiItem item = IGui.getItem("§e" + name, -1, uuid);
-        addItem(item);
-        item.setAttachedObject(uuid);
-    }
-    
-    public void removePlayerFromClaim(UUID uuid){
-        removeChild(uuid);
-        for(Iterator<GuiItem> iterator = iterator(); iterator.hasNext(); ){
-            GuiItem item = iterator.next();
-            if(item != null && item.getAttachedObject().equals(uuid)){
-                iterator.remove();
-                return;
-            }
-        }
-    }
-    
-    public void applyFather(){
-        City owner = getData().getOwner() instanceof City ? (City)getData().getOwner() : null;
-        if(owner != null){
-            IGui iClaimsGui = GuiManager.getInstance().getContainer("city").getGui(true, owner, CityGui.CLAIMS);
-            if(iClaimsGui != null){
-                setFather((ClaimsGui)iClaimsGui);
-            }
-            setDescription(INFO_SLOT, "", "§7Membres de la ville", "§7ayant accès au claim");
-        } else {
-            setFather(null);
-            setDeco(Material.BLACK_STAINED_GLASS_PANE, 45);
-            setDescription(INFO_SLOT, "", "§7Joueurs ayant accès", "§7à ce claim");
-        }
-    }
-    
     @Override
     public void onCreate(){
         applyFather();
@@ -249,6 +165,89 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
             return new AccessPermissionsGui((UUID)key);
         }
         return super.createChild(key);
+    }
+    
+    public void updatePermissions(ConsulatPlayer player, Pageable page){
+        UUID uuid = player.getUUID();
+        Zone zone = getData().getOwner();
+        boolean allow = zone instanceof City ? ((City)zone).canManageAccesses(uuid) : zone.isOwner(uuid);
+        for(GuiItem item : page){
+            if(allow || uuid.equals(item.getAttachedObject())){
+                setFakeItem(item.getSlot(), null, player);
+            } else {
+                setDescriptionPlayer(item.getSlot(), player, "", "§cTu ne peux pas", "§cgérer les permissions", "§cde ce joueur");
+            }
+        }
+    }
+    
+    public void updateInteract(ConsulatPlayer player, Pageable page, boolean allow){
+        if(allow){
+            page.getGui().setFakeItem(MANAGE_INTERACT_SLOT, null, player);
+        } else {
+            setDescriptionPlayer(MANAGE_INTERACT_SLOT, player, GuiItem.getDescription(
+                    page.getGui().getItem(MANAGE_INTERACT_SLOT),
+                    "", "§cTu ne peux pas", "§cchanger l'interaction"));
+        }
+    }
+    
+    public void updateAccess(ConsulatPlayer player, Pageable page, boolean allow){
+        if(allow){
+            page.getGui().setFakeItem(ADD_SLOT, null, player);
+        } else {
+            setDescriptionPlayer(ADD_SLOT, player, "", "§cTu ne peux pas", "§cajouter un joueur");
+        }
+    }
+    
+    public void addPlayerToClaim(UUID uuid, String name){
+        GuiItem item = IGui.getItem("§e" + name, -1, uuid);
+        addItem(item);
+        item.setAttachedObject(uuid);
+    }
+    
+    public void removePlayerFromClaim(UUID uuid){
+        removeChild(uuid);
+        for(Iterator<GuiItem> iterator = iterator(); iterator.hasNext(); ){
+            GuiItem item = iterator.next();
+            if(item != null && item.getAttachedObject().equals(uuid)){
+                iterator.remove();
+                return;
+            }
+        }
+    }
+    
+    public void applyFather(){
+        City owner = getData().getOwner() instanceof City ? (City)getData().getOwner() : null;
+        if(owner != null){
+            IGui iClaimsGui = GuiManager.getInstance().getContainer("city").getGui(true, owner, CityGui.CLAIMS);
+            if(iClaimsGui != null){
+                setFather((ClaimsGui)iClaimsGui);
+            }
+            setDescription(INFO_SLOT, "", "§7Membres de la ville", "§7ayant accès au claim");
+        } else {
+            setFather(null);
+            setDeco(Material.BLACK_STAINED_GLASS_PANE, 45);
+            setDescription(INFO_SLOT, "", "§7Joueurs ayant accès", "§7à ce claim");
+        }
+    }
+    
+    private void setManageInteractSlot(boolean interaction){
+        if(interaction){
+            setTypePages(MANAGE_INTERACT_SLOT, Material.WATER_BUCKET);
+            setDisplayNamePages(MANAGE_INTERACT_SLOT, "§aInteraction");
+            setDescriptionPages(MANAGE_INTERACT_SLOT, "",
+                    "§7Interdire les claims dont " + (getData().getOwner() instanceof City ? "la ville est" : "le joueur est"),
+                    "§7propriétaire autour de ce claim",
+                    "§7à interagir avec celui ci",
+                    "§7§oExemple: écoulement d'eau", "", "§7Statut: §aActivé");
+        } else {
+            setTypePages(MANAGE_INTERACT_SLOT, Material.LAVA_BUCKET);
+            setDisplayNamePages(MANAGE_INTERACT_SLOT, "§cInteraction");
+            setDescriptionPages(MANAGE_INTERACT_SLOT, "",
+                    "§7Autoriser les claims dont " + (getData().getOwner() instanceof City ? "la ville est" : "le joueur est"),
+                    "§7propriétaire autour de ce claim",
+                    "§7à interagir avec celui ci",
+                    "§7§oExemple: écoulement d'eau", "", "§7Statut: §cDésactivé");
+        }
     }
     
     public static class Container extends GuiContainer<Claim> {

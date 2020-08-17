@@ -134,42 +134,6 @@ public class CityCommand extends ConsulatCommand {
                 new SubCommand("lead <joueur>", "Changer le propriétaire de ville"))).toArray(new SubCommand[0]);
     }
     
-    private TextComponent getTitle(int page, int size){
-        while(size >= titles.size()){
-            titles.add(new ArrayList<>());
-        }
-        List<TextComponent> pageTitles = titles.get(size);
-        for(int i = pageTitles.size(); i <= page; ++i){
-            pageTitles.add(new TextComponent("    §3§m-§e§m--§c§m---§e§m--§3§m-§a Commandes [" + i + "/" + size + "] §3§m-§e§m--§c§m---§e§m--§3§m-"));
-        }
-        return pageTitles.get(page);
-    }
-    
-    private TextComponent getPrevious(int page){
-        if(page < 0){
-            return null;
-        }
-        for(int i = previous.size(); i <= page; ++i){
-            TextComponent current = new TextComponent("                          §b« Précédent");
-            current.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                    new ComponentBuilder("Page précédente").color(ChatColor.GRAY).create()));
-            current.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/city help " + i));
-            previous.add(current);
-        }
-        return previous.get(page);
-    }
-    
-    private TextComponent getNext(int page){
-        for(int i = next.size(); i <= page; ++i){
-            TextComponent current = new TextComponent("                          §bSuivant »");
-            current.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                    new ComponentBuilder("Page suivante").color(ChatColor.GRAY).create()));
-            current.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/city help " + i));
-            next.add(current);
-        }
-        return next.get(page);
-    }
-    
     @Override
     public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
@@ -277,7 +241,6 @@ public class CityCommand extends ConsulatCommand {
                         return;
                     }
                     city.setOwner(nextOwner.getUUID());
-                    return;
                 }
                 city.removePlayer(player.getUUID());
                 player.sendMessage(Text.LEFT_CITY(city.getName()));
@@ -817,6 +780,42 @@ public class CityCommand extends ConsulatCommand {
                 player.getPlayer().performCommand("ville help");
         }
         
+    }
+    
+    private TextComponent getTitle(int page, int size){
+        while(size >= titles.size()){
+            titles.add(new ArrayList<>());
+        }
+        List<TextComponent> pageTitles = titles.get(size);
+        for(int i = pageTitles.size(); i <= page; ++i){
+            pageTitles.add(new TextComponent("    §3§m-§e§m--§c§m---§e§m--§3§m-§a Commandes [" + i + "/" + size + "] §3§m-§e§m--§c§m---§e§m--§3§m-"));
+        }
+        return pageTitles.get(page);
+    }
+    
+    private TextComponent getPrevious(int page){
+        if(page < 0){
+            return null;
+        }
+        for(int i = previous.size(); i <= page; ++i){
+            TextComponent current = new TextComponent("                          §b« Précédent");
+            current.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                    new ComponentBuilder("Page précédente").color(ChatColor.GRAY).create()));
+            current.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/city help " + i));
+            previous.add(current);
+        }
+        return previous.get(page);
+    }
+    
+    private TextComponent getNext(int page){
+        for(int i = next.size(); i <= page; ++i){
+            TextComponent current = new TextComponent("                          §bSuivant »");
+            current.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                    new ComponentBuilder("Page suivante").color(ChatColor.GRAY).create()));
+            current.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/city help " + i));
+            next.add(current);
+        }
+        return next.get(page);
     }
     
     public class SubCommand implements Comparable<SubCommand> {

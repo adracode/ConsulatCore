@@ -34,22 +34,22 @@ public class SignListener implements Listener {
     }
     
     @EventHandler
-    public void onSign(SignChangeEvent event) {
+    public void onSign(SignChangeEvent event){
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
-        if (player.hasPower(Rank.RESPONSABLE)){
+        if(player.hasPower(Rank.RESPONSABLE)){
             String[] lines = event.getLines();
-            if(lines[0].equals("[TP]")) {
+            if(lines[0].equals("[TP]")){
                 event.setLine(0, "§9[Téléportation]");
                 try {
                     Integer.parseInt(lines[1]);
                     Integer.parseInt(lines[2]);
                     Integer.parseInt(lines[3]);
-                } catch (NumberFormatException e) {
+                } catch(NumberFormatException e){
                     player.sendMessage("§cErreur de coordonnées");
                     event.getBlock().breakNaturally();
                 }
             }
         }
     }
-
+    
 }

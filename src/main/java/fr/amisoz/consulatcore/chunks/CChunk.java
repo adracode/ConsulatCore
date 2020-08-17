@@ -37,39 +37,6 @@ public class CChunk implements Comparable<CChunk> {
         this.limits = chunk.limits;
     }
     
-    public int getLimitSize(){
-        return limits.size();
-    }
-    
-    public long getCoordinates(){
-        return coords;
-    }
-    
-    public int getX(){
-        return (int)((coords & CONVERT) - LIMIT_X);
-    }
-    
-    public int getZ(){
-        return (int)((coords >> SHIFT + 1) - LIMIT_Z);
-    }
-    
-    public String getType(){
-        return TYPE;
-    }
-    
-    public boolean isNeedLimitSync(){
-        return needLimitSync;
-    }
-    
-    public void setNeedLimitSync(boolean needLimitSync){
-        if(needLimitSync){
-            for(AtomicInteger limit : limits.values()){
-                limit.set(0);
-            }
-        }
-        this.needLimitSync = needLimitSync;
-    }
-    
     public void addLimit(Material type){
         limits.put(type, new AtomicInteger(0));
     }
@@ -172,6 +139,43 @@ public class CChunk implements Comparable<CChunk> {
         }
     }
     
+    public int getLimitSize(){
+        return limits.size();
+    }
+    
+    public long getCoordinates(){
+        return coords;
+    }
+    
+    public int getX(){
+        return (int)((coords & CONVERT) - LIMIT_X);
+    }
+    
+    public int getZ(){
+        return (int)((coords >> SHIFT + 1) - LIMIT_Z);
+    }
+    
+    public String getType(){
+        return TYPE;
+    }
+    
+    public boolean isNeedLimitSync(){
+        return needLimitSync;
+    }
+    
+    public void setNeedLimitSync(boolean needLimitSync){
+        if(needLimitSync){
+            for(AtomicInteger limit : limits.values()){
+                limit.set(0);
+            }
+        }
+        this.needLimitSync = needLimitSync;
+    }
+    
+    public static long convert(int x, int z){
+        return (((long)z + LIMIT_Z) << SHIFT + 1) | (x + LIMIT_X);
+    }
+    
     @Override
     public int hashCode(){
         return Long.hashCode(coords);
@@ -201,9 +205,5 @@ public class CChunk implements Comparable<CChunk> {
     @Override
     public int compareTo(@NotNull CChunk o){
         return Long.compare(this.coords, o.coords);
-    }
-    
-    public static long convert(int x, int z){
-        return (((long)z + LIMIT_Z) << SHIFT + 1) | (x + LIMIT_X);
     }
 }

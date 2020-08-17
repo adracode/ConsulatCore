@@ -4,7 +4,7 @@ import fr.amisoz.consulatcore.ConsulatCore;
 import fr.leconsulat.api.player.Permission;
 
 public enum CityPermission implements Permission {
-
+    
     MANAGE_PLAYER(ConsulatCore.getInstance().getPermission("city.manage-player")),
     MANAGE_CLAIM(ConsulatCore.getInstance().getPermission("city.manage-claim")),
     MANAGE_ACCESS(ConsulatCore.getInstance().getPermission("city.manage-access")),
@@ -18,6 +18,10 @@ public enum CityPermission implements Permission {
         this.permission = permission;
     }
     
+    public String getPermission(){
+        return permission;
+    }
+    
     public static CityPermission byPermission(String permission){
         for(CityPermission claimPermission : values()){
             if(claimPermission.getPermission().equals(permission)){
@@ -25,9 +29,5 @@ public enum CityPermission implements Permission {
             }
         }
         throw new IllegalArgumentException();
-    }
-    
-    public String getPermission(){
-        return permission;
     }
 }

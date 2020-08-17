@@ -8,9 +8,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 public class AFKRunnable implements Runnable {
-
+    
     @Override
-    public void run() {
+    public void run(){
         for(Player player : Bukkit.getOnlinePlayers()){
             SurvivalPlayer survivalPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
             if(survivalPlayer != null){

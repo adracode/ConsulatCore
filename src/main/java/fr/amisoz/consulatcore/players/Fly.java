@@ -23,6 +23,18 @@ public class Fly {
         this(fly.flyTime, fly.reset, fly.timeLeft);
     }
     
+    public void decrementTimeLeft(){
+        --this.timeLeft;
+    }
+    
+    public boolean canFly(){
+        return hasInfiniteFly() || reset < System.currentTimeMillis() || timeLeft > 0;
+    }
+    
+    public boolean hasInfiniteFly(){
+        return flyTime == -1;
+    }
+    
     public int getFlyTime(){
         return flyTime;
     }
@@ -45,18 +57,6 @@ public class Fly {
             reset = System.currentTimeMillis() + 3_600_000;
             timeLeft = flyTime;
         }
-    }
-    
-    public void decrementTimeLeft(){
-        --this.timeLeft;
-    }
-    
-    public boolean canFly(){
-        return hasInfiniteFly() || reset < System.currentTimeMillis() || timeLeft > 0;
-    }
-    
-    public boolean hasInfiniteFly(){
-        return flyTime == -1;
     }
     
     @Override

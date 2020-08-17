@@ -13,8 +13,8 @@ import java.util.*;
 public class Zone implements Saveable {
     
     @NotNull private final UUID uuid;
-    @NotNull private UUID owner;
     @NotNull private final Set<Claim> claims;
+    @NotNull private UUID owner;
     @NotNull private String name;
     
     public Zone(@NotNull UUID uuid, @Nullable String name, @NotNull UUID owner){
@@ -97,44 +97,8 @@ public class Zone implements Saveable {
         this.name = name;
     }
     
-    public @NotNull UUID getUniqueId(){
-        return uuid;
-    }
-    
-    public @NotNull UUID getOwner(){
-        return owner;
-    }
-    
-    public void setOwner(@NotNull UUID owner){
-        this.owner = owner;
-    }
-    
     public boolean isOwner(@Nullable UUID uuid){
         return owner.equals(uuid);
-    }
-    
-    protected @NotNull Set<Claim> getClaims(){
-        return claims;
-    }
-    
-    public @NotNull Set<Claim> getZoneClaims(){
-        return Collections.unmodifiableSet(claims);
-    }
-    
-    public @NotNull String getName(){
-        return name;
-    }
-    
-    public @NotNull String getType(){
-        return "PLAYER";
-    }
-    
-    public @NotNull String getEnterMessage(){
-        return Text.PREFIX + "§cTu entres dans la zone de §l" + getName() + ".";
-    }
-    
-    public @NotNull String getLeaveMessage(){
-        return Text.PREFIX + "§cTu sors de la zone de §l" + getName() + ".";
     }
     
     public void loadNBT(){
@@ -168,6 +132,47 @@ public class Zone implements Saveable {
         }*/
     }
     
+    public @NotNull UUID getUniqueId(){
+        return uuid;
+    }
+    
+    public @NotNull UUID getOwner(){
+        return owner;
+    }
+    
+    public void setOwner(@NotNull UUID owner){
+        this.owner = owner;
+    }
+    
+    protected @NotNull Set<Claim> getClaims(){
+        return claims;
+    }
+    
+    public @NotNull Set<Claim> getZoneClaims(){
+        return Collections.unmodifiableSet(claims);
+    }
+    
+    public @NotNull String getName(){
+        return name;
+    }
+    
+    public @NotNull String getType(){
+        return "PLAYER";
+    }
+    
+    public @NotNull String getEnterMessage(){
+        return Text.PREFIX + "§cTu entres dans la zone de §l" + getName() + ".";
+    }
+    
+    public @NotNull String getLeaveMessage(){
+        return Text.PREFIX + "§cTu sors de la zone de §l" + getName() + ".";
+    }
+    
+    @Override
+    public int hashCode(){
+        return uuid.hashCode();
+    }
+    
     @Override
     public boolean equals(@Nullable Object o){
         if(this == o){
@@ -177,11 +182,6 @@ public class Zone implements Saveable {
             return false;
         }
         return uuid.equals(((Zone)o).uuid);
-    }
-    
-    @Override
-    public int hashCode(){
-        return uuid.hashCode();
     }
     
     @Override

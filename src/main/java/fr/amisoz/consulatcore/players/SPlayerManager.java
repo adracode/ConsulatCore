@@ -126,42 +126,6 @@ public class SPlayerManager implements Listener {
         });
     }
     
-    public static SPlayerManager getInstance(){
-        return instance;
-    }
-    
-    private void setAntecedents(SurvivalPlayer player) throws SQLException{
-        PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("SELECT sanction, reason FROM antecedents WHERE playeruuid = ? AND cancelled = 0");
-        preparedStatement.setString(1, player.getUUID().toString());
-        ResultSet resultSet = preparedStatement.executeQuery();
-        
-        while(resultSet.next()){
-            SanctionType sanctionType = SanctionType.valueOf(resultSet.getString("sanction"));
-            String reason = resultSet.getString("reason");
-            if(sanctionType == SanctionType.MUTE){
-                MuteReason muteReason = Arrays.stream(MuteReason.values()).filter(mute -> mute.getSanctionName().equals(reason)).findFirst().orElse(null);
-                if(muteReason != null){
-                    if(player.getMuteHistory().containsKey(muteReason)){
-                        int number = player.getMuteHistory().get(muteReason);
-                        player.getMuteHistory().put(muteReason, ++number);
-                    } else {
-                        player.getMuteHistory().put(muteReason, 1);
-                    }
-                }
-            } else {
-                BanReason banReason = Arrays.stream(BanReason.values()).filter(ban -> ban.getSanctionName().equals(reason)).findFirst().orElse(null);
-                if(banReason != null){
-                    if(player.getBanHistory().containsKey(banReason)){
-                        int number = player.getBanHistory().get(banReason);
-                        player.getBanHistory().put(banReason, ++number);
-                    } else {
-                        player.getBanHistory().put(banReason, 1);
-                    }
-                }
-            }
-        }
-    }
-    
     @EventHandler
     public void onJoin(PlayerJoinEvent event){
         event.setJoinMessage(null);
@@ -242,6 +206,11 @@ public class SPlayerManager implements Listener {
         SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
         player.initializeHomes(event.getNewRank());
         player.initializeShops(event.getNewRank());
+        if(event.getNewRank().getRankPower() >= Rank.MECENE.getRankPower()){
+            player.addCommandPermission(CommandManager.getInstance().getCommand("fly").getPermission());
+        } else {
+            player.removeCommandPermission(CommandManager.getInstance().getCommand("fly").getPermission());
+        }
     }
     
     public void fetchPlayer(SurvivalPlayer player) throws SQLException{
@@ -502,6 +471,38 @@ public class SPlayerManager implements Listener {
         return fly.getFlyTime() == 0 ? null : fly;
     }
     
+    private void setAntecedents(SurvivalPlayer player) throws SQLException{
+        PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("SELECT sanction, reason FROM antecedents WHERE playeruuid = ? AND cancelled = 0");
+        preparedStatement.setString(1, player.getUUID().toString());
+        ResultSet resultSet = preparedStatement.executeQuery();
+        
+        while(resultSet.next()){
+            SanctionType sanctionType = SanctionType.valueOf(resultSet.getString("sanction"));
+            String reason = resultSet.getString("reason");
+            if(sanctionType == SanctionType.MUTE){
+                MuteReason muteReason = Arrays.stream(MuteReason.values()).filter(mute -> mute.getSanctionName().equals(reason)).findFirst().orElse(null);
+                if(muteReason != null){
+                    if(player.getMuteHistory().containsKey(muteReason)){
+                        int number = player.getMuteHistory().get(muteReason);
+                        player.getMuteHistory().put(muteReason, ++number);
+                    } else {
+                        player.getMuteHistory().put(muteReason, 1);
+                    }
+                }
+            } else {
+                BanReason banReason = Arrays.stream(BanReason.values()).filter(ban -> ban.getSanctionName().equals(reason)).findFirst().orElse(null);
+                if(banReason != null){
+                    if(player.getBanHistory().containsKey(banReason)){
+                        int number = player.getBanHistory().get(banReason);
+                        player.getBanHistory().put(banReason, ++number);
+                    } else {
+                        player.getBanHistory().put(banReason, 1);
+                    }
+                }
+            }
+        }
+    }
+    
     private void saveOnJoin(SurvivalPlayer player){
         SaveManager saveManager = SaveManager.getInstance();
         saveManager.addData("player-money", player);
@@ -517,6 +518,10 @@ public class SPlayerManager implements Listener {
         preparedStatement.setString(4, dateFormat.format(new Date()));
         preparedStatement.executeUpdate();
         preparedStatement.close();
+    }
+    
+    public static SPlayerManager getInstance(){
+        return instance;
     }
     
 }

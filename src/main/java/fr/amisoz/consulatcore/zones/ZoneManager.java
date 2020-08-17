@@ -66,43 +66,8 @@ public class ZoneManager {
         }
     }
     
-    private void initZones() throws SQLException{
-        PreparedStatement fetchZones = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM zones");
-        ResultSet result = fetchZones.executeQuery();
-        while(result.next()){
-            Zone zone = new Zone(
-                    UUID.fromString(result.getString("uuid")),
-                    result.getString("name"),
-                    UUID.fromString(result.getString("owner"))
-            );
-            zone.loadNBT();
-            addZone(zone);
-        }
-    }
-    
-    private void initCities() throws SQLException{
-        PreparedStatement fetchCities = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM cities");
-        ResultSet result = fetchCities.executeQuery();
-        while(result.next()){
-            City city = new City(
-                    UUID.fromString(result.getString("uuid")),
-                    result.getString("name"),
-                    UUID.fromString(result.getString("owner")),
-                    result.getDouble("money")
-            );
-            city.loadNBT();
-            addCity(city);
-        }
-    }
-    
     public void addZone(Zone zone){
         zones.put(zone.getUniqueId(), zone);
-    }
-    
-    private void addCity(City city){
-        citiesByName.put(city.getName().toLowerCase(), city);
-        SaveManager.getInstance().addData("city-money", city);
-        addZone(city);
     }
     
     public void removeZone(Zone zone){
@@ -113,10 +78,6 @@ public class ZoneManager {
         citiesByName.remove(city.getName().toLowerCase());
         SaveManager.getInstance().removeData("city-money", city, false);
         removeZone(city);
-    }
-    
-    public static ZoneManager getInstance(){
-        return instance;
     }
     
     public boolean invitePlayer(City city, UUID uuid){
@@ -178,21 +139,6 @@ public class ZoneManager {
         addCity(city);
         addCityDatabase(city);
         return city;
-    }
-    
-    private void addCityDatabase(City city){
-        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-            try {
-                PreparedStatement statement = ConsulatAPI.getDatabase().prepareStatement("INSERT INTO cities (uuid, name, owner) VALUES (?, ?, ?)");
-                statement.setString(1, city.getUniqueId().toString());
-                statement.setString(2, city.getName());
-                statement.setString(3, city.getOwner().toString());
-                statement.executeUpdate();
-                statement.close();
-            } catch(SQLException e){
-                e.printStackTrace();
-            }
-        });
     }
     
     public void updateOwner(City city){
@@ -257,5 +203,59 @@ public class ZoneManager {
                 e.printStackTrace();
             }
         });
+    }
+    
+    private void initZones() throws SQLException{
+        PreparedStatement fetchZones = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM zones");
+        ResultSet result = fetchZones.executeQuery();
+        while(result.next()){
+            Zone zone = new Zone(
+                    UUID.fromString(result.getString("uuid")),
+                    result.getString("name"),
+                    UUID.fromString(result.getString("owner"))
+            );
+            zone.loadNBT();
+            addZone(zone);
+        }
+    }
+    
+    private void initCities() throws SQLException{
+        PreparedStatement fetchCities = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM cities");
+        ResultSet result = fetchCities.executeQuery();
+        while(result.next()){
+            City city = new City(
+                    UUID.fromString(result.getString("uuid")),
+                    result.getString("name"),
+                    UUID.fromString(result.getString("owner")),
+                    result.getDouble("money")
+            );
+            city.loadNBT();
+            addCity(city);
+        }
+    }
+    
+    private void addCity(City city){
+        citiesByName.put(city.getName().toLowerCase(), city);
+        SaveManager.getInstance().addData("city-money", city);
+        addZone(city);
+    }
+    
+    private void addCityDatabase(City city){
+        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
+            try {
+                PreparedStatement statement = ConsulatAPI.getDatabase().prepareStatement("INSERT INTO cities (uuid, name, owner) VALUES (?, ?, ?)");
+                statement.setString(1, city.getUniqueId().toString());
+                statement.setString(2, city.getName());
+                statement.setString(3, city.getOwner().toString());
+                statement.executeUpdate();
+                statement.close();
+            } catch(SQLException e){
+                e.printStackTrace();
+            }
+        });
+    }
+    
+    public static ZoneManager getInstance(){
+        return instance;
     }
 }

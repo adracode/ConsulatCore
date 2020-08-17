@@ -58,29 +58,6 @@ public class ShopCommand extends ConsulatCommand {
                 );
     }
     
-    private void createShop(ConsulatPlayer sender, @NotNull Block block){
-        if(block.getType() != Material.AIR){
-            sender.sendMessage(Text.BLOCK_HERE);
-            return;
-        }
-        block.setType(Material.CHEST);
-        org.bukkit.block.Chest chest = (org.bukkit.block.Chest)block.getState();
-        chest.getBlockInventory().addItem(sender.getPlayer().getInventory().getItemInMainHand());
-        Block sign = block.getRelative(((Chest)block.getBlockData()).getFacing());
-        sign.setType(Material.OAK_WALL_SIGN);
-        Sign sign1 = (Sign)sign.getState();
-        sign1.setLine(0, "[consulshop]");
-        sign1.setLine(1, (ConsulatCore.getRandom().nextInt(10) + 1) + "");
-        sign1.update();
-        SignChangeEvent event = new SignChangeEvent(sign, sender.getPlayer(), sign1.getLines());
-        Bukkit.getServer().getPluginManager().callEvent(event);
-        String[] lines = event.getLines();
-        for(int i = 0; i < lines.length; i++){
-            sign1.setLine(i, lines[i]);
-        }
-        sign1.update();
-    }
-    
     @Override
     public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         if(args.length != 0){
@@ -137,6 +114,29 @@ public class ShopCommand extends ConsulatCommand {
             }
         }
         sender.sendMessage(Text.COMMAND_USAGE(this));
+    }
+    
+    private void createShop(ConsulatPlayer sender, @NotNull Block block){
+        if(block.getType() != Material.AIR){
+            sender.sendMessage(Text.BLOCK_HERE);
+            return;
+        }
+        block.setType(Material.CHEST);
+        org.bukkit.block.Chest chest = (org.bukkit.block.Chest)block.getState();
+        chest.getBlockInventory().addItem(sender.getPlayer().getInventory().getItemInMainHand());
+        Block sign = block.getRelative(((Chest)block.getBlockData()).getFacing());
+        sign.setType(Material.OAK_WALL_SIGN);
+        Sign sign1 = (Sign)sign.getState();
+        sign1.setLine(0, "[consulshop]");
+        sign1.setLine(1, (ConsulatCore.getRandom().nextInt(10) + 1) + "");
+        sign1.update();
+        SignChangeEvent event = new SignChangeEvent(sign, sender.getPlayer(), sign1.getLines());
+        Bukkit.getServer().getPluginManager().callEvent(event);
+        String[] lines = event.getLines();
+        for(int i = 0; i < lines.length; i++){
+            sign1.setLine(i, lines[i]);
+        }
+        sign1.update();
     }
     
 }

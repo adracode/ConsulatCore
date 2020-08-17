@@ -34,30 +34,6 @@ public class ShopGui extends DataPagedGui<ShopItemType> {
         setTemplateItems(45, 53);
     }
     
-    public void addShop(PlayerShop shop){
-        if(shop.isEmpty()){
-            return;
-        }
-        GuiItem item = new GuiItem(shop.getItem(), 0);
-        item.setDescription(GuiItem.getDescription(item, "", "§eVendu par: §c" + shop.getOwnerName(),
-                "§ePrix unitaire: §c" + ConsulatCore.formatMoney(shop.getPrice()),
-                "§eCoordonnées: X: §c" + shop.getX() + "§e Y: §c" + shop.getY() + "§e Z: §c" + shop.getZ(),
-                "§eTéléportation pour: §c" + ConsulatCore.formatMoney(10) + "."));
-        item.setAttachedObject(shop);
-        item.removeItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
-        addItem(item);
-    }
-    
-    public void removeShop(PlayerShop shop){
-        for(Iterator<GuiItem> iterator = iterator(); iterator.hasNext(); ){
-            GuiItem item = iterator.next();
-            if(item != null && shop.equals(item.getAttachedObject())){
-                iterator.remove();
-                return;
-            }
-        }
-    }
-    
     @Override
     public void onPageCreated(GuiCreateEvent event, Pageable pageGui){
         if(getData().equals(ShopItemType.ALL)){
@@ -115,6 +91,30 @@ public class ShopGui extends DataPagedGui<ShopItemType> {
                 } else {
                     player.sendMessage(Text.NOT_ENOUGH_MONEY(10));
                 }
+        }
+    }
+    
+    public void addShop(PlayerShop shop){
+        if(shop.isEmpty()){
+            return;
+        }
+        GuiItem item = new GuiItem(shop.getItem(), 0);
+        item.setDescription(GuiItem.getDescription(item, "", "§eVendu par: §c" + shop.getOwnerName(),
+                "§ePrix unitaire: §c" + ConsulatCore.formatMoney(shop.getPrice()),
+                "§eCoordonnées: X: §c" + shop.getX() + "§e Y: §c" + shop.getY() + "§e Z: §c" + shop.getZ(),
+                "§eTéléportation pour: §c" + ConsulatCore.formatMoney(10) + "."));
+        item.setAttachedObject(shop);
+        item.removeItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+        addItem(item);
+    }
+    
+    public void removeShop(PlayerShop shop){
+        for(Iterator<GuiItem> iterator = iterator(); iterator.hasNext(); ){
+            GuiItem item = iterator.next();
+            if(item != null && shop.equals(item.getAttachedObject())){
+                iterator.remove();
+                return;
+            }
         }
     }
     

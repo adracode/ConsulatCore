@@ -39,18 +39,6 @@ public class BankGui extends DataRelatGui<City> {
                 getData().hasPermission(event.getPlayer().getUUID(), CityPermission.MANAGE_BANK));
     }
     
-    public void updateBank(){
-        setDescription(INFO_SLOT, "", "§a" + ConsulatCore.formatMoney(getData().getMoney()));
-    }
-    
-    public void updateBank(ConsulatPlayer player, boolean allow){
-        if(allow){
-            removeFakeItem(WITHDRAW_SLOT, player);
-        } else {
-            setDescriptionPlayer(WITHDRAW_SLOT, player, "", "§cTu ne peux pas", "§cretirer de l'argent");
-        }
-    }
-    
     @Override
     public void onClick(GuiClickEvent event){
         switch(event.getSlot()){
@@ -104,6 +92,18 @@ public class BankGui extends DataRelatGui<City> {
                     player.sendMessage(Text.WITHDRAW_MONEY_CITY(moneyToWithdraw));
                 }, new String[]{"", "^^^^^^^^^^^^^^", "Entre le montant", "à retirer"}, 0);
                 break;
+        }
+    }
+    
+    public void updateBank(){
+        setDescription(INFO_SLOT, "", "§a" + ConsulatCore.formatMoney(getData().getMoney()));
+    }
+    
+    public void updateBank(ConsulatPlayer player, boolean allow){
+        if(allow){
+            removeFakeItem(WITHDRAW_SLOT, player);
+        } else {
+            setDescriptionPlayer(WITHDRAW_SLOT, player, "", "§cTu ne peux pas", "§cretirer de l'argent");
         }
     }
 }

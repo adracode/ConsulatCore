@@ -33,7 +33,7 @@ public class ChangeHomeGui extends DataRelatGui<City> {
     public void onOpened(GuiOpenEvent event){
         Location home = getData().getHome();
         Location newHome = event.getPlayer().getPlayer().getLocation();
-        setDescriptionPlayer(22, event.getPlayer(),"§cAncien §7home: ",
+        setDescriptionPlayer(22, event.getPlayer(), "§cAncien §7home: ",
                 "§7x: " + home.getBlockX(), "§7y: " + home.getBlockY(), "§7z: " + home.getBlockZ(), "",
                 "§aNouveau §7home: ",
                 "§7x: " + newHome.getBlockX(), "§7y: " + newHome.getBlockY(), "§7z: " + newHome.getBlockZ());

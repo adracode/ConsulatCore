@@ -28,7 +28,7 @@ public class CustomGui extends AdminShopGui {
         if(!getData().canBuy(player)){
             setDescriptionPlayer(BUY_SLOT, player, GuiItem.getDescription(getItem(BUY_SLOT), "", "§cTu ne peux pas acheter"));
         } else if(!player.hasMoney(getData().getPrice())){
-            setDescriptionPlayer(BUY_SLOT, player, GuiItem.getDescription(getItem(BUY_SLOT),"", "§cTu n'as pas assez d'argent"));
+            setDescriptionPlayer(BUY_SLOT, player, GuiItem.getDescription(getItem(BUY_SLOT), "", "§cTu n'as pas assez d'argent"));
         } else {
             removeFakeItem(BUY_SLOT, player);
         }

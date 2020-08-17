@@ -37,10 +37,6 @@ public class BaltopManager implements Listener {
         return Collections.unmodifiableSortedSet(rank);
     }
     
-    public static BaltopManager getInstance(){
-        return instance;
-    }
-    
     private void updateBaltop(){
         lastUpdate = System.currentTimeMillis();
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
@@ -68,6 +64,10 @@ public class BaltopManager implements Listener {
         });
     }
     
+    public static BaltopManager getInstance(){
+        return instance;
+    }
+    
     public static class MoneyOwner implements Comparable<MoneyOwner> {
         
         private final double money;
@@ -87,11 +87,6 @@ public class BaltopManager implements Listener {
         }
         
         @Override
-        public int compareTo(MoneyOwner o){
-            return Double.compare(o.money, money);
-        }
-        
-        @Override
         public int hashCode(){
             return name.hashCode();
         }
@@ -106,6 +101,11 @@ public class BaltopManager implements Listener {
             }
             MoneyOwner that = (MoneyOwner)o;
             return name.equals(that.name);
+        }
+        
+        @Override
+        public int compareTo(MoneyOwner o){
+            return Double.compare(o.money, money);
         }
     }
     

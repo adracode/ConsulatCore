@@ -8,7 +8,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerExpChangeEvent;
 
 public class ExperienceListener implements Listener {
-
+    
     @EventHandler
     public void onExp(PlayerExpChangeEvent event){
         ConsulatPlayer player = CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
@@ -20,5 +20,5 @@ public class ExperienceListener implements Listener {
             event.setAmount((int)(amount * 1.1));
         }
     }
-
+    
 }

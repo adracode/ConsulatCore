@@ -54,158 +54,28 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     
     private static ConsulatCore instance;
     private static Random random;
-    public SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy 'à' HH:mm");
-    private Location spawn;
-    private World overworld;
+    
+    public final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy 'à' HH:mm");
+    
+    private HubServer hub;
+    private SafariServer safari;
+    
     private DecimalFormat moneyFormat;
+    
+    private World overworld;
+    private Location spawn;
+    
     private ModerationDatabase moderationDatabase;
-    private boolean chat = true;
+    
     private Channel spy;
     private StaffChannel staffChannel;
-    private SafariServer safari;
-    private HubServer hub;
+    private boolean chat = true;
     
-    private List<TextComponent> textPerso = new ArrayList<>();
+    private TextComponent[] textPerso;
     
     private Set<String> forbiddenPerso = new HashSet<>(Arrays.asList(
             "modo", "moderateur", "modérateur", "admin", "animateur", "partenaire", "youtubeur", "streamer", "ami",
             "fonda", "dev", "builder", "fondateur"));
-    
-    public Connection getDatabaseConnection(){
-        return ConsulatAPI.getDatabase();
-    }
-    
-    public ModerationDatabase getModerationDatabase(){
-        return moderationDatabase;
-    }
-    
-    public boolean isChatActivated(){
-        return chat;
-    }
-    
-    public List<TextComponent> getTextPerso(){
-        return textPerso;
-    }
-    
-    public static ConsulatCore getInstance(){
-        return instance;
-    }
-    
-    public Location getSpawn(){
-        return spawn;
-    }
-    
-    public void setSpawn(Location spawn){
-        this.spawn = spawn;
-    }
-    
-    public World getOverworld(){
-        return overworld;
-    }
-    
-    public static Random getRandom(){
-        return random;
-    }
-    
-    public Channel getSpy(){
-        return spy;
-    }
-    
-    public StaffChannel getStaffChannel(){
-        return staffChannel;
-    }
-    
-    public SafariServer getSafari(){
-        return safari;
-    }
-    
-    public HubServer getHub(){
-        return hub;
-    }
-    
-    public void setChat(boolean chat){
-        this.chat = chat;
-    }
-    
-    public boolean isCustomRankForbidden(String rank){
-        return forbiddenPerso.contains(rank.toLowerCase());
-    }
-    
-    public String getPermission(String permission){
-        return getName().toLowerCase() + "." + permission;
-    }
-    
-    @SuppressWarnings("ConstantConditions")
-    private void registerCommands(){
-        new AccessCommand().register();
-        new AdminShopCommand().register();
-        new AdvertCommand().register();
-        new AnswerCommand().register();
-        new BackCommand().register();
-        new BaltopCommand().register();
-        new BroadcastCommand().register();
-        new CDebugCommand().register();
-        new CEnchantCommand().register();
-        new ClaimCommand().register();
-        new DelHomeCommand().register();
-        new DiscordCommand().register();
-        new DuelCommand().register();
-        new EnderchestCommand().register();
-        new FlyCommand().register();
-        new GamemodeCommand().register();
-        new GetkeyCommand().register();
-        new ConsulatHelpCommand().register();
-        new HomeCommand().register();
-        new HubCommand().register();
-        new IgnoreCommand().register();
-        new InfosCommand().register();
-        new InvseeCommand().register();
-        new KickCommand().register();
-        new ModerateCommand().register();
-        new MoneyCommand().register();
-        new MpCommand().register();
-        new PayCommand().register();
-        new PersoCommand().register();
-        new ReportCommand().register();
-        new SafariCommand().register();
-        new SanctionCommand().register();
-        new SeenCommand().register();
-        new SetHomeCommand().register();
-        new WebShopCommand().register();
-        new ShopCommand().register();
-        new SiteCommand().register();
-        new SocialSpyCommand().register();
-        new SpawnCommand().register();
-        new StaffChatCommand().register();
-        new StaffListCommand().register();
-        new ToggleChatCommand().register();
-        new TopCommand().register();
-        new TpaCommand().register();
-        new TpmodCommand().register();
-        new UnbanCommand().register();
-        new UnmuteCommand().register();
-        new UnclaimCommand().register();
-        new AntecedentsCommand().register();
-        new CityCommand().register();
-    }
-    
-    private void registerEvents(){
-        Bukkit.getPluginManager().registerEvents(this, this);
-        Bukkit.getPluginManager().registerEvents(new ChatListeners(), this);
-        Bukkit.getPluginManager().registerEvents(new InventoryListeners(), this);
-        Bukkit.getPluginManager().registerEvents(new InteractListener(), this);
-        Bukkit.getPluginManager().registerEvents(new DamageListener(), this);
-        Bukkit.getPluginManager().registerEvents(new MobListeners(), this);
-        Bukkit.getPluginManager().registerEvents(new MoveListeners(), this);
-        Bukkit.getPluginManager().registerEvents(new ExperienceListener(), this);
-        Bukkit.getPluginManager().registerEvents(new FoodListener(), this);
-        Bukkit.getPluginManager().registerEvents(new SignListener(), this);
-        //Bukkit.getPluginManager().registerEvents(new DuelListeners(), this);
-        Bukkit.getPluginManager().registerEvents(new ClaimCancelListener(), this);
-        Bukkit.getPluginManager().registerEvents(ClaimManager.getInstance(), this);
-        Bukkit.getPluginManager().registerEvents(SPlayerManager.getInstance(), this);
-        Bukkit.getPluginManager().registerEvents(ShopManager.getInstance(), this);
-    }
     
     @Override
     public void onDisable(){
@@ -266,6 +136,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         for(World world : Bukkit.getWorlds()){
             world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
         }
+        List<TextComponent> textPerso = new ArrayList<>();
         for(ChatColor color : ChatColor.values()){
             if(color == ChatColor.RED) continue;
             if(color == ChatColor.MAGIC) break;
@@ -279,12 +150,151 @@ public class ConsulatCore extends JavaPlugin implements Listener {
             textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/perso " + color.getChar()));
             textPerso.add(textComponent);
         }
+        this.textPerso = textPerso.toArray(new TextComponent[0]);
         registerCommands();
         ConsulatAPI.getConsulatAPI().log(Level.INFO, "ConsulatCore loaded in " + (System.currentTimeMillis() - startLoading) + " ms.");
         RedisManager.getInstance().getRedis().getTopic(ConsulatAPI.getConsulatAPI().isDevelopment() ? "PlayerTestsurvie" : "PlayerSurvie").publish(0);
     }
     
+    public boolean isCustomRankForbidden(String rank){
+        return forbiddenPerso.contains(rank.toLowerCase());
+    }
+    
+    public String getPermission(String permission){
+        return getName().toLowerCase() + "." + permission;
+    }
+    
+    public HubServer getHub(){
+        return hub;
+    }
+    
+    public SafariServer getSafari(){
+        return safari;
+    }
+    
+    public Connection getDatabaseConnection(){
+        return ConsulatAPI.getDatabase();
+    }
+    
+    public ModerationDatabase getModerationDatabase(){
+        return moderationDatabase;
+    }
+    
+    public boolean isChatActivated(){
+        return chat;
+    }
+    
+    public TextComponent[] getTextPerso(){
+        return textPerso;
+    }
+    
+    public Location getSpawn(){
+        return spawn;
+    }
+    
+    public void setSpawn(Location spawn){
+        this.spawn = spawn;
+    }
+    
+    public World getOverworld(){
+        return overworld;
+    }
+    
+    public Channel getSpy(){
+        return spy;
+    }
+    
+    public StaffChannel getStaffChannel(){
+        return staffChannel;
+    }
+    
+    
+    public void setChat(boolean chat){
+        this.chat = chat;
+    }
+    
+    @SuppressWarnings("ConstantConditions")
+    private void registerCommands(){
+        new AccessCommand().register();
+        new AdminShopCommand().register();
+        new AdvertCommand().register();
+        new AnswerCommand().register();
+        new BackCommand().register();
+        new BaltopCommand().register();
+        new BroadcastCommand().register();
+        new CDebugCommand().register();
+        new CEnchantCommand().register();
+        new ClaimCommand().register();
+        new DelHomeCommand().register();
+        new DiscordCommand().register();
+        new DuelCommand().register();
+        new EnderchestCommand().register();
+        new FlyCommand().register();
+        new GamemodeCommand().register();
+        new GetkeyCommand().register();
+        new ConsulatHelpCommand().register();
+        new HomeCommand().register();
+        new HubCommand().register();
+        new IgnoreCommand().register();
+        new InfosCommand().register();
+        new InvseeCommand().register();
+        new KickCommand().register();
+        new ModerateCommand().register();
+        new MoneyCommand().register();
+        new MpCommand().register();
+        new PayCommand().register();
+        new PersoCommand().register();
+        new ReportCommand().register();
+        new SafariCommand().register();
+        new SanctionCommand().register();
+        new SeenCommand().register();
+        new SetHomeCommand().register();
+        new WebShopCommand().register();
+        new ShopCommand().register();
+        new SiteCommand().register();
+        new SocialSpyCommand().register();
+        new SpawnCommand().register();
+        new StaffChatCommand().register();
+        new StaffListCommand().register();
+        new TestCommand().register();
+        new ToggleChatCommand().register();
+        new TopCommand().register();
+        new TpaCommand().register();
+        new TpmodCommand().register();
+        new UnbanCommand().register();
+        new UnmuteCommand().register();
+        new UnclaimCommand().register();
+        new AntecedentsCommand().register();
+        new CityCommand().register();
+    }
+    
+    private void registerEvents(){
+        Bukkit.getPluginManager().registerEvents(this, this);
+        Bukkit.getPluginManager().registerEvents(new ChatListeners(), this);
+        Bukkit.getPluginManager().registerEvents(new InventoryListeners(), this);
+        Bukkit.getPluginManager().registerEvents(new InteractListener(), this);
+        Bukkit.getPluginManager().registerEvents(new DamageListener(), this);
+        Bukkit.getPluginManager().registerEvents(new MobListeners(), this);
+        Bukkit.getPluginManager().registerEvents(new MoveListeners(), this);
+        Bukkit.getPluginManager().registerEvents(new ExperienceListener(), this);
+        Bukkit.getPluginManager().registerEvents(new FoodListener(), this);
+        Bukkit.getPluginManager().registerEvents(new SignListener(), this);
+        //Bukkit.getPluginManager().registerEvents(new DuelListeners(), this);
+        Bukkit.getPluginManager().registerEvents(new ClaimCancelListener(), this);
+        Bukkit.getPluginManager().registerEvents(ClaimManager.getInstance(), this);
+        Bukkit.getPluginManager().registerEvents(SPlayerManager.getInstance(), this);
+        Bukkit.getPluginManager().registerEvents(ShopManager.getInstance(), this);
+    }
+    
     public synchronized static String formatMoney(double money){
         return getInstance().moneyFormat.format(money);
+    }
+    
+    public static ConsulatCore getInstance(){
+        return instance;
+    }
+    
+    public static Random getRandom(){
+        return random;
     }
 }

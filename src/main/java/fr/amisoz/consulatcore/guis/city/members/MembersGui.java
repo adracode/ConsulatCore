@@ -29,10 +29,9 @@ import java.util.UUID;
 
 public class MembersGui extends DataRelatPagedGui<City> {
     
+    public static final String PUBLIC = "city.members.public";
     private static final byte ADD_SLOT = 6;
     private static final byte PUBLIC_PERMISSIONS_SLOT = 13;
-    
-    public static final String PUBLIC = "city.members.public";
     
     public MembersGui(City city){
         super(city, "Membres", 6,
@@ -53,30 +52,6 @@ public class MembersGui extends DataRelatPagedGui<City> {
     }
     
     @Override
-    public void onPageOpened(GuiOpenEvent event, Pageable pageGui){
-        update(event.getPlayer(), pageGui);
-    }
-    
-    public void update(ConsulatPlayer player, Pageable pageGui){
-        UUID uuid = player.getUUID();
-        UUID ownerUUID = getData().getOwner();
-        City city = getData();
-        IGui gui = pageGui.getGui();
-        if(!city.canInvite(uuid)){
-            gui.setDescriptionPlayer(ADD_SLOT, player, "", "§cTu ne peux pas", "§cinviter un joueur");
-        } else {
-            gui.removeFakeItem(ADD_SLOT, player);
-        }
-        for(GuiItem item : this){
-            if(!city.isOwner(player.getUUID()) && !player.getUUID().equals(item.getAttachedObject())){
-                gui.setDescriptionPlayer(item.getSlot(), player, "", "§cTu ne peux pas modifier", "§cce membre");
-            } else {
-                gui.removeFakeItem(item.getSlot(),  player);
-            }
-        }
-    }
-    
-    @Override
     public Relationnable createChild(@Nullable Object key){
         if(key instanceof UUID){
             return new MemberGui((UUID)key);
@@ -93,13 +68,6 @@ public class MembersGui extends DataRelatPagedGui<City> {
             gui.setItem(IGui.getItem("§7Précédent", 47, Material.ARROW));
             getPage(page.getPage() - 1).getGui().setItem(IGui.getItem("§7Suivant", 51, Material.ARROW));
             gui.setDeco(Material.BLACK_STAINED_GLASS_PANE, 51);
-        }
-    }
-    
-    @Override
-    public void onPageRemoved(GuiRemoveEvent event, Pageable page){
-        if(page.getPage() != 0){
-            getPage(page.getPage() - 1).getGui().setDeco(Material.BLACK_STAINED_GLASS_PANE, 51);
         }
     }
     
@@ -159,6 +127,37 @@ public class MembersGui extends DataRelatPagedGui<City> {
             }
             UUID playerUUID = (UUID)clickedItem.getAttachedObject();
             getChild(playerUUID).getGui().open(player);
+        }
+    }
+    
+    @Override
+    public void onPageOpened(GuiOpenEvent event, Pageable pageGui){
+        update(event.getPlayer(), pageGui);
+    }
+    
+    @Override
+    public void onPageRemoved(GuiRemoveEvent event, Pageable page){
+        if(page.getPage() != 0){
+            getPage(page.getPage() - 1).getGui().setDeco(Material.BLACK_STAINED_GLASS_PANE, 51);
+        }
+    }
+    
+    public void update(ConsulatPlayer player, Pageable pageGui){
+        UUID uuid = player.getUUID();
+        UUID ownerUUID = getData().getOwner();
+        City city = getData();
+        IGui gui = pageGui.getGui();
+        if(!city.canInvite(uuid)){
+            gui.setDescriptionPlayer(ADD_SLOT, player, "", "§cTu ne peux pas", "§cinviter un joueur");
+        } else {
+            gui.removeFakeItem(ADD_SLOT, player);
+        }
+        for(GuiItem item : this){
+            if(!city.isOwner(player.getUUID()) && !player.getUUID().equals(item.getAttachedObject())){
+                gui.setDescriptionPlayer(item.getSlot(), player, "", "§cTu ne peux pas modifier", "§cce membre");
+            } else {
+                gui.removeFakeItem(item.getSlot(), player);
+            }
         }
     }
     

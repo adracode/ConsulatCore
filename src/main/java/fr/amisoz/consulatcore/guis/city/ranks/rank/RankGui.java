@@ -45,11 +45,6 @@ public class RankGui extends DataRelatGui<CityRank> {
         setDeco(Material.BLACK_STAINED_GLASS_PANE, 0, 1, 2, 3, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 46, 47, 48, 49, 50, 51, 52, 53);
     }
     
-    public void updateName(){
-        CityRank rank = getData();
-        setName(rank.getColor() + rank.getRankName());
-    }
-    
     @Override
     public void onCreate(){
         CityRank rank = getData();
@@ -74,44 +69,6 @@ public class RankGui extends DataRelatGui<CityRank> {
                 setType(slot + 9, Material.RED_CONCRETE);
                 setDisplayName(slot + 9, "§cDésactivé");
             }
-        }
-    }
-    
-    private byte getSlotPermission(CityPermission permission){
-        switch(permission){
-            case MANAGE_PLAYER:
-                return MEMBER_SLOT;
-            case MANAGE_CLAIM:
-                return CLAIM_SLOT;
-            case MANAGE_ACCESS:
-                return ACCESS_SLOT;
-            case MANAGE_BANK:
-                return BANK_SLOT;
-            case MANAGE_HOME:
-                return HOME_SLOT;
-        }
-        return -1;
-    }
-    
-    private void switchPermission(CityPermission permission){
-        setPermission(!getData().hasPermission(permission), permission);
-    }
-    
-    private void setPermission(boolean activate, CityPermission permission){
-        byte slot = getSlotPermission(permission);
-        if(slot == -1){
-            return;
-        }
-        if(activate){
-            getData().addPermission(permission);
-            setGlowing(slot, true);
-            setType(slot + 9, Material.GREEN_CONCRETE);
-            setDisplayName(slot + 9, "§aActivé");
-        } else {
-            getData().removePermission(permission);
-            setGlowing(slot, false);
-            setType(slot + 9, Material.RED_CONCRETE);
-            setDisplayName(slot + 9, "§cDésactivé");
         }
     }
     
@@ -162,8 +119,51 @@ public class RankGui extends DataRelatGui<CityRank> {
         switchPermission(permission);
     }
     
+    public void updateName(){
+        CityRank rank = getData();
+        setName(rank.getColor() + rank.getRankName());
+    }
+    
     @SuppressWarnings("unchecked")
     public City getCity(){
         return ((Datable<City>)getFather()).getData();
+    }
+    
+    private byte getSlotPermission(CityPermission permission){
+        switch(permission){
+            case MANAGE_PLAYER:
+                return MEMBER_SLOT;
+            case MANAGE_CLAIM:
+                return CLAIM_SLOT;
+            case MANAGE_ACCESS:
+                return ACCESS_SLOT;
+            case MANAGE_BANK:
+                return BANK_SLOT;
+            case MANAGE_HOME:
+                return HOME_SLOT;
+        }
+        return -1;
+    }
+    
+    private void switchPermission(CityPermission permission){
+        setPermission(!getData().hasPermission(permission), permission);
+    }
+    
+    private void setPermission(boolean activate, CityPermission permission){
+        byte slot = getSlotPermission(permission);
+        if(slot == -1){
+            return;
+        }
+        if(activate){
+            getData().addPermission(permission);
+            setGlowing(slot, true);
+            setType(slot + 9, Material.GREEN_CONCRETE);
+            setDisplayName(slot + 9, "§aActivé");
+        } else {
+            getData().removePermission(permission);
+            setGlowing(slot, false);
+            setType(slot + 9, Material.RED_CONCRETE);
+            setDisplayName(slot + 9, "§cDésactivé");
+        }
     }
 }

@@ -5,83 +5,81 @@ import org.bukkit.entity.Player;
 
 
 public class Arena {
-
+    
+    public Location firstBefore;
+    public Location secondBefore;
+    public Location winLocation;
+    public int bet;
     private boolean busy;
     private Location firstSpawn;
     private Location secondSpawn;
     private Location spectateLocation;
-
-    public Location firstBefore;
-    public Location secondBefore;
-    public Location winLocation;
-
     private ArenaState arenaState;
     private Player firstPlayer;
     private Player secondPlayer;
     private Player victoryPlayer;
-    public int bet;
-
-    public Arena(Location firstSpawn, Location secondSpawn, Location spectateLocation) {
+    
+    public Arena(Location firstSpawn, Location secondSpawn, Location spectateLocation){
         this.busy = false;
         this.firstSpawn = firstSpawn;
         this.secondSpawn = secondSpawn;
         this.spectateLocation = spectateLocation;
         this.arenaState = ArenaState.FREE;
     }
-
-    public Player getFirstPlayer() {
+    
+    public Player getFirstPlayer(){
         return firstPlayer;
     }
-
-    public void setFirstPlayer(Player firstPlayer) {
+    
+    public void setFirstPlayer(Player firstPlayer){
         this.firstPlayer = firstPlayer;
     }
-
-    public Player getVictoryPlayer() {
+    
+    public Player getVictoryPlayer(){
         return victoryPlayer;
     }
-
-    public void setVictoryPlayer(Player victoryPlayer) {
+    
+    public void setVictoryPlayer(Player victoryPlayer){
         this.victoryPlayer = victoryPlayer;
     }
-
-    public Player getSecondPlayer() {
+    
+    public Player getSecondPlayer(){
         return secondPlayer;
     }
-
-    public void setSecondPlayer(Player secondPlayer) {
+    
+    public void setSecondPlayer(Player secondPlayer){
         this.secondPlayer = secondPlayer;
     }
-
-    public ArenaState getArenaState() {
+    
+    public ArenaState getArenaState(){
         return arenaState;
     }
-
-    public void setArenaState(ArenaState arenaState) {
+    
+    public void setArenaState(ArenaState arenaState){
         this.arenaState = arenaState;
     }
-
-    public boolean isBusy() {
+    
+    public boolean isBusy(){
         return busy;
     }
-
-    public void setBusy(boolean busy) {
+    
+    public void setBusy(boolean busy){
         this.busy = busy;
     }
-
-    public Location getFirstSpawn() {
+    
+    public Location getFirstSpawn(){
         return firstSpawn;
     }
-
-    public Location getSecondSpawn() {
+    
+    public Location getSecondSpawn(){
         return secondSpawn;
     }
-
-    public Location getSpectateLocation() {
+    
+    public Location getSpectateLocation(){
         return spectateLocation;
     }
-
-    public void setSpectateLocation(Location spectateLocation) {
+    
+    public void setSpectateLocation(Location spectateLocation){
         this.spectateLocation = spectateLocation;
     }
 }

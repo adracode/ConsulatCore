@@ -14,30 +14,30 @@ public class ClaimChangeEvent extends Event {
     private @Nullable Claim from;
     private @Nullable Claim to;
     
-    public ClaimChangeEvent(@NotNull SurvivalPlayer player, @Nullable Claim from, @Nullable Claim to) {
+    public ClaimChangeEvent(@NotNull SurvivalPlayer player, @Nullable Claim from, @Nullable Claim to){
         this.player = player;
         this.from = from;
         this.to = to;
     }
     
     @NotNull
-    public HandlerList getHandlers() {
+    public HandlerList getHandlers(){
         return handlers;
     }
     
-    public static HandlerList getHandlerList() {
-        return handlers;
-    }
-    
-    public @NotNull SurvivalPlayer getPlayer() {
+    public @NotNull SurvivalPlayer getPlayer(){
         return player;
     }
     
-    public @Nullable Claim getClaimFrom() {
+    public @Nullable Claim getClaimFrom(){
         return from;
     }
     
-    public @Nullable Claim getClaimTo() {
+    public @Nullable Claim getClaimTo(){
         return to;
+    }
+    
+    public static HandlerList getHandlerList(){
+        return handlers;
     }
 }

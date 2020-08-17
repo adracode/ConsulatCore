@@ -54,8 +54,22 @@ public class PublicPermissionsGui extends DataRelatGui<City> {
         }
     }
     
-    private boolean canSetPermission(ConsulatPlayer player){
-        return getData().isOwner(player.getUUID());
+    @Override
+    public void onClick(GuiClickEvent event){
+        if(!canSetPermission(event.getPlayer())){
+            return;
+        }
+        City city = getData();
+        switch(event.getSlot()){
+            case DOOR_SLOT:
+            case DOOR_SLOT + 9:
+                city.switchPermission(ClaimPermission.INTERACT_DOOR);
+                break;
+            case REDSTONE_SLOT:
+            case REDSTONE_SLOT + 9:
+                city.switchPermission(ClaimPermission.INTERACT_REDSTONE);
+                break;
+        }
     }
     
     public void update(ConsulatPlayer player, boolean allow, int slot){
@@ -64,16 +78,6 @@ public class PublicPermissionsGui extends DataRelatGui<City> {
         } else {
             setDescriptionPlayer(slot, player, "", "§cTu ne peux pas", "§cmodifier cette permission");
         }
-    }
-    
-    private byte getSlotPermission(ClaimPermission permission){
-        switch(permission){
-            case INTERACT_DOOR:
-                return DOOR_SLOT;
-            case INTERACT_REDSTONE:
-                return REDSTONE_SLOT;
-        }
-        return -1;
     }
     
     public void setPermission(boolean activate, ClaimPermission permission){
@@ -92,21 +96,17 @@ public class PublicPermissionsGui extends DataRelatGui<City> {
         }
     }
     
-    @Override
-    public void onClick(GuiClickEvent event){
-        if(!canSetPermission(event.getPlayer())){
-            return;
+    private boolean canSetPermission(ConsulatPlayer player){
+        return getData().isOwner(player.getUUID());
+    }
+    
+    private byte getSlotPermission(ClaimPermission permission){
+        switch(permission){
+            case INTERACT_DOOR:
+                return DOOR_SLOT;
+            case INTERACT_REDSTONE:
+                return REDSTONE_SLOT;
         }
-        City city = getData();
-        switch(event.getSlot()){
-            case DOOR_SLOT:
-            case DOOR_SLOT + 9:
-                city.switchPermission(ClaimPermission.INTERACT_DOOR);
-                break;
-            case REDSTONE_SLOT:
-            case REDSTONE_SLOT + 9:
-                city.switchPermission(ClaimPermission.INTERACT_REDSTONE);
-                break;
-        }
+        return -1;
     }
 }

@@ -17,13 +17,12 @@ import java.util.UUID;
 
 public class MemberGui extends DataRelatGui<UUID> {
     
-    private static final byte PERMISSION_SLOT = 20;
-    private static final byte CLAIM_SLOT = 22;
-    private static final byte RANK_SLOT = 24;
-    
     public static final String PERMISSION = "city.members.member.permissions";
     public static final String CLAIM = "city.members.member.claims";
     public static final String RANK = "city.members.member.ranks";
+    private static final byte PERMISSION_SLOT = 20;
+    private static final byte CLAIM_SLOT = 22;
+    private static final byte RANK_SLOT = 24;
     
     public MemberGui(UUID uuid){
         super(uuid, Bukkit.getOfflinePlayer(uuid).getName(), 5,
@@ -45,21 +44,6 @@ public class MemberGui extends DataRelatGui<UUID> {
             setDescription(CLAIM_SLOT, "", "§7Modifier les claims", "§7accessibles du joueur");
             setDescription(RANK_SLOT, "", "§7Modifier le grade", "§7du joueur");
         }
-    }
-    
-    @Override
-    public Relationnable createChild(@Nullable Object key){
-        if(key instanceof String){
-            switch((String)key){
-                case PERMISSION:
-                    return new MemberPermissionGui(getData());
-                case CLAIM:
-                    return new AccessibleClaimGui(getData());
-                case RANK:
-                    return new RankMemberGui(getData());
-            }
-        }
-        return super.createChild(key);
     }
     
     @Override
@@ -85,6 +69,21 @@ public class MemberGui extends DataRelatGui<UUID> {
                 getChild(RANK).getGui().open(event.getPlayer());
                 break;
         }
+    }
+    
+    @Override
+    public Relationnable createChild(@Nullable Object key){
+        if(key instanceof String){
+            switch((String)key){
+                case PERMISSION:
+                    return new MemberPermissionGui(getData());
+                case CLAIM:
+                    return new AccessibleClaimGui(getData());
+                case RANK:
+                    return new RankMemberGui(getData());
+            }
+        }
+        return super.createChild(key);
     }
     
     @SuppressWarnings("unchecked")

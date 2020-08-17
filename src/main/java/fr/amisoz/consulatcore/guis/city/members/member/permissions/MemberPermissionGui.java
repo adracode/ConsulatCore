@@ -67,50 +67,6 @@ public class MemberPermissionGui extends DataRelatGui<UUID> {
         }
     }
     
-    private boolean canSetPermission(ConsulatPlayer player){
-        return !getData().equals(player.getUUID());
-    }
-    
-    public void update(ConsulatPlayer player, boolean allow, int slot){
-        if(allow){
-            setFakeItem(slot, null, player);
-        } else {
-            setDescriptionPlayer(slot, player, "", "§cTu ne peux pas", "§cmodifier cette permission");
-        }
-    }
-    
-    private byte getSlotPermission(CityPermission permission){
-        switch(permission){
-            case MANAGE_PLAYER:
-                return MEMBER_SLOT;
-            case MANAGE_CLAIM:
-                return CLAIM_SLOT;
-            case MANAGE_ACCESS:
-                return ACCESS_SLOT;
-            case MANAGE_BANK:
-                return BANK_SLOT;
-            case MANAGE_HOME:
-                return HOME_SLOT;
-        }
-        return -1;
-    }
-    
-    public void setPermission(boolean activate, CityPermission permission){
-        byte slot = getSlotPermission(permission);
-        if(slot == -1){
-            return;
-        }
-        if(activate){
-            setGlowing(slot, true);
-            setType(slot + 9, Material.GREEN_CONCRETE);
-            setDisplayName(slot + 9, "§aActivé");
-        } else {
-            setGlowing(slot, false);
-            setType(slot + 9, Material.RED_CONCRETE);
-            setDisplayName(slot + 9, "§cDésactivé");
-        }
-    }
-    
     @Override
     public void onClick(GuiClickEvent event){
         if(!canSetPermission(event.getPlayer())){
@@ -147,8 +103,52 @@ public class MemberPermissionGui extends DataRelatGui<UUID> {
         city.switchPermission(uuid, permission);
     }
     
+    public void update(ConsulatPlayer player, boolean allow, int slot){
+        if(allow){
+            setFakeItem(slot, null, player);
+        } else {
+            setDescriptionPlayer(slot, player, "", "§cTu ne peux pas", "§cmodifier cette permission");
+        }
+    }
+    
+    public void setPermission(boolean activate, CityPermission permission){
+        byte slot = getSlotPermission(permission);
+        if(slot == -1){
+            return;
+        }
+        if(activate){
+            setGlowing(slot, true);
+            setType(slot + 9, Material.GREEN_CONCRETE);
+            setDisplayName(slot + 9, "§aActivé");
+        } else {
+            setGlowing(slot, false);
+            setType(slot + 9, Material.RED_CONCRETE);
+            setDisplayName(slot + 9, "§cDésactivé");
+        }
+    }
+    
     @SuppressWarnings("unchecked")
     private City getPlayerCity(){
         return ((Datable<City>)getFather().getFather()).getData();
+    }
+    
+    private boolean canSetPermission(ConsulatPlayer player){
+        return !getData().equals(player.getUUID());
+    }
+    
+    private byte getSlotPermission(CityPermission permission){
+        switch(permission){
+            case MANAGE_PLAYER:
+                return MEMBER_SLOT;
+            case MANAGE_CLAIM:
+                return CLAIM_SLOT;
+            case MANAGE_ACCESS:
+                return ACCESS_SLOT;
+            case MANAGE_BANK:
+                return BANK_SLOT;
+            case MANAGE_HOME:
+                return HOME_SLOT;
+        }
+        return -1;
     }
 }

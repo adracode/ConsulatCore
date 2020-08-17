@@ -30,8 +30,13 @@ public class CEnchantment {
     }
     
     @Override
+    public int hashCode(){
+        return Objects.hash(level, enchantment);
+    }
+    
+    @Override
     public boolean equals(Object o){
-        if(this == o) {
+        if(this == o){
             return true;
         }
         if(!(o instanceof CEnchantment)){
@@ -40,11 +45,6 @@ public class CEnchantment {
         CEnchantment that = (CEnchantment)o;
         return level == that.level &&
                 enchantment == that.enchantment;
-    }
-    
-    @Override
-    public int hashCode(){
-        return Objects.hash(level, enchantment);
     }
     
     public enum Type {
@@ -61,19 +61,19 @@ public class CEnchantment {
         MOON_FALL(PotionEffectType.SLOW_FALLING, "Chute lunaire", false, (byte)1),
         CHEETAH_STRENGTH(PotionEffectType.SPEED, "Force du guépard", false, (byte)2),
         MOON_JUMP(PotionEffectType.JUMP, "Sauts lunaire", false, (byte)1);
-    
+        
         private final PotionEffectType effect;
         private final String display;
         private final boolean canCombine;
         private final byte maxLevel;
-    
+        
         Type(PotionEffectType effect, String display, boolean canCombine, byte maxLevel){
             this.effect = effect;
             this.display = display;
             this.canCombine = canCombine;
             this.maxLevel = maxLevel;
         }
-    
+        
         @SuppressWarnings("DuplicatedCode")
         public boolean canApply(EquipmentSlot armor){
             switch(armor){
@@ -125,24 +125,23 @@ public class CEnchantment {
             }
             return false;
         }
-    
+        
+        public boolean canCombine(){
+            return canCombine;
+        }
+        
         public String getDisplay(){
             return display;
         }
-    
+        
         public PotionEffectType getEffect(){
             return effect;
         }
-    
+        
         public byte getMaxLevel(){
             return maxLevel;
-        }
-    
-        public boolean canCombine(){
-            return canCombine;
         }
     }
     
     
-
 }

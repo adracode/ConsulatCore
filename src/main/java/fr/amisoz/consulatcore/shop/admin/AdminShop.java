@@ -51,41 +51,6 @@ public abstract class AdminShop implements Shop, Comparable<Shop> {
         return CoordinatesUtils.getZ(coords);
     }
     
-    public abstract void createGui();
-    
-    public abstract @NotNull AdminShopGui getGui();
-    
-    @Override
-    public boolean equals(Object o){
-        if(this == o){
-            return true;
-        }
-        if(!(o instanceof AdminShop)){
-            return false;
-        }
-        AdminShop adminShop = (AdminShop)o;
-        return coords == adminShop.coords;
-    }
-    
-    @Override
-    public int hashCode(){
-        return Long.hashCode(coords);
-    }
-    
-    @Override
-    public int compareTo(@NotNull Shop o){
-        return Long.compare(coords, o.getCoords());
-    }
-    
-    @Override
-    public String toString(){
-        return "AdminShop{" +
-                "coords=" + coords +
-                ", price=" + price +
-                ", item=" + item +
-                '}';
-    }
-    
     public CompoundTag saveNBT(){
         CompoundTag shopTag = new CompoundTag();
         shopTag.putLong("Coords", coords);
@@ -97,6 +62,10 @@ public abstract class AdminShop implements Shop, Comparable<Shop> {
     public void loadNBT(CompoundTag tag){
         this.price = tag.getDouble("Price");
     }
+    
+    public abstract void createGui();
+    
+    public abstract @NotNull AdminShopGui getGui();
     
     public ItemStack getItem(){
         return item;
@@ -111,5 +80,36 @@ public abstract class AdminShop implements Shop, Comparable<Shop> {
     
     public double getPrice(){
         return price;
+    }
+    
+    @Override
+    public int hashCode(){
+        return Long.hashCode(coords);
+    }
+    
+    @Override
+    public boolean equals(Object o){
+        if(this == o){
+            return true;
+        }
+        if(!(o instanceof AdminShop)){
+            return false;
+        }
+        AdminShop adminShop = (AdminShop)o;
+        return coords == adminShop.coords;
+    }
+    
+    @Override
+    public String toString(){
+        return "AdminShop{" +
+                "coords=" + coords +
+                ", price=" + price +
+                ", item=" + item +
+                '}';
+    }
+    
+    @Override
+    public int compareTo(@NotNull Shop o){
+        return Long.compare(coords, o.getCoords());
     }
 }

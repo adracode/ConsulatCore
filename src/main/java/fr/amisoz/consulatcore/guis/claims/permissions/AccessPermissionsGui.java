@@ -32,30 +32,6 @@ public class AccessPermissionsGui extends DataRelatGui<UUID> {
     
     private IGui link;
     
-    public IGui getLink(){
-        return link;
-    }
-    
-    public void setLink(IGui link){
-        this.link = link;
-    }
-    
-    @Override
-    public @NotNull IGui setItem(@NotNull GuiItem item){
-        if(link != null){
-            link.setItem(item);
-        }
-        return super.setItem(item);
-    }
-    
-    @Override
-    public @NotNull IGui setItem(int slot, @Nullable GuiItem item){
-        if(link != null){
-            link.setItem(slot, item);
-        }
-        return super.setItem(slot, item);
-    }
-    
     public AccessPermissionsGui(UUID uuid){
         super(uuid, Bukkit.getOfflinePlayer(uuid).getName(), 6,
                 IGui.getItem("§eTout activer", GIVE_ALL_SLOT, Material.TOTEM_OF_UNDYING),
@@ -100,22 +76,6 @@ public class AccessPermissionsGui extends DataRelatGui<UUID> {
     }
     
     @Override
-    public void setDescriptionPlayer(int slot, ConsulatPlayer player, String... description){
-        if(link != null){
-            link.setDescriptionPlayer(slot, player, description);
-        }
-        super.setDescriptionPlayer(slot, player, description);
-    }
-    
-    @Override
-    public void setDescriptionPlayer(int slot, ConsulatPlayer player, List<String> description){
-        if(link != null){
-            link.setDescriptionPlayer(slot, player, description);
-        }
-        super.setDescriptionPlayer(slot, player, description);
-    }
-    
-    @Override
     public void setType(int slot, @NotNull Material material){
         if(link != null){
             link.setType(slot, material);
@@ -129,6 +89,22 @@ public class AccessPermissionsGui extends DataRelatGui<UUID> {
             link.setGlowing(slot, glow);
         }
         super.setGlowing(slot, glow);
+    }
+    
+    @Override
+    public @NotNull IGui setItem(@NotNull GuiItem item){
+        if(link != null){
+            link.setItem(item);
+        }
+        return super.setItem(item);
+    }
+    
+    @Override
+    public @NotNull IGui setItem(int slot, @Nullable GuiItem item){
+        if(link != null){
+            link.setItem(slot, item);
+        }
+        return super.setItem(slot, item);
     }
     
     @Override
@@ -177,60 +153,6 @@ public class AccessPermissionsGui extends DataRelatGui<UUID> {
                 continue;
             }
             update(event.getPlayer(), canSetPermission(player), slot + 9);
-        }
-    }
-    
-    private boolean canSetPermission(ConsulatPlayer player){
-        return !getData().equals(player.getUUID());
-    }
-    
-    public void update(ConsulatPlayer player, boolean allow, int slot){
-        if(allow){
-            setFakeItem(slot, null, player);
-        } else {
-            setDescriptionPlayer(slot, player, "", "§cTu ne peux pas", "§cmodifier cette permission");
-        }
-    }
-    
-    private byte getSlotPermission(ClaimPermission permission){
-        switch(permission){
-            case INTERACT_DOOR:
-                return INTERACT_DOOR_SLOT;
-            case BREAK_BLOCK:
-                return BREAK_SLOT;
-            case PLACE_BLOCK:
-                return PLACE_SLOT;
-            case OPEN_CONTAINER:
-                return CONTAINER_SLOT;
-            case INTERACT_REDSTONE:
-                return REDSTONE_SLOT;
-            case DAMAGE:
-                return DAMAGE_SLOT;
-            case OTHER:
-                return OTHER_SLOT;
-        }
-        return -1;
-    }
-    
-    private void switchPermission(ClaimPermission permission){
-        setPermission(!getClaim().hasPermission(getData(), permission), permission);
-    }
-    
-    private void setPermission(boolean activate, ClaimPermission permission){
-        byte slot = getSlotPermission(permission);
-        if(slot == -1){
-            return;
-        }
-        if(activate){
-            getClaim().addPermission(getData(), permission);
-            setGlowing(slot, true);
-            setType(slot + 9, Material.GREEN_CONCRETE);
-            setDisplayName(slot + 9, "§aActivé");
-        } else {
-            getClaim().removePermission(getData(), permission);
-            setGlowing(slot, false);
-            setType(slot + 9, Material.RED_CONCRETE);
-            setDisplayName(slot + 9, "§cDésactivé");
         }
     }
     
@@ -286,9 +208,87 @@ public class AccessPermissionsGui extends DataRelatGui<UUID> {
         }
     }
     
+    @Override
+    public void setDescriptionPlayer(int slot, ConsulatPlayer player, String... description){
+        if(link != null){
+            link.setDescriptionPlayer(slot, player, description);
+        }
+        super.setDescriptionPlayer(slot, player, description);
+    }
+    
+    @Override
+    public void setDescriptionPlayer(int slot, ConsulatPlayer player, List<String> description){
+        if(link != null){
+            link.setDescriptionPlayer(slot, player, description);
+        }
+        super.setDescriptionPlayer(slot, player, description);
+    }
+    
+    public void update(ConsulatPlayer player, boolean allow, int slot){
+        if(allow){
+            setFakeItem(slot, null, player);
+        } else {
+            setDescriptionPlayer(slot, player, "", "§cTu ne peux pas", "§cmodifier cette permission");
+        }
+    }
+    
+    public IGui getLink(){
+        return link;
+    }
+    
+    public void setLink(IGui link){
+        this.link = link;
+    }
+    
     @SuppressWarnings("unchecked")
     private Claim getClaim(){
         return ((Datable<Claim>)getFather()).getData();
+    }
+    
+    private boolean canSetPermission(ConsulatPlayer player){
+        return !getData().equals(player.getUUID());
+    }
+    
+    private byte getSlotPermission(ClaimPermission permission){
+        switch(permission){
+            case INTERACT_DOOR:
+                return INTERACT_DOOR_SLOT;
+            case BREAK_BLOCK:
+                return BREAK_SLOT;
+            case PLACE_BLOCK:
+                return PLACE_SLOT;
+            case OPEN_CONTAINER:
+                return CONTAINER_SLOT;
+            case INTERACT_REDSTONE:
+                return REDSTONE_SLOT;
+            case DAMAGE:
+                return DAMAGE_SLOT;
+            case OTHER:
+                return OTHER_SLOT;
+        }
+        return -1;
+    }
+    
+    private void switchPermission(ClaimPermission permission){
+        setPermission(!getClaim().hasPermission(getData(), permission), permission);
+    }
+    
+    private void setPermission(boolean activate, ClaimPermission permission){
+        byte slot = getSlotPermission(permission);
+        if(slot == -1){
+            return;
+        }
+        if(activate){
+            getClaim().addPermission(getData(), permission);
+            setGlowing(slot, true);
+            setType(slot + 9, Material.GREEN_CONCRETE);
+            setDisplayName(slot + 9, "§aActivé");
+        } else {
+            getClaim().removePermission(getData(), permission);
+            setGlowing(slot, false);
+            setType(slot + 9, Material.RED_CONCRETE);
+            setDisplayName(slot + 9, "§cDésactivé");
+        }
     }
     
 }

@@ -23,7 +23,7 @@ public abstract class AdminShopGui extends DataGui<AdminShop> {
     @Override
     public void onCreate(){
         GuiItem item = new GuiItem(getData().getItem(), INFO_SLOT);
-        item.setDescription(GuiItem.getDescription(getData().getItem(),"", "§7Prix: §e" + ConsulatCore.formatMoney(getData().getPrice())));
+        item.setDescription(GuiItem.getDescription(getData().getItem(), "", "§7Prix: §e" + ConsulatCore.formatMoney(getData().getPrice())));
         item.removeItemFlags(ItemFlag.values());
         setItem(item);
     }

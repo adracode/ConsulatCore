@@ -34,26 +34,6 @@ public class ModerationDatabase {
         request.executeUpdate();
     }
     
-    public void setMute(Player player) throws SQLException{
-        PreparedStatement request = connection.prepareStatement("SELECT * FROM antecedents WHERE playeruuid = ? AND sanction = 'MUTE' AND active = '1'");
-        request.setString(1, player.getUniqueId().toString());
-        ResultSet resultSet = request.executeQuery();
-        if(resultSet.next()){
-            long expireMute = resultSet.getLong("expire");
-            if(System.currentTimeMillis() >= expireMute){
-                PreparedStatement unmuteRequest = connection.prepareStatement("UPDATE antecedents SET active = '0' WHERE sanction = 'MUTE' AND playeruuid = ?");
-                unmuteRequest.setString(1, player.getUniqueId().toString());
-                unmuteRequest.executeUpdate();
-                
-            } else {
-                SurvivalPlayer survivalPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
-                survivalPlayer.setMuted(true);
-                survivalPlayer.setMuteReason(resultSet.getString("reason"));
-                survivalPlayer.setMuteExpireMillis(expireMute);
-            }
-        }
-    }
-    
     public void unmute(String playerName){
         try {
             PreparedStatement unmuteRequest = connection.prepareStatement("UPDATE antecedents SET active = '0', cancelled = '1' WHERE sanction = 'MUTE' AND playername = ? AND active = '1'");
@@ -71,6 +51,26 @@ public class ModerationDatabase {
             unbanRequest.executeUpdate();
         } catch(SQLException e){
             e.printStackTrace();
+        }
+    }
+    
+    public void setMute(Player player) throws SQLException{
+        PreparedStatement request = connection.prepareStatement("SELECT * FROM antecedents WHERE playeruuid = ? AND sanction = 'MUTE' AND active = '1'");
+        request.setString(1, player.getUniqueId().toString());
+        ResultSet resultSet = request.executeQuery();
+        if(resultSet.next()){
+            long expireMute = resultSet.getLong("expire");
+            if(System.currentTimeMillis() >= expireMute){
+                PreparedStatement unmuteRequest = connection.prepareStatement("UPDATE antecedents SET active = '0' WHERE sanction = 'MUTE' AND playeruuid = ?");
+                unmuteRequest.setString(1, player.getUniqueId().toString());
+                unmuteRequest.executeUpdate();
+                
+            } else {
+                SurvivalPlayer survivalPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
+                survivalPlayer.setMuted(true);
+                survivalPlayer.setMuteReason(resultSet.getString("reason"));
+                survivalPlayer.setMuteExpireMillis(expireMute);
+            }
         }
     }
     

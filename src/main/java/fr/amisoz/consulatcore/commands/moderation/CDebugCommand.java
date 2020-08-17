@@ -32,6 +32,8 @@ public class CDebugCommand extends ConsulatCommand {
                         },
                         LiteralArgumentBuilder.literal("chunk"),
                         LiteralArgumentBuilder.literal("city").
+                                then(LiteralArgumentBuilder.literal("lead").
+                                        then(RequiredArgumentBuilder.argument("city", StringArgumentType.word()))).
                                 then(LiteralArgumentBuilder.literal("join").
                                         then(RequiredArgumentBuilder.argument("city", StringArgumentType.word()))),
                         LiteralArgumentBuilder.literal("fly").then(LiteralArgumentBuilder.literal("reset")),
@@ -50,7 +52,7 @@ public class CDebugCommand extends ConsulatCommand {
                     break;
                 case "city":
                     switch(args[1]){
-                        case "join":
+                        case "join":{
                             City city = ZoneManager.getInstance().getCity(args[2]);
                             if(city == null){
                                 return;
@@ -60,6 +62,15 @@ public class CDebugCommand extends ConsulatCommand {
                                 return;
                             }
                             sender.sendMessage(Text.YOU_BEEN_INVITED_TO_CITY(city.getName(), sender.getName()));
+                        }
+                        break;
+                        case "lead":
+                            City city = ZoneManager.getInstance().getCity(args[2]);
+                            if(city == null){
+                                return;
+                            }
+                            city.setOwner(sender.getUUID());
+                            city.sendMessage(Text.PREFIX_CITY(city) + "§a" + sender.getName() + " a fait un coup d'état, il devient propriétaire.");
                             break;
                     }
                     break;

@@ -197,6 +197,13 @@ public class EnchantmentManager implements Listener {
         });
     }
     
+    @EventHandler
+    public void onTick(ServerTickEndEvent event){
+        if(!anvilEventCalled.isEmpty()){
+            anvilEventCalled.clear();
+        }
+    }
+    
     private boolean hasMending(ItemStack item){
         if(item == null || item.getType() == Material.AIR){
             return false;
@@ -214,13 +221,6 @@ public class EnchantmentManager implements Listener {
             event.getInventory().setRepairCost(0);
             ((Player)event.getView().getPlayer()).updateInventory();
         });
-    }
-    
-    @EventHandler
-    public void onTick(ServerTickEndEvent event){
-        if(!anvilEventCalled.isEmpty()){
-            anvilEventCalled.clear();
-        }
     }
     
     public static EnchantmentManager getInstance(){

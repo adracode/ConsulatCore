@@ -51,13 +51,6 @@ public class ClaimsGui extends DataRelatPagedGui<City> {
     }
     
     @Override
-    public void onPageRemoved(GuiRemoveEvent event, Pageable page){
-        if(page.getPage() != 0){
-            getPage(page.getPage() - 1).getGui().setDeco(Material.BLACK_STAINED_GLASS_PANE, NEXT);
-        }
-    }
-    
-    @Override
     public void onPageClick(GuiClickEvent event, Pageable page){
         ConsulatPlayer player = event.getPlayer();
         GuiItem clickedItem = Objects.requireNonNull(page.getGui().getItem(event.getSlot()));
@@ -78,14 +71,11 @@ public class ClaimsGui extends DataRelatPagedGui<City> {
         }
     }
     
-    public void addItemClaim(Claim claim){
-        //Création de l'item
-        GuiItem item = IGui.getItem("§e" + (claim.getX() << 4) + " " + (claim.getZ() << 4), -1, Material.GRASS_BLOCK);
-        //Le claim est placé sur l'item
-        item.setAttachedObject(claim);
-        //L'item est ajouté au PagedGui répertoriant les claims
-        System.out.println("additem");
-        addItem(item);
+    @Override
+    public void onPageRemoved(GuiRemoveEvent event, Pageable page){
+        if(page.getPage() != 0){
+            getPage(page.getPage() - 1).getGui().setDeco(Material.BLACK_STAINED_GLASS_PANE, NEXT);
+        }
     }
     
     @Override
@@ -96,7 +86,17 @@ public class ClaimsGui extends DataRelatPagedGui<City> {
         return super.createChild(key);
     }
     
-    public void  removeItemClaim(Claim claim){
+    public void addItemClaim(Claim claim){
+        //Création de l'item
+        GuiItem item = IGui.getItem("§e" + (claim.getX() << 4) + " " + (claim.getZ() << 4), -1, Material.GRASS_BLOCK);
+        //Le claim est placé sur l'item
+        item.setAttachedObject(claim);
+        //L'item est ajouté au PagedGui répertoriant les claims
+        System.out.println("additem");
+        addItem(item);
+    }
+    
+    public void removeItemClaim(Claim claim){
         removeChild(claim);
         for(Iterator<GuiItem> iterator = iterator(); iterator.hasNext(); ){
             GuiItem item = iterator.next();

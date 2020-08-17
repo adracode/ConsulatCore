@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class ReflectionUtils {
-
+    
     public static List<Field> getAllDeclaredFields(Class<?> start){
         List<Field> fields = new ArrayList<>(Arrays.asList(start.getDeclaredFields()));
         Class<?> superClass = start.getSuperclass();
@@ -40,7 +40,7 @@ public class ReflectionUtils {
         }
         return new Object();
     }
-
+    
     public static Object getDeclaredField(Object instance, String name){
         try {
             Field field = instance.getClass().getDeclaredField(name);
@@ -53,7 +53,7 @@ public class ReflectionUtils {
         }
         return new Object();
     }
-
+    
     public static Field getDeclaredField(Class<?> c, String name){
         try {
             return c.getDeclaredField(name);
@@ -62,7 +62,7 @@ public class ReflectionUtils {
         }
         return null;
     }
-
+    
     public static Method getDeclaredMethod(Object instance, String name, Class<?>... parameters){
         try {
             return instance.getClass().getDeclaredMethod(name, parameters);
@@ -71,7 +71,7 @@ public class ReflectionUtils {
         }
         return null;
     }
-
+    
     public static Object invoke(Object instance, Method method, Object... args){
         if(!method.isAccessible()){
             method.setAccessible(true);
@@ -83,7 +83,7 @@ public class ReflectionUtils {
         }
         return null;
     }
-
+    
     public static void setField(Field field, Object instance, Object value){
         if(Modifier.isFinal(field.getModifiers()) && Modifier.isStatic(field.getModifiers())){
             return;
@@ -107,5 +107,5 @@ public class ReflectionUtils {
         }
         return isSuper(searchedClass, c.getSuperclass());
     }
-
+    
 }

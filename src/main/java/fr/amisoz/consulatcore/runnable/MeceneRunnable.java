@@ -14,19 +14,19 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class MeceneRunnable implements Runnable {
-
+    
     @Override
-    public void run() {
+    public void run(){
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        if(hour != 22) {
+        if(hour != 22){
             return;
         }
-        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), ()->{
+        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
                 giveToMecenes();
-            } catch (SQLException e) {
+            } catch(SQLException e){
                 e.printStackTrace();
             }
         });
@@ -36,13 +36,13 @@ public class MeceneRunnable implements Runnable {
             }
         }
     }
-
+    
     /*
-    * Si un mécène est connecté, il recevra l'argent en jeu ET en BDD,
-    * mais l'argent en jeu surpasse l'argent BDD donc il ne devrait pas
-    * y avoir de problèmes
-    */
-    private void giveToMecenes() throws SQLException {
+     * Si un mécène est connecté, il recevra l'argent en jeu ET en BDD,
+     * mais l'argent en jeu surpasse l'argent BDD donc il ne devrait pas
+     * y avoir de problèmes
+     */
+    private void giveToMecenes() throws SQLException{
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE players SET money = money + 100 WHERE player_rank = 'Mécène'");
         preparedStatement.executeUpdate();
     }

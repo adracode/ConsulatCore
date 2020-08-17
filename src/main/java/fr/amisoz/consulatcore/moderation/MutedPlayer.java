@@ -1,20 +1,20 @@
 package fr.amisoz.consulatcore.moderation;
 
 public class MutedPlayer {
-
+    
     private String reason;
     private String endDate;
-
-    public MutedPlayer(String reason, String endDate) {
+    
+    public MutedPlayer(String reason, String endDate){
         this.reason = reason;
         this.endDate = endDate;
     }
-
-    public String getReason() {
+    
+    public String getReason(){
         return reason;
     }
-
-    public String getEndDate() {
+    
+    public String getEndDate(){
         return endDate;
     }
 }

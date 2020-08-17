@@ -6,7 +6,6 @@ import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.utils.CustomEnum;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.jetbrains.annotations.NotNull;
@@ -21,9 +20,9 @@ public class PersoCommand extends ConsulatCommand {
         setDescription("Gérer son grade personnalisé").
                 setUsage("/perso - Gérer son grade").
                 suggest((listener) -> {
-                            ConsulatPlayer player = getConsulatPlayer(listener);
-                            return player != null && player.hasCustomRank();
-                        });
+                    ConsulatPlayer player = getConsulatPlayer(listener);
+                    return player != null && player.hasCustomRank();
+                });
     }
     
     @Override
@@ -49,8 +48,7 @@ public class PersoCommand extends ConsulatCommand {
             case START:
                 survivalPlayer.setPersoState(CustomEnum.PREFIX_COLOR);
                 sender.sendMessage(Text.CHOOSE_CUSTOM_RANK_COLOR);
-                TextComponent[] textComponents = ConsulatCore.getInstance().getTextPerso().toArray(new TextComponent[0]);
-                sender.sendMessage(textComponents);
+                sender.sendMessage(ConsulatCore.getInstance().getTextPerso());
                 break;
             case PREFIX_COLOR:
                 if(args.length != 1){

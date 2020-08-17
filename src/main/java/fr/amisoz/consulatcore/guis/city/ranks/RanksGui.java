@@ -42,6 +42,18 @@ public class RanksGui extends DataRelatGui<City> {
         setRank(3);
     }
     
+    @Override
+    public void onClick(GuiClickEvent event){
+        switch(event.getSlot()){
+            case RANK1_SLOT:
+            case RANK2_SLOT:
+            case RANK3_SLOT:
+            case RANK4_SLOT:
+                getChild(getRank(event.getSlot())).getGui().open(event.getPlayer());
+                break;
+        }
+    }
+    
     public void setRank(int index){
         City city = getData();
         int slot;
@@ -81,17 +93,5 @@ public class RanksGui extends DataRelatGui<City> {
                 return getData().getRank(3);
         }
         return null;
-    }
-    
-    @Override
-    public void onClick(GuiClickEvent event){
-        switch(event.getSlot()){
-            case RANK1_SLOT:
-            case RANK2_SLOT:
-            case RANK3_SLOT:
-            case RANK4_SLOT:
-                getChild(getRank(event.getSlot())).getGui().open(event.getPlayer());
-                break;
-        }
     }
 }

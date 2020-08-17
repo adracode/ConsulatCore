@@ -8,10 +8,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 
 public class FoodListener implements Listener {
-
+    
     @EventHandler
     public void onFood(FoodLevelChangeEvent event){
-        if(!(event.getEntity() instanceof Player)) {
+        if(!(event.getEntity() instanceof Player)){
             return;
         }
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getEntity().getUniqueId());

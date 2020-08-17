@@ -81,22 +81,25 @@ public class PlayerShop implements Shop {
         this.types = types.toArray(new ShopItemType[0]);
     }
     
-    public boolean isOpen(){
-        return open;
+    public long getCoords(){
+        return coords;
     }
     
-    public void setOpen(boolean open){
-        this.open = open;
-        if(!open){
-            boolean wasEmpty = isEmpty();
-            amount = setAmount();
-            buy(0);
-            if(wasEmpty && !isEmpty()){
-                addInGui();
-            } else if(!wasEmpty && isEmpty()){
-                removeInGui();
-            }
-        }
+    public int getX(){
+        return CoordinatesUtils.getX(coords);
+    }
+    
+    public int getY(){
+        return CoordinatesUtils.getY(coords);
+    }
+    
+    public int getZ(){
+        return CoordinatesUtils.getZ(coords);
+    }
+    
+    @Override
+    public String getType(){
+        return TYPE;
     }
     
     public void addInGui(){
@@ -124,90 +127,6 @@ public class PlayerShop implements Shop {
         return item.getType() == forSale.getType() && item.getItemMeta().equals(forSale.getItemMeta());
     }
     
-    private int setAmountLegacy(){
-        int result = 0;
-        for(ItemStack item : getInventory()){
-            if(item != null){
-                result += item.getAmount();
-            }
-        }
-        return result;
-    }
-    
-    private int setAmount(){
-        int result = 0;
-        for(ItemStack item : getInventory()){
-            if(item != null && isItemAccepted(item)){
-                result += item.getAmount();
-            }
-        }
-        return result;
-    }
-    
-    public int getAmount(){
-        return amount;
-    }
-    
-    public Sign getSign(){
-        Block chest = getLocation().getBlock();
-        for(BlockFace face : chestFaces){
-            Block sign = chest.getRelative(face);
-            if(sign.getType() == Material.OAK_WALL_SIGN){
-                Sign state = (Sign)sign.getState();
-                Chest c = ShopManager.getInstance().getChestFromSign(sign);
-                if(c == null){
-                    continue;
-                }
-                if(state.getLine(0).equals("§8[§aConsulShop§8]") && c.equals(chest.getState())){
-                    return state;
-                }
-            }
-        }
-        return null;
-    }
-    
-    public long getCoords(){
-        return coords;
-    }
-    
-    public int getX(){
-        return CoordinatesUtils.getX(coords);
-    }
-    
-    public int getY(){
-        return CoordinatesUtils.getY(coords);
-    }
-    
-    public int getZ(){
-        return CoordinatesUtils.getZ(coords);
-    }
-    
-    @Override
-    public String getType(){
-        return TYPE;
-    }
-    
-    public Location getLocation(){
-        return new Location(ConsulatCore.getInstance().getOverworld(), getX(), getY(), getZ());
-    }
-    
-    public Material getItemType(){
-        return forSale.getType();
-    }
-    
-    public double getPrice(){
-        return price;
-    }
-    
-    public UUID getOwner(){
-        return owner;
-    }
-    
-    public Inventory getInventory(){
-        Location location = getLocation();
-        return ((Chest)location.getWorld().getBlockAt(location).getState()).getBlockInventory();
-    }
-    
     public int getAmount(int amount){
         return Integer.min(getAmount(), amount);
     }
@@ -224,23 +143,6 @@ public class PlayerShop implements Shop {
         frame.setItem(forSale);
         frame.setInvulnerable(true);
         return true;
-    }
-    
-    public static ItemFrame getItemFrame(Location location){
-        Collection<Entity> entities = location.clone().add(0.5, 1.5, 0.5).getNearbyEntities(0.5, 0.5, 0.5);
-        for(Entity entity : entities){
-            if(entity.getType() == EntityType.ITEM_FRAME){
-                ItemFrame itemFrame = (ItemFrame)entity;
-                if(itemFrame.isInvulnerable()){
-                    return itemFrame;
-                }
-            }
-        }
-        return null;
-    }
-    
-    public ItemFrame getItemFrame(){
-        return getItemFrame(getLocation());
     }
     
     public void destroyFrame(){
@@ -274,6 +176,75 @@ public class PlayerShop implements Shop {
         }
     }
     
+    public boolean isOwner(UUID uuid){
+        return owner.equals(uuid);
+    }
+    
+    public boolean isOpen(){
+        return open;
+    }
+    
+    public void setOpen(boolean open){
+        this.open = open;
+        if(!open){
+            boolean wasEmpty = isEmpty();
+            amount = setAmount();
+            buy(0);
+            if(wasEmpty && !isEmpty()){
+                addInGui();
+            } else if(!wasEmpty && isEmpty()){
+                removeInGui();
+            }
+        }
+    }
+    
+    public int getAmount(){
+        return amount;
+    }
+    
+    public Sign getSign(){
+        Block chest = getLocation().getBlock();
+        for(BlockFace face : chestFaces){
+            Block sign = chest.getRelative(face);
+            if(sign.getType() == Material.OAK_WALL_SIGN){
+                Sign state = (Sign)sign.getState();
+                Chest c = ShopManager.getInstance().getChestFromSign(sign);
+                if(c == null){
+                    continue;
+                }
+                if(state.getLine(0).equals("§8[§aConsulShop§8]") && c.equals(chest.getState())){
+                    return state;
+                }
+            }
+        }
+        return null;
+    }
+    
+    public Location getLocation(){
+        return new Location(ConsulatCore.getInstance().getOverworld(), getX(), getY(), getZ());
+    }
+    
+    public Material getItemType(){
+        return forSale.getType();
+    }
+    
+    public double getPrice(){
+        return price;
+    }
+    
+    public UUID getOwner(){
+        return owner;
+    }
+    
+    public Inventory getInventory(){
+        Location location = getLocation();
+        return ((Chest)location.getWorld().getBlockAt(location).getState()).getBlockInventory();
+    }
+    
+    public ItemFrame getItemFrame(){
+        return getItemFrame(getLocation());
+    }
+    
     public boolean isEmpty(){
         return amount == 0;
     }
@@ -282,12 +253,45 @@ public class PlayerShop implements Shop {
         return Collections.unmodifiableList(Arrays.asList(types));
     }
     
-    @Override
-    public boolean equals(Object o){
-        if(this == o) return true;
-        if(o == null || getClass() != o.getClass()) return false;
-        PlayerShop shop = (PlayerShop)o;
-        return coords == shop.coords;
+    public String getOwnerName(){
+        return ownerName;
+    }
+    
+    public ItemStack getItem(){
+        return forSale;
+    }
+    
+    private int setAmountLegacy(){
+        int result = 0;
+        for(ItemStack item : getInventory()){
+            if(item != null){
+                result += item.getAmount();
+            }
+        }
+        return result;
+    }
+    
+    private int setAmount(){
+        int result = 0;
+        for(ItemStack item : getInventory()){
+            if(item != null && isItemAccepted(item)){
+                result += item.getAmount();
+            }
+        }
+        return result;
+    }
+    
+    public static ItemFrame getItemFrame(Location location){
+        Collection<Entity> entities = location.clone().add(0.5, 1.5, 0.5).getNearbyEntities(0.5, 0.5, 0.5);
+        for(Entity entity : entities){
+            if(entity.getType() == EntityType.ITEM_FRAME){
+                ItemFrame itemFrame = (ItemFrame)entity;
+                if(itemFrame.isInvulnerable()){
+                    return itemFrame;
+                }
+            }
+        }
+        return null;
     }
     
     @Override
@@ -295,8 +299,12 @@ public class PlayerShop implements Shop {
         return Long.hashCode(coords);
     }
     
-    public String getOwnerName(){
-        return ownerName;
+    @Override
+    public boolean equals(Object o){
+        if(this == o) return true;
+        if(o == null || getClass() != o.getClass()) return false;
+        PlayerShop shop = (PlayerShop)o;
+        return coords == shop.coords;
     }
     
     @Override
@@ -310,14 +318,5 @@ public class PlayerShop implements Shop {
                 ", amount=" + amount +
                 ", open=" + open +
                 '}';
-    }
-    
-    public ItemStack getItem(){
-        return forSale;
-    }
-    
-    
-    public boolean isOwner(UUID uuid){
-        return owner.equals(uuid);
     }
 }

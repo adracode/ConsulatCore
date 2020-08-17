@@ -34,12 +34,11 @@ public class Claim extends CChunk {
     public static final double BUY_CLAIM = 180;
     public static final double BUY_CITY_CLAIM = BUY_CLAIM;
     public static final double REFUND = BUY_CLAIM * 0.7;
-    
+    private final Long2ObjectMap<UUID> protectedContainers = new Long2ObjectOpenHashMap<>();
     private String description;
     private Zone owner;
     private boolean interactSurrounding = false;
     private Map<UUID, Set<String>> permissions = new HashMap<>();
-    private final Long2ObjectMap<UUID> protectedContainers = new Long2ObjectOpenHashMap<>();
     
     public Claim(long coords){
         super(coords);
@@ -51,12 +50,69 @@ public class Claim extends CChunk {
         this.description = description;
     }
     
-    public Zone getOwner(){
-        return owner;
+    @Override
+    public void loadNBT(CompoundTag claim){
+        super.loadNBT(claim);
+        if(claim.has("Description")){
+            this.description = claim.getString("Description");
+        }
+        List<CompoundTag> members = claim.getList("Members", NBTType.COMPOUND);
+        for(CompoundTag member : members){
+            Set<String> permissions = new HashSet<>();
+            List<StringTag> tagList = member.getList("Permissions", NBTType.STRING);
+            for(StringTag permission : tagList){
+                permissions.add(permission.getValue());
+            }
+            this.permissions.put(member.getUUID("UUID"), permissions);
+        }
+        if(claim.has("ProtectedContainers")){
+            List<CompoundTag> protectedContainers = claim.getList("ProtectedContainers", NBTType.COMPOUND);
+            for(CompoundTag protectedContainer : protectedContainers){
+                this.protectedContainers.put(
+                        protectedContainer.getLong("Coords"),
+                        protectedContainer.getUUID("Owner"));
+            }
+        }
+        this.interactSurrounding = claim.getByte("InteractSurrounding") == 1;
     }
     
-    public UUID getOwnerUUID(){
-        return owner.getOwner();
+    @Override
+    public CompoundTag saveNBT(){
+        CompoundTag claim = super.saveNBT();
+        if(description != null){
+            claim.putString("Description", description);
+        }
+        ListTag<CompoundTag> members = new ListTag<>(NBTType.COMPOUND);
+        for(Map.Entry<UUID, Set<String>> member : this.permissions.entrySet()){
+            members.addTag(saveMember(member.getKey()));
+        }
+        claim.put("Members", members);
+        ListTag<CompoundTag> containersTag = new ListTag<>(NBTType.COMPOUND);
+        for(Long2ObjectMap.Entry<UUID> container : protectedContainers.long2ObjectEntrySet()){
+            CompoundTag containerTag = new CompoundTag();
+            containerTag.putLong("Coords", container.getLongKey());
+            containerTag.putUUID("Owner", container.getValue());
+            containersTag.addTag(containerTag);
+        }
+        claim.put("ProtectedContainers", containersTag);
+        claim.putByte("InteractSurrounding", (byte)(interactSurrounding ? 1 : 0));
+        return claim;
+    }
+    
+    @Override
+    public String getType(){
+        return TYPE;
+    }
+    
+    @Override
+    public String toString(){
+        return super.toString() +
+                ", Claim{" +
+                ", description='" + description + '\'' +
+                ", owner=" + (owner == null ? "null" : owner.getName()) +
+                ", permissions=" + permissions +
+                ", protectedContainers=" + protectedContainers +
+                '}';
     }
     
     public boolean isOwner(UUID uuid){
@@ -65,10 +121,6 @@ public class Claim extends CChunk {
     
     public boolean isOwner(Zone zone){
         return owner.equals(zone);
-    }
-    
-    public @Nullable String getDescription(){
-        return description == null ? owner instanceof City ? ((City)owner).getDescription() : null : description;
     }
     
     public boolean addPlayer(UUID uuid){
@@ -172,30 +224,37 @@ public class Claim extends CChunk {
         return hasPermission(uuid, permission.getPermission());
     }
     
-    private boolean hasPermission(UUID uuid, String permission){
-        Set<String> permissions = this.permissions.get(uuid);
-        if(permissions == null){
-            return false;
+    public boolean protectContainer(long coords, UUID uuid){
+        return protectedContainers.putIfAbsent(coords, uuid) == null;
+    }
+    
+    public void freeContainer(Block block){
+        protectedContainers.remove(CoordinatesUtils.convertCoordinates(block.getLocation()));
+    }
+    
+    public UUID getProtectedContainer(long coords){
+        return protectedContainers.get(coords);
+    }
+    
+    public boolean hasAccess(UUID uuid){
+        return isOwner(uuid) || permissions.containsKey(uuid);
+    }
+    
+    public boolean canManageAccesses(UUID uuid){
+        return isOwner(uuid) || owner instanceof City && ((City)owner).canManageAccesses(uuid);
+    }
+    
+    public boolean canInteractWith(Claim to){
+        /*Si le claim où arrive l'interaction est null,
+          alors il n'est pas claim et l'interaction dans ce sens est autorisé*/
+        if(to == null){
+            return true;
         }
-        return permissions.contains(permission);
+        return interactSurrounding && to.interactSurrounding && isOwner(to.getOwnerUUID());
     }
     
-    public void setDescription(String description){
-        this.description = description;
-    }
-    
-    public String getOwnerName(){
-        return owner.getName();
-    }
-    
-    public static Claim[] getSurroundingClaims(int x, int z){
-        ClaimManager claimManager = ClaimManager.getInstance();
-        return new Claim[]{
-                claimManager.getClaim(x, z - 1),
-                claimManager.getClaim(x, z + 1),
-                claimManager.getClaim(x - 1, z),
-                claimManager.getClaim(x + 1, z)
-        };
+    public Zone getOwner(){
+        return owner;
     }
     
     void setOwner(Zone owner){
@@ -212,16 +271,32 @@ public class Claim extends CChunk {
         }
     }
     
-    public boolean protectContainer(long coords, UUID uuid){
-        return protectedContainers.putIfAbsent(coords, uuid) == null;
+    public UUID getOwnerUUID(){
+        return owner.getOwner();
     }
     
-    public void freeContainer(Block block){
-        protectedContainers.remove(CoordinatesUtils.convertCoordinates(block.getLocation()));
+    public @Nullable String getDescription(){
+        return description == null ? owner instanceof City ? ((City)owner).getDescription() : null : description;
     }
     
-    public UUID getProtectedContainer(long coords){
-        return protectedContainers.get(coords);
+    public void setDescription(String description){
+        this.description = description;
+    }
+    
+    public String getOwnerName(){
+        return owner.getName();
+    }
+    
+    public Set<UUID> getPlayers(){
+        return Collections.unmodifiableSet(permissions.keySet());
+    }
+    
+    public boolean isInteractSurrounding(){
+        return interactSurrounding;
+    }
+    
+    public void setInteractSurrounding(boolean interactSurrounding){
+        this.interactSurrounding = interactSurrounding;
     }
     
     protected CompoundTag saveMember(UUID uuid){
@@ -235,81 +310,22 @@ public class Claim extends CChunk {
         return member;
     }
     
-    @Override
-    public void loadNBT(CompoundTag claim){
-        super.loadNBT(claim);
-        if(claim.has("Description")){
-            this.description = claim.getString("Description");
+    private boolean hasPermission(UUID uuid, String permission){
+        Set<String> permissions = this.permissions.get(uuid);
+        if(permissions == null){
+            return false;
         }
-        List<CompoundTag> members = claim.getList("Members", NBTType.COMPOUND);
-        for(CompoundTag member : members){
-            Set<String> permissions = new HashSet<>();
-            List<StringTag> tagList = member.getList("Permissions", NBTType.STRING);
-            for(StringTag permission : tagList){
-                permissions.add(permission.getValue());
-            }
-            this.permissions.put(member.getUUID("UUID"), permissions);
-        }
-        if(claim.has("ProtectedContainers")){
-            List<CompoundTag> protectedContainers = claim.getList("ProtectedContainers", NBTType.COMPOUND);
-            for(CompoundTag protectedContainer : protectedContainers){
-                this.protectedContainers.put(
-                        protectedContainer.getLong("Coords"),
-                        protectedContainer.getUUID("Owner"));
-            }
-        }
-        this.interactSurrounding = claim.getByte("InteractSurrounding") == 1;
+        return permissions.contains(permission);
     }
     
-    @Override
-    public CompoundTag saveNBT(){
-        CompoundTag claim = super.saveNBT();
-        if(description != null){
-            claim.putString("Description", description);
-        }
-        ListTag<CompoundTag> members = new ListTag<>(NBTType.COMPOUND);
-        for(Map.Entry<UUID, Set<String>> member : this.permissions.entrySet()){
-            members.addTag(saveMember(member.getKey()));
-        }
-        claim.put("Members", members);
-        ListTag<CompoundTag> containersTag = new ListTag<>(NBTType.COMPOUND);
-        for(Long2ObjectMap.Entry<UUID> container : protectedContainers.long2ObjectEntrySet()){
-            CompoundTag containerTag = new CompoundTag();
-            containerTag.putLong("Coords", container.getLongKey());
-            containerTag.putUUID("Owner", container.getValue());
-            containersTag.addTag(containerTag);
-        }
-        claim.put("ProtectedContainers", containersTag);
-        claim.putByte("InteractSurrounding", (byte)(interactSurrounding ? 1 : 0));
-        return claim;
-    }
-    
-    public Set<UUID> getPlayers(){
-        return Collections.unmodifiableSet(permissions.keySet());
-    }
-    
-    @Override
-    public String toString(){
-        return super.toString() +
-                ", Claim{" +
-                ", description='" + description + '\'' +
-                ", owner=" + (owner == null ? "null" : owner.getName()) +
-                ", permissions=" + permissions +
-                ", protectedContainers=" + protectedContainers +
-                '}';
-    }
-    
-    public boolean hasAccess(UUID uuid){
-        return permissions.containsKey(uuid);
-    }
-    
-    public boolean canManageAccesses(UUID uuid){
-        return isOwner(uuid) || owner instanceof City && ((City)owner).canManageAccesses(uuid);
-    }
-    
-    @Override
-    public String getType(){
-        return TYPE;
+    public static Claim[] getSurroundingClaims(int x, int z){
+        ClaimManager claimManager = ClaimManager.getInstance();
+        return new Claim[]{
+                claimManager.getClaim(x, z - 1),
+                claimManager.getClaim(x, z + 1),
+                claimManager.getClaim(x - 1, z),
+                claimManager.getClaim(x + 1, z)
+        };
     }
     
     public static boolean canInteract(Chunk from, Chunk to){
@@ -340,22 +356,5 @@ public class Claim extends CChunk {
         /*Sinon, puisque claimFrom est null, alors si claimTo est null, l'interaction est autorisé,
           sinon l'interaction non-claim -> claim est interdite*/
         return claimTo == null;
-    }
-    
-    public boolean canInteractWith(Claim to){
-        /*Si le claim où arrive l'interaction est null,
-          alors il n'est pas claim et l'interaction dans ce sens est autorisé*/
-        if(to == null){
-            return true;
-        }
-        return interactSurrounding && to.interactSurrounding && isOwner(to.getOwnerUUID());
-    }
-    
-    public boolean isInteractSurrounding(){
-        return interactSurrounding;
-    }
-    
-    public void setInteractSurrounding(boolean interactSurrounding){
-        this.interactSurrounding = interactSurrounding;
     }
 }

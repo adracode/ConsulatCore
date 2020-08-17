@@ -15,20 +15,10 @@ public class ASHome extends AdminShopCustom {
     public static final String TYPE = "ADMIN_CUSTOM_HOME";
     private static final ItemStack item = new ItemStack(Material.RED_BED);
     
-    static {
+    static{
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName("§6Home supplémentaire");
         item.setItemMeta(meta);
-    }
-    
-    @Override
-    public ItemStack getItem(){
-        return item;
-    }
-    
-    @Override
-    public String getType(){
-        return TYPE;
     }
     
     public ASHome(int x, int y, int z, double price){
@@ -41,6 +31,16 @@ public class ASHome extends AdminShopCustom {
     
     public ASHome(long coords, double price){
         super(coords, price);
+    }
+    
+    @Override
+    public ItemStack getItem(){
+        return item;
+    }
+    
+    @Override
+    public String getType(){
+        return TYPE;
     }
     
     @Override

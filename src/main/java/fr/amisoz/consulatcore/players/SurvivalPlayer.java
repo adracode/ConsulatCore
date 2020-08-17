@@ -26,7 +26,6 @@ import fr.leconsulat.api.nbt.NBTType;
 import fr.leconsulat.api.nbt.StringTag;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
@@ -90,237 +89,95 @@ public class SurvivalPlayer extends ConsulatPlayer {
         }
     }
     
-    public @Nullable Claim getClaim(){
-        return ClaimManager.getInstance().getClaim(this.getPlayer().getChunk());
+    @Override
+    public boolean isInitialized(){
+        return initialized;
     }
     
-    public long getMuteExpireMillis(){
-        return muteExpireMillis;
+    public void setInitialized(boolean initialized){
+        this.initialized = initialized;
     }
     
-    public void setMuteExpireMillis(long muteExpireMillis){
-        this.muteExpireMillis = muteExpireMillis;
-    }
-    
-    public String getMuteReason(){
-        return muteReason;
-    }
-    
-    public void setMuteReason(String reason){
-        this.muteReason = reason;
-    }
-    
-    public Set<String> getNameHomes(){
-        return Collections.unmodifiableSet(homes.keySet());
-    }
-    
-    public Location getOldLocation(){
-        return oldLocation;
-    }
-    
-    public void setOldLocation(Location oldLocation){
-        this.oldLocation = oldLocation;
-    }
-    
-    public double getMoney(){
-        return money;
-    }
-    
-    public long getLastMove(){
-        return lastMove;
-    }
-    
-    public void setLastMove(long lastMove){
-        this.lastMove = lastMove;
-    }
-    
-    public boolean isFrozen(){
-        return isFrozen;
-    }
-    
-    public void setFrozen(boolean frozen){
-        isFrozen = frozen;
-    }
-    
-    public boolean isInModeration(){
-        return inModeration;
-    }
-    
-    public void setInModeration(boolean inModeration){
-        this.inModeration = inModeration;
-        setInventoryBlocked(inModeration);
-    }
-    
-    public ItemStack[] getStockedInventory(){
-        return stockedInventory;
-    }
-    
-    public void setStockedInventory(ItemStack[] stockedInventory){
-        this.stockedInventory = stockedInventory;
-    }
-    
-    public boolean isLookingInventory(){
-        return lookingInventory;
-    }
-    
-    public void setLookingInventory(boolean lookingInventory){
-        this.lookingInventory = lookingInventory;
-    }
-    
-    public boolean isSpying(){
-        return spying;
-    }
-    
-    public void setSpying(boolean spying){
-        this.spying = spying;
-    }
-    
-    public boolean isMuted(){
-        return isMuted;
-    }
-    
-    public void setMuted(boolean muted){
-        isMuted = muted;
-    }
-    
-    public MutedPlayer getMute(){
-        if(System.currentTimeMillis() < muteExpireMillis){
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(muteExpireMillis);
-            String resultDate = ConsulatCore.getInstance().DATE_FORMAT.format(calendar.getTime());
-            String reason = muteReason;
-            return new MutedPlayer(reason, resultDate);
+    @Override
+    public void onQuit(){
+        super.onQuit();
+        if(isInModeration()){
+            Player bukkitPlayer = getPlayer();
+            for(PotionEffect effect : bukkitPlayer.getActivePotionEffects()){
+                if(effect.getType().equals(PotionEffectType.NIGHT_VISION) || effect.getType().equals(PotionEffectType.INVISIBILITY)){
+                    bukkitPlayer.removePotionEffect(effect.getType());
+                }
+            }
+            Bukkit.getOnlinePlayers().forEach(onlinePlayer -> onlinePlayer.showPlayer(ConsulatCore.getInstance(), getPlayer()));
+            bukkitPlayer.getInventory().setContents(getStockedInventory());
         }
-        return null;
+        if(isFlying()){
+            disableFly();
+        }
+        removeFromChannels();
+        saveOnLeave();
     }
     
-    public UUID getLastPrivate(){
-        return lastPrivate;
+    @Override
+    public void loadNBT(@NotNull CompoundTag playerTag){
+        super.loadNBT(playerTag);
+        if(playerTag.has("Ignored")){
+            List<StringTag> ignored = playerTag.getList("Ignored", NBTType.STRING);
+            for(StringTag uuid : ignored){
+                ignoredPlayers.add(UUID.fromString(uuid.getValue()));
+            }
+        }
     }
     
-    public void setLastPrivate(UUID lastPrivate){
-        this.lastPrivate = lastPrivate;
+    @Override
+    public CompoundTag saveNBT(){
+        CompoundTag playerTag = super.saveNBT();
+        if(!ignoredPlayers.isEmpty()){
+            ListTag<StringTag> ignored = new ListTag<>(NBTType.STRING);
+            for(UUID uuid : ignoredPlayers){
+                ignored.addTag(new StringTag(uuid.toString()));
+            }
+            playerTag.put("Ignored", ignored);
+        }
+        return playerTag;
     }
     
-    public CustomEnum getPersoState(){
-        return persoState;
-    }
-    
-    public void setPersoState(CustomEnum persoState){
-        this.persoState = persoState;
-    }
-    
-    public boolean isFighting(){
-        return isFighting;
-    }
-    
-    public void setFighting(boolean fighting){
-        isFighting = fighting;
-    }
-    
-    public Arena getArena(){
-        return arena;
-    }
-    
-    public void setArena(Arena arena){
-        this.arena = arena;
-    }
-    
-    public long getLastTeleport(){
-        return lastTeleport;
-    }
-    
-    public void setLastTeleport(long lastTeleport){
-        this.lastTeleport = lastTeleport;
-    }
-    
-    public boolean isFlyAvailable(){
-        return hasFly() && fly.canFly();
-    }
-    
-    public boolean isFlying(){
-        return hasFly() && fly.isFlying();
-    }
-    
-    public int getFlyTimeLeft(){
-        return hasFly() ? fly.getTimeLeft() : 0;
-    }
-    
-    public Set<PlayerShop> getShops(){
-        return shops;
+    @Override
+    public String toString(){
+        return super.toString() +
+                " SurvivalPlayer{" +
+                "initialized=" + initialized +
+                ", lastTeleport=" + lastTeleport +
+                ", arena=" + arena +
+                ", isFighting=" + isFighting +
+                ", homes=" + homes +
+                ", oldLocation=" + oldLocation +
+                ", limitHomes=" + limitHomes +
+                ", money=" + money +
+                ", lastMove=" + lastMove +
+                ", perkTop=" + perkTop +
+                ", isFrozen=" + isFrozen +
+                ", inModeration=" + inModeration +
+                ", stockedInventory=" + Arrays.toString(stockedInventory) +
+                ", lookingInventory=" + lookingInventory +
+                ", spying=" + spying +
+                ", isMuted=" + isMuted +
+                ", muteExpireMillis=" + muteExpireMillis +
+                ", muteReason='" + muteReason + '\'' +
+                ", lastPrivate=" + lastPrivate +
+                ", persoState=" + persoState +
+                ", limitShop=" + limitShop +
+                ", fly=" + fly +
+                ", shops=" + shops +
+                ", zone=" + zone +
+                ", city=" + city +
+                ", banHistory=" + banHistory +
+                ", muteHistory=" + muteHistory +
+                '}';
     }
     
     public int canBuyHome(){
         return limitHomes - setExtraHomes(getRank());
-    }
-    
-    public long getFlyReset(){
-        return fly.getReset();
-    }
-    
-    public int getFlyTime(){
-        return hasFly() ? fly.getFlyTime() : 0;
-    }
-    
-    public Fly getFly(){
-        return hasFly() ? fly : null;
-    }
-    
-    public void setFly(Fly fly){
-        this.fly = new Fly(fly);
-        addCommandPermission(CommandManager.getInstance().getCommand("fly").getPermission());
-    }
-    
-    public HashMap<BanReason, Integer> getBanHistory(){
-        return banHistory;
-    }
-    
-    public HashMap<MuteReason, Integer> getMuteHistory(){
-        return muteHistory;
-    }
-    
-    public Zone getZone(){
-        return zone;
-    }
-    
-    public void setZone(Zone zone){
-        this.zone = zone;
-    }
-    
-    public City getCity(){
-        return city;
-    }
-    
-    public void setCity(City city){
-        if(city == null && this.city != null){
-            this.city.getChannel().removePlayer(this);
-        } else if(city != null && this.city == null){
-            city.getChannel().addPlayer(this);
-        }
-        this.city = city;
-    }
-    
-    public Set<UUID> getIgnoredPlayers(){
-        return Collections.unmodifiableSet(ignoredPlayers);
-    }
-    
-    public void setHomes(Map<String, Location> homes){
-        if(homes == null){
-            return;
-        }
-        for(Map.Entry<String, Location> home : homes.entrySet()){
-            addHome(home.getKey(), home.getValue());
-        }
-    }
-    
-    public void setPerkTop(boolean perkTop) throws SQLException{
-        SPlayerManager.getInstance().setPerkUp(getUUID(), true);
-        this.perkTop = perkTop;
-        if(perkTop){
-            addCommandPermission(CommandManager.getInstance().getCommand("top").getPermission());
-        } else {
-            removeCommandPermission(CommandManager.getInstance().getCommand("top").getPermission());
-        }
     }
     
     public void initialize(double money, int extraHomes, int limitShop,
@@ -343,7 +200,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
     }
     
     public void initializeShops(Rank newRank){
-        this.limitHomes = limitHomes - setExtraShops(getRank()) + setExtraShops(newRank);
+        this.limitShop = Math.max(limitShop - setExtraShops(getRank()) + setExtraShops(newRank), 0);
     }
     
     public boolean canAddNewShop(){
@@ -597,8 +454,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
             setPersoState(CustomEnum.NAME_COLOR);
             sendMessage("§6Voici ton grade: " + getCustomPrefix());
             sendMessage("§7Maintenant, choisis la couleur de ton pseudo:");
-            TextComponent[] textComponents = ConsulatCore.getInstance().getTextPerso().toArray(new TextComponent[0]);
-            sendMessage(textComponents);
+            sendMessage(ConsulatCore.getInstance().getTextPerso());
             return null;
         }
         if(isMuted() && System.currentTimeMillis() < getMuteExpireMillis()){
@@ -638,6 +494,235 @@ public class SurvivalPlayer extends ConsulatPlayer {
         return ignoredPlayers.contains(uuid);
     }
     
+    public @Nullable Claim getClaim(){
+        return ClaimManager.getInstance().getClaim(this.getPlayer().getChunk());
+    }
+    
+    public long getMuteExpireMillis(){
+        return muteExpireMillis;
+    }
+    
+    public void setMuteExpireMillis(long muteExpireMillis){
+        this.muteExpireMillis = muteExpireMillis;
+    }
+    
+    public String getMuteReason(){
+        return muteReason;
+    }
+    
+    public void setMuteReason(String reason){
+        this.muteReason = reason;
+    }
+    
+    public Set<String> getNameHomes(){
+        return Collections.unmodifiableSet(homes.keySet());
+    }
+    
+    public Location getOldLocation(){
+        return oldLocation;
+    }
+    
+    public void setOldLocation(Location oldLocation){
+        this.oldLocation = oldLocation;
+    }
+    
+    public double getMoney(){
+        return money;
+    }
+    
+    public long getLastMove(){
+        return lastMove;
+    }
+    
+    public void setLastMove(long lastMove){
+        this.lastMove = lastMove;
+    }
+    
+    public boolean isFrozen(){
+        return isFrozen;
+    }
+    
+    public void setFrozen(boolean frozen){
+        isFrozen = frozen;
+    }
+    
+    public boolean isInModeration(){
+        return inModeration;
+    }
+    
+    public void setInModeration(boolean inModeration){
+        this.inModeration = inModeration;
+        setInventoryBlocked(inModeration);
+    }
+    
+    public ItemStack[] getStockedInventory(){
+        return stockedInventory;
+    }
+    
+    public void setStockedInventory(ItemStack[] stockedInventory){
+        this.stockedInventory = stockedInventory;
+    }
+    
+    public boolean isLookingInventory(){
+        return lookingInventory;
+    }
+    
+    public void setLookingInventory(boolean lookingInventory){
+        this.lookingInventory = lookingInventory;
+    }
+    
+    public boolean isSpying(){
+        return spying;
+    }
+    
+    public void setSpying(boolean spying){
+        this.spying = spying;
+    }
+    
+    public boolean isMuted(){
+        return isMuted;
+    }
+    
+    public void setMuted(boolean muted){
+        isMuted = muted;
+    }
+    
+    public MutedPlayer getMute(){
+        if(System.currentTimeMillis() < muteExpireMillis){
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(muteExpireMillis);
+            String resultDate = ConsulatCore.getInstance().DATE_FORMAT.format(calendar.getTime());
+            String reason = muteReason;
+            return new MutedPlayer(reason, resultDate);
+        }
+        return null;
+    }
+    
+    public UUID getLastPrivate(){
+        return lastPrivate;
+    }
+    
+    public void setLastPrivate(UUID lastPrivate){
+        this.lastPrivate = lastPrivate;
+    }
+    
+    public CustomEnum getPersoState(){
+        return persoState;
+    }
+    
+    public void setPersoState(CustomEnum persoState){
+        this.persoState = persoState;
+    }
+    
+    public boolean isFighting(){
+        return isFighting;
+    }
+    
+    public void setFighting(boolean fighting){
+        isFighting = fighting;
+    }
+    
+    public Arena getArena(){
+        return arena;
+    }
+    
+    public void setArena(Arena arena){
+        this.arena = arena;
+    }
+    
+    public long getLastTeleport(){
+        return lastTeleport;
+    }
+    
+    public void setLastTeleport(long lastTeleport){
+        this.lastTeleport = lastTeleport;
+    }
+    
+    public boolean isFlyAvailable(){
+        return hasFly() && fly.canFly();
+    }
+    
+    public boolean isFlying(){
+        return hasFly() && fly.isFlying();
+    }
+    
+    public int getFlyTimeLeft(){
+        return hasFly() ? fly.getTimeLeft() : 0;
+    }
+    
+    public Set<PlayerShop> getShops(){
+        return shops;
+    }
+    
+    public long getFlyReset(){
+        return fly.getReset();
+    }
+    
+    public int getFlyTime(){
+        return hasFly() ? fly.getFlyTime() : 0;
+    }
+    
+    public Fly getFly(){
+        return hasFly() ? fly : null;
+    }
+    
+    public void setFly(Fly fly){
+        this.fly = new Fly(fly);
+        addCommandPermission(CommandManager.getInstance().getCommand("fly").getPermission());
+    }
+    
+    public HashMap<BanReason, Integer> getBanHistory(){
+        return banHistory;
+    }
+    
+    public HashMap<MuteReason, Integer> getMuteHistory(){
+        return muteHistory;
+    }
+    
+    public Zone getZone(){
+        return zone;
+    }
+    
+    public void setZone(Zone zone){
+        this.zone = zone;
+    }
+    
+    public City getCity(){
+        return city;
+    }
+    
+    public void setCity(City city){
+        if(city == null && this.city != null){
+            this.city.getChannel().removePlayer(this);
+        } else if(city != null && this.city == null){
+            city.getChannel().addPlayer(this);
+        }
+        this.city = city;
+    }
+    
+    public Set<UUID> getIgnoredPlayers(){
+        return Collections.unmodifiableSet(ignoredPlayers);
+    }
+    
+    public void setHomes(Map<String, Location> homes){
+        if(homes == null){
+            return;
+        }
+        for(Map.Entry<String, Location> home : homes.entrySet()){
+            addHome(home.getKey(), home.getValue());
+        }
+    }
+    
+    public void setPerkTop(boolean perkTop) throws SQLException{
+        SPlayerManager.getInstance().setPerkUp(getUUID(), true);
+        this.perkTop = perkTop;
+        if(perkTop){
+            addCommandPermission(CommandManager.getInstance().getCommand("top").getPermission());
+        } else {
+            removeCommandPermission(CommandManager.getInstance().getCommand("top").getPermission());
+        }
+    }
+    
     private int setExtraHomes(Rank rank){
         switch(rank){
             case JOUEUR:
@@ -672,93 +757,6 @@ public class SurvivalPlayer extends ConsulatPlayer {
         saveManager.removeData("player-money", this, true);
         saveManager.removeData("player-fly", this, true);
         saveManager.removeData("player-city", this, true);
-    }
-    
-    @Override
-    public boolean isInitialized(){
-        return initialized;
-    }
-    
-    public void setInitialized(boolean initialized){
-        this.initialized = initialized;
-    }
-    
-    @Override
-    public void onQuit(){
-        super.onQuit();
-        if(isInModeration()){
-            Player bukkitPlayer = getPlayer();
-            for(PotionEffect effect : bukkitPlayer.getActivePotionEffects()){
-                if(effect.getType().equals(PotionEffectType.NIGHT_VISION) || effect.getType().equals(PotionEffectType.INVISIBILITY)){
-                    bukkitPlayer.removePotionEffect(effect.getType());
-                }
-            }
-            Bukkit.getOnlinePlayers().forEach(onlinePlayer -> onlinePlayer.showPlayer(ConsulatCore.getInstance(), getPlayer()));
-            bukkitPlayer.getInventory().setContents(getStockedInventory());
-        }
-        if(isFlying()){
-            disableFly();
-        }
-        removeFromChannels();
-        saveOnLeave();
-    }
-    
-    @Override
-    public void loadNBT(@NotNull CompoundTag playerTag){
-        super.loadNBT(playerTag);
-        if(playerTag.has("Ignored")){
-            List<StringTag> ignored = playerTag.getList("Ignored", NBTType.STRING);
-            for(StringTag uuid : ignored){
-                ignoredPlayers.add(UUID.fromString(uuid.getValue()));
-            }
-        }
-    }
-    
-    @Override
-    public CompoundTag saveNBT(){
-        CompoundTag playerTag = super.saveNBT();
-        if(!ignoredPlayers.isEmpty()){
-            ListTag<StringTag> ignored = new ListTag<>(NBTType.STRING);
-            for(UUID uuid : ignoredPlayers){
-                ignored.addTag(new StringTag(uuid.toString()));
-            }
-            playerTag.put("Ignored", ignored);
-        }
-        return playerTag;
-    }
-    
-    @Override
-    public String toString(){
-        return super.toString() +
-                " SurvivalPlayer{" +
-                "initialized=" + initialized +
-                ", lastTeleport=" + lastTeleport +
-                ", arena=" + arena +
-                ", isFighting=" + isFighting +
-                ", homes=" + homes +
-                ", oldLocation=" + oldLocation +
-                ", limitHomes=" + limitHomes +
-                ", money=" + money +
-                ", lastMove=" + lastMove +
-                ", perkTop=" + perkTop +
-                ", isFrozen=" + isFrozen +
-                ", inModeration=" + inModeration +
-                ", stockedInventory=" + Arrays.toString(stockedInventory) +
-                ", lookingInventory=" + lookingInventory +
-                ", spying=" + spying +
-                ", isMuted=" + isMuted +
-                ", muteExpireMillis=" + muteExpireMillis +
-                ", muteReason='" + muteReason + '\'' +
-                ", lastPrivate=" + lastPrivate +
-                ", persoState=" + persoState +
-                ", limitShop=" + limitShop +
-                ", fly=" + fly +
-                ", shops=" + shops +
-                ", zone=" + zone +
-                ", city=" + city +
-                ", banHistory=" + banHistory +
-                ", muteHistory=" + muteHistory +
-                '}';
     }
     
     

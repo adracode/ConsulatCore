@@ -161,123 +161,6 @@ public class ShopManager implements Listener {
         }
     }
     
-    private void loadPlayerShops() throws SQLException{
-        PreparedStatement shops = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM shopinfo");
-        ResultSet resultShops = shops.executeQuery();
-        World world = ConsulatCore.getInstance().getOverworld();
-        while(resultShops.next()){
-            Location location = new Location(
-                    ConsulatCore.getInstance().getOverworld(),
-                    resultShops.getInt("shop_x"),
-                    resultShops.getInt("shop_y"),
-                    resultShops.getInt("shop_z")
-            );
-            String stringUUID = resultShops.getString("owner_uuid");
-            if(stringUUID == null){
-                ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Player UUID id null at " + location + " in shopinfo table");
-                continue;
-            }
-            UUID uuid = UUID.fromString(stringUUID);
-            Block block = world.getBlockAt(location);
-            if(!(block.getState() instanceof Chest)){
-                if(block.getState() instanceof Sign){
-                    Chest chest = getChestFromSign(block);
-                    if(chest == null){
-                        ConsulatAPI.getConsulatAPI().log(Level.SEVERE, "Le shop en " + location + " n'est pas valide (pas un panneau), il sera supprimé.");
-                        ConsulatAPI.getConsulatAPI().logFile("Le shop en " + location + " n'est pas valide, il a été supprimé, owner: " + uuid + ", item vendu: " + resultShops.getString("material"));
-                        removeShopDatabase(uuid, location.getBlockX(), location.getBlockY(), location.getBlockZ());
-                        continue;
-                    }
-                    block = getChestFromSign(block).getBlock();
-                    Location old = location;
-                    location = block.getLocation();
-                    if(ChestUtils.isDoubleChest(chest)){
-                        Block nextChest = ChestUtils.getNextChest(chest.getBlock());
-                        if(nextChest != null){
-                            ChestUtils.setChestsSingle(chest.getBlock(), nextChest);
-                        }
-                    }
-                    updateShop(old, location);
-                } else {
-                    ConsulatAPI.getConsulatAPI().log(Level.SEVERE, "Le shop en " + location + " n'est pas valide, il sera supprimé.");
-                    ConsulatAPI.getConsulatAPI().logFile("Le shop en " + location + " n'est pas valide, il a été supprimé, owner: " + uuid + ", item vendu: " + resultShops.getString("material"));
-                    removeShopDatabase(uuid, location.getBlockX(), location.getBlockY(), location.getBlockZ());
-                    continue;
-                }
-            }
-            ItemFrame itemFrame = PlayerShop.getItemFrame(block.getLocation());
-            ItemStack item;
-            String stringMaterial = resultShops.getString("material");
-            if(stringMaterial == null){
-                ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Material id null at " + location + " in shopinfo table");
-                continue;
-            }
-            Material type = Material.valueOf(stringMaterial);
-            if(itemFrame != null){
-                item = itemFrame.getItem();
-                if(item.getType() == Material.AIR){
-                    item = new ItemStack(type);
-                    itemFrame.setItem(item);
-                }
-                if(itemFrame.getFacing() != BlockFace.UP){
-                    itemFrame.setFacingDirection(BlockFace.UP);
-                }
-            } else {
-                ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Missing item frame for shop " + location + " of " + Bukkit.getOfflinePlayer(uuid).getName());
-                item = getFirstItem((Chest)block.getState());
-                if(item != null){
-                    item.setItemMeta(null);
-                } else {
-                    item = new ItemStack(type);
-                }
-                Collection<Entity> entities = location.clone().add(0.5, 1.5, 0.5).getNearbyEntities(0.5, 0.5, 0.5);
-                ItemFrame frame = null;
-                for(Entity entity : entities){
-                    if(entity.getType() == EntityType.ITEM_FRAME){
-                        frame = (ItemFrame)entity;
-                        if(frame.getFacing() == BlockFace.UP){
-                            break;
-                        }
-                    }
-                }
-                if(frame != null){
-                    frame.setFacingDirection(BlockFace.UP);
-                    frame.setItem(item);
-                    frame.setInvulnerable(true);
-                }
-                itemFrame = frame;
-            }
-            if(item.getType() != type){
-                ConsulatAPI.getConsulatAPI().log(Level.SEVERE, "Le shop en " + location.getBlockX() + " " + location.getBlockY() + " " + location.getBlockZ() + " est censé" +
-                        " avoir un item " + type + " mais à un item de type " + item.getType());
-            }
-            PlayerShop shop = new PlayerShop(
-                    uuid,
-                    Bukkit.getOfflinePlayer(uuid).getName(),
-                    item,
-                    resultShops.getDouble("price"),
-                    location,
-                    itemFrame == null
-            );
-            this.shops.put(shop.getCoords(), shop);
-            if(itemFrame == null){
-                if(!shop.placeItemFrame()){
-                    if(shop.getSign() != null){
-                        shop.getSign().getBlock().breakNaturally();
-                    }
-                    removeShop(shop);
-                    ConsulatAPI.getConsulatAPI().logFile("Le shop " + shop + " a été détruit car il n'a pas de cadre");
-                    continue;
-                }
-            }
-            if(shop.getSign() == null){
-                removeShop(shop);
-                ConsulatAPI.getConsulatAPI().logFile("Le shop " + shop + " a été détruit car il n'a pas de panneau");
-            }
-            shop.addInGui();
-        }
-    }
-    
     public void addType(PlayerShop shop){
         if(shop.isEmpty()){
             return;
@@ -296,10 +179,6 @@ public class ShopManager implements Listener {
                 shops.remove(shop);
             }
         }
-    }
-    
-    public Set<ShopItemType> getNonEmptyTypes(){
-        return nonEmptyTypes.keySet();
     }
     
     public void addShop(SurvivalPlayer player, PlayerShop shop) throws SQLException{
@@ -321,16 +200,6 @@ public class ShopManager implements Listener {
     
     public boolean isShop(Chest chest){
         return getPlayerShop(chest.getLocation()) != null;
-    }
-    
-    @SuppressWarnings("ConstantConditions")
-    private boolean isChestEmpty(Chest chest){
-        for(ItemStack item : chest.getBlockInventory().getContents()){
-            if(item != null){
-                return false;
-            }
-        }
-        return true;
     }
     
     @SuppressWarnings("ConstantConditions")
@@ -727,24 +596,6 @@ public class ShopManager implements Listener {
         }
     }
     
-    private void cancelExplosion(List<Block> blocks){
-        for(Iterator<Block> iterator = blocks.iterator(); iterator.hasNext(); ){
-            Block block = iterator.next();
-            switch(block.getType()){
-                case CHEST:
-                    if(isShop((Chest)block.getState())){
-                        iterator.remove();
-                    }
-                    break;
-                case OAK_WALL_SIGN:
-                    if(((Sign)block.getState()).getLine(0).equals("§8[§aConsulShop§8]")){
-                        iterator.remove();
-                    }
-                    break;
-            }
-        }
-    }
-    
     public void removeShop(PlayerShop shop) throws SQLException{
         removeShopDatabase(shop.getOwner(), shop.getX(), shop.getY(), shop.getZ());
         this.shops.remove(shop.getCoords());
@@ -763,19 +614,6 @@ public class ShopManager implements Listener {
         return attachedBlock.getType() == Material.CHEST && (attachedBlock.getState() instanceof Chest) ? (Chest)attachedBlock.getState() : null;
     }
     
-    private ItemStack getFirstItem(Chest chest){
-        for(ItemStack item : chest.getBlockInventory()){
-            if(item != null){
-                return item;
-            }
-        }
-        return null;
-    }
-    
-    public static ShopManager getInstance(){
-        return instance;
-    }
-    
     public @Nullable Shop getShop(Location location){
         return shops.get(CoordinatesUtils.convertCoordinates(location));
     }
@@ -786,10 +624,6 @@ public class ShopManager implements Listener {
             return (PlayerShop)shop;
         }
         return null;
-    }
-    
-    public Collection<Shop> getShops(){
-        return Collections.unmodifiableCollection(shops.values());
     }
     
     public List<PlayerShop> getPlayerShops(UUID uuid){
@@ -826,6 +660,181 @@ public class ShopManager implements Listener {
         preparedStatement.close();
     }
     
+    public TextComponent formatShopMessage(ItemStack item, int amount, double price, ShopAction action){
+        if(item.hasItemMeta()){
+            ItemMeta meta = item.getItemMeta();
+            if(meta.hasDisplayName()){
+                return new TextComponent(Text.PREFIX + "Tu as " + action.message + " §e" + meta.getDisplayName() + " x" + amount + " §6pour §e" + ConsulatCore.formatMoney(price) + ".");
+            }
+        }
+        TextComponent message = new TextComponent(Text.PREFIX + "Tu as " + action.message + " §e");
+        message.addExtra(new TranslatableComponent(ConsulatAPI.getNMS().getItem().getItemNameId(item)));
+        message.addExtra(" x" + amount + " §6pour §e" + ConsulatCore.formatMoney(price) + ".");
+        return message;
+    }
+    
+    public Set<ShopItemType> getNonEmptyTypes(){
+        return nonEmptyTypes.keySet();
+    }
+    
+    public Collection<Shop> getShops(){
+        return Collections.unmodifiableCollection(shops.values());
+    }
+    
+    private void loadPlayerShops() throws SQLException{
+        PreparedStatement shops = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM shopinfo");
+        ResultSet resultShops = shops.executeQuery();
+        World world = ConsulatCore.getInstance().getOverworld();
+        while(resultShops.next()){
+            Location location = new Location(
+                    ConsulatCore.getInstance().getOverworld(),
+                    resultShops.getInt("shop_x"),
+                    resultShops.getInt("shop_y"),
+                    resultShops.getInt("shop_z")
+            );
+            String stringUUID = resultShops.getString("owner_uuid");
+            if(stringUUID == null){
+                ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Player UUID id null at " + location + " in shopinfo table");
+                continue;
+            }
+            UUID uuid = UUID.fromString(stringUUID);
+            Block block = world.getBlockAt(location);
+            if(!(block.getState() instanceof Chest)){
+                if(block.getState() instanceof Sign){
+                    Chest chest = getChestFromSign(block);
+                    if(chest == null){
+                        ConsulatAPI.getConsulatAPI().log(Level.SEVERE, "Le shop en " + location + " n'est pas valide (pas un panneau), il sera supprimé.");
+                        ConsulatAPI.getConsulatAPI().logFile("Le shop en " + location + " n'est pas valide, il a été supprimé, owner: " + uuid + ", item vendu: " + resultShops.getString("material"));
+                        removeShopDatabase(uuid, location.getBlockX(), location.getBlockY(), location.getBlockZ());
+                        continue;
+                    }
+                    block = getChestFromSign(block).getBlock();
+                    Location old = location;
+                    location = block.getLocation();
+                    if(ChestUtils.isDoubleChest(chest)){
+                        Block nextChest = ChestUtils.getNextChest(chest.getBlock());
+                        if(nextChest != null){
+                            ChestUtils.setChestsSingle(chest.getBlock(), nextChest);
+                        }
+                    }
+                    updateShop(old, location);
+                } else {
+                    ConsulatAPI.getConsulatAPI().log(Level.SEVERE, "Le shop en " + location + " n'est pas valide, il sera supprimé.");
+                    ConsulatAPI.getConsulatAPI().logFile("Le shop en " + location + " n'est pas valide, il a été supprimé, owner: " + uuid + ", item vendu: " + resultShops.getString("material"));
+                    removeShopDatabase(uuid, location.getBlockX(), location.getBlockY(), location.getBlockZ());
+                    continue;
+                }
+            }
+            ItemFrame itemFrame = PlayerShop.getItemFrame(block.getLocation());
+            ItemStack item;
+            String stringMaterial = resultShops.getString("material");
+            if(stringMaterial == null){
+                ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Material id null at " + location + " in shopinfo table");
+                continue;
+            }
+            Material type = Material.valueOf(stringMaterial);
+            if(itemFrame != null){
+                item = itemFrame.getItem();
+                if(item.getType() == Material.AIR){
+                    item = new ItemStack(type);
+                    itemFrame.setItem(item);
+                }
+                if(itemFrame.getFacing() != BlockFace.UP){
+                    itemFrame.setFacingDirection(BlockFace.UP);
+                }
+            } else {
+                ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Missing item frame for shop " + location + " of " + Bukkit.getOfflinePlayer(uuid).getName());
+                item = getFirstItem((Chest)block.getState());
+                if(item != null){
+                    item.setItemMeta(null);
+                } else {
+                    item = new ItemStack(type);
+                }
+                Collection<Entity> entities = location.clone().add(0.5, 1.5, 0.5).getNearbyEntities(0.5, 0.5, 0.5);
+                ItemFrame frame = null;
+                for(Entity entity : entities){
+                    if(entity.getType() == EntityType.ITEM_FRAME){
+                        frame = (ItemFrame)entity;
+                        if(frame.getFacing() == BlockFace.UP){
+                            break;
+                        }
+                    }
+                }
+                if(frame != null){
+                    frame.setFacingDirection(BlockFace.UP);
+                    frame.setItem(item);
+                    frame.setInvulnerable(true);
+                }
+                itemFrame = frame;
+            }
+            if(item.getType() != type){
+                ConsulatAPI.getConsulatAPI().log(Level.SEVERE, "Le shop en " + location.getBlockX() + " " + location.getBlockY() + " " + location.getBlockZ() + " est censé" +
+                        " avoir un item " + type + " mais à un item de type " + item.getType());
+            }
+            PlayerShop shop = new PlayerShop(
+                    uuid,
+                    Bukkit.getOfflinePlayer(uuid).getName(),
+                    item,
+                    resultShops.getDouble("price"),
+                    location,
+                    itemFrame == null
+            );
+            this.shops.put(shop.getCoords(), shop);
+            if(itemFrame == null){
+                if(!shop.placeItemFrame()){
+                    if(shop.getSign() != null){
+                        shop.getSign().getBlock().breakNaturally();
+                    }
+                    removeShop(shop);
+                    ConsulatAPI.getConsulatAPI().logFile("Le shop " + shop + " a été détruit car il n'a pas de cadre");
+                    continue;
+                }
+            }
+            if(shop.getSign() == null){
+                removeShop(shop);
+                ConsulatAPI.getConsulatAPI().logFile("Le shop " + shop + " a été détruit car il n'a pas de panneau");
+            }
+            shop.addInGui();
+        }
+    }
+    
+    @SuppressWarnings("ConstantConditions")
+    private boolean isChestEmpty(Chest chest){
+        for(ItemStack item : chest.getBlockInventory().getContents()){
+            if(item != null){
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    private void cancelExplosion(List<Block> blocks){
+        for(Iterator<Block> iterator = blocks.iterator(); iterator.hasNext(); ){
+            Block block = iterator.next();
+            switch(block.getType()){
+                case CHEST:
+                    if(isShop((Chest)block.getState())){
+                        iterator.remove();
+                    }
+                    break;
+                case OAK_WALL_SIGN:
+                    if(((Sign)block.getState()).getLine(0).equals("§8[§aConsulShop§8]")){
+                        iterator.remove();
+                    }
+                    break;
+            }
+        }
+    }
+    
+    private ItemStack getFirstItem(Chest chest){
+        for(ItemStack item : chest.getBlockInventory()){
+            if(item != null){
+                return item;
+            }
+        }
+        return null;
+    }
+    
     private void updateShop(Location old, Location loc) throws SQLException{
         PreparedStatement update = ConsulatAPI.getDatabase().prepareStatement("UPDATE shopinfo SET shop_x = ?, shop_y = ?, shop_z = ? WHERE shop_x = ? AND shop_y = ? AND shop_z = ?");
         update.setInt(1, loc.getBlockX());
@@ -838,17 +847,8 @@ public class ShopManager implements Listener {
         update.close();
     }
     
-    public TextComponent formatShopMessage(ItemStack item, int amount, double price, ShopAction action){
-        if(item.hasItemMeta()){
-            ItemMeta meta = item.getItemMeta();
-            if(meta.hasDisplayName()){
-                return new TextComponent(Text.PREFIX + "Tu as " + action.message + " §e" + meta.getDisplayName() + " x" + amount + " §6pour §e" + ConsulatCore.formatMoney(price) + ".");
-            }
-        }
-        TextComponent message = new TextComponent(Text.PREFIX + "Tu as " + action.message + " §e");
-        message.addExtra(new TranslatableComponent(ConsulatAPI.getNMS().getItem().getItemNameId(item)));
-        message.addExtra(" x" + amount + " §6pour §e" + ConsulatCore.formatMoney(price) + ".");
-        return message;
+    public static ShopManager getInstance(){
+        return instance;
     }
     
     public enum ShopAction {

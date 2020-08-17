@@ -41,7 +41,7 @@ public class ConsulatHelpCommand extends ConsulatCommand {
                 .append("§7§oTu peux cliquer pour plus de détails")
                 .create();
         claim = new ComponentBuilder(title).append("Tu peux claim un chunk pour " + ConsulatCore.formatMoney(Claim.BUY_CLAIM) + " afin de le protéger des autres joueurs.\n").color(ChatColor.GRAY)
-                .append("\n")
+                .append("Les claims peuvent interagir avec d'autres claims (ex: écoulement d'eau) s'ils ont le même propriétaire et que l'interaction est active (/claim options).\n\n").color(ChatColor.GRAY)
                 .append("§aCommandes utiles:\n")
                 .append("§c/claim §e- §7Claim un chunk.\n")
                 .append("§c/claim options §e- §7Gérer le claim.\n")
@@ -50,8 +50,7 @@ public class ConsulatHelpCommand extends ConsulatCommand {
                 .append("\n")
                 .append("§7§oPour afficher toutes les commandes: §a§o/help claim§7§o.\n")
                 .create();
-        ville = new ComponentBuilder(title).append("Tu peux créer une ville et ajouter des membres pour créer une communauté et partager des claims.\n").color(ChatColor.GRAY)
-                .append("\n")
+        ville = new ComponentBuilder(title).append("Tu peux créer une ville et ajouter des membres pour créer une communauté et partager des claims.\n\n").color(ChatColor.GRAY)
                 .append("§aCommandes utiles:\n")
                 .append("§c/ville create §e- §7Créer une ville.\n")
                 .append("§c/ville options §e- §7Gérer la ville.\n")

@@ -38,42 +38,6 @@ public class InfosCommand extends ConsulatCommand {
                 suggest(Arguments.playerList("joueur"));
     }
     
-    private void sendConnections(String playerName, Player moderator) throws SQLException{
-        PreparedStatement preparedStatement = ConsulatCore.getInstance().getDatabaseConnection().prepareStatement("SELECT connection_date, player_ip FROM connections INNER JOIN players ON connections.player_id = players.id WHERE players.player_name = ? ORDER BY connections.id DESC LIMIT 3");
-        preparedStatement.setString(1, playerName);
-        ResultSet resultSet = preparedStatement.executeQuery();
-        
-        while(resultSet.next()){
-            moderator.sendMessage(ChatColor.GRAY + "Connexion ⤗ " + ChatColor.GOLD + resultSet.getString("connection_date") + ChatColor.GRAY + " ↭ " + ChatColor.GOLD + resultSet.getString("player_ip"));
-        }
-        
-        resultSet.close();
-        preparedStatement.close();
-    }
-    
-    private void sendBan(String playerName, Player moderator) throws SQLException{
-        PreparedStatement preparedStatement = ConsulatCore.getInstance().getDatabaseConnection().prepareStatement("SELECT * FROM antecedents WHERE playername = ? AND sanction = 'BAN' AND active = '1'");
-        preparedStatement.setString(1, playerName);
-        ResultSet resultSet = preparedStatement.executeQuery();
-        if(resultSet.next()){
-            long expireBan = resultSet.getLong("expire");
-            String reason = resultSet.getString("reason");
-            
-            resultSet.close();
-            preparedStatement.close();
-            if(System.currentTimeMillis() > expireBan){
-                moderator.sendMessage(ChatColor.GRAY + "Banni ⤗ " + ChatColor.GREEN + "Non");
-            } else {
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTimeInMillis(expireBan);
-                String endBan = new SimpleDateFormat("dd/MM/yyyy 'à' kk:mm").format(calendar.getTime());
-                moderator.sendMessage(ChatColor.GRAY + "Banni ⤗ " + ChatColor.RED + "Oui" + ChatColor.GRAY + " • " + ChatColor.YELLOW + reason + ChatColor.GRAY + " ↭ Jusqu'au " + ChatColor.BLUE + endBan);
-            }
-        } else {
-            moderator.sendMessage(ChatColor.GRAY + "Banni ⤗ " + ChatColor.GREEN + "Non");
-        }
-    }
-    
     @Override
     public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
@@ -137,5 +101,41 @@ public class InfosCommand extends ConsulatCommand {
             
             player.getPlayer().spigot().sendMessage(textComponent, antecedentsComponent);
         });
+    }
+    
+    private void sendConnections(String playerName, Player moderator) throws SQLException{
+        PreparedStatement preparedStatement = ConsulatCore.getInstance().getDatabaseConnection().prepareStatement("SELECT connection_date, player_ip FROM connections INNER JOIN players ON connections.player_id = players.id WHERE players.player_name = ? ORDER BY connections.id DESC LIMIT 3");
+        preparedStatement.setString(1, playerName);
+        ResultSet resultSet = preparedStatement.executeQuery();
+        
+        while(resultSet.next()){
+            moderator.sendMessage(ChatColor.GRAY + "Connexion ⤗ " + ChatColor.GOLD + resultSet.getString("connection_date") + ChatColor.GRAY + " ↭ " + ChatColor.GOLD + resultSet.getString("player_ip"));
+        }
+        
+        resultSet.close();
+        preparedStatement.close();
+    }
+    
+    private void sendBan(String playerName, Player moderator) throws SQLException{
+        PreparedStatement preparedStatement = ConsulatCore.getInstance().getDatabaseConnection().prepareStatement("SELECT * FROM antecedents WHERE playername = ? AND sanction = 'BAN' AND active = '1'");
+        preparedStatement.setString(1, playerName);
+        ResultSet resultSet = preparedStatement.executeQuery();
+        if(resultSet.next()){
+            long expireBan = resultSet.getLong("expire");
+            String reason = resultSet.getString("reason");
+            
+            resultSet.close();
+            preparedStatement.close();
+            if(System.currentTimeMillis() > expireBan){
+                moderator.sendMessage(ChatColor.GRAY + "Banni ⤗ " + ChatColor.GREEN + "Non");
+            } else {
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(expireBan);
+                String endBan = new SimpleDateFormat("dd/MM/yyyy 'à' kk:mm").format(calendar.getTime());
+                moderator.sendMessage(ChatColor.GRAY + "Banni ⤗ " + ChatColor.RED + "Oui" + ChatColor.GRAY + " • " + ChatColor.YELLOW + reason + ChatColor.GRAY + " ↭ Jusqu'au " + ChatColor.BLUE + endBan);
+            }
+        } else {
+            moderator.sendMessage(ChatColor.GRAY + "Banni ⤗ " + ChatColor.GREEN + "Non");
+        }
     }
 }

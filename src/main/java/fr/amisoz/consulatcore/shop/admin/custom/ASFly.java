@@ -11,19 +11,10 @@ public class ASFly extends AdminShopCustom {
     public static final String TYPE = "ADMIN_CUSTOM_FLY";
     private static final ItemStack item = new ItemStack(Material.ELYTRA);
     
-    static {
+    static{
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName("§6Fly 5 min");
         item.setItemMeta(meta);
-    }
-    
-    @Override
-    public ItemStack getItem(){
-        return item;
-    }
-    @Override
-    public String getType(){
-        return TYPE;
     }
     
     public ASFly(int x, int y, int z, double price){
@@ -36,6 +27,16 @@ public class ASFly extends AdminShopCustom {
     
     public ASFly(long coords, double price){
         super(coords, price);
+    }
+    
+    @Override
+    public ItemStack getItem(){
+        return item;
+    }
+    
+    @Override
+    public String getType(){
+        return TYPE;
     }
     
     @Override

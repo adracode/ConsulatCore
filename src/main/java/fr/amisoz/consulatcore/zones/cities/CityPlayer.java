@@ -33,6 +33,10 @@ public class CityPlayer {
         return permissions.contains(permission);
     }
     
+    public void clearPermissions(){
+        permissions.clear();
+    }
+    
     public @NotNull CityRank getRank(){
         return rank;
     }
@@ -47,9 +51,5 @@ public class CityPlayer {
     
     public UUID getUUID(){
         return uuid;
-    }
-    
-    public void clearPermissions(){
-        permissions.clear();
     }
 }
