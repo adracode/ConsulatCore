@@ -50,7 +50,7 @@ public class ASHome extends AdminShopCustom {
     
     @Override
     public boolean canBuy(SurvivalPlayer player){
-        return player.getLimitHome() < 1;
+        return player.canBuyHome() < 1;
     }
     
     @Override

@@ -6,7 +6,6 @@ import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
-import fr.leconsulat.api.ranks.Rank;
 import org.jetbrains.annotations.NotNull;
 
 public class FlyCommand extends ConsulatCommand {
@@ -18,7 +17,6 @@ public class FlyCommand extends ConsulatCommand {
                         "/fly start - Activer le fly\n" +
                         "/fly stop - Désactiver le fly").
                 setArgsMin(1).
-                setRank(Rank.JOUEUR).
                 suggest((listener) -> {
                             SurvivalPlayer player = (SurvivalPlayer)getConsulatPlayer(listener);
                             return player != null && player.hasFly();

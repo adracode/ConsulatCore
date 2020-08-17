@@ -17,6 +17,7 @@ import fr.leconsulat.api.database.SaveManager;
 import fr.leconsulat.api.database.tasks.SaveTask;
 import fr.leconsulat.api.events.ConsulatPlayerLeaveEvent;
 import fr.leconsulat.api.events.ConsulatPlayerLoadedEvent;
+import fr.leconsulat.api.events.PlayerChangeRankEvent;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
@@ -206,6 +207,8 @@ public class SPlayerManager implements Listener {
                 }
             }
             Bukkit.broadcastMessage("§7(§a+§7) " + player.getDisplayName());
+        } else if(ConsulatAPI.getConsulatAPI().isDevelopment()){
+            Bukkit.broadcastMessage("§7(§a+§7) " + player.getDisplayName());
         }
         player.initChannels();
         CommandManager.getInstance().sendCommands(event.getPlayer());
@@ -229,7 +232,16 @@ public class SPlayerManager implements Listener {
         }
         if(!player.hasPower(Rank.MODO)){
             Bukkit.broadcastMessage("§7(§c-§7) " + player.getDisplayName());
+        } else if(ConsulatAPI.getConsulatAPI().isDevelopment()){
+            Bukkit.broadcastMessage("§7(§c-§7) " + player.getDisplayName());
         }
+    }
+    
+    @EventHandler
+    public void onRankChange(PlayerChangeRankEvent event){
+        SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
+        player.initializeHomes(event.getNewRank());
+        player.initializeShops(event.getNewRank());
     }
     
     public void fetchPlayer(SurvivalPlayer player) throws SQLException{

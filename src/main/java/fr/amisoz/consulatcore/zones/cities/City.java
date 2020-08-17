@@ -271,7 +271,6 @@ public class City extends Zone {
         for(CityPermission permission : permissions){
             switch(permission){
                 case MANAGE_ACCESS:
-                    updateManageAccess(uuid);
                 case MANAGE_CLAIM:
                     updateManageClaim(uuid);
                     break;
@@ -284,16 +283,6 @@ public class City extends Zone {
                 case MANAGE_PLAYER:
                     updateManagePlayer(uuid);
                     break;
-            }
-        }
-    }
-    
-    private void updateManageAccess(UUID uuid){
-        ConsulatPlayer player = CPlayerManager.getInstance().getConsulatPlayer(uuid);
-        if(player != null){
-            IGui currentlyOpen = player.getCurrentlyOpen();
-            if(currentlyOpen instanceof MemberGui){
-                ((MemberGui)currentlyOpen).updateAccess(player, hasPermission(uuid, CityPermission.MANAGE_ACCESS));
             }
         }
     }

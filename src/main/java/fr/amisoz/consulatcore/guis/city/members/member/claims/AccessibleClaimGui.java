@@ -7,12 +7,14 @@ import fr.leconsulat.api.gui.GuiItem;
 import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.gui.event.GuiClickEvent;
 import fr.leconsulat.api.gui.event.GuiCreateEvent;
+import fr.leconsulat.api.gui.event.GuiOpenEvent;
 import fr.leconsulat.api.gui.event.GuiRemoveEvent;
 import fr.leconsulat.api.gui.gui.IGui;
 import fr.leconsulat.api.gui.gui.module.api.Datable;
 import fr.leconsulat.api.gui.gui.module.api.Pageable;
 import fr.leconsulat.api.gui.gui.module.api.Relationnable;
 import fr.leconsulat.api.gui.gui.template.DataRelatPagedGui;
+import fr.leconsulat.api.player.ConsulatPlayer;
 import org.bukkit.Material;
 import org.jetbrains.annotations.Nullable;
 
@@ -57,6 +59,24 @@ public class AccessibleClaimGui extends DataRelatPagedGui<UUID> {
     }
     
     @Override
+    public void onPageOpened(GuiOpenEvent event, Pageable page){
+        update(event.getPlayer(), canSetPermission(event.getPlayer()), GIVE_ALL_SLOT);
+        update(event.getPlayer(), canSetPermission(event.getPlayer()), REMOVE_ALL_SLOT);
+    }
+    
+    private boolean canSetPermission(ConsulatPlayer player){
+        return !getData().equals(player.getUUID());
+    }
+    
+    public void update(ConsulatPlayer player, boolean allow, int slot){
+        if(allow){
+            setFakeItem(slot, null, player);
+        } else {
+            setDescriptionPlayer(slot, player, "", "§cTu ne peux pas", "§cfaire cette action");
+        }
+    }
+    
+    @Override
     public void onPageRemoved(GuiRemoveEvent event, Pageable page){
         if(page.getPage() != 0){
             getPage(page.getPage() - 1).getGui().setDeco(Material.BLACK_STAINED_GLASS_PANE, NEXT);
@@ -79,9 +99,15 @@ public class AccessibleClaimGui extends DataRelatPagedGui<UUID> {
                 }
                 break;
             case GIVE_ALL_SLOT:
+                if(!canSetPermission(event.getPlayer())){
+                    return;
+                }
                 city.addAccess(getData());
                 return;
             case REMOVE_ALL_SLOT:
+                if(!canSetPermission(event.getPlayer())){
+                    return;
+                }
                 city.removeAccess(getData());
                 return;
         }

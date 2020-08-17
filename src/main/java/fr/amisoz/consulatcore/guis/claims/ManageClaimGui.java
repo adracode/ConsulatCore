@@ -68,57 +68,15 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
         }
     }
     
-    @Override
-    public void onCreate(){
-        applyFather();
-        Claim claim = getData();
-        setManageInteractSlot(claim.isInteractSurrounding());
-        for(UUID uuid : getData().getPlayers()){
-            addPlayerToClaim(uuid, Bukkit.getOfflinePlayer(uuid).getName());
-        }
-    }
-    
-    
-    @Override
-    public void onPageCreated(GuiCreateEvent event, Pageable page){
-        Claim claim = getData();
-        IGui gui = page.getGui();
-        gui.setName((claim.getX() << 4) + " " + (claim.getZ() << 4));
-        if(page.getPage() != 0){
-            gui.setItem(IGui.getItem("§7Précédent", 47, Material.ARROW));
-            getPage(page.getPage() - 1).getGui().setItem(IGui.getItem("§7Suivant", 51, Material.ARROW));
-            gui.setDeco(Material.BLACK_STAINED_GLASS_PANE, 51);
-        }
-    }
-    
-    @Override
-    public void onPageRemoved(GuiRemoveEvent event, Pageable page){
-        if(page.getPage() != 0){
-            getPage(page.getPage() - 1).getGui().setDeco(Material.BLACK_STAINED_GLASS_PANE, 51);
-        }
-    }
-    
-    @Override
-    public void onPageOpened(GuiOpenEvent event, Pageable page){
-        ConsulatPlayer player = event.getPlayer();
+    public void updatePermissions(ConsulatPlayer player, Pageable page){
         UUID uuid = player.getUUID();
         Zone zone = getData().getOwner();
-        updatePermissions(player, page, zone.isOwner(uuid));
-        updateInteract(player, page, zone.isOwner(uuid));
-        if(zone instanceof City){
-            City city = (City)zone;
-            updateAccess(player, page, city.canManageAccesses(uuid));
-        } else {
-            updateAccess(player, page, zone.isOwner(uuid));
-        }
-    }
-    
-    public void updatePermissions(ConsulatPlayer player, Pageable page, boolean allow){
+        boolean allow = zone instanceof City ? ((City)zone).canManageAccesses(uuid) : zone.isOwner(uuid);
         for(GuiItem item : page){
-            if(!allow){
-                setDescriptionPlayer(item.getSlot(), player, "", "§cTu ne peux pas", "§cgérer les permissions", "§cde ce joueur");
-            } else {
+            if(allow || uuid.equals(item.getAttachedObject())){
                 setFakeItem(item.getSlot(), null, player);
+            } else {
+                setDescriptionPlayer(item.getSlot(), player, "", "§cTu ne peux pas", "§cgérer les permissions", "§cde ce joueur");
             }
         }
     }
@@ -138,6 +96,60 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
             page.getGui().setFakeItem(ADD_SLOT, null, player);
         } else {
             setDescriptionPlayer(ADD_SLOT, player, "", "§cTu ne peux pas", "§cajouter un joueur");
+        }
+    }
+    
+    public void addPlayerToClaim(UUID uuid, String name){
+        GuiItem item = IGui.getItem("§e" + name, -1, uuid);
+        addItem(item);
+        item.setAttachedObject(uuid);
+    }
+    
+    public void removePlayerFromClaim(UUID uuid){
+        removeChild(uuid);
+        for(Iterator<GuiItem> iterator = iterator(); iterator.hasNext(); ){
+            GuiItem item = iterator.next();
+            if(item != null && item.getAttachedObject().equals(uuid)){
+                iterator.remove();
+                return;
+            }
+        }
+    }
+    
+    public void applyFather(){
+        City owner = getData().getOwner() instanceof City ? (City)getData().getOwner() : null;
+        if(owner != null){
+            IGui iClaimsGui = GuiManager.getInstance().getContainer("city").getGui(true, owner, CityGui.CLAIMS);
+            if(iClaimsGui != null){
+                setFather((ClaimsGui)iClaimsGui);
+            }
+            setDescription(INFO_SLOT, "", "§7Membres de la ville", "§7ayant accès au claim");
+        } else {
+            setFather(null);
+            setDeco(Material.BLACK_STAINED_GLASS_PANE, 45);
+            setDescription(INFO_SLOT, "", "§7Joueurs ayant accès", "§7à ce claim");
+        }
+    }
+    
+    @Override
+    public void onCreate(){
+        applyFather();
+        Claim claim = getData();
+        setManageInteractSlot(claim.isInteractSurrounding());
+        for(UUID uuid : getData().getPlayers()){
+            addPlayerToClaim(uuid, Bukkit.getOfflinePlayer(uuid).getName());
+        }
+    }
+    
+    @Override
+    public void onPageCreated(GuiCreateEvent event, Pageable page){
+        Claim claim = getData();
+        IGui gui = page.getGui();
+        gui.setName((claim.getX() << 4) + " " + (claim.getZ() << 4));
+        if(page.getPage() != 0){
+            gui.setItem(IGui.getItem("§7Précédent", 47, Material.ARROW));
+            getPage(page.getPage() - 1).getGui().setItem(IGui.getItem("§7Suivant", 51, Material.ARROW));
+            gui.setDeco(Material.BLACK_STAINED_GLASS_PANE, 51);
         }
     }
     
@@ -198,17 +210,37 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
             return;
         }
         if(event.getSlot() >= 19 && event.getSlot() <= 44 && clickedItem.getType() == Material.PLAYER_HEAD){
-            if(!getData().getOwner().isOwner(player.getUUID())){
+            UUID uuid = player.getUUID();
+            Zone zone = getData().getOwner();
+            System.out.println("!uuid.equals(clickedItem.getAttachedObject()) = " + !uuid.equals(clickedItem.getAttachedObject()));
+            if((zone instanceof City ? !((City)zone).canManageAccesses(uuid) : !zone.isOwner(uuid)) &&
+                    !uuid.equals(clickedItem.getAttachedObject())){
                 return;
             }
             getChild(clickedItem.getAttachedObject()).getGui().open(player);
         }
     }
     
-    public void addPlayerToClaim(UUID uuid, String name){
-        GuiItem item = IGui.getItem("§e" + name, -1, uuid);
-        addItem(item);
-        item.setAttachedObject(uuid);
+    @Override
+    public void onPageOpened(GuiOpenEvent event, Pageable page){
+        ConsulatPlayer player = event.getPlayer();
+        UUID uuid = player.getUUID();
+        Zone zone = getData().getOwner();
+        updatePermissions(player, page);
+        updateInteract(player, page, zone.isOwner(uuid));
+        if(zone instanceof City){
+            City city = (City)zone;
+            updateAccess(player, page, city.canManageAccesses(uuid));
+        } else {
+            updateAccess(player, page, zone.isOwner(uuid));
+        }
+    }
+    
+    @Override
+    public void onPageRemoved(GuiRemoveEvent event, Pageable page){
+        if(page.getPage() != 0){
+            getPage(page.getPage() - 1).getGui().setDeco(Material.BLACK_STAINED_GLASS_PANE, 51);
+        }
     }
     
     @Override
@@ -217,32 +249,6 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
             return new AccessPermissionsGui((UUID)key);
         }
         return super.createChild(key);
-    }
-    
-    public void removePlayerFromClaim(UUID uuid){
-        removeChild(uuid);
-        for(Iterator<GuiItem> iterator = iterator(); iterator.hasNext(); ){
-            GuiItem item = iterator.next();
-            if(item != null && item.getAttachedObject().equals(uuid)){
-                iterator.remove();
-                return;
-            }
-        }
-    }
-    
-    public void applyFather(){
-        City owner = getData().getOwner() instanceof City ? (City)getData().getOwner() : null;
-        if(owner != null){
-            IGui iClaimsGui = GuiManager.getInstance().getContainer("city").getGui(true, owner, CityGui.CLAIMS);
-            if(iClaimsGui != null){
-                setFather((ClaimsGui)iClaimsGui);
-            }
-            setDescription(INFO_SLOT, "", "§7Membres de la ville", "§7ayant accès au claim");
-        } else {
-            setFather(null);
-            setDeco(Material.BLACK_STAINED_GLASS_PANE, 45);
-            setDescription(INFO_SLOT, "", "§7Joueurs ayant accès", "§7à ce claim");
-        }
     }
     
     public static class Container extends GuiContainer<Claim> {

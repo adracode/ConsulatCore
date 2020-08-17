@@ -34,6 +34,7 @@ import org.bukkit.entity.HumanEntity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.UUID;
 
 public class CityGui extends DataRelatGui<City> {
     
@@ -209,8 +210,13 @@ public class CityGui extends DataRelatGui<City> {
             if(publicPermissionsGui != null){
                 membersGui.refresh();
             }
+            UUID owner = getData().getOwner();
             for(Relationnable child : membersGui.getChildren()){
                 child.getGui().refresh();
+                MemberGui gui = (MemberGui)child;
+                if(gui.getData().equals(owner)){
+                    gui.onCreate();
+                }
             }
         }
         

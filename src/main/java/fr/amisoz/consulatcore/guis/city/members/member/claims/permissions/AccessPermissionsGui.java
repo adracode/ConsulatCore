@@ -3,6 +3,7 @@ package fr.amisoz.consulatcore.guis.city.members.member.claims.permissions;
 import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.leconsulat.api.gui.GuiItem;
 import fr.leconsulat.api.gui.event.GuiClickEvent;
+import fr.leconsulat.api.gui.event.GuiOpenEvent;
 import fr.leconsulat.api.gui.gui.IGui;
 import fr.leconsulat.api.gui.gui.template.DataRelatGui;
 
@@ -33,6 +34,11 @@ public class AccessPermissionsGui extends DataRelatGui<Claim> {
                 setItem(item);
             }
         }
+    }
+    
+    @Override
+    public void onOpened(GuiOpenEvent event){
+        link.onOpened(event);
     }
     
     @Override

@@ -5,12 +5,10 @@ import fr.amisoz.consulatcore.guis.city.members.member.permissions.MemberPermiss
 import fr.amisoz.consulatcore.guis.city.members.member.rank.RankMemberGui;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.leconsulat.api.gui.event.GuiClickEvent;
-import fr.leconsulat.api.gui.event.GuiOpenEvent;
 import fr.leconsulat.api.gui.gui.IGui;
 import fr.leconsulat.api.gui.gui.module.api.Datable;
 import fr.leconsulat.api.gui.gui.module.api.Relationnable;
 import fr.leconsulat.api.gui.gui.template.DataRelatGui;
-import fr.leconsulat.api.player.ConsulatPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.jetbrains.annotations.Nullable;
@@ -29,19 +27,24 @@ public class MemberGui extends DataRelatGui<UUID> {
     
     public MemberGui(UUID uuid){
         super(uuid, Bukkit.getOfflinePlayer(uuid).getName(), 5,
-                IGui.getItem("§ePermissions de ville", PERMISSION_SLOT, Material.BOOK, "", "§7Modifier les permissions", "§7de gestion du joueur "),
-                IGui.getItem("§eClaim accessibles", CLAIM_SLOT, Material.GRASS_BLOCK, "", "§7Modifier les claims", "§7accessibles du joueur"),
-                IGui.getItem("§eGrade", RANK_SLOT, Material.DIAMOND, "", "§7Modifier le grade", "§7du joueur"));
+                IGui.getItem("§ePermissions de ville", PERMISSION_SLOT, Material.BOOK),
+                IGui.getItem("§eClaim accessibles", CLAIM_SLOT, Material.GRASS_BLOCK),
+                IGui.getItem("§eGrade", RANK_SLOT, Material.DIAMOND));
         setDeco(Material.BLACK_STAINED_GLASS_PANE, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 37, 38, 39, 40, 41, 42, 43, 44);
     }
     
     @Override
-    public void onOpened(GuiOpenEvent event){
-        ConsulatPlayer player = event.getPlayer();
+    public void onCreate(){
         City city = getCity();
-        updatePermissions(player, city.isOwner(player.getUUID()));
-        updateAccess(player, city.canManageAccesses(player.getUUID()));
-        updateRank(player, city.isOwner(player.getUUID()));
+        if(city.isOwner(getData())){
+            setDescription(PERMISSION_SLOT, "", "§aCe joueur à", "§atoutes les permissions");
+            setDescription(CLAIM_SLOT, "", "§aCe joueur à", "§atous les accès");
+            setDescription(RANK_SLOT, "", "§aCe joueur est propriétaire");
+        } else {
+            setDescription(PERMISSION_SLOT, "", "§7Modifier les permissions", "§7de gestion du joueur ");
+            setDescription(CLAIM_SLOT, "", "§7Modifier les claims", "§7accessibles du joueur");
+            setDescription(RANK_SLOT, "", "§7Modifier le grade", "§7du joueur");
+        }
     }
     
     @Override
@@ -59,49 +62,24 @@ public class MemberGui extends DataRelatGui<UUID> {
         return super.createChild(key);
     }
     
-    public void updatePermissions(ConsulatPlayer player, boolean allow){
-        if(allow){
-            setFakeItem(PERMISSION_SLOT, null, player);
-        } else {
-            setDescriptionPlayer(PERMISSION_SLOT, player, "", "§cTu ne peux pas", "§cmodifier les permissions");
-        }
-    }
-    
-    public void updateAccess(ConsulatPlayer player, boolean allow){
-        if(allow){
-            setFakeItem(CLAIM_SLOT, null, player);
-        } else {
-            setDescriptionPlayer(CLAIM_SLOT, player, "", "§cTu ne peux pas", "§cmodifier les accès");
-        }
-    }
-    
-    public void updateRank(ConsulatPlayer player, boolean allow){
-        if(allow){
-            setFakeItem(RANK_SLOT, null, player);
-        } else {
-            setDescriptionPlayer(RANK_SLOT, player, "", "§cTu ne peux pas", "§cmodifier le grade");
-        }
-    }
-    
     @Override
     public void onClick(GuiClickEvent event){
         City city = getCity();
-        ConsulatPlayer player = event.getPlayer();
         switch(event.getSlot()){
             case PERMISSION_SLOT:
-                if(!city.isOwner(player.getUUID())){
+                if(city.isOwner(getData())){
                     return;
                 }
                 getChild(PERMISSION).getGui().open(event.getPlayer());
                 break;
             case CLAIM_SLOT:
-                if(!city.canManageAccesses(player.getUUID())){
+                if(city.isOwner(getData())){
                     return;
                 }
                 getChild(CLAIM).getGui().open(event.getPlayer());
                 break;
             case RANK_SLOT:
-                if(!city.isOwner(player.getUUID())){
+                if(city.isOwner(getData())){
                     return;
                 }
                 getChild(RANK).getGui().open(event.getPlayer());

@@ -68,7 +68,7 @@ public class MembersGui extends DataRelatPagedGui<City> {
             gui.removeFakeItem(ADD_SLOT, player);
         }
         for(GuiItem item : this){
-            if(!city.isOwner(uuid) || uuid.equals(item.getAttachedObject()) || ownerUUID.equals(item.getAttachedObject())){
+            if(!city.isOwner(player.getUUID()) && !player.getUUID().equals(item.getAttachedObject())){
                 gui.setDescriptionPlayer(item.getSlot(), player, "", "§cTu ne peux pas modifier", "§cce membre");
             } else {
                 gui.removeFakeItem(item.getSlot(),  player);
@@ -146,14 +146,14 @@ public class MembersGui extends DataRelatPagedGui<City> {
                         return;
                     }
                     player.sendMessage(Text.YOU_INVITED_PLAYER_TO_CITY(target.getName(), city.getName()));
-                    city.sendMessage(Text.HAS_INVITED_PLAYER_TO_CITY(player.getName(), target.getName()));
+                    city.sendMessage(Text.HAS_INVITED_PLAYER_TO_CITY(city, player.getName(), target.getName()));
                     target.sendMessage(Text.YOU_BEEN_INVITED_TO_CITY(city.getName(), player.getName()));
                 }, new String[]{"", "^^^^^^^^^^^^^^", "Entre le nom", "du joueur"}, 0);
             }
             return;
         }
         if(event.getSlot() >= 19 && event.getSlot() <= 44 && clickedItem.getType() == Material.PLAYER_HEAD){
-            if((city.getOwner().equals(clickedItem.getAttachedObject()) || player.getUUID().equals(clickedItem.getAttachedObject()))){
+            if(!city.isOwner(player.getUUID()) && !player.getUUID().equals(clickedItem.getAttachedObject())){
                 player.sendActionBar(Text.CANT_CHANGE_PERMISSION);
                 return;
             }

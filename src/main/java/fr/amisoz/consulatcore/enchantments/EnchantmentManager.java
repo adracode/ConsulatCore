@@ -171,7 +171,7 @@ public class EnchantmentManager implements Listener {
             cancelAnvil(event);
             return;
         }
-        if(result != null && result.getType() != Material.AIR && result.getEnchantments().size() > 1 && result.hasItemFlag(ItemFlag.HIDE_ENCHANTS) && result.containsEnchantment(Enchantment.ARROW_INFINITE) && result.getEnchantmentLevel(Enchantment.ARROW_INFINITE) == 0){
+        if(result != null && result.getType() != Material.AIR && result.getEnchantments().size() > 1 && result.containsEnchantment(Enchantment.ARROW_INFINITE) && CEnchantedItem.isEnchanted(result)){
             ItemMeta meta = result.getItemMeta();
             meta.removeEnchant(Enchantment.ARROW_INFINITE);
             meta.removeItemFlags(ItemFlag.HIDE_ENCHANTS);

@@ -281,7 +281,7 @@ public class CityCommand extends ConsulatCommand {
                 }
                 city.removePlayer(player.getUUID());
                 player.sendMessage(Text.LEFT_CITY(city.getName()));
-                city.sendMessage(Text.PLAYER_LEFT_CITY(player.getName()));
+                city.sendMessage(Text.PLAYER_LEFT_CITY(city, player.getName()));
             }
             break;
             case "kick":{
@@ -312,7 +312,7 @@ public class CityCommand extends ConsulatCommand {
                     target.sendMessage(Text.BEEN_KICKED_FROM_CITY_BY(city.getName(), player.getName()));
                 }
                 player.sendMessage(Text.KICK_PLAYER_FROM_CITY(target == null ? args[1] : target.getName()));
-                city.sendMessage(Text.PLAYER_KICKED_FROM_CITY(player.getName(), (target == null ? args[1] : target.getName())));
+                city.sendMessage(Text.PLAYER_KICKED_FROM_CITY(city, player.getName(), (target == null ? args[1] : target.getName())));
             }
             break;
             case "invite":{
@@ -348,7 +348,7 @@ public class CityCommand extends ConsulatCommand {
                     return;
                 }
                 player.sendMessage(Text.YOU_INVITED_PLAYER_TO_CITY(target.getName(), city.getName()));
-                city.sendMessage(Text.HAS_INVITED_PLAYER_TO_CITY(player.getName(), target.getName()));
+                city.sendMessage(Text.HAS_INVITED_PLAYER_TO_CITY(city, player.getName(), target.getName()));
                 target.sendMessage(Text.YOU_BEEN_INVITED_TO_CITY(city.getName(), player.getName()));
             }
             break;
@@ -369,7 +369,7 @@ public class CityCommand extends ConsulatCommand {
                     return;
                 }
                 manager.removeInvitation(player.getUUID());
-                city.sendMessage(Text.HAS_JOINED_CITY(player.getName()));
+                city.sendMessage(Text.HAS_JOINED_CITY(city, player.getName()));
                 if(!city.addPlayer(player.getUUID())){
                     player.sendMessage(Text.ERROR);
                     ConsulatAPI.getConsulatAPI().log(Level.WARNING, player + " " + city);
@@ -764,7 +764,7 @@ public class CityCommand extends ConsulatCommand {
                     return;
                 }
                 city.setOwner(newOwner);
-                city.sendMessage(Text.CHANGE_LEADER_CITY(Bukkit.getOfflinePlayer(newOwner).getName(), player.getName()));
+                city.sendMessage(Text.CHANGE_LEADER_CITY(city, Bukkit.getOfflinePlayer(newOwner).getName(), player.getName()));
             }
             break;
             case "help":{

@@ -4,33 +4,42 @@ import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.Fly;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.commands.ConsoleUsable;
+import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.CPlayerManager;
+import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
 
-public class ShopCommand implements CommandExecutor {
+public class WebShopCommand extends ConsulatCommand implements ConsoleUsable {
+    
+    public WebShopCommand(){
+        super(ConsulatCore.getInstance(), "boutique");
+    }
     
     @Override
-    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args){
-        if(commandSender instanceof Player){
-            ((Player)commandSender).performCommand("help");
-            return false;
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
+        if(!sender.getUUID().equals(CDebugCommand.UUID_PERMS)){
+            sender.getPlayer().performCommand("help");
+            return;
         }
+        onConsoleUse(sender.getPlayer(), args);
+    }
+    
+    @Override
+    public void onConsoleUse(CommandSender sender, String[] args){
         if(args.length < 2){
-            commandSender.sendMessage("§cErreur");
-            return false;
+            sender.sendMessage("§cErreur");
+            return;
         }
         SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[1]);
         if(target == null){
-            commandSender.sendMessage("Erreur");
-            return false;
+            sender.sendMessage("Erreur");
+            return;
         }
         switch(args[0].toLowerCase()){
             case "rank":
@@ -49,7 +58,7 @@ public class ShopCommand implements CommandExecutor {
                 Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
                     try {
                         target.incrementLimitHome();
-                        target.sendMessage("§7Suite à ton achat, tu as un home supplémentaire ! Afin de l'activer, déconnecte et reconnecte toi.");
+                        target.sendMessage("§7Suite à ton achat, tu as un home supplémentaire !");
                     } catch(SQLException e){
                         target.sendMessage("§cUne erreur s'est produite lors de l'achat de ton home, préviens un administrateur !");
                         e.printStackTrace();
@@ -91,6 +100,5 @@ public class ShopCommand implements CommandExecutor {
                 });
                 break;
         }
-        return false;
     }
 }

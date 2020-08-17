@@ -1,12 +1,17 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.chunks.ChunkManager;
 import fr.amisoz.consulatcore.players.Fly;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.amisoz.consulatcore.shop.player.PlayerShop;
+import fr.amisoz.consulatcore.zones.ZoneManager;
+import fr.amisoz.consulatcore.zones.cities.City;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 
@@ -26,6 +31,9 @@ public class CDebugCommand extends ConsulatCommand {
                             return player != null && player.getUUID().equals(UUID_PERMS);
                         },
                         LiteralArgumentBuilder.literal("chunk"),
+                        LiteralArgumentBuilder.literal("city").
+                                then(LiteralArgumentBuilder.literal("join").
+                                        then(RequiredArgumentBuilder.argument("city", StringArgumentType.word()))),
                         LiteralArgumentBuilder.literal("fly").then(LiteralArgumentBuilder.literal("reset")),
                         LiteralArgumentBuilder.literal("shop"));
     }
@@ -39,6 +47,21 @@ public class CDebugCommand extends ConsulatCommand {
             switch(args[0]){
                 case "chunk":
                     sender.sendMessage(ChunkManager.getInstance().getChunk(sender.getPlayer().getChunk()).toString());
+                    break;
+                case "city":
+                    switch(args[1]){
+                        case "join":
+                            City city = ZoneManager.getInstance().getCity(args[2]);
+                            if(city == null){
+                                return;
+                            }
+                            if(!ZoneManager.getInstance().invitePlayer(city, sender.getUUID())){
+                                sender.sendMessage(Text.ALREADY_INVITED_CITY);
+                                return;
+                            }
+                            sender.sendMessage(Text.YOU_BEEN_INVITED_TO_CITY(city.getName(), sender.getName()));
+                            break;
+                    }
                     break;
                 case "shop":
                     PlayerShop shop = ShopManager.getInstance().getPlayerShop(sender.getPlayer().getTargetBlock(5).getLocation());

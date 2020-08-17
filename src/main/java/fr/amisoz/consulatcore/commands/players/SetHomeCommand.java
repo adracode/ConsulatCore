@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 
 public class SetHomeCommand extends ConsulatCommand {
     
-    public static final Pattern VALID_HOME = Pattern.compile("[a-zA-Z0-9àçéèêîïùÀÇÉÈÊÎÏÙ]{3,10}");
+    public static final Pattern VALID_HOME = Pattern.compile("[a-zA-Z0-9àçéèêîïùÀÇÉÈÊÎÏÙ]{1,10}");
     
     public SetHomeCommand(){
         super(ConsulatCore.getInstance(), "sethome");
@@ -45,7 +45,7 @@ public class SetHomeCommand extends ConsulatCommand {
                 return;
             }
         } else {
-            if(!claim.canInteract((SurvivalPlayer)sender)){
+            if(!claim.hasAccess(sender.getUUID())){
                 sender.sendMessage(Text.NOT_IN_YOUR_CLAIM);
                 return;
             }

@@ -6,7 +6,6 @@ import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.utils.CustomEnum;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
-import fr.leconsulat.api.ranks.Rank;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -21,7 +20,6 @@ public class PersoCommand extends ConsulatCommand {
         super(ConsulatCore.getInstance(), "perso");
         setDescription("Gérer son grade personnalisé").
                 setUsage("/perso - Gérer son grade").
-                setRank(Rank.JOUEUR).
                 suggest((listener) -> {
                             ConsulatPlayer player = getConsulatPlayer(listener);
                             return player != null && player.hasCustomRank();

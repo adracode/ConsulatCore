@@ -1,6 +1,7 @@
 package fr.amisoz.consulatcore.zones.cities;
 
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.channel.Channel;
 import fr.leconsulat.api.channel.Speakable;
@@ -40,7 +41,7 @@ public class CityChannel extends Channel implements Speakable {
         SurvivalPlayer survivalPlayer = (SurvivalPlayer)consulatPlayer;
         City city = survivalPlayer.getCity();
         CityRank rank = city.getCityPlayer(survivalPlayer.getUUID()).getRank();
-        return "§8[§d" + city.getName() + "§8] "
+        return Text.PREFIX_CITY(city)
                 + "§7("+ rank.getColor() + rank.getRankName()
                 + "§7) §a" + survivalPlayer.getName() + "§7 > §e" + message;
     }

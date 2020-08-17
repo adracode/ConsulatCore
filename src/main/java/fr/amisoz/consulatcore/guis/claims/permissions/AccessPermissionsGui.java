@@ -4,23 +4,28 @@ import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.amisoz.consulatcore.zones.claims.ClaimPermission;
 import fr.leconsulat.api.gui.GuiItem;
 import fr.leconsulat.api.gui.event.GuiClickEvent;
+import fr.leconsulat.api.gui.event.GuiOpenEvent;
 import fr.leconsulat.api.gui.gui.IGui;
 import fr.leconsulat.api.gui.gui.module.api.Datable;
 import fr.leconsulat.api.gui.gui.template.DataRelatGui;
+import fr.leconsulat.api.player.ConsulatPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.UUID;
 
 public class AccessPermissionsGui extends DataRelatGui<UUID> {
     
-    private static final byte INTERACT_DOOR_SLOT = 29;
-    private static final byte BREAK_SLOT = 30;
-    private static final byte PLACE_SLOT = 31;
-    private static final byte CONTAINER_SLOT = 32;
-    private static final byte REDSTONE_SLOT = 33;
+    private static final byte INTERACT_DOOR_SLOT = 28;
+    private static final byte BREAK_SLOT = 29;
+    private static final byte PLACE_SLOT = 30;
+    private static final byte CONTAINER_SLOT = 31;
+    private static final byte REDSTONE_SLOT = 32;
+    private static final byte DAMAGE_SLOT = 33;
+    private static final byte OTHER_SLOT = 34;
     private static final byte GIVE_ALL_SLOT = 1;
     private static final byte REMOVE_ALL_SLOT = 2;
     private static final byte KICK_SLOT = 7;
@@ -60,8 +65,12 @@ public class AccessPermissionsGui extends DataRelatGui<UUID> {
                 IGui.getItem("§cDésactivé", INTERACT_DOOR_SLOT + 9, Material.RED_CONCRETE),
                 IGui.getItem("§eDétruire", BREAK_SLOT, Material.DIAMOND_PICKAXE, "§7Détruire des blocs"),
                 IGui.getItem("§cDésactivé", BREAK_SLOT + 9, Material.RED_CONCRETE),
-                IGui.getItem("§ePlacer", PLACE_SLOT, Material.BRICK, "§7Placer des blocs"),
+                IGui.getItem("§ePlacer", PLACE_SLOT, Material.BRICK, "§7Placer", "§7- Blocs", "§7- Engrais", "§7- Seaux", "§7- Cadres, peintures, stands..."),
                 IGui.getItem("§cDésactivé", PLACE_SLOT + 9, Material.RED_CONCRETE),
+                IGui.getItem("§eDégâts", DAMAGE_SLOT, Material.DIAMOND_SWORD, "§7Infliger des dégâts"),
+                IGui.getItem("§cDésactivé", DAMAGE_SLOT + 9, Material.RED_CONCRETE),
+                IGui.getItem("§eAutre", OTHER_SLOT, Material.MINECART, "§7Autre", "§7- Autre interactions", "§7- ..."),
+                IGui.getItem("§cDésactivé", OTHER_SLOT + 9, Material.RED_CONCRETE),
                 IGui.getItem("§eRedstone", REDSTONE_SLOT, Material.REDSTONE, "§7Utiliser la redstone", "§7- Leviers", "§7- Boutons", "§7- Plaques de pressions", "§7- Fils tendues"),
                 IGui.getItem("§cDésactivé", REDSTONE_SLOT + 9, Material.RED_CONCRETE),
                 IGui.getItem("§eAccès", CONTAINER_SLOT, Material.CHEST, "§7Utiliser les",
@@ -88,6 +97,22 @@ public class AccessPermissionsGui extends DataRelatGui<UUID> {
             link.setDescription(slot, description);
         }
         super.setDescription(slot, description);
+    }
+    
+    @Override
+    public void setDescriptionPlayer(int slot, ConsulatPlayer player, String... description){
+        if(link != null){
+            link.setDescriptionPlayer(slot, player, description);
+        }
+        super.setDescriptionPlayer(slot, player, description);
+    }
+    
+    @Override
+    public void setDescriptionPlayer(int slot, ConsulatPlayer player, List<String> description){
+        if(link != null){
+            link.setDescriptionPlayer(slot, player, description);
+        }
+        super.setDescriptionPlayer(slot, player, description);
     }
     
     @Override
@@ -134,6 +159,39 @@ public class AccessPermissionsGui extends DataRelatGui<UUID> {
         }
     }
     
+    @Override
+    public void onOpened(GuiOpenEvent event){
+        ConsulatPlayer player = event.getPlayer();
+        if(canSetPermission(event.getPlayer())){
+            setFakeItem(GIVE_ALL_SLOT, null, player);
+            setFakeItem(REMOVE_ALL_SLOT, null, player);
+            setFakeItem(KICK_SLOT, null, player);
+        } else {
+            setDescriptionPlayer(GIVE_ALL_SLOT, player, "", "§cTu ne peux pas", "§cfaire cette action");
+            setDescriptionPlayer(REMOVE_ALL_SLOT, player, "", "§cTu ne peux pas", "§cfaire cette action");
+            setDescriptionPlayer(KICK_SLOT, player, "", "§cTu ne peux pas", "§cfaire cette action");
+        }
+        for(ClaimPermission permission : ClaimPermission.values()){
+            int slot = getSlotPermission(permission);
+            if(slot == -1){
+                continue;
+            }
+            update(event.getPlayer(), canSetPermission(player), slot + 9);
+        }
+    }
+    
+    private boolean canSetPermission(ConsulatPlayer player){
+        return !getData().equals(player.getUUID());
+    }
+    
+    public void update(ConsulatPlayer player, boolean allow, int slot){
+        if(allow){
+            setFakeItem(slot, null, player);
+        } else {
+            setDescriptionPlayer(slot, player, "", "§cTu ne peux pas", "§cmodifier cette permission");
+        }
+    }
+    
     private byte getSlotPermission(ClaimPermission permission){
         switch(permission){
             case INTERACT_DOOR:
@@ -146,6 +204,10 @@ public class AccessPermissionsGui extends DataRelatGui<UUID> {
                 return CONTAINER_SLOT;
             case INTERACT_REDSTONE:
                 return REDSTONE_SLOT;
+            case DAMAGE:
+                return DAMAGE_SLOT;
+            case OTHER:
+                return OTHER_SLOT;
         }
         return -1;
     }
@@ -174,6 +236,9 @@ public class AccessPermissionsGui extends DataRelatGui<UUID> {
     
     @Override
     public void onClick(GuiClickEvent event){
+        if(!canSetPermission(event.getPlayer())){
+            return;
+        }
         Claim claim = getClaim();
         switch(event.getSlot()){
             case GIVE_ALL_SLOT:
@@ -209,6 +274,14 @@ public class AccessPermissionsGui extends DataRelatGui<UUID> {
             case REDSTONE_SLOT:
             case REDSTONE_SLOT + 9:
                 switchPermission(ClaimPermission.INTERACT_REDSTONE);
+                break;
+            case DAMAGE_SLOT:
+            case DAMAGE_SLOT + 9:
+                switchPermission(ClaimPermission.DAMAGE);
+                break;
+            case OTHER_SLOT:
+            case OTHER_SLOT + 9:
+                switchPermission(ClaimPermission.OTHER);
                 break;
         }
     }

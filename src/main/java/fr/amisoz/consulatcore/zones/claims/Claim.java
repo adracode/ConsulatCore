@@ -106,12 +106,20 @@ public class Claim extends CChunk {
         return removed;
     }
     
-    public boolean canInteractDispenser(SurvivalPlayer player){
-        return canInteract(player);
+    public boolean canInteractOther(SurvivalPlayer player){
+        return canInteract(player, ClaimPermission.OTHER);
+    }
+    
+    public boolean canDamage(SurvivalPlayer player){
+        return canInteract(player, ClaimPermission.DAMAGE);
     }
     
     public boolean canInteract(SurvivalPlayer player){
         return canInteract(player, null);
+    }
+    
+    public boolean canPlace(SurvivalPlayer player){
+        return canInteract(player, ClaimPermission.PLACE_BLOCK);
     }
     
     public boolean canInteract(SurvivalPlayer player, ClaimPermission permission){
@@ -188,26 +196,6 @@ public class Claim extends CChunk {
                 claimManager.getClaim(x - 1, z),
                 claimManager.getClaim(x + 1, z)
         };
-    }
-    
-    public boolean canFertilize(SurvivalPlayer player){
-        return canInteract(player);
-    }
-    
-    public boolean canIgnite(SurvivalPlayer player){
-        return canInteract(player);
-    }
-    
-    public boolean canUseCauldron(SurvivalPlayer player){
-        return canInteract(player);
-    }
-    
-    public boolean canFormBlock(SurvivalPlayer player){
-        return canInteract(player);
-    }
-    
-    public boolean canReceivePotion(SurvivalPlayer player){
-        return canInteract(player);
     }
     
     void setOwner(Zone owner){

@@ -3,6 +3,7 @@ package fr.amisoz.consulatcore;
 import fr.amisoz.consulatcore.economy.BaltopManager;
 import fr.amisoz.consulatcore.moderation.MutedPlayer;
 import fr.amisoz.consulatcore.players.SurvivalOffline;
+import fr.amisoz.consulatcore.zones.cities.City;
 import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -24,6 +25,7 @@ import java.util.function.Function;
 final public class Text {
     
     public static final String PREFIX = "§7[§6Consulat§7]§6 ";
+    public static String PREFIX_CITY(City city){ return "§8[§d" + city.getName() + "§8] ";}
     public static final String MODERATION_PREFIX = ChatColor.DARK_GREEN + "(Staff)" + ChatColor.GRAY + "[" + ChatColor.GOLD + "Modération" + ChatColor.GRAY + "] ";
     public static final String ANNOUNCE_PREFIX = ChatColor.GRAY + "§l[" + ChatColor.GOLD + "Modération" + ChatColor.GRAY + "§l]§r ";
     public static final String BROADCAST_PREFIX = ChatColor.RED + "§l[ANNONCE] ";
@@ -41,7 +43,7 @@ final public class Text {
     public static String CITY_RENAMED(String old, String name){return PREFIX + "§7Tu as renommé la ville §a" + name + " §7! §8(§7Ancien nom: §e" + old + "§8)§7.";}
     public static final String CANT_DISBAND_CITY = PREFIX + "§cTu ne peux pas détruire cette ville.";
     public static String LEFT_CITY(String city){return PREFIX + "§7Tu as quitté la ville §a" + city + "§7.";}
-    public static String PLAYER_LEFT_CITY(String player){return PREFIX + "§c" + player + " §7a quitté la ville.";}
+    public static String PLAYER_LEFT_CITY(City city, String player){return PREFIX_CITY(city) + "§c" + player + " §7a quitté la ville.";}
     public static final String CANT_KICK_CITY = PREFIX + "§cTu ne peux pas kick un joueur de la ville.";
     public static final String NO_PLAYER = PREFIX + "§cMerci de spécifier le joueur.";
     public static final String PLAYER_DOESNT_EXISTS = PREFIX + "§cCe joueur n'existe pas.";
@@ -57,18 +59,18 @@ final public class Text {
     }
     public static String BEEN_KICKED_FROM_CITY_BY(String city, String player){return PREFIX + "§cTu as été kick de la ville §7" + city + "§c par §7" + player + "§c.";}
     public static String KICK_PLAYER_FROM_CITY(String player){return PREFIX + "§cTu as kick §7" + player + " §ade la ville";}
-    public static String PLAYER_KICKED_FROM_CITY(String kicker, String kicked){return PREFIX + "§c" + kicker + " §7a kick §c" + kicked + "§7 la ville.";}
+    public static String PLAYER_KICKED_FROM_CITY(City city, String kicker, String kicked){return PREFIX_CITY(city) + "§c" + kicker + " §7a kick §c" + kicked + "§7 la ville.";}
     public static final String CANT_INVITE_CITY = PREFIX + "§cTu ne peux pas inviter des joueurs dans la ville.";
     public static final String ALREADY_INVITED_CITY = PREFIX + "§cCe joueur est déjà invité dans la ville.";
     public static String YOU_INVITED_PLAYER_TO_CITY(String invited, String city){return PREFIX + "§aTu as invité §7" + invited + " §a à rejoindre la ville §7" + city + "§a.";}
-    public static String HAS_INVITED_PLAYER_TO_CITY(String inviter, String invited){return PREFIX + "§a" + inviter + "§7 a invité §a" + invited + "§7.";}
+    public static String HAS_INVITED_PLAYER_TO_CITY(City city, String inviter, String invited){return PREFIX_CITY(city) + "§a" + inviter + "§7 a invité §a" + invited + "§7.";}
     public static TextComponent YOU_BEEN_INVITED_TO_CITY(String city, String inviter){
         TextComponent message = new TextComponent("§aTu as été invité à rejoindre la ville §7" + city + "§a par §7" + inviter + "§a.");
                 message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§aClique pour rejoindre " + city).create()));
                 message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/city accept " + city));
                 return message;}
     public static final String YOU_NOT_BEEN_INVITED_TO_CITY = PREFIX + "§cTu n'as pas été invité dans cette ville.";
-    public static String HAS_JOINED_CITY(String player){return PREFIX + "§a" + player + " §7a rejoint la ville !";}
+    public static String HAS_JOINED_CITY(City city, String player){return PREFIX_CITY(city) + "§a" + player + " §7a rejoint la ville !";}
     public static final String ERROR = PREFIX + "§cUne erreur est survenue";
     public static String YOU_JOINED_CITY(String city){return PREFIX + "§aTu as rejoint §7" + city + "§a.";}
     public static final String YOU_CANT_CLAIM_CITY = PREFIX + "§cTu ne peux pas claim pour la ville.";
@@ -115,7 +117,7 @@ final public class Text {
     public static String YOU_CHANGE_DESCRIPTION_CLAIM(String description){return PREFIX + "§aTu as ajouté la description suivante à ce claim:§7\n" + description;}
     public static final String CANT_CHANGE_LEADER_CITY = PREFIX + "§cTu ne peux pas changer le propriétaire de la ville.";
     public static final String ALREADY_LEADER_CITY = PREFIX + "§cCe joueur est déjà le propriétaire de la ville.";
-    public static String CHANGE_LEADER_CITY(String newLeader, String by){return PREFIX + "§a" + newLeader + " §7est passé §epropriétaire §7de la ville par §a" + by;}
+    public static String CHANGE_LEADER_CITY(City city, String newLeader, String by){return PREFIX_CITY(city) + "§a" + newLeader + " §7est passé §epropriétaire §7de la ville par §a" + by;}
     public static final String YOU_NO_CLAIM = PREFIX + "§cTu n'as pas de claims.";
     public static final String PLAYER_ALREADY_ACCESS_CLAIMS = PREFIX + "§cCe joueur a déjà accès à tes claims.";
     public static String ADD_PLAYER_CLAIMS(String player){return PREFIX + "§a" + player + " a été ajouté à tes claims";}
@@ -242,8 +244,8 @@ final public class Text {
     public static final String NO_CUSTOM_RANK = PREFIX + "§cTu n'as pas de grade personnalisé.";
     public static final String CUSTOM_RANK_RESET = PREFIX + "§aTon grade personnalisé a été réinitialisé.";
     public static final String CHOOSE_CUSTOM_RANK_COLOR = PREFIX + "§6Choisis la couleur de ton grade: ";
-    public static String CUSTOM_RANK_COLOR_CHOSEN(ChatColor color){return PREFIX + "§7Tu as choisi §" + color + "cette couleur !\n§6Écris dans le chat le nom de ton grade: §o(10 caractères maximum, celui-ci aura des crochets par défaut)";}
-    public static String NEW_CUSTOM_RANK(ConsulatPlayer player){return PREFIX + "§6Voilà ton nouveau grade: " + player.getCustomRank() + player.getName();}
+    public static String CUSTOM_RANK_COLOR_CHOSEN(ChatColor color){return PREFIX + "§7Tu as choisi " + color + "cette couleur !\n§6Écris dans le chat le nom de ton grade: §o(10 caractères maximum, celui-ci aura des crochets par défaut)";}
+    public static String NEW_CUSTOM_RANK(ConsulatPlayer player){return PREFIX + "§6Voilà ton nouveau grade: " + player.getDisplayName();}
     public static final String INVALID_HOME_NAME = PREFIX + "§cNom de home invalide.";
     public static final String DIMENSION_HOME = PREFIX + "§cTu ne peux pas mettre de home dans cette dimension.";
     public static final String NO_MORE_HOME_AVAILABLE = PREFIX + "§cTu as atteint ta limite de homes, définis la position d'un home existant ou supprime en un.";

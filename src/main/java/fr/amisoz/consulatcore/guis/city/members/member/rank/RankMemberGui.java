@@ -76,6 +76,9 @@ public class RankMemberGui extends DataRelatGui<UUID> {
     @Override
     public void onClick(GuiClickEvent event){
         City city = getCity();
+        if(!city.isOwner(event.getPlayer().getUUID())){
+            return;
+        }
         CityRank rank;
         switch(event.getSlot()){
             case RANK2_SLOT:

@@ -4,5 +4,3 @@ version: ${version}
 main: fr.amisoz.consulatcore.ConsulatCore
 depend: [ConsulatAPI]
 api-version: "1.14"
-commands:
-  boutique:

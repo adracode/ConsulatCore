@@ -52,7 +52,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
     private boolean isFighting;
     private Map<String, Location> homes = new HashMap<>();
     private Location oldLocation;
-    private int limitHomes;
+    private int limitHomes = -1;
     private double money;
     private long lastMove = System.currentTimeMillis();
     private boolean perkTop;
@@ -250,8 +250,8 @@ public class SurvivalPlayer extends ConsulatPlayer {
         return shops;
     }
     
-    public int getLimitHome(){
-        return limitHomes - setExtraHomes();
+    public int canBuyHome(){
+        return limitHomes - setExtraHomes(getRank());
     }
     
     public long getFlyReset(){
@@ -268,6 +268,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
     
     public void setFly(Fly fly){
         this.fly = new Fly(fly);
+        addCommandPermission(CommandManager.getInstance().getCommand("fly").getPermission());
     }
     
     public HashMap<BanReason, Integer> getBanHistory(){
@@ -315,13 +316,18 @@ public class SurvivalPlayer extends ConsulatPlayer {
     public void setPerkTop(boolean perkTop) throws SQLException{
         SPlayerManager.getInstance().setPerkUp(getUUID(), true);
         this.perkTop = perkTop;
+        if(perkTop){
+            addCommandPermission(CommandManager.getInstance().getCommand("top").getPermission());
+        } else {
+            removeCommandPermission(CommandManager.getInstance().getCommand("top").getPermission());
+        }
     }
     
     public void initialize(double money, int extraHomes, int limitShop,
                            Map<String, Location> homes, boolean perkTop, Fly fly, Collection<PlayerShop> shops, Zone zone, City city){
         this.money = money;
-        this.limitHomes = setExtraHomes() + extraHomes;
-        this.limitShop = setExtraShops() + limitShop;
+        this.limitHomes = setExtraHomes(getRank()) + extraHomes;
+        this.limitShop = setExtraShops(getRank()) + limitShop;
         setHomes(homes);
         this.perkTop = perkTop;
         this.fly = fly;
@@ -330,6 +336,14 @@ public class SurvivalPlayer extends ConsulatPlayer {
         }
         this.zone = zone;
         this.city = city;
+    }
+    
+    public void initializeHomes(Rank newRank){
+        this.limitHomes = limitHomes - setExtraHomes(getRank()) + setExtraHomes(newRank);
+    }
+    
+    public void initializeShops(Rank newRank){
+        this.limitHomes = limitHomes - setExtraShops(getRank()) + setExtraShops(newRank);
     }
     
     public boolean canAddNewShop(){
@@ -624,8 +638,8 @@ public class SurvivalPlayer extends ConsulatPlayer {
         return ignoredPlayers.contains(uuid);
     }
     
-    private int setExtraHomes(){
-        switch(getRank()){
+    private int setExtraHomes(Rank rank){
+        switch(rank){
             case JOUEUR:
                 return 1;
             case TOURISTE:
@@ -637,8 +651,8 @@ public class SurvivalPlayer extends ConsulatPlayer {
         }
     }
     
-    private int setExtraShops(){
-        switch(getRank()){
+    private int setExtraShops(Rank rank){
+        switch(rank){
             case JOUEUR:
             case TOURISTE:
                 return 2;

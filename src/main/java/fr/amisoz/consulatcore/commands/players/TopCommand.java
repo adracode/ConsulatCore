@@ -5,7 +5,6 @@ import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
-import fr.leconsulat.api.ranks.Rank;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +15,6 @@ public class TopCommand extends ConsulatCommand {
         super(ConsulatCore.getInstance(), "top");
         setDescription("Se téléporter à la surface").
                 setUsage("/top - Se TP à la surface").
-                setRank(Rank.JOUEUR).
                 suggest((listener) -> {
                     SurvivalPlayer player = (SurvivalPlayer)getConsulatPlayer(listener);
                     return player != null && player.hasPerkTop();

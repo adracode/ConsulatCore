@@ -3,9 +3,11 @@ package fr.amisoz.consulatcore.guis.city.members.member.permissions;
 import fr.amisoz.consulatcore.players.CityPermission;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.leconsulat.api.gui.event.GuiClickEvent;
+import fr.leconsulat.api.gui.event.GuiOpenEvent;
 import fr.leconsulat.api.gui.gui.IGui;
 import fr.leconsulat.api.gui.gui.module.api.Datable;
 import fr.leconsulat.api.gui.gui.template.DataRelatGui;
+import fr.leconsulat.api.player.ConsulatPlayer;
 import org.bukkit.Material;
 
 import java.util.UUID;
@@ -54,6 +56,29 @@ public class MemberPermissionGui extends DataRelatGui<UUID> {
         }
     }
     
+    @Override
+    public void onOpened(GuiOpenEvent event){
+        for(CityPermission permission : CityPermission.values()){
+            int slot = getSlotPermission(permission);
+            if(slot == -1){
+                continue;
+            }
+            update(event.getPlayer(), canSetPermission(event.getPlayer()), slot + 9);
+        }
+    }
+    
+    private boolean canSetPermission(ConsulatPlayer player){
+        return !getData().equals(player.getUUID());
+    }
+    
+    public void update(ConsulatPlayer player, boolean allow, int slot){
+        if(allow){
+            setFakeItem(slot, null, player);
+        } else {
+            setDescriptionPlayer(slot, player, "", "§cTu ne peux pas", "§cmodifier cette permission");
+        }
+    }
+    
     private byte getSlotPermission(CityPermission permission){
         switch(permission){
             case MANAGE_PLAYER:
@@ -88,6 +113,9 @@ public class MemberPermissionGui extends DataRelatGui<UUID> {
     
     @Override
     public void onClick(GuiClickEvent event){
+        if(!canSetPermission(event.getPlayer())){
+            return;
+        }
         City city = getPlayerCity();
         UUID uuid = getData();
         CityPermission permission = null;
