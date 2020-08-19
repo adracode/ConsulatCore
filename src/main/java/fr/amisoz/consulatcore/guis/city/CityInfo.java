@@ -104,7 +104,7 @@ public class CityInfo extends DataPagedGui<City> {
     
     public void updateRanks(){
         for(GuiItem item : this){
-            item.setDescription("", "§7Grade: §b" + ((CityPlayer)item.getAttachedObject()).getRank().getRankName());
+            setDescription(item.getSlot(), "", "§7Grade: §b" + ((CityPlayer)item.getAttachedObject()).getRank().getRankName());
         }
     }
     

@@ -94,7 +94,8 @@ public class CityCommand extends ConsulatCommand {
                                         then(Arguments.playerList("joueur"))).
                                 then(LiteralArgumentBuilder.literal("list")),
                         LiteralArgumentBuilder.literal("info").
-                                then(Arguments.playerList("joueur")),
+                                then(Arguments.playerList("joueur")).
+                                then(Arguments.playerList("ville")),
                         LiteralArgumentBuilder.literal("options"),
                         LiteralArgumentBuilder.literal("gui"),
                         LiteralArgumentBuilder.literal("menu"),
@@ -125,7 +126,7 @@ public class CityCommand extends ConsulatCommand {
                 new SubCommand("access add <joueur>", "Ajoute un joueur à un claim"),
                 new SubCommand("access remove <joueur>", "Retire un joueur d'un claim"),
                 new SubCommand("access list", "Affiche les membres d'un claim"),
-                new SubCommand("info <joueur>", "Affiche les membres d'un claim"),
+                new SubCommand("info <joueur|ville>", "Affiche les information de ville"),
                 new SubCommand("chat", "Switch de chat (global ↔ ville)"),
                 new SubCommand("chat <message>", "Parler dans le chat de ville"),
                 new SubCommand("options", "Ouvrir le menu de ville"),
@@ -611,7 +612,7 @@ public class CityCommand extends ConsulatCommand {
             break;
             case "info":{
                 if(args.length < 2){
-                    player.sendMessage(Text.NO_PLAYER);
+                    player.sendMessage(Text.NO_PLAYER_OR_CITY);
                     return;
                 }
                 SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[1]);
@@ -624,7 +625,12 @@ public class CityCommand extends ConsulatCommand {
                 } else {
                     SPlayerManager.getInstance().fetchOffline(args[1], offlineTarget -> {
                         if(offlineTarget == null){
-                            player.sendMessage(Text.PLAYER_DOESNT_EXISTS);
+                            City city = ZoneManager.getInstance().getCity(args[1]);
+                            if(city == null){
+                                player.sendMessage(Text.CITY_DOESNT_EXISTS);
+                                return;
+                            }
+                            GuiManager.getInstance().getContainer("city-info").getGui(city).open(player);
                             return;
                         }
                         if(offlineTarget.getCity() == null){

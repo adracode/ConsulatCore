@@ -10,6 +10,7 @@ import fr.amisoz.consulatcore.guis.city.members.PublicPermissionsGui;
 import fr.amisoz.consulatcore.guis.city.members.member.MemberGui;
 import fr.amisoz.consulatcore.guis.city.members.member.permissions.MemberPermissionGui;
 import fr.amisoz.consulatcore.guis.city.members.member.rank.RankMemberGui;
+import fr.amisoz.consulatcore.guis.claims.ManageClaimGui;
 import fr.amisoz.consulatcore.players.CityPermission;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.zones.Zone;
@@ -410,7 +411,13 @@ public class City extends Zone {
     }
     
     private void updateManageClaim(UUID uuid){
-    
+        ConsulatPlayer player = CPlayerManager.getInstance().getConsulatPlayer(uuid);
+        if(player != null){
+            IGui currentlyOpen = player.getCurrentlyOpen();
+            if(currentlyOpen instanceof ManageClaimGui){
+                currentlyOpen.refresh(player);
+            }
+        }
     }
     
     private void updateHome(UUID uuid){

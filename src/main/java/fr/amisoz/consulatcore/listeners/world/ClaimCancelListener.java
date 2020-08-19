@@ -16,10 +16,7 @@ import fr.leconsulat.api.events.entities.PlayerInteractWithEntityEvent;
 import fr.leconsulat.api.events.items.PlayerPlaceItemEvent;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.utils.Rollback;
-import org.bukkit.Chunk;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -356,11 +353,18 @@ public class ClaimCancelListener implements Listener {
     
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onPlace(BlockPlaceEvent event){
+        if(ClaimManager.isKey(event.getItemInHand())){
+            event.setCancelled(true);
+            return;
+        }
         CChunk blockChunk = chunkManager.getChunk(event.getBlock().getChunk());
         Claim blockClaim = blockChunk instanceof Claim ? (Claim)blockChunk : null;
         if(blockClaim != null && !blockClaim.canPlace(
                 (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId()))){
             event.setCancelled(true);
+            if(event.getBlock().getType() == Material.SCAFFOLDING){
+                event.getPlayer().sendBlockChange(event.getBlock().getLocation(), event.getBlockReplacedState().getBlockData());
+            }
             return;
         } else if(blockClaim != null){
             if(ClaimManager.PROTECTABLE.contains(event.getBlock().getType())){
@@ -653,7 +657,11 @@ public class ClaimCancelListener implements Listener {
     //EntityTameEvent
     //EntityTargetEvent
     //EntityTargetLivingEntityEvent
-    //EntityTeleportEvent
+    
+    public void onEntityTeleportEvent(EntityTeleportEvent event){
+        Bukkit.getPlayer("adracode").sendActionBar(event.getEntity().getType().toString());
+    }
+    
     //EntityToggleGlideEvent
     //EntityToggleSwimEvent
     //EntityTransformEvent
@@ -1244,7 +1252,6 @@ public class ClaimCancelListener implements Listener {
     private void removeProjectile(Projectile projectile){
         if(projectile.getType() == EntityType.ARROW || projectile.getType() == EntityType.SPECTRAL_ARROW){
             projectile.remove();
-            return;
         }
     }
     

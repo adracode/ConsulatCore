@@ -3,11 +3,13 @@ package fr.amisoz.consulatcore.guis.city.members.member.rank;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.amisoz.consulatcore.zones.cities.CityRank;
 import fr.leconsulat.api.gui.event.GuiClickEvent;
+import fr.leconsulat.api.gui.event.GuiOpenEvent;
 import fr.leconsulat.api.gui.gui.IGui;
 import fr.leconsulat.api.gui.gui.module.api.Datable;
 import fr.leconsulat.api.gui.gui.template.DataRelatGui;
 import org.bukkit.Material;
 
+import java.util.List;
 import java.util.UUID;
 
 public class RankMemberGui extends DataRelatGui<UUID> {
@@ -42,6 +44,19 @@ public class RankMemberGui extends DataRelatGui<UUID> {
         }
         setGlowing(slot, true);
         setDescription(slot);
+    }
+    
+    @Override
+    public void onOpened(GuiOpenEvent event){
+        if(!getCity().isOwner(event.getPlayer().getUUID())){
+            setDescriptionPlayer(RANK2_SLOT, event.getPlayer(), (List<String>)null);
+            setDescriptionPlayer(RANK3_SLOT, event.getPlayer(), (List<String>)null);
+            setDescriptionPlayer(RANK4_SLOT, event.getPlayer(), (List<String>)null);
+        } else {
+            removeFakeItem(RANK2_SLOT, event.getPlayer());
+            removeFakeItem(RANK3_SLOT, event.getPlayer());
+            removeFakeItem(RANK4_SLOT, event.getPlayer());
+        }
     }
     
     @Override

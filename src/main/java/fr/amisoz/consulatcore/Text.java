@@ -40,6 +40,7 @@ final public class Text {
     public static final String CANT_DISBAND_CITY = PREFIX + "§cTu ne peux pas détruire cette ville.";
     public static final String CANT_KICK_CITY = PREFIX + "§cTu ne peux pas kick un joueur de la ville.";
     public static final String NO_PLAYER = PREFIX + "§cMerci de spécifier le joueur.";
+    public static final String NO_PLAYER_OR_CITY = PREFIX + "§cMerci de spécifier le joueur ou la ville.";
     public static final String PLAYER_DOESNT_EXISTS = PREFIX + "§cCe joueur n'existe pas.";
     public static final String PLAYER_NOT_CONNECTED = PREFIX + "§cCe joueur n'est pas connecté.";
     public static final String PLAYER_DOESNT_BELONGS_CITY = PREFIX + "§cCe joueur n'appartient pas à la ville.";

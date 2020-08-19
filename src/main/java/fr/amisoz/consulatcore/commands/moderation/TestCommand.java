@@ -5,6 +5,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
+import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.amisoz.consulatcore.zones.ZoneManager;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.leconsulat.api.commands.ConsulatCommand;
@@ -16,12 +17,16 @@ public class TestCommand extends ConsulatCommand {
     public TestCommand(){
         super(ConsulatCore.getInstance(), "test");
         setDescription("Commande de dev").
-                setUsage("/test city lead <ville> - Faire un coup d'état\n" +
+                setUsage("/test city lead - Faire un coup d'état\n" +
+                        "/test city join <ville> - Rejoindre une ville\n" +
                         "/test claim - Switch les permissions de claim").
+                setArgsMin(1).
                 setRank(Rank.DEVELOPPEUR).
                 suggest(
                         LiteralArgumentBuilder.literal("claim"),
                         LiteralArgumentBuilder.literal("city").
+                                then(LiteralArgumentBuilder.literal("join").
+                                        then(RequiredArgumentBuilder.argument("city", StringArgumentType.word()))).
                                 then(LiteralArgumentBuilder.literal("lead").
                                         then(RequiredArgumentBuilder.argument("city", StringArgumentType.word()))));
     }
@@ -31,10 +36,31 @@ public class TestCommand extends ConsulatCommand {
         if(args.length > 0){
             switch(args[0]){
                 case "city":
+                    if(args.length < 2){
+                        sender.sendMessage("§cPas assez d'arguments");
+                        return;
+                    }
                     switch(args[1]){
-                        case "lead":
+                        case "join":{
+                            if(args.length < 3){
+                                sender.sendMessage("§cPas assez d'arguments");
+                                return;
+                            }
                             City city = ZoneManager.getInstance().getCity(args[2]);
                             if(city == null){
+                                return;
+                            }
+                            if(!ZoneManager.getInstance().invitePlayer(city, sender.getUUID())){
+                                sender.sendMessage(Text.ALREADY_INVITED_CITY);
+                                return;
+                            }
+                            sender.sendMessage(Text.YOU_BEEN_INVITED_TO_CITY(city.getName(), sender.getName()));
+                        }
+                        break;
+                        case "lead":
+                            City city = ((SurvivalPlayer)sender).getCity();
+                            if(city == null){
+                                sender.sendMessage(Text.YOU_NOT_IN_CITY);
                                 return;
                             }
                             city.setOwner(sender.getUUID());

@@ -256,7 +256,6 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         new SpawnCommand().register();
         new StaffChatCommand().register();
         new StaffListCommand().register();
-        new TestCommand().register();
         new ToggleChatCommand().register();
         new TopCommand().register();
         new TpaCommand().register();
@@ -266,6 +265,9 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         new UnclaimCommand().register();
         new AntecedentsCommand().register();
         new CityCommand().register();
+        if(ConsulatAPI.getConsulatAPI().isDevelopment()) {
+            new TestCommand().register();
+        }
     }
     
     private void registerEvents(){
