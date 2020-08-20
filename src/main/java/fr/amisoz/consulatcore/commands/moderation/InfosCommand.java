@@ -4,6 +4,7 @@ import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.players.SPlayerManager;
 import fr.amisoz.consulatcore.players.SurvivalOffline;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
+import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.CPlayerManager;
@@ -35,11 +36,21 @@ public class InfosCommand extends ConsulatCommand {
                 setUsage("/infos <joueur> - Voir les informations d'un joueur").
                 setArgsMin(1).
                 setRank(Rank.RESPONSABLE).
-                suggest(Arguments.playerList("joueur"));
+                suggest(listener -> {
+                    if(!ConsulatAPI.getConsulatAPI().isDevelopment()){
+                        return true;
+                    }
+                    ConsulatPlayer player = getConsulatPlayer(listener);
+                    return player != null && (!ConsulatAPI.getConsulatAPI().isDevelopment() || player.hasPermission(ConsulatAPI.getConsulatAPI().getPermission("bypass-commands")));
+                }, Arguments.playerList("joueur"));
     }
     
     @Override
     public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
+        if(ConsulatAPI.getConsulatAPI().isDevelopment() && !sender.hasPermission(ConsulatAPI.getConsulatAPI().getPermission("bypass-commands"))){
+            sender.getPlayer().performCommand("help");
+            return;
+        }
         SurvivalPlayer player = (SurvivalPlayer)sender;
         
         player.sendMessage(ChatColor.GRAY + "========" + ChatColor.YELLOW + " INFOS " + ChatColor.GRAY + "========");

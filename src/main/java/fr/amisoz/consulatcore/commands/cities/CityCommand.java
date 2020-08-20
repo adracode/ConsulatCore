@@ -333,12 +333,12 @@ public class CityCommand extends ConsulatCommand {
                     return;
                 }
                 manager.removeInvitation(player.getUUID());
-                city.sendMessage(Text.HAS_JOINED_CITY(city, player.getName()));
                 if(!city.addPlayer(player.getUUID())){
                     player.sendMessage(Text.ERROR);
                     ConsulatAPI.getConsulatAPI().log(Level.WARNING, player + " " + city);
                     return;
                 }
+                city.sendMessage(Text.HAS_JOINED_CITY(city, player.getName()));
                 player.sendMessage(Text.YOU_JOINED_CITY(city.getName()));
             }
             break;

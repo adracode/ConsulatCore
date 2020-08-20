@@ -124,21 +124,22 @@ public class Claim extends CChunk {
     }
     
     public boolean addPlayer(UUID uuid){
-        boolean added = this.permissions.put(uuid, new HashSet<>()) == null;
-        if(added){
-            addPermission(uuid, ClaimPermission.values());
-            if(owner instanceof City){
-                IGui access = GuiManager.getInstance().getContainer("city").getGui(false, owner, CityGui.MEMBERS, uuid, MemberGui.CLAIM);
-                if(access != null){
-                    ((AccessibleClaimGui)access).addItemClaim(this);
-                }
-            }
-            IGui manageClaim = GuiManager.getInstance().getContainer("claim").getGui(false, this);
-            if(manageClaim != null){
-                ((ManageClaimGui)manageClaim).addPlayerToClaim(uuid, Bukkit.getOfflinePlayer(uuid).getName());
+        if(this.permissions.containsKey(uuid)){
+            return false;
+        }
+        this.permissions.put(uuid, new HashSet<>());
+        addPermission(uuid, ClaimPermission.values());
+        if(owner instanceof City){
+            IGui access = GuiManager.getInstance().getContainer("city").getGui(false, owner, CityGui.MEMBERS, uuid, MemberGui.CLAIM);
+            if(access != null){
+                ((AccessibleClaimGui)access).addItemClaim(this);
             }
         }
-        return added;
+        IGui manageClaim = GuiManager.getInstance().getContainer("claim").getGui(false, this);
+        if(manageClaim != null){
+            ((ManageClaimGui)manageClaim).addPlayerToClaim(uuid, Bukkit.getOfflinePlayer(uuid).getName());
+        }
+        return true;
     }
     
     public boolean removePlayer(UUID uuid){

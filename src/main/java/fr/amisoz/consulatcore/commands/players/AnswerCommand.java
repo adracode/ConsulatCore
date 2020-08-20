@@ -30,7 +30,7 @@ public class AnswerCommand extends ConsulatCommand {
         SurvivalPlayer target = survivalSender.getLastPrivate() == null ?
                 null : (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(survivalSender.getLastPrivate());
         if(target == null){
-            sender.sendMessage(Text.PLAYER_NOT_CONNECTED);
+            sender.sendMessage(Text.NO_ANSWER);
             return;
         }
         String rawMessage = StringUtils.join(args, ' ');

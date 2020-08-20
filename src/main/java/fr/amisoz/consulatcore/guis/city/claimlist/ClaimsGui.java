@@ -92,7 +92,6 @@ public class ClaimsGui extends DataRelatPagedGui<City> {
         //Le claim est placé sur l'item
         item.setAttachedObject(claim);
         //L'item est ajouté au PagedGui répertoriant les claims
-        System.out.println("additem");
         addItem(item);
     }
     

@@ -700,30 +700,10 @@ public class ShopManager implements Listener {
             UUID uuid = UUID.fromString(stringUUID);
             Block block = world.getBlockAt(location);
             if(!(block.getState() instanceof Chest)){
-                if(block.getState() instanceof Sign){
-                    Chest chest = getChestFromSign(block);
-                    if(chest == null){
-                        ConsulatAPI.getConsulatAPI().log(Level.SEVERE, "Le shop en " + location + " n'est pas valide (pas un panneau), il sera supprimé.");
-                        ConsulatAPI.getConsulatAPI().logFile("Le shop en " + location + " n'est pas valide, il a été supprimé, owner: " + uuid + ", item vendu: " + resultShops.getString("material"));
-                        removeShopDatabase(uuid, location.getBlockX(), location.getBlockY(), location.getBlockZ());
-                        continue;
-                    }
-                    block = getChestFromSign(block).getBlock();
-                    Location old = location;
-                    location = block.getLocation();
-                    if(ChestUtils.isDoubleChest(chest)){
-                        Block nextChest = ChestUtils.getNextChest(chest.getBlock());
-                        if(nextChest != null){
-                            ChestUtils.setChestsSingle(chest.getBlock(), nextChest);
-                        }
-                    }
-                    updateShop(old, location);
-                } else {
-                    ConsulatAPI.getConsulatAPI().log(Level.SEVERE, "Le shop en " + location + " n'est pas valide, il sera supprimé.");
-                    ConsulatAPI.getConsulatAPI().logFile("Le shop en " + location + " n'est pas valide, il a été supprimé, owner: " + uuid + ", item vendu: " + resultShops.getString("material"));
-                    removeShopDatabase(uuid, location.getBlockX(), location.getBlockY(), location.getBlockZ());
-                    continue;
-                }
+                ConsulatAPI.getConsulatAPI().log(Level.SEVERE, "Le shop en " + location + " n'est pas valide, il sera supprimé.");
+                ConsulatAPI.getConsulatAPI().logFile("Le shop en " + location + " n'est pas valide, il a été supprimé, owner: " + uuid + ", item vendu: " + resultShops.getString("material"));
+                removeShopDatabase(uuid, location.getBlockX(), location.getBlockY(), location.getBlockZ());
+                continue;
             }
             ItemFrame itemFrame = PlayerShop.getItemFrame(block.getLocation());
             ItemStack item;
@@ -745,9 +725,7 @@ public class ShopManager implements Listener {
             } else {
                 ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Missing item frame for shop " + location + " of " + Bukkit.getOfflinePlayer(uuid).getName());
                 item = getFirstItem((Chest)block.getState());
-                if(item != null){
-                    item.setItemMeta(null);
-                } else {
+                if(item == null){
                     item = new ItemStack(type);
                 }
                 Collection<Entity> entities = location.clone().add(0.5, 1.5, 0.5).getNearbyEntities(0.5, 0.5, 0.5);

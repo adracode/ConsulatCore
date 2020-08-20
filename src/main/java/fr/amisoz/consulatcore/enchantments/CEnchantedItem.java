@@ -155,7 +155,6 @@ public class CEnchantedItem {
             ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Enchanted item without lore");
             return;
         }
-        System.out.println(description);
         for(byte i = 0, size = getNumberOfEnchant(getTag()); i < size; ++i){
             description.remove(0);
         }

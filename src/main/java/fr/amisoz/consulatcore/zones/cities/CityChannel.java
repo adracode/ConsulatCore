@@ -31,8 +31,9 @@ public class CityChannel extends Channel implements Speakable {
         }
         if(this.exclude.isEmpty()){
             ConsulatCore.getInstance().getSpy().sendMessage(message);
+        } else {
+            ConsulatCore.getInstance().getSpy().sendMessage(message, this.exclude.toArray(converter));
         }
-        ConsulatCore.getInstance().getSpy().sendMessage(message, this.exclude.toArray(converter));
         this.exclude.clear();
     }
     

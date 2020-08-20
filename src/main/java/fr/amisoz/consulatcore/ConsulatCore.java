@@ -40,6 +40,8 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -96,9 +98,27 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         long startLoading = System.currentTimeMillis();
         DecimalFormatSymbols custom = new DecimalFormatSymbols();
         custom.setGroupingSeparator(' ');
-        moneyFormat = new DecimalFormat("###,###,###,###.## ¢", custom);
+        FileConfiguration config = getConfig();
         overworld = Bukkit.getWorlds().get(0);
-        spawn = new Location(overworld, 330, 65, -438, -145, 0);
+        ConfigurationSection spawnSection = config.getConfigurationSection("spawn");
+        if(spawnSection == null){
+            spawn = new Location(overworld, 330, 65, -438, -145, 0);
+            config.set("spawn.x", 330.0);
+            config.set("spawn.y", 65.0);
+            config.set("spawn.z", -438.0);
+            config.set("spawn.yaw", -145.0);
+            config.set("spawn.pitch", 0.0);
+            saveConfig();
+        } else {
+            spawn = new Location(overworld,
+                    spawnSection.getDouble("x", 330.0),
+                    spawnSection.getDouble("y", 65.0),
+                    spawnSection.getDouble("z", -438.0),
+                    (float)spawnSection.getDouble("yaw", -145.0),
+                    (float)spawnSection.getDouble("pitch", 0.0)
+            );
+        }
+        moneyFormat = new DecimalFormat("###,###,###,###.## ¢", custom);
         new DuelManager();
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         spy = new SpyChannel();
@@ -194,6 +214,13 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     
     public void setSpawn(Location spawn){
         this.spawn = spawn;
+        FileConfiguration config = getConfig();
+        config.set("spawn.x", spawn.getX());
+        config.set("spawn.y", spawn.getY());
+        config.set("spawn.z", spawn.getZ());
+        config.set("spawn.yaw", spawn.getYaw());
+        config.set("spawn.pitch", spawn.getPitch());
+        saveConfig();
     }
     
     public World getOverworld(){

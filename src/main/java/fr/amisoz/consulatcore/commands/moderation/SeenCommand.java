@@ -1,6 +1,7 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -20,11 +21,23 @@ public class SeenCommand extends ConsulatCommand {
                 setUsage("/seen <joueur> - Voir les connexions récentes").
                 setArgsMin(1).
                 setRank(Rank.ADMIN).
-                suggest(Arguments.playerList("joueur"));
+                suggest(listener -> {
+                            if(!ConsulatAPI.getConsulatAPI().isDevelopment()){
+                                return true;
+                            }
+                            ConsulatPlayer player = getConsulatPlayer(listener);
+                            return player != null && (!ConsulatAPI.getConsulatAPI().isDevelopment() || player.hasPermission(ConsulatAPI.getConsulatAPI().getPermission("bypass-commands")));
+                        },
+                        Arguments.playerList("joueur"));
     }
     
     @Override
     public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
+        if(ConsulatAPI.getConsulatAPI().isDevelopment() && !sender.hasPermission(ConsulatAPI.getConsulatAPI().getPermission("bypass-commands"))){
+            sender.getPlayer().performCommand("help");
+            return;
+        }
+        
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
                 sender.sendMessage("§6Connexions récentes de: §o" + args[0]);

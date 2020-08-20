@@ -30,7 +30,7 @@ public class TopCommand extends ConsulatCommand {
         }
         Location playerLocation = sender.getPlayer().getLocation();
         Block higherBlock = sender.getPlayer().getWorld().getHighestBlockAt(playerLocation);
-        sender.getPlayer().teleportAsync(new Location(playerLocation.getWorld(), playerLocation.getX(), higherBlock.getY(), playerLocation.getZ()));
+        sender.getPlayer().teleportAsync(new Location(playerLocation.getWorld(), playerLocation.getX(), higherBlock.getY(), playerLocation.getZ(), playerLocation.getYaw(), playerLocation.getPitch()));
         sender.sendMessage(Text.TOP_TELEPORTED);
     }
 }

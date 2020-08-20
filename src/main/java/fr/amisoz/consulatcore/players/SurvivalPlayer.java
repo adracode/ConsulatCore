@@ -58,7 +58,6 @@ public class SurvivalPlayer extends ConsulatPlayer {
     private boolean isFrozen = false;
     private boolean inModeration = false;
     private ItemStack[] stockedInventory = null;
-    private boolean lookingInventory;
     private boolean spying;
     private boolean isMuted;
     private long muteExpireMillis;
@@ -159,7 +158,6 @@ public class SurvivalPlayer extends ConsulatPlayer {
                 ", isFrozen=" + isFrozen +
                 ", inModeration=" + inModeration +
                 ", stockedInventory=" + Arrays.toString(stockedInventory) +
-                ", lookingInventory=" + lookingInventory +
                 ", spying=" + spying +
                 ", isMuted=" + isMuted +
                 ", muteExpireMillis=" + muteExpireMillis +
@@ -563,20 +561,17 @@ public class SurvivalPlayer extends ConsulatPlayer {
         this.stockedInventory = stockedInventory;
     }
     
-    public boolean isLookingInventory(){
-        return lookingInventory;
-    }
-    
-    public void setLookingInventory(boolean lookingInventory){
-        this.lookingInventory = lookingInventory;
-    }
-    
     public boolean isSpying(){
         return spying;
     }
     
     public void setSpying(boolean spying){
         this.spying = spying;
+        if(spying){
+            ConsulatCore.getInstance().getSpy().addPlayer(this);
+        } else {
+            ConsulatCore.getInstance().getSpy().removePlayer(this);
+        }
     }
     
     public boolean isMuted(){

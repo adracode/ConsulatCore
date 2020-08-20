@@ -71,6 +71,225 @@ public class City extends Zone {
                 new CityRank(3, "Citoyen", ChatColor.GRAY));
     }
     
+    @Override
+    public boolean addPlayer(@NotNull UUID uuid){
+        return addPlayer(uuid, new CityPermission[0]);
+    }
+    
+    @Override
+    public boolean removePlayer(@NotNull UUID uuid){
+        if(ConsulatAPI.getConsulatAPI().isDebug()){
+            ConsulatAPI.getConsulatAPI().log(Level.INFO, "Player " + uuid + " left the city " + getName());
+        }
+        if(members.remove(uuid) == null){
+            if(ConsulatAPI.getConsulatAPI().isDebug()){
+                ConsulatAPI.getConsulatAPI().log(Level.INFO, "Couldn't remove player");
+            }
+            return false;
+        }
+        SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(uuid);
+        if(player != null){
+            player.setCity(null);
+            channel.removePlayer(player);
+        } else {
+            ZoneManager.getInstance().setPlayerCity(uuid, null);
+        }
+        removeAccess(uuid);
+        IGui iMembersGui = GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS);
+        if(iMembersGui != null){
+            ((MembersGui)iMembersGui).removePlayer(uuid);
+        }
+        IGui iCityInfo = GuiManager.getInstance().getContainer("city-info").getGui(false, this);
+        if(iCityInfo != null){
+            ((CityInfo)iCityInfo).removePlayer(uuid);
+        }
+        return true;
+    }
+    
+    @Override
+    public boolean hasPublicPermission(@Nullable ClaimPermission permission){
+        if(permission == null){
+            return false;
+        }
+        return this.publicPermissions.contains(permission.getPermission());
+    }
+    
+    @Override
+    public void addClaim(@NotNull Claim claim){
+        super.addClaim(claim);
+        Graph<Claim> graph = getClaims();
+        for(Claim surroundingClaim : Claim.getSurroundingClaims(claim.getX(), claim.getZ())){
+            if(isClaim(surroundingClaim)){
+                graph.addNeighbours(claim, surroundingClaim);
+            }
+        }
+    }
+    
+    @Override
+    public void loadNBT(){
+        try {
+            File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "cities/" + this.getUniqueId() + ".dat");
+            if(!file.exists()){
+                return;
+            }
+            NBTInputStream is = new NBTInputStream(new FileInputStream(file));
+            CompoundTag city = is.read();
+            is.close();
+            List<StringTag> ranks = city.getList("Ranks", NBTType.STRING);
+            for(int i = 0; i < ranks.size(); i++){
+                this.ranks.get(i).setRankName(ranks.get(i).getValue());
+            }
+            List<StringTag> publicPermissions = city.getList("PublicPermissions", NBTType.STRING);
+            for(StringTag publicPermission : publicPermissions){
+                this.publicPermissions.add(publicPermission.getValue());
+            }
+            List<CompoundTag> members = city.getList("Members", NBTType.COMPOUND);
+            for(CompoundTag member : members){
+                int rankIndex = member.getInt("Rank");
+                Set<CityPermission> perms = new HashSet<>();
+                UUID uuid = member.getUUID("UUID");
+                CityPlayer cityPlayer = new CityPlayer(uuid, perms, this.ranks.get(rankIndex));
+                List<StringTag> permissions = member.getList("Permissions", NBTType.STRING);
+                for(StringTag permission : permissions){
+                    perms.add(CityPermission.byPermission(permission.getValue()));
+                }
+                this.members.put(uuid, cityPlayer);
+            }
+            if(city.has("Home")){
+                CompoundTag home = city.getCompound("Home");
+                this.home = new Location(
+                        ConsulatCore.getInstance().getOverworld(),
+                        home.getDouble("x"),
+                        home.getDouble("y"),
+                        home.getDouble("z"),
+                        home.getFloat("yaw"),
+                        home.getFloat("pitch")
+                );
+            }
+            if(city.has("Description")){
+                this.description = city.getString("Description");
+            }
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+    
+    @Override
+    public void saveNBT(){
+        try {
+            File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "cities/" + getUniqueId() + ".dat");
+            CompoundTag city = new CompoundTag();
+            if(!file.exists()){
+                if(!file.createNewFile()){
+                    throw new IOException("Couldn't create file.");
+                }
+            }
+            ListTag<CompoundTag> members = new ListTag<>(NBTType.COMPOUND);
+            for(Map.Entry<UUID, CityPlayer> memberEntry : this.members.entrySet()){
+                CityPlayer member = memberEntry.getValue();
+                CompoundTag memberData = new CompoundTag();
+                ListTag<StringTag> permissions = new ListTag<>(NBTType.STRING);
+                for(CityPermission permission : member.getPermissions()){
+                    permissions.addTag(new StringTag(permission.getPermission()));
+                }
+                memberData.putUUID("UUID", memberEntry.getKey());
+                memberData.putInt("Rank", getRank(member.getRank().getRankName()));
+                memberData.put("Permissions", permissions);
+                members.addTag(memberData);
+            }
+            city.put("Members", members);
+            ListTag<StringTag> ranks = new ListTag<>(NBTType.STRING);
+            for(CityRank rank : this.ranks){
+                ranks.addTag(new StringTag(rank.getRankName()));
+            }
+            city.put("Ranks", ranks);
+            ListTag<StringTag> publicPermissions = new ListTag<>(NBTType.STRING);
+            for(String publicPermission : this.publicPermissions){
+                publicPermissions.addTag(new StringTag(publicPermission));
+            }
+            city.put("PublicPermissions", publicPermissions);
+            if(home != null){
+                CompoundTag home = new CompoundTag();
+                home.putDouble("x", this.home.getX());
+                home.putDouble("y", this.home.getY());
+                home.putDouble("z", this.home.getZ());
+                home.putFloat("yaw", this.home.getYaw());
+                home.putFloat("pitch", this.home.getPitch());
+                city.put("Home", home);
+            }
+            if(description != null){
+                city.putString("Description", description);
+            }
+            NBTOutputStream os = new NBTOutputStream(file, city);
+            os.write("City");
+            os.close();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+    
+    @Override
+    public void setOwner(@NotNull UUID owner){
+        UUID old = getOwner();
+        setRank(old, getRank(1));
+        super.setOwner(owner);
+        ZoneManager.getInstance().updateOwner(this);
+        setRank(owner, getRank(0));
+        SurvivalPlayer oldOwner = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(old);
+        if(oldOwner != null){
+            IGui gui = oldOwner.getCurrentlyOpen();
+            if(gui instanceof CityGui){
+                CityGui cityGui = (CityGui)gui;
+                cityGui.updateOwner(oldOwner);
+            }
+        }
+        SurvivalPlayer newOwner = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(owner);
+        if(newOwner != null){
+            IGui gui = newOwner.getCurrentlyOpen();
+            if(gui instanceof CityGui){
+                CityGui cityGui = (CityGui)gui;
+                cityGui.updateOwner(newOwner);
+            }
+        }
+        CityGui cityGui = (CityGui)GuiManager.getInstance().getContainer("city").getGui(false, this);
+        if(cityGui != null){
+            cityGui.updateOwner();
+        }
+        IGui cityInfoGui = GuiManager.getInstance().getContainer("city-info").getGui(false, this);
+        if(cityInfoGui != null){
+            ((CityInfo)cityInfoGui).updateOwner();
+        }
+    }
+    
+    @Override
+    protected @NotNull Graph<Claim> getClaims(){
+        return (Graph<Claim>)super.getClaims();
+    }
+    
+    @Override
+    public @NotNull String getEnterMessage(){
+        return Text.PREFIX + "§cTu entres dans la ville §l" + getName() + ".";
+    }
+    
+    @Override
+    public @NotNull String getLeaveMessage(){
+        return Text.PREFIX + "§cTu sors de la ville §l" + getName() + ".";
+    }
+    
+    @Override
+    public String toString(){
+        return super.toString() +
+                " City{" +
+                "bank=" + bank +
+                ", home=" + home +
+                ", description='" + description + '\'' +
+                ", members=" + members +
+                ", channel=" + channel +
+                ", publicPermissions=" + publicPermissions +
+                ", ranks=" + ranks +
+                '}';
+    }
+    
     public boolean addPlayer(@NotNull UUID uuid, CityPermission... permissions){
         if(ConsulatAPI.getConsulatAPI().isDebug()){
             ConsulatAPI.getConsulatAPI().log(Level.INFO, "Add player " + uuid + " to city " + getName());
@@ -79,7 +298,10 @@ public class City extends Zone {
             if(ConsulatAPI.getConsulatAPI().isDebug()){
                 ConsulatAPI.getConsulatAPI().log(Level.INFO, "Can't add player");
             }
-            return false;
+            SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(uuid);
+            if(player == null || player.belongsToCity()){
+                return false;
+            }
         }
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(uuid);
         if(player != null){
@@ -470,224 +692,5 @@ public class City extends Zone {
             }
         }
         addPermission(uuid, player.getRank().getDefaultPermissions().toArray(new CityPermission[0]));
-    }
-    
-    @Override
-    public String toString(){
-        return super.toString() +
-                " City{" +
-                "bank=" + bank +
-                ", home=" + home +
-                ", description='" + description + '\'' +
-                ", members=" + members +
-                ", channel=" + channel +
-                ", publicPermissions=" + publicPermissions +
-                ", ranks=" + ranks +
-                '}';
-    }
-    
-    @Override
-    public boolean addPlayer(@NotNull UUID uuid){
-        return addPlayer(uuid, new CityPermission[0]);
-    }
-    
-    @Override
-    public boolean removePlayer(@NotNull UUID uuid){
-        if(ConsulatAPI.getConsulatAPI().isDebug()){
-            ConsulatAPI.getConsulatAPI().log(Level.INFO, "Player " + uuid + " left the city " + getName());
-        }
-        if(members.remove(uuid) == null){
-            if(ConsulatAPI.getConsulatAPI().isDebug()){
-                ConsulatAPI.getConsulatAPI().log(Level.INFO, "Couldn't remove player");
-            }
-            return false;
-        }
-        SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(uuid);
-        if(player != null){
-            player.setCity(null);
-            channel.removePlayer(player);
-        } else {
-            ZoneManager.getInstance().setPlayerCity(uuid, null);
-        }
-        removeAccess(uuid);
-        IGui iMembersGui = GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS);
-        if(iMembersGui != null){
-            ((MembersGui)iMembersGui).removePlayer(uuid);
-        }
-        IGui iCityInfo = GuiManager.getInstance().getContainer("city-info").getGui(false, this);
-        if(iCityInfo != null){
-            ((CityInfo)iCityInfo).removePlayer(uuid);
-        }
-        return true;
-    }
-    
-    @Override
-    public boolean hasPublicPermission(@Nullable ClaimPermission permission){
-        if(permission == null){
-            return false;
-        }
-        return this.publicPermissions.contains(permission.getPermission());
-    }
-    
-    @Override
-    public void addClaim(@NotNull Claim claim){
-        super.addClaim(claim);
-        Graph<Claim> graph = getClaims();
-        for(Claim surroundingClaim : Claim.getSurroundingClaims(claim.getX(), claim.getZ())){
-            if(isClaim(surroundingClaim)){
-                graph.addNeighbours(claim, surroundingClaim);
-            }
-        }
-    }
-    
-    @Override
-    public void loadNBT(){
-        try {
-            File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "cities/" + this.getUniqueId() + ".dat");
-            if(!file.exists()){
-                return;
-            }
-            NBTInputStream is = new NBTInputStream(new FileInputStream(file));
-            CompoundTag city = is.read();
-            is.close();
-            List<StringTag> ranks = city.getList("Ranks", NBTType.STRING);
-            for(int i = 0; i < ranks.size(); i++){
-                this.ranks.get(i).setRankName(ranks.get(i).getValue());
-            }
-            List<StringTag> publicPermissions = city.getList("PublicPermissions", NBTType.STRING);
-            for(StringTag publicPermission : publicPermissions){
-                this.publicPermissions.add(publicPermission.getValue());
-            }
-            List<CompoundTag> members = city.getList("Members", NBTType.COMPOUND);
-            for(CompoundTag member : members){
-                int rankIndex = member.getInt("Rank");
-                Set<CityPermission> perms = new HashSet<>();
-                UUID uuid = member.getUUID("UUID");
-                CityPlayer cityPlayer = new CityPlayer(uuid, perms, this.ranks.get(rankIndex));
-                List<StringTag> permissions = member.getList("Permissions", NBTType.STRING);
-                for(StringTag permission : permissions){
-                    perms.add(CityPermission.byPermission(permission.getValue()));
-                }
-                this.members.put(uuid, cityPlayer);
-            }
-            if(city.has("Home")){
-                CompoundTag home = city.getCompound("Home");
-                this.home = new Location(
-                        ConsulatCore.getInstance().getOverworld(),
-                        home.getDouble("x"),
-                        home.getDouble("y"),
-                        home.getDouble("z"),
-                        home.getFloat("yaw"),
-                        home.getFloat("pitch")
-                );
-            }
-            if(city.has("Description")){
-                this.description = city.getString("Description");
-            }
-        } catch(IOException e){
-            e.printStackTrace();
-        }
-    }
-    
-    @Override
-    public void saveNBT(){
-        try {
-            File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "cities/" + getUniqueId() + ".dat");
-            CompoundTag city = new CompoundTag();
-            if(!file.exists()){
-                if(!file.createNewFile()){
-                    throw new IOException("Couldn't create file.");
-                }
-            }
-            ListTag<CompoundTag> members = new ListTag<>(NBTType.COMPOUND);
-            for(Map.Entry<UUID, CityPlayer> memberEntry : this.members.entrySet()){
-                CityPlayer member = memberEntry.getValue();
-                CompoundTag memberData = new CompoundTag();
-                ListTag<StringTag> permissions = new ListTag<>(NBTType.STRING);
-                for(CityPermission permission : member.getPermissions()){
-                    permissions.addTag(new StringTag(permission.getPermission()));
-                }
-                memberData.putUUID("UUID", memberEntry.getKey());
-                memberData.putInt("Rank", getRank(member.getRank().getRankName()));
-                memberData.put("Permissions", permissions);
-                members.addTag(memberData);
-            }
-            city.put("Members", members);
-            ListTag<StringTag> ranks = new ListTag<>(NBTType.STRING);
-            for(CityRank rank : this.ranks){
-                ranks.addTag(new StringTag(rank.getRankName()));
-            }
-            city.put("Ranks", ranks);
-            ListTag<StringTag> publicPermissions = new ListTag<>(NBTType.STRING);
-            for(String publicPermission : this.publicPermissions){
-                publicPermissions.addTag(new StringTag(publicPermission));
-            }
-            city.put("PublicPermissions", publicPermissions);
-            if(home != null){
-                CompoundTag home = new CompoundTag();
-                home.putDouble("x", this.home.getX());
-                home.putDouble("y", this.home.getY());
-                home.putDouble("z", this.home.getZ());
-                home.putFloat("yaw", this.home.getYaw());
-                home.putFloat("pitch", this.home.getPitch());
-                city.put("Home", home);
-            }
-            if(description != null){
-                city.putString("Description", description);
-            }
-            NBTOutputStream os = new NBTOutputStream(file, city);
-            os.write("City");
-            os.close();
-        } catch(IOException e){
-            e.printStackTrace();
-        }
-    }
-    
-    @Override
-    public void setOwner(@NotNull UUID owner){
-        UUID old = getOwner();
-        setRank(old, getRank(1));
-        super.setOwner(owner);
-        ZoneManager.getInstance().updateOwner(this);
-        setRank(owner, getRank(0));
-        SurvivalPlayer oldOwner = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(old);
-        if(oldOwner != null){
-            IGui gui = oldOwner.getCurrentlyOpen();
-            if(gui instanceof CityGui){
-                CityGui cityGui = (CityGui)gui;
-                cityGui.updateOwner(oldOwner);
-            }
-        }
-        SurvivalPlayer newOwner = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(owner);
-        if(newOwner != null){
-            IGui gui = newOwner.getCurrentlyOpen();
-            if(gui instanceof CityGui){
-                CityGui cityGui = (CityGui)gui;
-                cityGui.updateOwner(newOwner);
-            }
-        }
-        CityGui cityGui = (CityGui)GuiManager.getInstance().getContainer("city").getGui(false, this);
-        if(cityGui != null){
-            cityGui.updateOwner();
-        }
-        IGui cityInfoGui = GuiManager.getInstance().getContainer("city-info").getGui(false, this);
-        if(cityInfoGui != null){
-            ((CityInfo)cityInfoGui).updateOwner();
-        }
-    }
-    
-    @Override
-    protected @NotNull Graph<Claim> getClaims(){
-        return (Graph<Claim>)super.getClaims();
-    }
-    
-    @Override
-    public @NotNull String getEnterMessage(){
-        return Text.PREFIX + "§cTu entres dans la ville §l" + getName() + ".";
-    }
-    
-    @Override
-    public @NotNull String getLeaveMessage(){
-        return Text.PREFIX + "§cTu sors de la ville §l" + getName() + ".";
     }
 }

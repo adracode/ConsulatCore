@@ -34,7 +34,7 @@ final public class Text {
     public static final String NO_CITY_NAME = PREFIX + "§cMerci de spécifier le nom de La ville.";
     public static final String INVALID_CITY_NAME = PREFIX + "§cLe nom de ville n'est pas valide.";
     public static final String CITY_ALREADY_EXISTS = PREFIX + "§cIl existe déjà une ville portant ce nom.";
-    public static final String CITY_DOESNT_EXISTS = PREFIX + "§cCette ville n'existe pas";
+    public static final String CITY_DOESNT_EXISTS = PREFIX + "§cCette ville n'existe pas.";
     public static final String YOU_NOT_IN_CITY = PREFIX + "§cTu n'es pas dans une ville.";
     public static final String CANT_RENAME_CITY = PREFIX + "§cTu ne peux pas renommer cette ville.";
     public static final String CANT_DISBAND_CITY = PREFIX + "§cTu ne peux pas détruire cette ville.";
@@ -50,11 +50,11 @@ final public class Text {
     public static final String CANT_INVITE_CITY = PREFIX + "§cTu ne peux pas inviter des joueurs dans la ville.";
     public static final String ALREADY_INVITED_CITY = PREFIX + "§cCe joueur est déjà invité dans la ville.";
     public static final String YOU_NOT_BEEN_INVITED_TO_CITY = PREFIX + "§cTu n'as pas été invité dans cette ville.";
-    public static final String ERROR = PREFIX + "§cUne erreur est survenue";
+    public static final String ERROR = PREFIX + "§cUne erreur est survenue.";
     public static final String YOU_CANT_CLAIM_CITY = PREFIX + "§cTu ne peux pas claim pour la ville.";
     public static final String YOU_CANT_UNCLAIM_CITY = PREFIX + "§cTu ne peux pas unclaim pour la ville.";
     public static final String YOU_CANT_CLAIM_DIMENSION = PREFIX + "§cTu ne peux pas claim dans cette dimension.";
-    public static final String CHUNK_ALREADY_CLAIM = PREFIX + "§cCe chunk est déjà claim";
+    public static final String CHUNK_ALREADY_CLAIM = PREFIX + "§cCe chunk est déjà claim.";
     public static final String CLAIM_NOT_BELONGS_TO_CITY_MEMBER = PREFIX + "§cCe claim n'appartient pas à un membre de la ville.";
     public static final String CANT_CLAIM_ALONE_CHUNK = PREFIX + "§cTu ne peux pas claim un chunk isolé.";
     public static final String NOT_CLAIM_CITY = PREFIX + "§cCe claim n'appartient pas à la ville.";
@@ -64,7 +64,7 @@ final public class Text {
     public static final String UNCLAIM_CITY = PREFIX + "§aTu as unclaim ce chunk de la ville.";
     public static final String CANT_SET_HOME_CITY = PREFIX + "§cTu ne peux pas définir le spawn de la ville.";
     public static final String YOU_SET_HOME_CITY = PREFIX + "§aTu as défini le home de la ville.";
-    public static final String HOME_CITY_NOT_SET = PREFIX + "§cLe home de la ville n'est pas définie";
+    public static final String HOME_CITY_NOT_SET = PREFIX + "§cLe home de la ville n'est pas définie.";
     public static final String TELEPORTATION = PREFIX + "§aTéléportation en cours...";
     public static final String INVALID_NUMBER = PREFIX + "§cCe nombre n'est pas valide.";
     public static final String INVALID_MONEY = PREFIX +  "§cCe montant n'est pas valide.";
@@ -93,8 +93,8 @@ final public class Text {
     public static final String CANT_KICK_PLAYER = PREFIX + "§cTu ne peux pas kick ce joueur.";
     public static final String YOU_CANT_UNCLAIM = PREFIX + "§cTu ne peux pas unclaim ce chunk.";
     public static final String CHUNK_UNCLAIM = PREFIX + "§aChunk unclaim.";
-    public static final String DIMENSION_SHOP = PREFIX + "§cCe shop ne peut pas être placé dans cette dimension";
-    public static final String NO_ITEM_IN_HAND = PREFIX + "§cTu n'as pas d'item en main";
+    public static final String DIMENSION_SHOP = PREFIX + "§cCe shop ne peut pas être placé dans cette dimension.";
+    public static final String NO_ITEM_IN_HAND = PREFIX + "§cTu n'as pas d'item en main.";
     public static final String NO_TARGETED_BLOCK = PREFIX + "§cAucun bloc n'est visé.";
     public static final String BLOCK_HERE = PREFIX + "§cIl y a un bloc ici.";
     public static final String NEED_SPECTATOR = PREFIX + "§cTu dois être en spectateur pour regarder les enderchest.";
@@ -123,7 +123,7 @@ final public class Text {
     public static final String INFINITE_FLY = PREFIX + "§aTu as le fly infini.";
     public static final String NOT_IN_FLY = PREFIX + "§cTu n'es pas en fly.";
     public static final String FLY_OFF = PREFIX + "Ton fly est en pause !";
-    public static final String FLY_INFINITE_OFF = PREFIX + "Tu as enlevé ton fly infini";
+    public static final String FLY_INFINITE_OFF = PREFIX + "Tu as enlevé ton fly infini.";
     public static final String NO_HOME = PREFIX + "§cTu ne possèdes aucun home.";
     public static final String ALREADY_IGNORED = PREFIX + "§cTu as déjà ignoré ce joueur.";
     public static final String NOT_IGNORED = PREFIX + "§cCe joueur n'est pas ignoré.";
@@ -141,14 +141,14 @@ final public class Text {
     public static final String FLY_IS_FINISHED = PREFIX +  "§cTon fly est terminé !";
     public static final String FLY_OUTSIDE_CLAIM = PREFIX + "§cTon fly est terminé car tu as quitté ton claim !";
     public static final String TP_BECAUSE_STUCK = PREFIX + "§aTu as été téléporté au spawn pour cause de suffocation.";
-    public static final String YOUR_ALONE = PREFIX + "§cTu es seul.... désolé";
+    public static final String YOUR_ALONE = PREFIX + "§cTu es seul.... désolé.";
     public static final String NOW_VISIBLE = PREFIX + "§aTu es désormais visible.";
     public static final String NOW_INVISIBLE = PREFIX + "§cTu es désormais invisible.";
     public static final String BEEN_UNFROZEN = ANNOUNCE_PREFIX + "Tu as été un-freeze.";
     public static final String BEEN_FROZEN = ANNOUNCE_PREFIX + "Tu as été freeze par un modérateur.";
-    public static final String PLAYER_UNFREEZE = ANNOUNCE_PREFIX + "Joueur un-freeze";
-    public static final String PLAYER_FREEZE = ANNOUNCE_PREFIX + "Joueur freeze";
-    public static final String CHEST_IS_PRIVATE = PREFIX + "§cCe coffre est privé";
+    public static final String PLAYER_UNFREEZE = ANNOUNCE_PREFIX + "Joueur un-freeze.";
+    public static final String PLAYER_FREEZE = ANNOUNCE_PREFIX + "Joueur freeze.";
+    public static final String CHEST_IS_PRIVATE = PREFIX + "§cCe coffre est privé.";
     public static final String ANOTHER_PLAYER_NEAR = PREFIX + "§cUn autre joueur est à proximité.";
     public static final String BLOCK_LIMIT_CHUNK = PREFIX + "§cCe chunk à atteint la limite pour ce bloc.";
     public static final String LOADING_INVENTORY = PREFIX + "§7Chargement de l'inventaire...";
@@ -186,6 +186,7 @@ final public class Text {
     public static final String SHOP_NOT_FOUND = PREFIX + "§cCe shop n'a pas été trouvé.";
     public static final String BUY_HOME = PREFIX + "Tu as acheté un home supplémentaire.";
     public static final String NOW_TOURISTE = PREFIX + "Tu es désormais touriste !";
+    public static final String NO_ANSWER= PREFIX + "§cTu n'as pas envoyé / reçu de MP.";
 
     public static String PREFIX_CITY(City city){
         return "§8[§d" + city.getName() + "§8] ";
@@ -209,7 +210,7 @@ final public class Text {
 
     public static String BEEN_KICKED_FROM_CITY_BY(String city, String player){return PREFIX + "§cTu as été kick de la ville §7" + city + "§c par §7" + player + "§c.";}
 
-    public static String KICK_PLAYER_FROM_CITY(String player){return PREFIX + "§cTu as kick §7" + player + " §ade la ville";}
+    public static String KICK_PLAYER_FROM_CITY(String player){return PREFIX + "§cTu as kick §7" + player + " §ade la ville.";}
 
     public static String PLAYER_KICKED_FROM_CITY(City city, String kicker, String kicked){return PREFIX_CITY(city) + "§c" + kicker + " §7a kick §c" + kicked + "§7 la ville.";}
 
@@ -229,31 +230,31 @@ final public class Text {
 
     public static String YOU_CLAIMED_CHUNK_FOR_CITY(double money){return PREFIX + "§aTu as claim ce chunk pour la ville pour " + ConsulatCore.formatMoney(money) + ".";}
 
-    public static String YOU_CLAIMED_CHUNK(double money){return PREFIX + "§aTu as claim ce chunk pour " + ConsulatCore.formatMoney(money) + ".";}
+    public static String YOU_CLAIMED_CHUNK(double money){return PREFIX + "§aTu as claim ce chunk pour " + ConsulatCore.formatMoney(money) + ". Tu peux le gérer avec §6/claim options§a.";}
 
     public static String NOT_ENOUGH_MONEY(double money){return PREFIX + "§cTu n'as pas assez d'argent (argent requis: " + ConsulatCore.formatMoney(money) + ").";}
 
-    public static String ADD_MONEY_CITY(double money){return PREFIX + "§aTu as donné §7" + ConsulatCore.formatMoney(money) + " §aà la ville";}
+    public static String ADD_MONEY_CITY(double money){return PREFIX + "§aTu as donné §7" + ConsulatCore.formatMoney(money) + " §aà la ville.";}
 
-    public static String WITHDRAW_MONEY_CITY(double money){return PREFIX + "§aTu as retiré §7" + ConsulatCore.formatMoney(money) + " §ade la ville";}
+    public static String WITHDRAW_MONEY_CITY(double money){return PREFIX + "§aTu as retiré §7" + ConsulatCore.formatMoney(money) + " §ade la ville.";}
 
     public static String MONEY_CITY(double money){return PREFIX + "§ala ville a §e" + ConsulatCore.formatMoney(money);}
 
-    public static String ADD_PLAYER_CLAIM(String player){return PREFIX + "§a" + player + " a été ajouté à ce claim.";}
+    public static String ADD_PLAYER_CLAIM(String player){return PREFIX + "§a" + player + " a été ajouté à ce claim. Tu peux modifier ses permissions avec §6/claim options§a.";}
 
     public static String REMOVE_PLAYER_CLAIM(String player){return PREFIX + "§a" + player + " a été retiré de ce claim.";}
 
-    public static <E> String LIST_ACCESS_CLAIM(Collection<UUID> toShow){ return PREFIX + "§6Liste des joueurs ayant accès à ce claim: §e" + toString(toShow, uuid -> Bukkit.getOfflinePlayer(uuid).getName()); }
+    public static <E> String LIST_ACCESS_CLAIM(Collection<UUID> toShow){ return PREFIX + "§6Liste des joueurs ayant accès à ce claim: §e" + toString(toShow, uuid -> Bukkit.getOfflinePlayer(uuid).getName()) + "."; }
 
-    public static String YOU_CHANGE_DESCRIPTION_CITY(String description){return PREFIX + "§aTu as ajouté la description suivante à la ville:§7\n" + description;}
+    public static String YOU_CHANGE_DESCRIPTION_CITY(String description){return PREFIX + "§aTu as ajouté la description suivante à la ville:§7\n" + description + ".";}
 
-    public static String YOU_CHANGE_DESCRIPTION_CLAIM(String description){return PREFIX + "§aTu as ajouté la description suivante à ce claim:§7\n" + description;}
+    public static String YOU_CHANGE_DESCRIPTION_CLAIM(String description){return PREFIX + "§aTu as ajouté la description suivante à ce claim:§7\n" + description + ".";}
 
-    public static String CHANGE_LEADER_CITY(City city, String newLeader, String by){return PREFIX_CITY(city) + "§a" + newLeader + " §7est passé §epropriétaire §7de la ville par §a" + by;}
+    public static String CHANGE_LEADER_CITY(City city, String newLeader, String by){return PREFIX_CITY(city) + "§a" + newLeader + " §7est passé §epropriétaire §7de la ville par §a" + by + ".";}
 
-    public static String ADD_PLAYER_CLAIMS(String player){return PREFIX + "§a" + player + " a été ajouté à tes claims";}
+    public static String ADD_PLAYER_CLAIMS(String player){return PREFIX + "§a" + player + " a été ajouté à tes claims. Tu peux modifier ses permissions sur chaque claims avec §6/claim options§a.";}
 
-    public static String REMOVE_PLAYER_CLAIMS(String player){return PREFIX + "§a" + player + " a été retiré de tes claims";}
+    public static String REMOVE_PLAYER_CLAIMS(String player){return PREFIX + "§a" + player + " a été retiré de tes claims.";}
 
     public static String YOU_KICKED_PLAYER_CLAIM(String player){return PREFIX + "§aTu as kick §e" + player + "§a de tes claims.";}
 
@@ -271,9 +272,9 @@ final public class Text {
         StringBuilder builder = new StringBuilder();
         int i = 0;
         for(Claim claim : claims){
-            builder.append("§6Claim §e").append(++i).append("§6: §eX:§c ").append(claim.getX() * 16).append(" §eY:§c ").append(claim.getZ() * 16).append(", ");
+            builder.append("§6Claim §e").append(++i).append("§6: §eX:§c ").append(claim.getX() * 16).append(" §eY:§c ").append(claim.getZ() * 16).append('\n');
         }
-        return PREFIX + builder.substring(0, builder.length() - 2);
+        return PREFIX + builder.substring(0, builder.length() - 1);
     }
 
     public static String CHUNK_UNCLAIM(double money){return PREFIX + "§aChunk unclaim, tu as récupéré " + ConsulatCore.formatMoney(money) + ".";}
@@ -283,13 +284,13 @@ final public class Text {
         for(BaltopManager.MoneyOwner moneyOwner : players){
             builder.append("§6").append(moneyOwner.getName()).append(":§e ").append(ConsulatCore.formatMoney(moneyOwner.getMoney())).append('\n');
         }
-        return builder.deleteCharAt(builder.length()).toString();}
+        return builder.deleteCharAt(builder.length() - 1).toString();}
 
     public static String MONEY(double money){return PREFIX + "Tu as §e" + ConsulatCore.formatMoney(money) + ".";}
 
-    public static String YOU_RECEIVED_MONEY_FROM(double money, String from){return PREFIX + "§aTu as reçu §2" + ConsulatCore.formatMoney(money) + " §ade §2" + from;}
+    public static String YOU_RECEIVED_MONEY_FROM(double money, String from){return PREFIX + "§aTu as reçu §2" + ConsulatCore.formatMoney(money) + " §ade §2" + from + ".";}
 
-    public static String YOU_SEND_MONEY_TO(double money, String from){return PREFIX + "§aTu as envoyé §2" + ConsulatCore.formatMoney(money) + " §aà §2" + from;}
+    public static String YOU_SEND_MONEY_TO(double money, String from){return PREFIX + "§aTu as envoyé §2" + ConsulatCore.formatMoney(money) + " §aà §2" + from + ".";}
 
     public static String INVALID_ITEM(String item){return PREFIX + "§cItem invalide §7(" + item + ")§c.";}
 
@@ -316,15 +317,15 @@ final public class Text {
         StringBuilder builder = new StringBuilder(PREFIX + "§6§uListe du staff en ligne: ");
         for(ConsulatPlayer player : staff){
             Rank rank = player.getRank();
-            builder.append(rank.getRankColor()).append("[").append(rank.getRankName()).append("] ").append(player.getName());
+            builder.append(rank.getRankColor()).append("[").append(rank.getRankName()).append("] ").append(player.getName()).append('\n');
         }
-        return builder.toString();}
+        return builder.deleteCharAt(builder.length() - 1).toString();}
 
-    public static String YOU_TELEPORTED_PLAYER_TO(String player, String to){return PREFIX + "§aTu as téléporté " + player + " à " + to;}
+    public static String YOU_TELEPORTED_PLAYER_TO(String player, String to){return PREFIX + "§aTu as téléporté " + player + " à " + to + ".";}
 
     public static String YOU_TELEPORTED_TO(String to){return PREFIX + "§aTu t'es téléporté à " + to + ".";}
 
-    public static String YOU_MUTE(MutedPlayer muteInfo){return PREFIX + "§cTu es actuellement mute.\n§4Raison: §c" + muteInfo.getReason() + "\n§4Jusqu'au: §c" + muteInfo.getEndDate();}
+    public static String YOU_MUTE(MutedPlayer muteInfo){return PREFIX + "§cTu es actuellement mute.\n§4Raison: §c" + muteInfo.getReason() + "\n§4Jusqu'au: §c" + muteInfo.getEndDate() + ".";}
 
     public static String ADVERT(String sender, String message){return  "§e[Annonce] §6" + sender + "§7: §r" + message;}
 
@@ -344,12 +345,12 @@ final public class Text {
 
     public static String FLY_INFO(long minute, long second){return PREFIX + "Tu as encore ton fly pendant " + minute + "m " + second + "s.";}
 
-    public static String LIST_HOME(Collection<String> homes){return PREFIX + "§eVoici la liste de tes homes: " + toString(homes, home -> home);}
+    public static String LIST_HOME(Collection<String> homes){return PREFIX + "§eVoici la liste de tes homes: " + toString(homes, home -> home ) + ".";}
 
     public static TextComponent LIST_HOME_PLAYER(Map<String, Location> homes, String player){
         TextComponent message = new TextComponent("§6Liste des homes de: §c" + player + "\n§7---------------------------------");
         for(Map.Entry<String, Location> home : homes.entrySet()){
-            TextComponent textComponent = new TextComponent("§a" + home.getKey() + " §7| §cX§7:§6" + home.getValue().getBlockX() + " §cY§7:§6" + home.getValue().getBlockY() + " §cZ§7:§6" + home.getValue().getBlockZ());
+            TextComponent textComponent = new TextComponent("§a" + home.getKey() + " §7| §cX§7:§6" + home.getValue().getBlockX() + " §cY§7:§6" + home.getValue().getBlockY() + " §cZ§7:§6" + home.getValue().getBlockZ() + "\n");
             textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§7Clique pour t'y téléporter.").create()));
             textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp " + home.getValue().getBlockX() + " " + home.getValue().getBlockY() + " " + home.getValue().getBlockZ()));
             message.addExtra(textComponent);
@@ -360,18 +361,18 @@ final public class Text {
 
     public static String NO_MORE_IGNORED(String player){return PREFIX + "§a" + player + " n'est plus ignoré.";}
 
-    public static String LIST_IGNORED(Collection<UUID> ignored){return PREFIX + "§aJoueurs ignorés: " + toString(ignored, uuid -> Bukkit.getOfflinePlayer(uuid).getName());}
+    public static String LIST_IGNORED(Collection<UUID> ignored){return PREFIX + "§aJoueurs ignorés: " + toString(ignored, uuid -> Bukkit.getOfflinePlayer(uuid).getName()) + ".";}
 
     public static String CUSTOM_RANK_COLOR_CHOSEN(ChatColor color){return PREFIX + "§7Tu as choisi " + color + "cette couleur !\n§6Écris dans le chat le nom de ton grade: §o(10 caractères maximum, celui-ci aura des crochets par défaut)";}
 
     public static String NEW_CUSTOM_RANK(ConsulatPlayer player){return PREFIX + "§6Voilà ton nouveau grade: " + player.getDisplayName();}
 
-    public static String ALREADY_ASK_TPA(String to){return PREFIX + "§cTu as déjà fait une demande de téléportation à " + to;}
+    public static String ALREADY_ASK_TPA(String to){return PREFIX + "§cTu as déjà fait une demande de téléportation à " + to + ".";}
 
-    public static String TPA_TO(String to){return PREFIX + "§aTu as fait une demande de téléportation à " + to;}
+    public static String TPA_TO(String to){return PREFIX + "§aTu as fait une demande de téléportation à " + to + ".";}
 
     public static TextComponent TPA_FROM(String from){
-        TextComponent tpaRequest = new TextComponent(PREFIX + "§eTu as reçu une demande de téléportation de " + from);
+        TextComponent tpaRequest = new TextComponent(PREFIX + "§eTu as reçu une demande de téléportation de " + from + ".");
         tpaRequest.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§aAccepter").create()));
         tpaRequest.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tpa accept " + from));
         return tpaRequest;}
@@ -380,9 +381,9 @@ final public class Text {
 
     public static String HAVE_BEEN_TPA(String to){return PREFIX + "§aTu as été téléporté à " + to + ".";}
 
-    public static String NOW_IN_QUEUE(int position, int size){return PREFIX + "§aTu es desormais dans la queue: " + position + "/" + size;}
+    public static String NOW_IN_QUEUE(int position, int size){return PREFIX + "§aTu es desormais dans la queue: " + position + "/" + size + ".";}
 
-    public static String IN_QUEUE(int position, int size){return PREFIX + "§cTu es déjà dans la queue: " + position + "/" + size;}
+    public static String IN_QUEUE(int position, int size){return PREFIX + "§cTu es déjà dans la queue: " + position + "/" + size + ".";}
 
     public static String PLAYER_LEFT_FREEZE(String player){return Text.MODERATION_PREFIX + "§6" + player + "§c s'est déconnecté en étant freeze.";}
 

@@ -128,7 +128,6 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
         if(event.getSlot() >= 19 && event.getSlot() <= 44 && clickedItem.getType() == Material.PLAYER_HEAD){
             UUID uuid = player.getUUID();
             Zone zone = getData().getOwner();
-            System.out.println("!uuid.equals(clickedItem.getAttachedObject()) = " + !uuid.equals(clickedItem.getAttachedObject()));
             if((zone instanceof City ? !((City)zone).canManageAccesses(uuid) : !zone.isOwner(uuid)) &&
                     !uuid.equals(clickedItem.getAttachedObject())){
                 return;

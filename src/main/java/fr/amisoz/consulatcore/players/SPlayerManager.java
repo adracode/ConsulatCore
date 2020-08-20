@@ -162,6 +162,7 @@ public class SPlayerManager implements Listener {
     
     @EventHandler(priority = EventPriority.LOW)
     public void onSurvivalPlayerLoaded(SurvivalPlayerLoadedEvent event){
+        ConsulatAPI.getConsulatAPI().log(Level.INFO, event.getPlayer());
         SurvivalPlayer player = event.getPlayer();
         saveOnJoin(player);
         if(!player.hasPower(Rank.MODO)){

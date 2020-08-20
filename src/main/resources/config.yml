@@ -7,3 +7,10 @@ block-limits:
   OBSERVER: 10
   PISTON: 12
   STICKY_PISTON: 12
+
+spawn:
+  x: 330
+  y: 64
+  z: -438
+  yaw: 0
+  pitch: 0
