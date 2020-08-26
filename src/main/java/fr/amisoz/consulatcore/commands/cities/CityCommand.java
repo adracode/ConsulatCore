@@ -57,6 +57,7 @@ public class CityCommand extends ConsulatCommand {
                                 then(Arguments.word("nom")),
                         LiteralArgumentBuilder.literal("disband"),
                         LiteralArgumentBuilder.literal("leave"),
+                        LiteralArgumentBuilder.literal("top"),
                         LiteralArgumentBuilder.literal("kick").
                                 then(Arguments.playerList("joueur")),
                         LiteralArgumentBuilder.literal("invite").
@@ -80,6 +81,7 @@ public class CityCommand extends ConsulatCommand {
                         LiteralArgumentBuilder.literal("unclaim"),
                         LiteralArgumentBuilder.literal("sethome"),
                         LiteralArgumentBuilder.literal("home"),
+                        LiteralArgumentBuilder.literal("money"),
                         LiteralArgumentBuilder.literal("h"),
                         LiteralArgumentBuilder.literal("bank").
                                 then(LiteralArgumentBuilder.literal("info")).
@@ -90,12 +92,16 @@ public class CityCommand extends ConsulatCommand {
                         LiteralArgumentBuilder.literal("access").
                                 then(LiteralArgumentBuilder.literal("add").
                                         then(Arguments.playerList("joueur"))).
+                                then(LiteralArgumentBuilder.literal("addall").
+                                        then(Arguments.playerList("joueur"))).
                                 then(LiteralArgumentBuilder.literal("remove").
+                                        then(Arguments.playerList("joueur"))).
+                                then(LiteralArgumentBuilder.literal("removeall").
                                         then(Arguments.playerList("joueur"))).
                                 then(LiteralArgumentBuilder.literal("list")),
                         LiteralArgumentBuilder.literal("info").
                                 then(Arguments.playerList("joueur")).
-                                then(Arguments.playerList("ville")),
+                                then(Arguments.word("ville")),
                         LiteralArgumentBuilder.literal("options"),
                         LiteralArgumentBuilder.literal("gui"),
                         LiteralArgumentBuilder.literal("menu"),
@@ -112,6 +118,7 @@ public class CityCommand extends ConsulatCommand {
                 new SubCommand("create <nom>", "Créer une nouvelle ville"),
                 new SubCommand("rename <nom>", "Changer le nom de ville (" + ConsulatCore.formatMoney(City.RENAME_TAX) + ")"),
                 new SubCommand("disband", "Détruire la ville (fenêtre de confirmation)"),
+                new SubCommand("top", "Voir les villes les plus riches"),
                 new SubCommand("leave", "Quitter une ville"),
                 new SubCommand("kick <joueur>", "Expulser un membre"),
                 new SubCommand("invite <joueur>", "Inviter un joueur"),
@@ -120,14 +127,17 @@ public class CityCommand extends ConsulatCommand {
                 new SubCommand("unclaim", "Unclaim un chunk de ville"),
                 new SubCommand("sethome", "Définir un home de ville"),
                 new SubCommand("home", "Se TP au home de ville"),
+                new SubCommand("money", "Affiche l'argent de la banque"),
                 new SubCommand("bank add <montant>", "Ajouter de l'argent"),
                 new SubCommand("bank withdraw <montant>", "Retirer de l'argent"),
-                new SubCommand("bank info", "Affiche l'argent de la banque"),
-                new SubCommand("access add <joueur>", "Ajoute un joueur à un claim"),
-                new SubCommand("access remove <joueur>", "Retire un joueur d'un claim"),
-                new SubCommand("access list", "Affiche les membres d'un claim"),
-                new SubCommand("info <joueur|ville>", "Affiche les information de ville"),
-                new SubCommand("chat", "Switch de chat (global ↔ ville)"),
+                new SubCommand("bank info", "Afficher l'argent de la banque"),
+                new SubCommand("access add <joueur>", "Ajouter un joueur à un claim"),
+                new SubCommand("access addall <joueur>", "Ajouter un joueur à tous les claims"),
+                new SubCommand("access remove <joueur>", "Retirer un joueur d'un claim"),
+                new SubCommand("access removeall <joueur>", "Retirer un joueur de tous les claims"),
+                new SubCommand("access list", "Afficher les membres d'un claim"),
+                new SubCommand("info <joueur|ville>", "Afficher les information de ville"),
+                new SubCommand("chat", "Switcher de chat (global ↔ ville)"),
                 new SubCommand("chat <message>", "Parler dans le chat de ville"),
                 new SubCommand("options", "Ouvrir le menu de ville"),
                 new SubCommand("desc <description>", "Définir une description de ville"),
@@ -139,9 +149,17 @@ public class CityCommand extends ConsulatCommand {
     public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
         switch(args[0]){
+            case "top":
+                player.sendMessage(Text.BALTOP(ConsulatCore.getInstance().getCityBaltop().getBaltop(),
+                        City::getName, City::getMoney));
+                break;
             case "create":{
                 if(player.belongsToCity()){
                     player.sendMessage(Text.CANT_CREATE_CITY);
+                    return;
+                }
+                if(!player.hasMoney(City.CREATE_TAX)){
+                    player.sendMessage(Text.NOT_ENOUGH_MONEY(City.CREATE_TAX));
                     return;
                 }
                 if(args.length < 2){
@@ -158,6 +176,7 @@ public class CityCommand extends ConsulatCommand {
                     player.sendMessage(Text.CITY_ALREADY_EXISTS);
                     return;
                 }
+                player.removeMoney(City.CREATE_TAX);
                 City newCity = cityManager.createCity(name, player.getUUID());
                 newCity.addPlayer(player.getUUID(), CityPermission.values());
                 newCity.setRank(player.getUUID(), newCity.getRank(0));
@@ -265,6 +284,10 @@ public class CityCommand extends ConsulatCommand {
                 UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(args[1]);
                 if(targetUUID == null){
                     player.sendMessage(Text.PLAYER_DOESNT_EXISTS);
+                    return;
+                }
+                if(targetUUID.equals(player.getUUID())){
+                    player.sendMessage(Text.CANT_KICK_YOURSELF);
                     return;
                 }
                 if(!city.removePlayer(targetUUID)){
@@ -385,9 +408,10 @@ public class CityCommand extends ConsulatCommand {
                         return;
                     }
                 }
-                city.removeMoney(Claim.BUY_CITY_CLAIM);
+                double price = claim == null ? Claim.BUY_CITY_CLAIM : Claim.SURCLAIM;
+                city.removeMoney(price);
                 ClaimManager.getInstance().cityClaim(chunk.getX(), chunk.getZ(), city);
-                player.sendMessage(Text.YOU_CLAIMED_CHUNK_FOR_CITY(Claim.BUY_CITY_CLAIM));
+                player.sendMessage(Text.YOU_CLAIMED_CHUNK_FOR_CITY(price));
             }
             break;
             case "unclaim":{
@@ -453,6 +477,14 @@ public class CityCommand extends ConsulatCommand {
                 }
                 player.getPlayer().teleportAsync(city.getHome());
                 player.sendMessage(Text.TELEPORTATION);
+            }
+            break;
+            case "money":{
+                if(!player.belongsToCity()){
+                    player.sendMessage(Text.YOU_NOT_IN_CITY);
+                    return;
+                }
+                player.sendMessage(Text.MONEY_CITY(player.getCity().getMoney()));
             }
             break;
             case "banque":
@@ -540,11 +572,6 @@ public class CityCommand extends ConsulatCommand {
                     player.sendMessage(Text.CANT_MANAGE_ACCESS);
                     return;
                 }
-                Claim claim = player.getClaim();
-                if(claim == null || !city.isClaim(claim)){
-                    player.sendMessage(Text.NOT_CLAIM_CITY);
-                    return;
-                }
                 if(args.length < 2){
                     player.sendMessage(Text.COMMAND_USAGE(this));
                     return;
@@ -553,6 +580,11 @@ public class CityCommand extends ConsulatCommand {
                     case "add":{
                         if(args.length < 3){
                             player.sendMessage(Text.COMMAND_USAGE(this));
+                            return;
+                        }
+                        Claim claim = player.getClaim();
+                        if(claim == null || !city.isClaim(claim)){
+                            player.sendMessage(Text.NOT_CLAIM_CITY);
                             return;
                         }
                         UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(args[2]);
@@ -575,9 +607,39 @@ public class CityCommand extends ConsulatCommand {
                         player.sendMessage(Text.ADD_PLAYER_CLAIM(args[2]));
                     }
                     break;
+                    case "addall":{
+                        if(args.length < 3){
+                            player.sendMessage(Text.COMMAND_USAGE(this));
+                            return;
+                        }
+                        UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(args[2]);
+                        if(targetUUID == null){
+                            player.sendMessage(Text.PLAYER_DOESNT_EXISTS);
+                            return;
+                        }
+                        if(!city.isMember(targetUUID)){
+                            player.sendMessage(Text.PLAYER_DOESNT_BELONGS_CITY);
+                            return;
+                        }
+                        if((targetUUID.equals(player.getUUID()) || targetUUID.equals(city.getOwner()))){
+                            player.sendMessage(Text.CANT_MANAGE_ACCESS_PLAYER);
+                            return;
+                        }
+                        if(!city.addAccess(targetUUID)){
+                            player.sendMessage(Text.PLAYER_ALREADY_ACCESS_CLAIMS);
+                            return;
+                        }
+                        sender.sendMessage(Text.ADD_PLAYER_CLAIMS(args[2]));
+                    }
+                    break;
                     case "remove":{
                         if(args.length < 3){
                             player.sendMessage(Text.COMMAND_USAGE(this));
+                            return;
+                        }
+                        Claim claim = player.getClaim();
+                        if(claim == null || !city.isClaim(claim)){
+                            player.sendMessage(Text.NOT_CLAIM_CITY);
                             return;
                         }
                         UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(args[2]);
@@ -596,7 +658,33 @@ public class CityCommand extends ConsulatCommand {
                         player.sendMessage(Text.REMOVE_PLAYER_CLAIM(args[2]));
                     }
                     break;
+                    case "removeall":{
+                        if(args.length < 3){
+                            player.sendMessage(Text.COMMAND_USAGE(this));
+                            return;
+                        }
+                        UUID targetUUID = CPlayerManager.getInstance().getPlayerUUID(args[2]);
+                        if(targetUUID == null){
+                            player.sendMessage(Text.PLAYER_DOESNT_EXISTS);
+                            return;
+                        }
+                        if((targetUUID.equals(player.getUUID()) || targetUUID.equals(city.getOwner()))){
+                            player.sendMessage(Text.CANT_MANAGE_ACCESS_PLAYER);
+                            return;
+                        }
+                        if(!city.removeAccess(targetUUID)){
+                            player.sendMessage(Text.PLAYER_NOT_ACCESS_CLAIMS);
+                            return;
+                        }
+                        player.sendMessage(Text.REMOVE_PLAYER_CLAIMS(args[2]));
+                    }
+                    break;
                     case "list":{
+                        Claim claim = player.getClaim();
+                        if(claim == null || !city.isClaim(claim)){
+                            player.sendMessage(Text.NOT_CLAIM_CITY);
+                            return;
+                        }
                         Set<UUID> accesses = claim.getPlayers();
                         if(accesses.isEmpty()){
                             sender.sendMessage(Text.NOBODY_ACCESS_CLAIM);
@@ -612,7 +700,11 @@ public class CityCommand extends ConsulatCommand {
             break;
             case "info":{
                 if(args.length < 2){
-                    player.sendMessage(Text.NO_PLAYER_OR_CITY);
+                    if(!player.belongsToCity()){
+                        player.sendMessage(Text.YOU_NOT_IN_CITY);
+                        return;
+                    }
+                    GuiManager.getInstance().getContainer("city-info").getGui(player.getCity()).open(player);
                     return;
                 }
                 SurvivalPlayer target = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(args[1]);

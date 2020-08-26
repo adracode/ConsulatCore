@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.guis.claims;
 
+import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
 import fr.amisoz.consulatcore.guis.city.CityGui;
 import fr.amisoz.consulatcore.guis.city.claimlist.ClaimsGui;
@@ -8,6 +9,7 @@ import fr.amisoz.consulatcore.zones.Zone;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.leconsulat.api.gui.GuiContainer;
+import fr.leconsulat.api.gui.GuiHeadItem;
 import fr.leconsulat.api.gui.GuiItem;
 import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.gui.event.GuiClickEvent;
@@ -53,7 +55,7 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
         Claim claim = getData();
         setManageInteractSlot(claim.isInteractSurrounding());
         for(UUID uuid : getData().getPlayers()){
-            addPlayerToClaim(uuid, Bukkit.getOfflinePlayer(uuid).getName());
+            addPlayerToClaim(uuid);
         }
     }
     
@@ -121,6 +123,9 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
                         return;
                     }
                     player.sendMessage(Text.ADD_PLAYER_CLAIM(input));
+                    Bukkit.getScheduler().runTask(ConsulatCore.getInstance(), () -> {
+                        open(player);
+                    });
                 }, new String[]{"", "^^^^^^^^^^^^^^", "Entre le joueur", "à ajouter"}, 0);
             }
             return;
@@ -197,8 +202,9 @@ public class ManageClaimGui extends DataRelatPagedGui<Claim> {
         }
     }
     
-    public void addPlayerToClaim(UUID uuid, String name){
-        GuiItem item = IGui.getItem("§e" + name, -1, uuid);
+    public void addPlayerToClaim(UUID uuid){
+        GuiHeadItem item = IGui.getItem(this, "§e%s", -1, uuid);
+        item.onUpdate(head -> refresh());
         addItem(item);
         item.setAttachedObject(uuid);
     }

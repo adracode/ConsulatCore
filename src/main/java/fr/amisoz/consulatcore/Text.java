@@ -1,6 +1,5 @@
 package fr.amisoz.consulatcore;
 
-import fr.amisoz.consulatcore.economy.BaltopManager;
 import fr.amisoz.consulatcore.moderation.MutedPlayer;
 import fr.amisoz.consulatcore.players.SurvivalOffline;
 import fr.amisoz.consulatcore.zones.cities.City;
@@ -17,10 +16,11 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
 
 final public class Text {
     
@@ -185,6 +185,7 @@ final public class Text {
     public static final String NO_ITEM_TO_SELL = PREFIX + "§cTu n'as pas d'item à vendre.";
     public static final String SHOP_NOT_FOUND = PREFIX + "§cCe shop n'a pas été trouvé.";
     public static final String BUY_HOME = PREFIX + "Tu as acheté un home supplémentaire.";
+    public static final String BUY_SLOT_SHOP = PREFIX + "Tu as acheté un slot de shop supplémentaire.";
     public static final String NOW_TOURISTE = PREFIX + "Tu es désormais touriste !";
     public static final String NO_ANSWER= PREFIX + "§cTu n'as pas envoyé / reçu de MP.";
 
@@ -192,7 +193,7 @@ final public class Text {
         return "§8[§d" + city.getName() + "§8] ";
     }
 
-    public static String CITY_CREATED(String cityName){return PREFIX + "§7Tu viens de créer la ville nommée §a" + cityName + "§7 !";}
+    public static String CITY_CREATED(String cityName){return PREFIX + "§7Tu viens de créer la ville nommée §a" + cityName + "§7 pour §e" + ConsulatCore.formatMoney(City.CREATE_TAX) + "§7 !";}
 
     public static String NOT_ENOUGH_MONEY_CITY(double money){return PREFIX + "§cLa banque de ville n'a pas assez d'argent (argent requis: " + ConsulatCore.formatMoney(money) + ").";}
 
@@ -238,7 +239,7 @@ final public class Text {
 
     public static String WITHDRAW_MONEY_CITY(double money){return PREFIX + "§aTu as retiré §7" + ConsulatCore.formatMoney(money) + " §ade la ville.";}
 
-    public static String MONEY_CITY(double money){return PREFIX + "§ala ville a §e" + ConsulatCore.formatMoney(money);}
+    public static String MONEY_CITY(double money){return PREFIX + "§aLa ville possède §e" + ConsulatCore.formatMoney(money);}
 
     public static String ADD_PLAYER_CLAIM(String player){return PREFIX + "§a" + player + " a été ajouté à ce claim. Tu peux modifier ses permissions avec §6/claim options§a.";}
 
@@ -279,10 +280,10 @@ final public class Text {
 
     public static String CHUNK_UNCLAIM(double money){return PREFIX + "§aChunk unclaim, tu as récupéré " + ConsulatCore.formatMoney(money) + ".";}
 
-    public static String BALTOP(SortedSet<BaltopManager.MoneyOwner> players){
+    public static <T> String BALTOP(List<T> moneyOwners, Function<T, String> toString, ToDoubleFunction<T> getMoney){
         StringBuilder builder = new StringBuilder(PREFIX + "§e========= Baltop =========\n");
-        for(BaltopManager.MoneyOwner moneyOwner : players){
-            builder.append("§6").append(moneyOwner.getName()).append(":§e ").append(ConsulatCore.formatMoney(moneyOwner.getMoney())).append('\n');
+        for(T moneyOwner : moneyOwners){
+            builder.append("§6").append(toString.apply(moneyOwner)).append(":§e ").append(ConsulatCore.formatMoney(getMoney.applyAsDouble(moneyOwner))).append('\n');
         }
         return builder.deleteCharAt(builder.length() - 1).toString();}
 

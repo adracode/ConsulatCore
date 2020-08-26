@@ -32,6 +32,12 @@ public class ShopGui extends DataPagedGui<ShopItemType> {
                 IGui.getItem("§ePage suivante", 6 * 9 - 1, Material.ARROW));
         setDynamicItemsRange(0, 45);
         setTemplateItems(45, 53);
+        setSort((item1, item2) -> {
+            if(item1.getAttachedObject() == null || item2.getAttachedObject() == null){
+                return 0;
+            }
+            return ((PlayerShop)item1.getAttachedObject()).compareTo((PlayerShop)item2.getAttachedObject());
+        });
     }
     
     @Override

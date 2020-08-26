@@ -39,7 +39,7 @@ public class RankGui extends DataRelatGui<CityRank> {
                 IGui.getItem("§cDésactivé", ACCESS_SLOT + 9, Material.RED_CONCRETE),
                 IGui.getItem("§eBanque", BANK_SLOT, Material.SUNFLOWER, "", "§7Gérer la banque"),
                 IGui.getItem("§cDésactivé", BANK_SLOT + 9, Material.RED_CONCRETE),
-                IGui.getItem("§eBanque", HOME_SLOT, Material.COMPASS, "", "§7Déplacer le home"),
+                IGui.getItem("§eHome", HOME_SLOT, Material.COMPASS, "", "§7Déplacer le home"),
                 IGui.getItem("§cDésactivé", HOME_SLOT + 9, Material.RED_CONCRETE)
         );
         setDeco(Material.BLACK_STAINED_GLASS_PANE, 0, 1, 2, 3, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 46, 47, 48, 49, 50, 51, 52, 53);

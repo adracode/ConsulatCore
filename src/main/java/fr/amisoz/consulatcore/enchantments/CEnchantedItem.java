@@ -197,7 +197,7 @@ public class CEnchantedItem {
         tag.set(getKey(index), DATA_TYPE, new CEnchantment(type, level));
     }
     
-    private @NotNull EquipmentSlot getSlot(Material material){
+    public static  @NotNull EquipmentSlot getSlot(Material material){
         switch(material){
             case LEATHER_HELMET:
             case CHAINMAIL_HELMET:

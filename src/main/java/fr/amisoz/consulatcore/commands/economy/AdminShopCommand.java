@@ -12,6 +12,7 @@ import fr.amisoz.consulatcore.shop.admin.AdminShopBuy;
 import fr.amisoz.consulatcore.shop.admin.AdminShopSell;
 import fr.amisoz.consulatcore.shop.admin.custom.ASFly;
 import fr.amisoz.consulatcore.shop.admin.custom.ASHome;
+import fr.amisoz.consulatcore.shop.admin.custom.ASSlotShop;
 import fr.amisoz.consulatcore.shop.admin.custom.ASTouriste;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -30,7 +31,7 @@ import java.util.*;
 
 public class AdminShopCommand extends ConsulatCommand {
     
-    private static final Set<String> SUB_COMMAND = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("sell", "buy", "home", "fly", "touriste")));
+    private static final Set<String> SUB_COMMAND = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("sell", "buy", "home", "fly", "touriste", "shop")));
     
     public AdminShopCommand(){
         super(ConsulatCore.getInstance(), "adminshop");
@@ -45,6 +46,7 @@ public class AdminShopCommand extends ConsulatCommand {
                         "/adminshop sell <prix> - Vendre des items\n" +
                         "/adminshop fly <prix> - Acheter un fly\n" +
                         "/adminshop home <prix> - Acheter un home\n" +
+                        "/adminshop shop <prix> - Acheter un slot de shop\n" +
                         "/adminshop touriste <prix> - Acheter le grade Touriste").
                 setArgsMin(2).
                 setRank(Rank.RESPONSABLE).
@@ -115,6 +117,9 @@ public class AdminShopCommand extends ConsulatCommand {
                 break;
             case "touriste":
                 shop = new ASTouriste(shopBlock.getX(), shopBlock.getY(), shopBlock.getZ(), price);
+                break;
+            case "shop":
+                shop = new ASSlotShop(shopBlock.getX(), shopBlock.getY(), shopBlock.getZ(), price);
                 break;
             default:
                 return;

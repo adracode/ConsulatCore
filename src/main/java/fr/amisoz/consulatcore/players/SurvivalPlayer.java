@@ -11,6 +11,7 @@ import fr.amisoz.consulatcore.moderation.MuteReason;
 import fr.amisoz.consulatcore.moderation.MutedPlayer;
 import fr.amisoz.consulatcore.shop.player.PlayerShop;
 import fr.amisoz.consulatcore.utils.CustomEnum;
+import fr.amisoz.consulatcore.utils.ItemUtils;
 import fr.amisoz.consulatcore.zones.Zone;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.amisoz.consulatcore.zones.claims.Claim;
@@ -178,6 +179,10 @@ public class SurvivalPlayer extends ConsulatPlayer {
         return limitHomes - setExtraHomes(getRank());
     }
     
+    public int canBuySlotShop(){
+        return limitShop - setExtraShops(getRank());
+    }
+    
     public void initialize(double money, int extraHomes, int limitShop,
                            Map<String, Location> homes, boolean perkTop, Fly fly, Collection<PlayerShop> shops, Zone zone, City city){
         this.money = money;
@@ -202,7 +207,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
     }
     
     public boolean canAddNewShop(){
-        return shops.size() < limitShop;
+        return shops.size() < limitShop || hasPermission(ConsulatCore.getInstance().getPermission("bypass-shop-limit"));
     }
     
     public boolean canAddNewHome(String home){
@@ -277,9 +282,14 @@ public class SurvivalPlayer extends ConsulatPlayer {
         addMoney(-amount);
     }
     
-    public void incrementLimitHome() throws SQLException{
+    public void incrementLimitHome(){
         SPlayerManager.getInstance().incrementLimitHome(getUUID());
         ++limitHomes;
+    }
+    
+    public void incrementSlotShopHome(){
+        SPlayerManager.getInstance().incrementSlotShopHome(getUUID());
+        ++limitShop;
     }
     
     public void enableFly(){
@@ -321,7 +331,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
         for(ItemStack itemInv : getPlayer().getInventory().getStorageContents()){
             if(itemInv == null){
                 available += item.getType().getMaxStackSize();
-            } else if(itemInv.getType() == item.getType() && itemInv.getItemMeta().equals(item.getItemMeta())){
+            } else if(ItemUtils.areItemEquals(itemInv, item)){
                 available += item.getType().getMaxStackSize() - itemInv.getAmount();
             }
         }
@@ -708,7 +718,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
         }
     }
     
-    public void setPerkTop(boolean perkTop) throws SQLException{
+    public void setPerkTop(boolean perkTop){
         SPlayerManager.getInstance().setPerkUp(getUUID(), true);
         this.perkTop = perkTop;
         if(perkTop){

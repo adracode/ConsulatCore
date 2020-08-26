@@ -84,7 +84,17 @@ public class ZoneManager {
         if(ConsulatAPI.getConsulatAPI().isDebug()){
             ConsulatAPI.getConsulatAPI().log(Level.INFO, "Player " + uuid + " is invited to " + city.getName());
         }
-        return invitedPlayers.computeIfAbsent(uuid, (k) -> new HashSet<>()).add(city);
+        boolean invite = invitedPlayers.computeIfAbsent(uuid, (k) -> new HashSet<>()).add(city);
+        if(invite){
+            Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
+                Set<City> cities = invitedPlayers.get(uuid);
+                if(cities == null){
+                    return;
+                }
+                cities.remove(city);
+            }, 5 * 60 * 20);
+        }
+        return invite;
     }
     
     public void renameCity(City city, String newName){
@@ -102,7 +112,7 @@ public class ZoneManager {
         }
         IGui cityInfoGui = GuiManager.getInstance().getContainer("city-info").getGui(false, city);
         if(cityInfoGui != null){
-            ((CityInfo)cityInfoGui).updateName();
+            ((CityInfo)cityInfoGui).updateName(null);
         }
     }
     
@@ -114,7 +124,7 @@ public class ZoneManager {
         }
         IGui cityInfoGui = GuiManager.getInstance().getContainer("city-info").getGui(false, city);
         if(cityInfoGui != null){
-            ((CityInfo)cityInfoGui).updateHome();
+            ((CityInfo)cityInfoGui).updateHome(null);
         }
     }
     
@@ -203,6 +213,14 @@ public class ZoneManager {
                 e.printStackTrace();
             }
         });
+    }
+    
+    public Collection<Zone> getZones(){
+        return Collections.unmodifiableCollection(zones.values());
+    }
+    
+    public Collection<City> getCities(){
+        return Collections.unmodifiableCollection(citiesByName.values());
     }
     
     private void initZones() throws SQLException{

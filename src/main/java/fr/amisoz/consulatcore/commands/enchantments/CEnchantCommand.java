@@ -18,6 +18,8 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 public class CEnchantCommand extends ConsulatCommand implements ConsoleUsable {
     
@@ -42,11 +44,13 @@ public class CEnchantCommand extends ConsulatCommand implements ConsoleUsable {
         try {
             enchantedItem = new CEnchantedItem(sender.getPlayer().getInventory().getItemInMainHand());
         } catch(IllegalArgumentException e){
-            sender.sendMessage("§cCet item ne peut pas être enchanté.");
+            sender.sendMessage("§cCet item ne peut pas être enchanté (uniquement armure + livre).");
             return;
         }
         if(!enchantedItem.addEnchantment(CEnchantment.Type.valueOf(args[0].toUpperCase()), args.length == 1 ? 1 : Integer.parseInt(args[1]))){
-            sender.sendMessage("§cL'enchantement " + args[0] + " n'a pas pu être appliqué à cet item.");
+            List<CEnchantment.Type> enchants = new LinkedList<>(Arrays.asList(CEnchantment.Type.values()));
+            enchants.removeIf(enchant -> !enchant.canApply(CEnchantedItem.getSlot(enchantedItem.getType())));
+            sender.sendMessage("§cL'enchantement " + args[0] + " n'a pas pu être appliqué à cet item (enchantements possible: " + enchants + ").");
         }
     }
     

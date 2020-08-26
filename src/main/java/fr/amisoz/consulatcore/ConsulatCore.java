@@ -13,7 +13,8 @@ import fr.amisoz.consulatcore.commands.moderation.*;
 import fr.amisoz.consulatcore.commands.players.*;
 import fr.amisoz.consulatcore.commands.safari.SafariCommand;
 import fr.amisoz.consulatcore.duel.DuelManager;
-import fr.amisoz.consulatcore.economy.BaltopManager;
+import fr.amisoz.consulatcore.economy.CityBaltop;
+import fr.amisoz.consulatcore.economy.PlayerBaltop;
 import fr.amisoz.consulatcore.enchantments.EnchantmentManager;
 import fr.amisoz.consulatcore.fly.FlyManager;
 import fr.amisoz.consulatcore.listeners.entity.MobListeners;
@@ -61,6 +62,9 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     
     private HubServer hub;
     private SafariServer safari;
+    
+    private PlayerBaltop playerBaltop;
+    private CityBaltop cityBaltop;
     
     private DecimalFormat moneyFormat;
     
@@ -135,7 +139,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         ShopManager shopManager = ShopManager.getInstance();
         shopManager.loadAdminShops();
         new SPlayerManager();
-        new BaltopManager();
+        new PlayerBaltop();
         new FlyManager();
         moderationDatabase = new ModerationDatabase(this);
         EnchantmentManager.getInstance();
@@ -143,6 +147,8 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         safari.setSlot(50);
         hub = new HubServer();
         hub.setSlot(Integer.MAX_VALUE);
+        playerBaltop = new PlayerBaltop();
+        cityBaltop = new CityBaltop();
         Bukkit.getScheduler().runTaskTimer(this, new AFKRunnable(), 0L, 5 * 60 * 20);
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, new MonitoringRunnable(this), 0L, 10 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MessageRunnable(), 0L, 15 * 60 * 20);
@@ -210,6 +216,14 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     
     public Location getSpawn(){
         return spawn;
+    }
+    
+    public PlayerBaltop getPlayerBaltop(){
+        return playerBaltop;
+    }
+    
+    public CityBaltop getCityBaltop(){
+        return cityBaltop;
     }
     
     public void setSpawn(Location spawn){

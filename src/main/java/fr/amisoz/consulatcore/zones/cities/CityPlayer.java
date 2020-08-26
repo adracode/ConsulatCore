@@ -1,11 +1,12 @@
 package fr.amisoz.consulatcore.zones.cities;
 
 import fr.amisoz.consulatcore.players.CityPermission;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class CityPlayer {
+public class CityPlayer implements Comparable<CityPlayer> {
     
     @NotNull private UUID uuid;
     @NotNull private Set<CityPermission> permissions;
@@ -37,6 +38,12 @@ public class CityPlayer {
         permissions.clear();
     }
     
+    @Override
+    public int compareTo(@NotNull CityPlayer o){
+        int compareRank = rank.compareTo(o.rank);
+        return compareRank != 0 ? compareRank : Bukkit.getOfflinePlayer(uuid).getName().compareToIgnoreCase(Bukkit.getOfflinePlayer(o.uuid).getName());
+    }
+    
     public @NotNull CityRank getRank(){
         return rank;
     }
@@ -51,5 +58,15 @@ public class CityPlayer {
     
     public UUID getUUID(){
         return uuid;
+    }
+    
+    @Override
+    public String toString(){
+        return "CityPlayer{" +
+                "uuid=" + uuid +
+                ", name=" + Bukkit.getOfflinePlayer(uuid).getName() +
+                ", permissions=" + permissions +
+                ", rank=" + rank +
+                '}';
     }
 }

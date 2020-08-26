@@ -10,11 +10,13 @@ import fr.amisoz.consulatcore.shop.admin.AdminShopBuy;
 import fr.amisoz.consulatcore.shop.admin.AdminShopSell;
 import fr.amisoz.consulatcore.shop.admin.custom.ASFly;
 import fr.amisoz.consulatcore.shop.admin.custom.ASHome;
+import fr.amisoz.consulatcore.shop.admin.custom.ASSlotShop;
 import fr.amisoz.consulatcore.shop.admin.custom.ASTouriste;
 import fr.amisoz.consulatcore.shop.player.PlayerShop;
 import fr.amisoz.consulatcore.shop.player.ShopItemType;
 import fr.amisoz.consulatcore.utils.ChestUtils;
 import fr.amisoz.consulatcore.utils.CoordinatesUtils;
+import fr.amisoz.consulatcore.utils.ItemUtils;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.events.blocks.PlayerInteractContainerBlockEvent;
 import fr.leconsulat.api.events.blocks.PlayerInteractSignEvent;
@@ -78,6 +80,7 @@ public class ShopManager implements Listener {
         shopManager.register(ASFly.TYPE, ASFly::new);
         shopManager.register(ASHome.TYPE, ASHome::new);
         shopManager.register(ASTouriste.TYPE, ASTouriste::new);
+        shopManager.register(ASSlotShop.TYPE, ASSlotShop::new);
     }
     
     private final Map<String, ShopConstructor> createShop = new HashMap<>();
@@ -181,13 +184,11 @@ public class ShopManager implements Listener {
         }
     }
     
-    public void addShop(SurvivalPlayer player, PlayerShop shop) throws SQLException{
+    public void addShop(SurvivalPlayer player, PlayerShop shop){
         addShopDatabase(player.getUUID(), shop);
-        Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
-            player.addShop(shop);
-            shops.put(shop.getCoords(), shop);
-            shop.addInGui();
-        });
+        player.addShop(shop);
+        shops.put(shop.getCoords(), shop);
+        shop.addInGui();
     }
     
     public void addAdminShop(AdminShop shop){
@@ -275,7 +276,7 @@ public class ShopManager implements Listener {
                     }
                     sold = item;
                 } else {
-                    if(item.getType() != sold.getType() || !item.getItemMeta().equals(sold.getItemMeta())){
+                    if(ItemUtils.areItemEquals(item, sold)){
                         player.sendMessage(Text.ITEMS_MUST_BE_EQUALS);
                         event.getBlock().breakNaturally();
                         return;
@@ -304,19 +305,7 @@ public class ShopManager implements Listener {
             event.setLine(2, sold.getType().toString());
         }
         event.setLine(3, player.getName());
-        ItemStack[] content = shop.getInventory().getContents();
-        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-            try {
-                addShop(player, shop);
-                ConsulatAPI.getConsulatAPI().logFile("Shop created: " + shop + ", " + Arrays.toString(content));
-            } catch(SQLException e){
-                player.sendMessage(Text.ERROR);
-                Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () -> {
-                    event.getBlock().breakNaturally();
-                });
-                e.printStackTrace();
-            }
-        });
+        addShop(player, shop);
         player.sendMessage(Text.SHOP_CREATED);
     }
     
@@ -637,17 +626,24 @@ public class ShopManager implements Listener {
         return playerShops;
     }
     
-    public void addShopDatabase(UUID uuid, PlayerShop shop) throws SQLException{
-        PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("INSERT INTO shopinfo (shop_x, shop_y, shop_z, material, price, owner_uuid, isEmpty) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        preparedStatement.setInt(1, shop.getX());
-        preparedStatement.setInt(2, shop.getY());
-        preparedStatement.setInt(3, shop.getZ());
-        preparedStatement.setString(4, shop.getItemType().toString());
-        preparedStatement.setDouble(5, shop.getPrice());
-        preparedStatement.setString(6, uuid.toString());
-        preparedStatement.setBoolean(7, false);
-        preparedStatement.executeUpdate();
-        preparedStatement.close();
+    public void addShopDatabase(UUID uuid, PlayerShop shop){
+        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
+            try {
+                PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("INSERT INTO shopinfo (shop_x, shop_y, shop_z, material, price, owner_uuid, isEmpty) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                preparedStatement.setInt(1, shop.getX());
+                preparedStatement.setInt(2, shop.getY());
+                preparedStatement.setInt(3, shop.getZ());
+                preparedStatement.setString(4, shop.getItemType().toString());
+                preparedStatement.setDouble(5, shop.getPrice());
+                preparedStatement.setString(6, uuid.toString());
+                preparedStatement.setBoolean(7, false);
+                preparedStatement.executeUpdate();
+                preparedStatement.close();
+            } catch(SQLException e){
+                e.printStackTrace();
+            }
+        });
+        
     }
     
     public void removeShopDatabase(UUID uuId, int x, int y, int z) throws SQLException{

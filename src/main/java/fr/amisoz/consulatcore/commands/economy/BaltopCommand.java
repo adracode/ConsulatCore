@@ -2,7 +2,7 @@ package fr.amisoz.consulatcore.commands.economy;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.economy.BaltopManager;
+import fr.amisoz.consulatcore.players.SurvivalOffline;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
@@ -20,6 +20,8 @@ public class BaltopCommand extends ConsulatCommand {
     
     @Override
     public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
-        sender.sendMessage(Text.BALTOP(BaltopManager.getInstance().getBaltop()));
+        sender.sendMessage(Text.BALTOP(ConsulatCore.getInstance().getPlayerBaltop().getBaltop(),
+                SurvivalOffline::getName,
+                SurvivalOffline::getMoney));
     }
 }

@@ -6,26 +6,26 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class ASHome extends AdminShopCustom {
+public class ASSlotShop extends AdminShopCustom {
     
-    public static final String TYPE = "ADMIN_CUSTOM_HOME";
-    private static final ItemStack item = new ItemStack(Material.RED_BED);
+    public static final String TYPE = "ADMIN_CUSTOM_SLOT_SHOP";
+    private static final ItemStack item = new ItemStack(Material.CHEST);
     
     static{
         ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName("§6Home supplémentaire");
+        meta.setDisplayName("§6Slot de shop");
         item.setItemMeta(meta);
     }
     
-    public ASHome(int x, int y, int z, double price){
+    public ASSlotShop(int x, int y, int z, double price){
         super(x, y, z, price);
     }
     
-    public ASHome(long coords){
+    public ASSlotShop(long coords){
         super(coords);
     }
     
-    public ASHome(long coords, double price){
+    public ASSlotShop(long coords, double price){
         super(coords, price);
     }
     
@@ -41,17 +41,17 @@ public class ASHome extends AdminShopCustom {
     
     @Override
     public String getTitle(){
-        return "Acheter un home supplémentaire";
+        return "Acheter un slot de shop";
     }
     
     @Override
     public boolean canBuy(SurvivalPlayer player){
-        return player.canBuyHome() < 1;
+        return player.canBuySlotShop() < 1;
     }
     
     @Override
     public void onBuy(SurvivalPlayer player){
-        player.incrementLimitHome();
-        player.sendMessage(Text.BUY_HOME);
+        player.incrementSlotShopHome();
+        player.sendMessage(Text.BUY_SLOT_SHOP);
     }
 }

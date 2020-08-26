@@ -20,7 +20,6 @@ import fr.leconsulat.api.player.Permission;
 import fr.leconsulat.api.ranks.Rank;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.Nullable;
@@ -34,6 +33,7 @@ public class Claim extends CChunk {
     public static final double BUY_CLAIM = 180;
     public static final double BUY_CITY_CLAIM = BUY_CLAIM;
     public static final double REFUND = BUY_CLAIM * 0.7;
+    public static final double SURCLAIM = BUY_CITY_CLAIM - REFUND;
     private final Long2ObjectMap<UUID> protectedContainers = new Long2ObjectOpenHashMap<>();
     private String description;
     private Zone owner;
@@ -137,7 +137,7 @@ public class Claim extends CChunk {
         }
         IGui manageClaim = GuiManager.getInstance().getContainer("claim").getGui(false, this);
         if(manageClaim != null){
-            ((ManageClaimGui)manageClaim).addPlayerToClaim(uuid, Bukkit.getOfflinePlayer(uuid).getName());
+            ((ManageClaimGui)manageClaim).addPlayerToClaim(uuid);
         }
         return true;
     }

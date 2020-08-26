@@ -2,6 +2,7 @@ package fr.amisoz.consulatcore.commands.players;
 
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.amisoz.consulatcore.ConsulatCore;
+import fr.amisoz.consulatcore.zones.cities.City;
 import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
@@ -54,7 +55,9 @@ public class ConsulatHelpCommand extends ConsulatCommand {
                 .append("\n")
                 .append("§7§oPour afficher toutes les commandes: §a§o/help claim§7§o.\n")
                 .create();
-        ville = new ComponentBuilder(title).append("Tu peux créer une ville et ajouter des membres pour créer une communauté et partager des claims.\n\n").color(ChatColor.GRAY)
+        ville = new ComponentBuilder(title).append("Tu peux créer une ville pour ").color(ChatColor.GRAY)
+                .append(ConsulatCore.formatMoney(City.CREATE_TAX)).color(ChatColor.YELLOW)
+                .append(" et ajouter des membres pour créer une communauté et partager des claims.\n\n").color(ChatColor.GRAY)
                 .append("§aCommandes utiles:\n")
                 .append("§c/ville create §e- §7Créer une ville.\n")
                 .append("§c/ville options §e- §7Gérer la ville.\n")

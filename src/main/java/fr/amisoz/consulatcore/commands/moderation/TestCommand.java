@@ -1,5 +1,6 @@
 package fr.amisoz.consulatcore.commands.moderation;
 
+import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -19,11 +20,13 @@ public class TestCommand extends ConsulatCommand {
         setDescription("Commande de dev").
                 setUsage("/test city lead - Faire un coup d'état\n" +
                         "/test city join <ville> - Rejoindre une ville\n" +
+                        "/test money <montant> - Se donner de l'argent\n" +
                         "/test claim - Switch les permissions de claim").
                 setArgsMin(1).
-                setRank(Rank.DEVELOPPEUR).
+                setRank(Rank.JOUEUR).
                 suggest(
                         LiteralArgumentBuilder.literal("claim"),
+                        LiteralArgumentBuilder.literal("money").then(RequiredArgumentBuilder.argument("montant", DoubleArgumentType.doubleArg(0, 1000000))),
                         LiteralArgumentBuilder.literal("city").
                                 then(LiteralArgumentBuilder.literal("join").
                                         then(RequiredArgumentBuilder.argument("city", StringArgumentType.word()))).
@@ -76,6 +79,15 @@ public class TestCommand extends ConsulatCommand {
                         sender.addPermission(ConsulatCore.getInstance().getPermission("interact"));
                         sender.sendMessage("§aTu peux interagir avec tous les claims.");
                     }
+                    break;
+                case "money":
+                    if(args.length < 2){
+                        sender.sendMessage("§cPas assez d'arguments");
+                        return;
+                    }
+                    double money = Math.min(Math.abs(Double.parseDouble(args[1])), 1000000);
+                    ((SurvivalPlayer)sender).addMoney(money);
+                    sender.sendMessage(Text.YOU_RECEIVED_MONEY_FROM(money, sender.getName()));
                     break;
             }
         }

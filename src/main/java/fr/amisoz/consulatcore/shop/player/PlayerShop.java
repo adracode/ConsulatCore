@@ -7,6 +7,7 @@ import fr.amisoz.consulatcore.guis.shop.ShopGui;
 import fr.amisoz.consulatcore.shop.Shop;
 import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.amisoz.consulatcore.utils.CoordinatesUtils;
+import fr.amisoz.consulatcore.utils.ItemUtils;
 import fr.leconsulat.api.gui.GuiContainer;
 import fr.leconsulat.api.gui.GuiManager;
 import org.bukkit.Location;
@@ -24,10 +25,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class PlayerShop implements Shop {
+public class PlayerShop implements Shop, Comparable<PlayerShop> {
     
     public static final String TYPE = "PLAYER";
     private static BlockFace[] chestFaces = new BlockFace[]{BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
@@ -124,7 +126,7 @@ public class PlayerShop implements Shop {
         if(item == null){
             return false;
         }
-        return item.getType() == forSale.getType() && item.getItemMeta().equals(forSale.getItemMeta());
+        return ItemUtils.areItemEquals(item, forSale);
     }
     
     public int getAmount(int amount){
@@ -178,6 +180,12 @@ public class PlayerShop implements Shop {
     
     public boolean isOwner(UUID uuid){
         return owner.equals(uuid);
+    }
+    
+    @Override
+    public int compareTo(@NotNull PlayerShop o){
+        int compareType = getItemType().compareTo(o.getItemType());
+        return compareType == 0 ? Double.compare(price, o.price) : compareType;
     }
     
     public boolean isOpen(){

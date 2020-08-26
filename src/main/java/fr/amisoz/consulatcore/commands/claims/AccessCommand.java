@@ -23,7 +23,7 @@ public class AccessCommand extends ConsulatCommand {
         super(ConsulatCore.getInstance(), "access");
         setDescription("Gérer les accès de tes claims").
                 setUsage("/access add <joueur> - Ajoute un joueur au claim\n" +
-                        "/access addll <joueur> - Ajoute un joueur à tous tes claims\n" +
+                        "/access addall <joueur> - Ajoute un joueur à tous tes claims\n" +
                         "/access list - Affiche les joueurs ayant accès\n" +
                         "/access remove <joueur> - Retire un joueur du claim\n" +
                         "/access removeall <joueur> - Retire un joueur de tous tes claims").

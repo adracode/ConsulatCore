@@ -29,7 +29,7 @@ public class PublicPermissionsGui extends DataRelatGui<City> {
         for(ClaimPermission permission : ClaimPermission.values()){
             byte slot = getSlotPermission(permission);
             if(slot == -1){
-                return;
+                continue;
             }
             if(getData().hasPublicPermission(permission)){
                 setGlowing(slot, true);

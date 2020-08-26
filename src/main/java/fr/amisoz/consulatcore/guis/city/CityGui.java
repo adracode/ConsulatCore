@@ -143,6 +143,9 @@ public class CityGui extends DataRelatGui<City> {
                     }
                     player.sendMessage(Text.CITY_RENAMED(city.getName(), input));
                     ZoneManager.getInstance().renameCity(city, input);
+                    Bukkit.getScheduler().runTask(ConsulatCore.getInstance(), () -> {
+                        open(player);
+                    });
                 }, new String[]{"", "", "^^^^^^^^^^^^^^", "Nouveau nom"}, 0, 1);
             }
             break;
@@ -194,7 +197,7 @@ public class CityGui extends DataRelatGui<City> {
     
     public void updateName(){
         City city = getData();
-        setName("§2" + city.getName() + "§8");
+        setName(city.getName());
         setDisplayName(CITY_SLOT, "§e" + city.getName());
     }
     
@@ -286,6 +289,7 @@ public class CityGui extends DataRelatGui<City> {
         }
         MembersGui cityMembers = (MembersGui)getLegacyChild(CityGui.MEMBERS);
         if(cityMembers != null){
+            cityMembers.updateRanks();
             Collection<Relationnable> children = cityMembers.getChildren();
             for(Relationnable child : children){
                 if(child instanceof MemberGui){

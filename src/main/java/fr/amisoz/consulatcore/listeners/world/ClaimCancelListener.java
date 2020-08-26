@@ -11,18 +11,23 @@ import fr.amisoz.consulatcore.zones.cities.City;
 import fr.amisoz.consulatcore.zones.claims.Claim;
 import fr.amisoz.consulatcore.zones.claims.ClaimManager;
 import fr.amisoz.consulatcore.zones.claims.ClaimPermission;
+import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.events.blocks.*;
 import fr.leconsulat.api.events.entities.PlayerInteractWithEntityEvent;
 import fr.leconsulat.api.events.items.PlayerPlaceItemEvent;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.utils.Rollback;
-import org.bukkit.*;
+import org.bukkit.Chunk;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.data.type.Dispenser;
 import org.bukkit.entity.*;
+import org.bukkit.entity.minecart.ExplosiveMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -34,13 +39,11 @@ import org.bukkit.event.hanging.HangingPlaceEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.raid.RaidTriggerEvent;
-import org.bukkit.event.vehicle.VehicleDamageEvent;
-import org.bukkit.event.vehicle.VehicleEnterEvent;
-import org.bukkit.event.vehicle.VehicleEntityCollisionEvent;
-import org.bukkit.event.vehicle.VehicleMoveEvent;
+import org.bukkit.event.vehicle.*;
 import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.inventory.BlockInventoryHolder;
 import org.bukkit.projectiles.BlockProjectileSource;
+import org.bukkit.projectiles.ProjectileSource;
 
 import java.util.Iterator;
 import java.util.List;
@@ -50,6 +53,8 @@ import java.util.UUID;
 //on peut pousser les mobs -> impossible à enlever sans enlever toutes les collisions
 //on peut jeter des items dans les hoppers -> à interdire ?
 public class ClaimCancelListener implements Listener {
+    
+    private static BlockFace[] faces = new BlockFace[]{BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
     
     private ChunkManager chunkManager = ChunkManager.getInstance();
     private ClaimManager claimManager = ClaimManager.getInstance();
@@ -198,6 +203,26 @@ public class ClaimCancelListener implements Listener {
     
     @EventHandler
     public void onForm(BlockFormEvent event){
+        Block block = event.getBlock();
+        if(block.getType() == Material.LAVA && event.getNewState().getType() == Material.OBSIDIAN ||
+                isConcretePowder(block.getType()) && isConcrete(event.getNewState().getType())){
+            boolean interact = true;
+            for(BlockFace face : faces){
+                Block relative = block.getRelative(face);
+                if(relative.getType() == Material.WATER){
+                    if(Claim.canInteract(relative.getChunk(), block.getChunk())){
+                        interact = true;
+                        break;
+                    } else {
+                        interact = false;
+                    }
+                }
+            }
+            if(!interact){
+                event.setCancelled(true);
+                return;
+            }
+        }
         CChunk chunk = chunkManager.getChunk(event.getBlock());
         if(!chunk.incrementLimit(event.getNewState().getType())){
             event.setCancelled(true);
@@ -280,13 +305,15 @@ public class ClaimCancelListener implements Listener {
     @EventHandler(priority = EventPriority.LOW)
     public void onPistonPush(BlockPistonExtendEvent event){
         BlockFace direction = event.getDirection();
-        if(!Claim.canInteract(event.getBlock().getChunk(), event.getBlock().getRelative(direction).getChunk())){
+        if(!Claim.canInteract(event.getBlock().getChunk(), event.getBlock().getRelative(direction).getChunk()) ||
+                !Claim.canInteract(event.getBlock().getChunk(), event.getBlock().getRelative(direction).getRelative(direction).getChunk())){
             event.setCancelled(true);
             return;
         }
         if(event.getBlocks().size() != 0){
             for(Block block : event.getBlocks()){
-                if(!Claim.canInteract(event.getBlock().getChunk(), block.getRelative(direction).getChunk())){
+                if(!Claim.canInteract(event.getBlock().getChunk(), block.getRelative(direction).getChunk()) ||
+                        !Claim.canInteract(event.getBlock().getChunk(), block.getRelative(direction).getRelative(direction).getChunk())){
                     event.setCancelled(true);
                     return;
                 }
@@ -440,7 +467,7 @@ public class ClaimCancelListener implements Listener {
                     return;
                 }
                 Claim claim = claimManager.getClaim(event.getBlock().getChunk());
-                if(claim != null && claim.canPlace((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getEntity().getUniqueId()))){
+                if(claim != null && !claim.canPlace((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getEntity().getUniqueId()))){
                     event.setCancelled(true);
                 }
         }
@@ -503,6 +530,25 @@ public class ClaimCancelListener implements Listener {
         }
         Block block = event.getBlock();
         switch(entity.getType()){
+            case ARROW:
+            case SPECTRAL_ARROW:
+                if(block.getType() == Material.TNT){
+                    Projectile projectile = (Projectile)entity;
+                    if(projectile.getShooter() instanceof BlockProjectileSource){
+                        if(!Claim.canInteract(((BlockProjectileSource)projectile.getShooter()).getBlock().getChunk(), block.getChunk())){
+                            event.setCancelled(true);
+                            removeProjectile(projectile);
+                        }
+                    } else if(projectile.getShooter() instanceof Player){
+                        Claim hitClaim = claimManager.getClaim(event.getEntity().getChunk());
+                        if(hitClaim != null && !hitClaim.canInteractOther((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(
+                                ((Player)projectile.getShooter()).getUniqueId()))){
+                            event.setCancelled(true);
+                        }
+                    }
+                    break;
+                }
+                break;
             case FALLING_BLOCK:
                 if(entity.isDead()){
                     Location from = entity.getOrigin();
@@ -573,22 +619,30 @@ public class ClaimCancelListener implements Listener {
         }
         //Si l'entité qui tape est un projectile (flèche, trident...)
         Projectile projectile = (Projectile)event.getDamager();
+        ProjectileSource source = projectile.getShooter();
         //Si un bloc lance le projectile (dispenser)
-        if(projectile.getShooter() instanceof BlockProjectileSource){
-            if(!Claim.canInteract(
-                    ((BlockProjectileSource)projectile.getShooter()).getBlock().getChunk(),
-                    entity.getChunk())){
+        if(source instanceof BlockProjectileSource){
+            if(!Claim.canInteract(((BlockProjectileSource)source).getBlock().getChunk(), entity.getChunk())){
                 event.setCancelled(true);
                 removeProjectile(projectile);
                 return;
             }
         }
-        if(!(projectile.getShooter() instanceof Player)){
+        if(source instanceof Entity){
+            if(!(source instanceof Player)){
+                Entity sourceEntity = (Entity)source;
+                if(!Claim.canInteract(sourceEntity.getOrigin() == null ? sourceEntity.getLocation().getChunk() : sourceEntity.getOrigin().getChunk(), entity.getChunk())){
+                    event.setCancelled(true);
+                }
+                return;
+            }
+        }
+        if(!(source instanceof Player)){
             return;
         }
         //Si un joueur lance le projectile
         if(!entityClaim.canDamage((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(
-                ((Player)projectile.getShooter()).getUniqueId()))){
+                ((Player)source).getUniqueId()))){
             event.setCancelled(true);
             removeProjectile(projectile);
         }
@@ -596,7 +650,12 @@ public class ClaimCancelListener implements Listener {
     
     @EventHandler(priority = EventPriority.LOW)
     public void onEntityExplode(EntityExplodeEvent event){
-        Location locOrigin = event.getEntity().getOrigin();
+        Entity entity = event.getEntity();
+        if(entity.getType() == EntityType.WITHER_SKULL){
+            event.setCancelled(true);
+            return;
+        }
+        Location locOrigin = entity.getOrigin();
         if(locOrigin == null){
             event.setCancelled(true);
             return;
@@ -658,10 +717,6 @@ public class ClaimCancelListener implements Listener {
     //EntityTargetEvent
     //EntityTargetLivingEntityEvent
     
-    public void onEntityTeleportEvent(EntityTeleportEvent event){
-        Bukkit.getPlayer("adracode").sendActionBar(event.getEntity().getType().toString());
-    }
-    
     //EntityToggleGlideEvent
     //EntityToggleSwimEvent
     //EntityTransformEvent
@@ -719,14 +774,29 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    //ProjectileHitEvent
+    //TODO
+    @EventHandler
+    public void onHit(ProjectileHitEvent event){
+        ProjectileSource source = event.getEntity().getShooter();
+        if(source instanceof Player){
+            Claim hitClaim = claimManager.getClaim(event.getEntity().getChunk());
+            if(hitClaim != null && !hitClaim.canInteractOther(((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(((Player)source).getUniqueId())))){
+                ConsulatAPI.getNMS().getPlayer().pickup((Player)source, event.getEntity());
+            }
+        }
+    }
     
     @EventHandler
     public void onProjectileLaunch(ProjectileLaunchEvent event){
-        if(!(event.getEntity().getShooter() instanceof Player)){
+        Projectile projectile = event.getEntity();
+        if(projectile.getType() == EntityType.THROWN_EXP_BOTTLE){
             return;
         }
-        Player player = (Player)event.getEntity().getShooter();
+        ProjectileSource source = projectile.getShooter();
+        if(!(source instanceof Player)){
+            return;
+        }
+        Player player = (Player)source;
         Claim claim = claimManager.getClaim(player.getChunk());
         if(claim != null && !claim.canInteractOther((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId()))){
             event.setCancelled(true);
@@ -736,10 +806,16 @@ public class ClaimCancelListener implements Listener {
     @EventHandler
     public void onProjectileCollide(ProjectileCollideEvent event){
         Projectile projectile = event.getEntity();
-        if(!(projectile.getShooter() instanceof Player)){
+        ProjectileSource source = projectile.getShooter();
+        if(!(source instanceof Player)){
+            if(source instanceof BlockProjectileSource){
+                if(!Claim.canInteract(((BlockProjectileSource)source).getBlock().getChunk(), event.getEntity().getChunk())){
+                    event.setCancelled(true);
+                }
+            }
             return;
         }
-        SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(((Player)projectile.getShooter()).getUniqueId());
+        SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(((Player)source).getUniqueId());
         Claim entityClaim = claimManager.getClaim(event.getCollidedWith().getChunk());
         if(entityClaim != null && !entityClaim.canInteractOther(player)){
             event.setCancelled(true);
@@ -778,6 +854,10 @@ public class ClaimCancelListener implements Listener {
                 if(!Claim.canInteract(((BlockProjectileSource)projectile.getShooter()).getBlock().getChunk(), event.getEntity().getChunk())){
                     event.setCancelled(true);
                 }
+            }
+        } else if(remover instanceof ExplosiveMinecart){
+            if(!Claim.canInteract(remover.getOrigin() == null ? remover.getLocation().getChunk() : remover.getOrigin().getChunk(), event.getEntity().getChunk())){
+                event.setCancelled(true);
             }
         }
     }
@@ -842,7 +922,13 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    //HangingBreakEvent
+    @EventHandler
+    public void onHangingBreak(HangingBreakEvent event){
+        if(event.getCause() == HangingBreakEvent.RemoveCause.EXPLOSION){
+            event.setCancelled(true);
+        }
+    }
+    
     //HangingEvent
     
     @EventHandler
@@ -1004,31 +1090,65 @@ public class ClaimCancelListener implements Listener {
     @EventHandler
     public void onVehicleDamaged(VehicleDamageEvent event){
         if(event.getAttacker() == null){
+            event.setCancelled(true);
             return;
         }
-        Claim claim = claimManager.getClaim(event.getVehicle().getLocation().getChunk());
-        if(claim == null){
+        Entity attacker = event.getAttacker();
+        Entity vehicle = event.getVehicle();
+        Claim vehicleClaim = claimManager.getClaim(vehicle.getLocation().getChunk());
+        if(vehicleClaim == null){
             return;
         }
-        if(event.getAttacker() instanceof Player){
-            if(!claim.canDamage((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getAttacker().getUniqueId()))){
+        if(attacker instanceof Player){
+            if(!vehicleClaim.canDamage((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(attacker.getUniqueId()))){
                 event.setCancelled(true);
             }
-        }
-        if(!(event.getAttacker() instanceof Projectile)){
             return;
         }
-        Projectile projectile = (Projectile)event.getAttacker();
-        if(!(projectile.getShooter() instanceof Player)){
+        if(!(attacker instanceof Projectile)){
+            Location loc = attacker.getOrigin() == null ? attacker.getLocation() : attacker.getOrigin();
+            if(!Claim.canInteract(loc.getChunk(), vehicle.getChunk())){
+                event.setCancelled(true);
+            }
             return;
         }
-        if(!claim.canDamage((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(
-                ((Player)projectile.getShooter()).getUniqueId()))){
+        Projectile projectile = (Projectile)attacker;
+        ProjectileSource source = projectile.getShooter();
+        if(!(source instanceof Player)){
+            if(source instanceof BlockProjectileSource){
+                if(!Claim.canInteract(((BlockProjectileSource)source).getBlock().getChunk(), event.getVehicle().getChunk())){
+                    event.setCancelled(true);
+                    removeProjectile(projectile);
+                }
+            }
+            return;
+        }
+        if(!vehicleClaim.canDamage((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(
+                ((Player)source).getUniqueId()))){
             event.setCancelled(true);
         }
     }
     
-    //PlayerTeleportEvent
+    @EventHandler
+    public void onTeleport(PlayerTeleportEvent event){
+        switch(event.getCause()){
+            case UNKNOWN:
+            case PLUGIN:
+            case COMMAND:
+            case SPECTATE:
+            case END_PORTAL:
+            case END_GATEWAY:
+            case NETHER_PORTAL:
+                return;
+        }
+        if(event.getFrom().getChunk() == event.getTo().getChunk()){
+            return;
+        }
+        Claim to = claimManager.getClaim(event.getTo().getChunk());
+        if(to != null && !to.canInteractOther((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId()))){
+            event.setCancelled(true);
+        }
+    }
     //PlayerToggleFlightEvent
     //PlayerToggleSneakEvent
     //PlayerToggleSprintEvent
@@ -1068,7 +1188,47 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    //VehicleDestroyEvent
+    @EventHandler
+    public void onDestroy(VehicleDestroyEvent event){
+        if(event.getAttacker() == null){
+            event.setCancelled(true);
+            return;
+        }
+        Entity attacker = event.getAttacker();
+        Entity vehicle = event.getVehicle();
+        Claim vehicleClaim = claimManager.getClaim(vehicle.getLocation().getChunk());
+        if(vehicleClaim == null){
+            return;
+        }
+        if(attacker instanceof Player){
+            if(!vehicleClaim.canDamage((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(attacker.getUniqueId()))){
+                event.setCancelled(true);
+            }
+            return;
+        }
+        if(!(attacker instanceof Projectile)){
+            Location loc = attacker.getOrigin() == null ? attacker.getLocation() : attacker.getOrigin();
+            if(!Claim.canInteract(loc.getChunk(), vehicle.getChunk())){
+                event.setCancelled(true);
+            }
+            return;
+        }
+        Projectile projectile = (Projectile)attacker;
+        ProjectileSource source = projectile.getShooter();
+        if(!(source instanceof Player)){
+            if(source instanceof BlockProjectileSource){
+                if(!Claim.canInteract(((BlockProjectileSource)source).getBlock().getChunk(), event.getVehicle().getChunk())){
+                    event.setCancelled(true);
+                    removeProjectile(projectile);
+                }
+            }
+            return;
+        }
+        if(!vehicleClaim.canDamage((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(
+                ((Player)source).getUniqueId()))){
+            event.setCancelled(true);
+        }
+    }
     //VehicleEvent
     //VehicleExitEvent
     
@@ -1078,7 +1238,8 @@ public class ClaimCancelListener implements Listener {
         if(!(vehicle instanceof Minecart) && !(vehicle instanceof Boat)){
             return;
         }
-        if(!Claim.canInteract(event.getFrom().getChunk(), event.getTo().getChunk())){
+        if(!Claim.canInteract(vehicle.getOrigin() == null ? event.getFrom().getChunk() : vehicle.getOrigin().getChunk(),
+                event.getTo().getChunk())){
             vehicle.eject();
             vehicle.teleport(event.getFrom());
         }
@@ -1262,4 +1423,57 @@ public class ClaimCancelListener implements Listener {
             event.setCancelled(true);
         }
     }
+    
+    private boolean isConcretePowder(Material type){
+        if(type == null){
+            return false;
+        }
+        switch(type){
+            case BLACK_CONCRETE_POWDER:
+            case RED_CONCRETE_POWDER:
+            case BLUE_CONCRETE_POWDER:
+            case CYAN_CONCRETE_POWDER:
+            case GRAY_CONCRETE_POWDER:
+            case LIME_CONCRETE_POWDER:
+            case PINK_CONCRETE_POWDER:
+            case BROWN_CONCRETE_POWDER:
+            case GREEN_CONCRETE_POWDER:
+            case WHITE_CONCRETE_POWDER:
+            case ORANGE_CONCRETE_POWDER:
+            case PURPLE_CONCRETE_POWDER:
+            case YELLOW_CONCRETE_POWDER:
+            case MAGENTA_CONCRETE_POWDER:
+            case LIGHT_BLUE_CONCRETE_POWDER:
+            case LIGHT_GRAY_CONCRETE_POWDER:
+                return true;
+        }
+        return false;
+    }
+    
+    private boolean isConcrete(Material type){
+        if(type == null){
+            return false;
+        }
+        switch(type){
+            case BLACK_CONCRETE:
+            case RED_CONCRETE:
+            case BLUE_CONCRETE:
+            case CYAN_CONCRETE:
+            case GRAY_CONCRETE:
+            case LIME_CONCRETE:
+            case PINK_CONCRETE:
+            case BROWN_CONCRETE:
+            case GREEN_CONCRETE:
+            case WHITE_CONCRETE:
+            case ORANGE_CONCRETE:
+            case PURPLE_CONCRETE:
+            case YELLOW_CONCRETE:
+            case MAGENTA_CONCRETE:
+            case LIGHT_BLUE_CONCRETE:
+            case LIGHT_GRAY_CONCRETE:
+                return true;
+        }
+        return false;
+    }
+    
 }

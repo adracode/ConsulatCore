@@ -143,6 +143,9 @@ public class EnchantmentManager implements Listener {
         if(CEnchantedItem.isEnchanted(second)){
             ItemStack first = event.getInventory().getItem(0);
             if(first != null && first.getType() != Material.AIR){
+                if(first.getType() == Material.ENCHANTED_BOOK && second.getType() != Material.ENCHANTED_BOOK){
+                    return;
+                }
                 int extraCost = 0;
                 if(result == null || result.getType() == Material.AIR){
                     result = first.clone();

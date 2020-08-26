@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class CityRank {
+public class CityRank implements Comparable<CityRank> {
     
     private final int id;
     @NotNull private String rankName;
@@ -33,6 +33,11 @@ public class CityRank {
     
     public boolean removePermission(CityPermission permission){
         return defaultPermissions.remove(permission);
+    }
+    
+    @Override
+    public int compareTo(@NotNull CityRank o){
+        return Integer.compare(id, o.id);
     }
     
     @NotNull

@@ -12,8 +12,11 @@ import fr.amisoz.consulatcore.shop.ShopManager;
 import fr.amisoz.consulatcore.shop.player.PlayerShop;
 import fr.amisoz.consulatcore.zones.ZoneManager;
 import fr.amisoz.consulatcore.zones.cities.City;
+import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 
 import java.lang.reflect.Field;
 import java.util.UUID;
@@ -35,7 +38,11 @@ public class CDebugCommand extends ConsulatCommand {
                                 then(LiteralArgumentBuilder.literal("lead").
                                         then(RequiredArgumentBuilder.argument("city", StringArgumentType.word()))).
                                 then(LiteralArgumentBuilder.literal("join").
-                                        then(RequiredArgumentBuilder.argument("city", StringArgumentType.word()))),
+                                        then(RequiredArgumentBuilder.argument("city", StringArgumentType.word()))).
+                                then(LiteralArgumentBuilder.literal("add").
+                                        then(Arguments.playerList("player"))).
+                                then(LiteralArgumentBuilder.literal("kick").
+                                        then(Arguments.playerList("player"))),
                         LiteralArgumentBuilder.literal("fly").then(LiteralArgumentBuilder.literal("reset")),
                         LiteralArgumentBuilder.literal("shop"));
     }
@@ -62,6 +69,31 @@ public class CDebugCommand extends ConsulatCommand {
                                 return;
                             }
                             sender.sendMessage(Text.YOU_BEEN_INVITED_TO_CITY(city.getName(), sender.getName()));
+                        }
+                        break;
+                        case "add":{
+                            City city = ((SurvivalPlayer)sender).getCity();
+                            if(city == null){
+                                return;
+                            }
+                            OfflinePlayer target = Bukkit.getOfflinePlayer(args[2]);
+                            city.addPlayer(target.getUniqueId());
+                            city.sendMessage(Text.HAS_JOINED_CITY(city, target.getName()));
+                        }
+                        break;
+                        case "kick":{
+                            City city = ((SurvivalPlayer)sender).getCity();
+                            if(city == null){
+                                return;
+                            }
+                            UUID uuid;
+                            try {
+                                uuid = UUID.fromString(args[2]);
+                            } catch(IllegalArgumentException e){
+                                uuid = Bukkit.getOfflinePlayer(args[2]).getUniqueId();
+                            }
+                            city.removePlayer(uuid);
+                            city.sendMessage(Text.YOU_KICKED_PLAYER);
                         }
                         break;
                         case "lead":

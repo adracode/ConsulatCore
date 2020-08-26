@@ -435,19 +435,44 @@ public class SPlayerManager implements Listener {
         });
     }
     
-    public void setPerkUp(UUID uuid, boolean perkTop) throws SQLException{
-        PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE players SET canUp = ? WHERE player_uuid = ?");
-        preparedStatement.setBoolean(1, perkTop);
-        preparedStatement.setString(2, uuid.toString());
-        preparedStatement.executeUpdate();
-        preparedStatement.close();
+    public void setPerkUp(UUID uuid, boolean perkTop){
+        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
+            try {
+                PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE players SET canUp = ? WHERE player_uuid = ?");
+                preparedStatement.setBoolean(1, perkTop);
+                preparedStatement.setString(2, uuid.toString());
+                preparedStatement.executeUpdate();
+                preparedStatement.close();
+            } catch(SQLException e){
+                e.printStackTrace();
+            }
+        });
     }
     
-    public void incrementLimitHome(UUID uuid) throws SQLException{
-        PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE players SET moreHomes = moreHomes + 1 WHERE player_uuid = ?");
-        preparedStatement.setString(1, uuid.toString());
-        preparedStatement.executeUpdate();
-        preparedStatement.close();
+    public void incrementLimitHome(UUID uuid){
+        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
+            try {
+                PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE players SET moreHomes = moreHomes + 1 WHERE player_uuid = ?");
+                preparedStatement.setString(1, uuid.toString());
+                preparedStatement.executeUpdate();
+                preparedStatement.close();
+            } catch(SQLException e){
+                e.printStackTrace();
+            }
+        });
+    }
+    
+    public void incrementSlotShopHome(UUID uuid){
+        Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
+            try {
+                PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("UPDATE players SET Shops = Shops + 1 WHERE player_uuid = ?");
+                preparedStatement.setString(1, uuid.toString());
+                preparedStatement.executeUpdate();
+                preparedStatement.close();
+            } catch(SQLException e){
+                e.printStackTrace();
+            }
+        });
     }
     
     public Fly getFly(UUID uuid) throws SQLException{

@@ -55,26 +55,12 @@ public class WebShopCommand extends ConsulatCommand implements ConsoleUsable {
                 Bukkit.broadcastMessage("§7[§aBoutique§7] §a" + args[1] + "§7 a acheté §a" + args[2] + " " + args[3] + "§7 !");
                 break;
             case "home":
-                Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                    try {
-                        target.incrementLimitHome();
-                        target.sendMessage("§7Suite à ton achat, tu as un home supplémentaire !");
-                    } catch(SQLException e){
-                        target.sendMessage("§cUne erreur s'est produite lors de l'achat de ton home, préviens un administrateur !");
-                        e.printStackTrace();
-                    }
-                });
+                target.incrementLimitHome();
+                target.sendMessage("§7Suite à ton achat, tu as un home supplémentaire !");
                 break;
             case "up":
-                Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                    try {
-                        target.setPerkTop(true);
-                        target.sendMessage("§7Suite à ton achat, tu as accès au /top !");
-                    } catch(SQLException e){
-                        target.sendMessage("§cUne erreur s'est produite lors de l'achat de ton /up, préviens un administrateur !");
-                        e.printStackTrace();
-                    }
-                });
+                target.setPerkTop(true);
+                target.sendMessage("§7Suite à ton achat, tu as accès au /top !");
                 break;
             case "fly5":
                 target.setFly(Fly.FLY_5);

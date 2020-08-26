@@ -11,6 +11,7 @@ import fr.leconsulat.api.gui.event.GuiOpenEvent;
 import fr.leconsulat.api.gui.gui.IGui;
 import fr.leconsulat.api.gui.gui.template.DataRelatGui;
 import fr.leconsulat.api.player.ConsulatPlayer;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 
 public class BankGui extends DataRelatGui<City> {
@@ -63,6 +64,9 @@ public class BankGui extends DataRelatGui<City> {
                     player.removeMoney(moneyToGive);
                     player.getCity().addMoney(moneyToGive);
                     player.sendMessage(Text.ADD_MONEY_CITY(moneyToGive));
+                    Bukkit.getScheduler().runTask(ConsulatCore.getInstance(), () -> {
+                        open(player);
+                    });
                 }, new String[]{"", "^^^^^^^^^^^^^^", "Entre le montant", "à ajouter"}, 0);
                 break;
             case WITHDRAW_SLOT:
@@ -90,6 +94,9 @@ public class BankGui extends DataRelatGui<City> {
                     city.removeMoney(moneyToWithdraw);
                     player.addMoney(moneyToWithdraw);
                     player.sendMessage(Text.WITHDRAW_MONEY_CITY(moneyToWithdraw));
+                    Bukkit.getScheduler().runTask(ConsulatCore.getInstance(), () -> {
+                        open(player);
+                    });
                 }, new String[]{"", "^^^^^^^^^^^^^^", "Entre le montant", "à retirer"}, 0);
                 break;
         }

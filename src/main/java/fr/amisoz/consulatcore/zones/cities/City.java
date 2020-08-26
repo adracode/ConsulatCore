@@ -47,6 +47,7 @@ public class City extends Zone {
     public static final Pattern VALID_NAME = Pattern.compile("[a-zA-ZàçéèêîïùÀÇÉÈÊÎÏÙ]{3,16}");
     public static final Pattern VALID_RANK = Pattern.compile("[a-zA-ZàçéèêîïùÀÇÉÈÊÎÏÙ]{3,16}");
     public static final int RENAME_TAX = 5_000;
+    public static final double CREATE_TAX = 7_500;
     
     private double bank;
     private @Nullable Location home;
@@ -257,7 +258,7 @@ public class City extends Zone {
         }
         IGui cityInfoGui = GuiManager.getInstance().getContainer("city-info").getGui(false, this);
         if(cityInfoGui != null){
-            ((CityInfo)cityInfoGui).updateOwner();
+            ((CityInfo)cityInfoGui).updateOwner(null);
         }
     }
     
@@ -315,7 +316,7 @@ public class City extends Zone {
         IGui iMembersGui = GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS);
         if(iMembersGui != null){
             String name = player == null ? Bukkit.getOfflinePlayer(uuid).getName() : player.getName();
-            ((MembersGui)iMembersGui).addPlayer(uuid, name == null ? "Pseudo" : name);
+            ((MembersGui)iMembersGui).addPlayer(uuid);
         }
         IGui iCityInfo = GuiManager.getInstance().getContainer("city-info").getGui(false, this);
         if(iCityInfo != null){
@@ -542,6 +543,10 @@ public class City extends Zone {
         CityRank oldRank = player.getRank();
         player.setRank(rank);
         resetPermissions(uuid);
+        MembersGui membersGui = (MembersGui)GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS);
+        if(membersGui != null){
+            membersGui.updateRanks();
+        }
         RankMemberGui rankMemberGui = (RankMemberGui)GuiManager.getInstance().getContainer("city").getGui(false, this, CityGui.MEMBERS, uuid, MemberGui.RANK);
         if(rankMemberGui != null){
             rankMemberGui.setRank(oldRank, rank);
