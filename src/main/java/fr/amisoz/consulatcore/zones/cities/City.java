@@ -46,7 +46,7 @@ public class City extends Zone {
     
     public static final Pattern VALID_NAME = Pattern.compile("[a-zA-ZàçéèêîïùÀÇÉÈÊÎÏÙ]{3,16}");
     public static final Pattern VALID_RANK = Pattern.compile("[a-zA-ZàçéèêîïùÀÇÉÈÊÎÏÙ]{3,16}");
-    public static final int RENAME_TAX = 5_000;
+    public static final double RENAME_TAX = 5_000;
     public static final double CREATE_TAX = 7_500;
     
     private double bank;

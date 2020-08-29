@@ -98,20 +98,48 @@ public class ClaimCancelListener implements Listener {
         }
         chunkManager.getChunk(event.getBlock()).decrementLimit(event.getBlock().getType());
     }
-
-    /*
+    
+    
     @EventHandler
     public void onCanBuild(BlockCanBuildEvent event){
-        Player player = event.getPlayer();
-        //Player == null -> Shulker posé par un dispenser
-        if(player != null){
-            Claim claim = claimManager.getClaim(event.getBlock());
-            if(claim != null && !claim.canPlaceBlock((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId()))){
-                event.setBuildable(false);
+        if(isBed(event.getBlockData().getMaterial())){
+            Player player = event.getPlayer();
+            //Player == null -> Shulker posé par un dispenser
+            if(player != null){
+                Claim claim = claimManager.getClaim(event.getBlock());
+                if(claim != null && !claim.canPlace((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId()))){
+                    event.setBuildable(false);
+                }
             }
         }
     }
-    */
+    
+    private boolean isBed(Material type){
+        if(type == null){
+            return false;
+        }
+        switch(type){
+            case BLACK_BED:
+            case RED_BED:
+            case BLUE_BED:
+            case CYAN_BED:
+            case GRAY_BED:
+            case LIME_BED:
+            case PINK_BED:
+            case BROWN_BED:
+            case GREEN_BED:
+            case WHITE_BED:
+            case ORANGE_BED:
+            case PURPLE_BED:
+            case YELLOW_BED:
+            case MAGENTA_BED:
+            case LIGHT_BLUE_BED:
+            case LIGHT_GRAY_BED:
+                return true;
+        }
+        return false;
+    }
+    
     //BlockCookEvent -> Item cuit dans un four
     //BlockDamageEvent -> Bloc reçoit des dégâts
     
@@ -288,7 +316,7 @@ public class ClaimCancelListener implements Listener {
         for(BlockState block : event.getReplacedBlockStates()){
             if(!Claim.canInteract(event.getBlock().getChunk(), block.getChunk())){
                 event.setCancelled(true);
-                break;
+                return;
             }
         }
         Claim blockClaim = claimManager.getClaim(event.getBlock().getChunk());
@@ -774,14 +802,15 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    //TODO
     @EventHandler
     public void onHit(ProjectileHitEvent event){
         ProjectileSource source = event.getEntity().getShooter();
         if(source instanceof Player){
             Claim hitClaim = claimManager.getClaim(event.getEntity().getChunk());
             if(hitClaim != null && !hitClaim.canInteractOther(((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(((Player)source).getUniqueId())))){
-                ConsulatAPI.getNMS().getPlayer().pickup((Player)source, event.getEntity());
+                if(!ConsulatAPI.getNMS().getPlayer().pickup((Player)source, event.getEntity())){
+                    removeProjectile(event.getEntity());
+                }
             }
         }
     }
