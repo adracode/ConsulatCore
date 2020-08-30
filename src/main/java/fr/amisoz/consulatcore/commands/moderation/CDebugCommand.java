@@ -14,16 +14,16 @@ import fr.amisoz.consulatcore.zones.ZoneManager;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.leconsulat.api.commands.Arguments;
 import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.commands.commands.ADebugCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
 import java.util.UUID;
 
 public class CDebugCommand extends ConsulatCommand {
-    
-    public static final UUID UUID_PERMS = UUID.fromString("43da311c-d869-4e88-9b78-f1d4fc193ed4");
     
     public CDebugCommand(){
         super(ConsulatCore.getInstance(), "cdebug");
@@ -31,7 +31,7 @@ public class CDebugCommand extends ConsulatCommand {
                 setUsage("/cdebug ...").
                 suggest(listener -> {
                             ConsulatPlayer player = getConsulatPlayer(listener);
-                            return player != null && player.getUUID().equals(UUID_PERMS);
+                            return player != null && ADebugCommand.UUID_PERMISSION.contains(player.getUUID());
                         },
                         LiteralArgumentBuilder.literal("chunk"),
                         LiteralArgumentBuilder.literal("city").
@@ -48,8 +48,8 @@ public class CDebugCommand extends ConsulatCommand {
     }
     
     @Override
-    public void onCommand(ConsulatPlayer sender, String[] args){
-        if(!sender.getUUID().equals(UUID_PERMS)){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
+        if(!ADebugCommand.UUID_PERMISSION.contains(sender.getUUID())){
             return;
         }
         if(args.length > 0){

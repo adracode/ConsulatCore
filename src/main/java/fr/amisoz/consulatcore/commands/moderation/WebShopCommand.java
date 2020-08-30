@@ -6,6 +6,7 @@ import fr.amisoz.consulatcore.players.Fly;
 import fr.amisoz.consulatcore.players.SurvivalPlayer;
 import fr.leconsulat.api.commands.ConsoleUsable;
 import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.commands.commands.ADebugCommand;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
@@ -23,11 +24,14 @@ public class WebShopCommand extends ConsulatCommand implements ConsoleUsable {
     
     @Override
     public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
-        if(!sender.getUUID().equals(CDebugCommand.UUID_PERMS)){
+        if(!ADebugCommand.UUID_PERMISSION.contains(sender.getUUID())){
             sender.getPlayer().performCommand("help");
             return;
         }
-        onConsoleUse(sender.getPlayer(), args);
+        if(args[0].equals("announce")){
+            return;
+        }
+        perform((SurvivalPlayer)sender, args[0], args[1]);
     }
     
     @Override
@@ -41,9 +45,13 @@ public class WebShopCommand extends ConsulatCommand implements ConsoleUsable {
             sender.sendMessage("Erreur");
             return;
         }
-        switch(args[0].toLowerCase()){
+        perform(target, args[0], args[2], args[3]);
+    }
+    
+    private void perform(SurvivalPlayer target, String subCommand, String... args){
+        switch(subCommand.toLowerCase()){
             case "rank":
-                String rank = args[2];
+                String rank = args[0];
                 if(rank.equalsIgnoreCase("financeur") ||
                         rank.equalsIgnoreCase("mécène")){
                     Rank newRank = Rank.byName(rank);
@@ -52,7 +60,7 @@ public class WebShopCommand extends ConsulatCommand implements ConsoleUsable {
                 }
                 break;
             case "announce":
-                Bukkit.broadcastMessage("§7[§aBoutique§7] §a" + args[1] + "§7 a acheté §a" + args[2] + " " + args[3] + "§7 !");
+                Bukkit.broadcastMessage("§7[§aBoutique§7] §a" + target.getName() + "§7 a acheté §a" + args[0] + " " + args[1] + "§7 !");
                 break;
             case "home":
                 target.incrementLimitHome();
@@ -87,4 +95,5 @@ public class WebShopCommand extends ConsulatCommand implements ConsoleUsable {
                 break;
         }
     }
+    
 }

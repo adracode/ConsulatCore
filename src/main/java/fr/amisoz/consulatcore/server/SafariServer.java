@@ -39,4 +39,10 @@ public class SafariServer extends Server {
         player.setInventoryBlocked(true);
         loadOnSafari.publishAsync(new PlayerOutputStream(player.getPlayer()).writeLevel().writeInventory().send());
     }
+    
+    @Override
+    public void onConnectionRefused(ConsulatPlayer player){
+        player.setDisconnectHandled(false);
+        player.setInventoryBlocked(false);
+    }
 }

@@ -2,7 +2,6 @@ package fr.amisoz.consulatcore.players;
 
 import fr.amisoz.consulatcore.ConsulatCore;
 import fr.amisoz.consulatcore.Text;
-import fr.amisoz.consulatcore.commands.moderation.CDebugCommand;
 import fr.amisoz.consulatcore.events.SurvivalPlayerLoadedEvent;
 import fr.amisoz.consulatcore.moderation.BanReason;
 import fr.amisoz.consulatcore.moderation.MuteReason;
@@ -13,6 +12,8 @@ import fr.amisoz.consulatcore.zones.ZoneManager;
 import fr.amisoz.consulatcore.zones.cities.City;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.commands.CommandManager;
+import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.commands.commands.ADebugCommand;
 import fr.leconsulat.api.database.SaveManager;
 import fr.leconsulat.api.database.tasks.SaveTask;
 import fr.leconsulat.api.events.ConsulatPlayerLeaveEvent;
@@ -119,7 +120,7 @@ public class SPlayerManager implements Listener {
         });
         CPlayerManager.getInstance().setRankPermission(player -> {
             Set<String> permissions = new HashSet<>();
-            if(player.getUUID().equals(CDebugCommand.UUID_PERMS)){
+            if(ADebugCommand.UUID_PERMISSION.contains(player.getUUID())){
                 player.addPermission(CommandManager.getInstance().getCommand("cdebug").getPermission());
             }
             return permissions;
@@ -144,6 +145,22 @@ public class SPlayerManager implements Listener {
             player.getPlayer().performCommand("help");
         }
         ConsulatCore core = ConsulatCore.getInstance();
+        CommandManager manager = CommandManager.getInstance();
+        ConsulatCommand command = (ConsulatCommand)manager.getCommand("perso");
+        if(player.hasCustomRank() && !player.hasPermission(command.getPermission())){
+            player.addPermission(command.getPermission());
+        }
+        command = (ConsulatCommand)manager.getCommand("fly");
+        if(player.hasFly() && !player.hasPermission(command.getPermission())){
+            player.addPermission(command.getPermission());
+        }
+        command = (ConsulatCommand)manager.getCommand("top");
+        if(player.hasPerkTop() && !player.hasPermission(command.getPermission())){
+            player.addPermission(command.getPermission());
+        }
+        if(ADebugCommand.UUID_PERMISSION.contains(player.getUUID())){
+            player.addPermission(CommandManager.getInstance().getCommand("cdebug").getPermission());
+        }
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
                 fetchPlayer(player);
