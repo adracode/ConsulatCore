@@ -150,7 +150,7 @@ final public class Text {
     public static final String PLAYER_FREEZE = ANNOUNCE_PREFIX + "Joueur freeze.";
     public static final String CHEST_IS_PRIVATE = PREFIX + "§cCe coffre est privé.";
     public static final String ANOTHER_PLAYER_NEAR = PREFIX + "§cUn autre joueur est à proximité.";
-    public static final String BLOCK_LIMIT_CHUNK = PREFIX + "§cCe chunk à atteint la limite pour ce bloc.";
+    public static final String BLOCK_LIMIT_CHUNK = PREFIX + "§cCe chunk a atteint la limite pour ce bloc.";
     public static final String LOADING_INVENTORY = PREFIX + "§7Chargement de l'inventaire...";
     public static final String TUTORIAL_SHOP =
             Text.PREFIX + "Comment créer un shop:\n" +
