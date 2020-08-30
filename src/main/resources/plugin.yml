@@ -1,6 +1,6 @@
 name: ConsulatCore
 authors: [Amisoz, adracode]
 version: ${version}
-main: fr.amisoz.consulatcore.ConsulatCore
+main: fr.leconsulat.core.ConsulatCore
 depend: [ConsulatAPI]
 api-version: "1.14"
