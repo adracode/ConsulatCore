@@ -222,6 +222,11 @@ public class ChunkManager implements Listener {
         TaskManager.getInstance().addTask(scanner);
     }
     
+    public Set<Map.Entry<UUID, Long2ObjectMap<CChunk>>> getChunks(){
+        return Collections.unmodifiableSet(chunks.entrySet());
+        
+    }
+    
     public Map<Material, Integer> getLimitedBlocks(){
         return Collections.unmodifiableMap(limits);
     }

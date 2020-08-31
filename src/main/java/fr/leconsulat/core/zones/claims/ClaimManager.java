@@ -20,6 +20,7 @@ import fr.leconsulat.core.utils.CoordinatesUtils;
 import fr.leconsulat.core.zones.Zone;
 import fr.leconsulat.core.zones.ZoneManager;
 import fr.leconsulat.core.zones.cities.City;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
@@ -245,6 +246,15 @@ public class ClaimManager implements Listener {
             }
             resultClaims.close();
             getClaims.close();
+            for(Map.Entry<UUID, Long2ObjectMap<CChunk>> chunks : chunkManager.getChunks()){
+                World world = Bukkit.getWorld(chunks.getKey());
+                for(CChunk chunk : chunks.getValue().values()){
+                    if(chunk instanceof Claim && ((Claim)chunk).getOwner() == null){
+                        ConsulatAPI.getConsulatAPI().log(Level.WARNING, "No owner at " + chunk.getX() + " " + chunk.getZ());
+                        chunkManager.removeChunk(world, chunk, true);
+                    }
+                }
+            }
             if(!new File(ConsulatAPI.getConsulatAPI().getDataFolder(), "chunks").exists()){
                 PreparedStatement getAllowedPlayers = ConsulatAPI.getDatabase().prepareStatement("SELECT * FROM access;");
                 ResultSet resultAllowedPlayers = getAllowedPlayers.executeQuery();
