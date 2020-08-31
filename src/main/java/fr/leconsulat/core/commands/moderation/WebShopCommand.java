@@ -45,7 +45,17 @@ public class WebShopCommand extends ConsulatCommand implements ConsoleUsable {
             sender.sendMessage("Erreur");
             return;
         }
-        perform(target, args[0], args[2], args[3]);
+        switch(args.length){
+            case 2:
+                perform(target, args[0]);
+                break;
+            case 3:
+                perform(target, args[0], args[2]);
+                break;
+            default:
+                perform(target, args[0], args[2], args[3]);
+                break;
+        }
     }
     
     private void perform(SurvivalPlayer target, String subCommand, String... args){
