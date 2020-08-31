@@ -31,16 +31,16 @@ final public class Text {
     public static final String FLY = "§7[§6Fly§7] §e";
     //@formatter:off
     public static final String CANT_CREATE_CITY = PREFIX + "§cTu appartiens déjà à une ville, tu ne peux pas en créer une.";
-    public static final String NO_CITY_NAME = PREFIX + "§cMerci de spécifier le nom de La ville.";
+    public static final String NO_CITY_NAME = PREFIX + "§cMerci de spécifier le nom de la ville.";
     public static final String INVALID_CITY_NAME = PREFIX + "§cLe nom de ville n'est pas valide.";
     public static final String CITY_ALREADY_EXISTS = PREFIX + "§cIl existe déjà une ville portant ce nom.";
     public static final String CITY_DOESNT_EXISTS = PREFIX + "§cCette ville n'existe pas.";
     public static final String YOU_NOT_IN_CITY = PREFIX + "§cTu n'es pas dans une ville.";
     public static final String CANT_RENAME_CITY = PREFIX + "§cTu ne peux pas renommer cette ville.";
     public static final String CANT_DISBAND_CITY = PREFIX + "§cTu ne peux pas détruire cette ville.";
-    public static final String CANT_KICK_CITY = PREFIX + "§cTu ne peux pas kick un joueur de la ville.";
-    public static final String NO_PLAYER = PREFIX + "§cMerci de spécifier le joueur.";
-    public static final String NO_PLAYER_OR_CITY = PREFIX + "§cMerci de spécifier le joueur ou la ville.";
+    public static final String CANT_KICK_CITY = PREFIX + "§cTu ne peux pas kick un joueur de ta ville.";
+    public static final String NO_PLAYER = PREFIX + "§cMerci de spécifier le pseudo du joueur.";
+    public static final String NO_PLAYER_OR_CITY = PREFIX + "§cMerci de spécifier le pseudo du joueur ou la ville.";
     public static final String PLAYER_DOESNT_EXISTS = PREFIX + "§cCe joueur n'existe pas.";
     public static final String PLAYER_NOT_CONNECTED = PREFIX + "§cCe joueur n'est pas connecté.";
     public static final String PLAYER_DOESNT_BELONGS_CITY = PREFIX + "§cCe joueur n'appartient pas à la ville.";
@@ -59,12 +59,12 @@ final public class Text {
     public static final String CANT_CLAIM_ALONE_CHUNK = PREFIX + "§cTu ne peux pas claim un chunk isolé.";
     public static final String NOT_CLAIM_CITY = PREFIX + "§cCe claim n'appartient pas à la ville.";
     public static final String NOT_CLAIM = PREFIX + "§cCe chunk n'est pas claim.";
-    public static final String CANT_UNCLAIM_CITY_CHUNK_ALONE = PREFIX + "§cTu ne peux pas unclaim ce claim, les chunks de la ville ne serait plus connectées.";
+    public static final String CANT_UNCLAIM_CITY_CHUNK_ALONE = PREFIX + "§cTu ne peux pas unclaim ce claim, les chunks de la ville ne serait plus connectés.";
     public static final String HOME_IN_CITY_CLAIM = PREFIX + "§cCe claim contient le home de la ville.";
     public static final String UNCLAIM_CITY = PREFIX + "§aTu as unclaim ce chunk de la ville.";
     public static final String CANT_SET_HOME_CITY = PREFIX + "§cTu ne peux pas définir le spawn de la ville.";
     public static final String YOU_SET_HOME_CITY = PREFIX + "§aTu as défini le home de la ville.";
-    public static final String HOME_CITY_NOT_SET = PREFIX + "§cLe home de la ville n'est pas définie.";
+    public static final String HOME_CITY_NOT_SET = PREFIX + "§cLe home de la ville n'est pas défini.";
     public static final String TELEPORTATION = PREFIX + "§aTéléportation en cours...";
     public static final String INVALID_NUMBER = PREFIX + "§cCe nombre n'est pas valide.";
     public static final String INVALID_MONEY = PREFIX +  "§cCe montant n'est pas valide.";
@@ -75,7 +75,7 @@ final public class Text {
     public static final String CANT_MANAGE_ACCESS_PLAYER = PREFIX + "§cTu ne peux pas modifier l'accès de ce joueur.";
     public static final String PLAYER_ALREADY_ACCESS_CLAIM = PREFIX + "§cCe joueur a déjà accès à ce claim.";
     public static final String PLAYER_NOT_ACCESS_CLAIM = PREFIX + "§cCe joueur n'a pas accès à ce claim.";
-    public static final String PLAYER_NOT_ACCESS_CLAIMS = PREFIX + "§cCe joueur n'a pas accès à tes claim.";
+    public static final String PLAYER_NOT_ACCESS_CLAIMS = PREFIX + "§cCe joueur n'a pas accès à tes claims.";
     public static final String NOBODY_ACCESS_CLAIM = PREFIX + "§cAucun joueur n'a accès à ce claim.";
     public static final String NOW_SPEAK_IN_CITY_CHAT = PREFIX + "§aTu parles maintenant dans le chat de ville.";
     public static final String NOW_SPEAK_IN_GLOBAL_CHAT = PREFIX + "§aTu parles maintenant dans le chat global.";
@@ -84,7 +84,7 @@ final public class Text {
     public static final String YOU_RESET_DESCRIPTION_CLAIM = PREFIX + "§aTu as reset la description de ce claim.";
     public static final String CANT_CHANGE_LEADER_CITY = PREFIX + "§cTu ne peux pas changer le propriétaire de la ville.";
     public static final String ALREADY_LEADER_CITY = PREFIX + "§cCe joueur est déjà le propriétaire de la ville.";
-    public static final String YOU_NO_CLAIM = PREFIX + "§cTu n'as pas de claims.";
+    public static final String YOU_NO_CLAIM = PREFIX + "§cTu n'as pas de claim.";
     public static final String PLAYER_ALREADY_ACCESS_CLAIMS = PREFIX + "§cCe joueur a déjà accès à tes claims.";
     public static final String NOT_IN_YOUR_CLAIM = PREFIX + "§cTu n'es pas dans un de tes claims.";
     public static final String CANT_KICK_YOURSELF = PREFIX + "§cTu ne peux pas te kick toi-même.";
@@ -141,7 +141,7 @@ final public class Text {
     public static final String FLY_IS_FINISHED = PREFIX +  "§cTon fly est terminé !";
     public static final String FLY_OUTSIDE_CLAIM = PREFIX + "§cTon fly est terminé car tu as quitté ton claim !";
     public static final String TP_BECAUSE_STUCK = PREFIX + "§aTu as été téléporté au spawn pour cause de suffocation.";
-    public static final String YOUR_ALONE = PREFIX + "§cTu es seul.... désolé.";
+    public static final String YOUR_ALONE = PREFIX + "§cTu es seul.... Désolé.";
     public static final String NOW_VISIBLE = PREFIX + "§aTu es désormais visible.";
     public static final String NOW_INVISIBLE = PREFIX + "§cTu es désormais invisible.";
     public static final String BEEN_UNFROZEN = ANNOUNCE_PREFIX + "Tu as été un-freeze.";
@@ -163,11 +163,11 @@ final public class Text {
     public static final String SHOP_ONLY_ON_CHEST = PREFIX + "§cUn shop ne peut être que sur un coffre simple.";
     public static final String ALREADY_SHOP = PREFIX + "§cCe coffre est déjà un shop.";
     public static final String HIT_SHOP_LIMIT = PREFIX + "§cTu as atteint ta limite de shops.";
-    public static final String SHOP_CANT_BE_EMPTY = PREFIX + "§cLe coffre ne doit pas être vide pour être crée.";
+    public static final String SHOP_CANT_BE_EMPTY = PREFIX + "§cLe coffre ne doit pas être vide pour être créé.";
     public static final String REMOVE_ITEM_FRAME = PREFIX + "§cMerci de retirer le cadre.";
     public static final String ONLY_ONE_ENCHANT_SHOP = PREFIX + "§cUn livre ne peut être vendu qu'avec un seul enchantement.";
     public static final String ITEMS_MUST_BE_EQUALS = PREFIX + "§cLes items dans ton shop doivent être identiques.";
-    public static final String SHOP_CREATED = PREFIX + "§aTon shop a bien été crée.";
+    public static final String SHOP_CREATED = PREFIX + "§aTon shop a bien été créé.";
     public static final String MUST_BREAK_SIGN = PREFIX + "§cTu dois casser le panneau pour supprimer ton shop.";
     public static final String SHOP_REMOVED = PREFIX + "§aTu viens de détruire un de tes shops.";
     public static final String CANT_BREAK_SHOP = PREFIX + "§cTu ne peux pas casser ce shop.";
