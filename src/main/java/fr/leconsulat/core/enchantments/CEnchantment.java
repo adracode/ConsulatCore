@@ -48,30 +48,30 @@ public class CEnchantment {
     }
     
     public enum Type {
-        RADIOACTIVE(PotionEffectType.GLOWING, "Radioactif", false, (byte)1),
-        DIVING(PotionEffectType.WATER_BREATHING, "Plongée", false, (byte)1),
-        AQUA_FORCE(PotionEffectType.CONDUIT_POWER, "Force aquatique", false, (byte)1),
-        DOLPHIN_FIN(PotionEffectType.DOLPHINS_GRACE, "Nageoire du dauphin", false, (byte)1),
-        INFRARED_VISION(PotionEffectType.NIGHT_VISION, "Vision infrarouge", false, (byte)1),
-        FIRE_ENDURANCE(PotionEffectType.FIRE_RESISTANCE, "Endurance au feu", false, (byte)1),
-        INCREASED_HEALTH(PotionEffectType.HEALTH_BOOST, "Augmentation de vie", false, (byte)1),
-        STEALTH(PotionEffectType.INVISIBILITY, "Furtivité", false, (byte)1),
-        MINER_HAND(PotionEffectType.FAST_DIGGING, "Main du mineur", false, (byte)2),
-        FISHER_LUCK(PotionEffectType.LUCK, "Chance du pêcheur", false, (byte)1),
-        MOON_FALL(PotionEffectType.SLOW_FALLING, "Chute lunaire", false, (byte)1),
-        CHEETAH_STRENGTH(PotionEffectType.SPEED, "Force du guépard", false, (byte)2),
-        MOON_JUMP(PotionEffectType.JUMP, "Sauts lunaire", false, (byte)1);
+        RADIOACTIVE(PotionEffectType.GLOWING, "Radioactif", false, 1),
+        DIVING(PotionEffectType.WATER_BREATHING, "Plongée", false, 1),
+        AQUA_FORCE(PotionEffectType.CONDUIT_POWER, "Force aquatique", false, 1),
+        DOLPHIN_FIN(PotionEffectType.DOLPHINS_GRACE, "Nageoire du dauphin", false, 1),
+        INFRARED_VISION(PotionEffectType.NIGHT_VISION, "Vision infrarouge", false, 1),
+        FIRE_ENDURANCE(PotionEffectType.FIRE_RESISTANCE, "Endurance au feu", false, 1),
+        INCREASED_HEALTH(PotionEffectType.HEALTH_BOOST, "Augmentation de vie", false, 1),
+        STEALTH(PotionEffectType.INVISIBILITY, "Furtivité", false, 1),
+        MINER_HAND(PotionEffectType.FAST_DIGGING, "Main du mineur", false, 2),
+        FISHER_LUCK(PotionEffectType.LUCK, "Chance du pêcheur", false, 1),
+        MOON_FALL(PotionEffectType.SLOW_FALLING, "Chute lunaire", false, 1),
+        CHEETAH_STRENGTH(PotionEffectType.SPEED, "Force du guépard", false, 2),
+        MOON_JUMP(PotionEffectType.JUMP, "Sauts lunaire", false, 3);
         
         private final PotionEffectType effect;
         private final String display;
         private final boolean canCombine;
         private final byte maxLevel;
         
-        Type(PotionEffectType effect, String display, boolean canCombine, byte maxLevel){
+        Type(PotionEffectType effect, String display, boolean canCombine, int maxLevel){
             this.effect = effect;
             this.display = display;
             this.canCombine = canCombine;
-            this.maxLevel = maxLevel;
+            this.maxLevel = (byte)maxLevel;
         }
         
         @SuppressWarnings("DuplicatedCode")
