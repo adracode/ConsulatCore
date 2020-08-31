@@ -14,8 +14,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.SQLException;
-
 public class WebShopCommand extends ConsulatCommand implements ConsoleUsable {
     
     public WebShopCommand(){
@@ -93,15 +91,8 @@ public class WebShopCommand extends ConsulatCommand implements ConsoleUsable {
                 target.sendMessage(Text.FLY + "Suite à ton achat tu as maintenant accès au /fly infini !");
                 break;
             case "perso":
-                Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                    try {
-                        target.setHasCustomRank(true);
-                        target.sendMessage("§7Suite à ton achat, tu as le grade personnalisé ! Fais /perso et laisse toi guider ;)");
-                    } catch(SQLException e){
-                        target.sendMessage("§cUne erreur s'est produite lors de l'achat de grade personnalisé, préviens un administrateur !");
-                        e.printStackTrace();
-                    }
-                });
+                target.setHasCustomRank(true);
+                target.sendMessage("§7Suite à ton achat, tu as le grade personnalisé ! Fais /perso et laisse toi guider ;)");
                 break;
         }
     }
