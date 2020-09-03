@@ -1,8 +1,6 @@
 name: ConsulatCore
-version: ${version}
 authors: [Amisoz, adracode]
-main: fr.amisoz.consulatcore.ConsulatCore
+version: ${version}
+main: fr.leconsulat.core.ConsulatCore
 depend: [ConsulatAPI]
-api-version: 1.14
-commands:
-  boutique:
+api-version: "1.14"

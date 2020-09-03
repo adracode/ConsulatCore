@@ -1,0 +1,16 @@
+block-limits:
+  BEACON: 4
+  DISPENSER: 10
+  DROPPER: 10
+  ENDER_CHEST: 3
+  HOPPER: 8
+  OBSERVER: 10
+  PISTON: 12
+  STICKY_PISTON: 12
+
+spawn:
+  x: 330
+  y: 64
+  z: -438
+  yaw: 0
+  pitch: 0

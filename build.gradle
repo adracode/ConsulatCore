@@ -11,12 +11,15 @@ compileJava.options.encoding = 'UTF-8'
 
 repositories {
     mavenCentral()
+    //Paper
     maven {
-        url "https://hub.spigotmc.org/nexus/content/repositories/snapshots"
+        url 'https://papermc.io/repo/repository/maven-public/'
     }
+    //TextComponent
     maven {
         url "https://oss.sonatype.org/content/repositories/snapshots"
     }
+    //Brigadier
     maven {
         url "https://libraries.minecraft.net"
     }
@@ -27,10 +30,13 @@ repositories {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    implementation files('libs/paper.jar')
-    compileOnly 'org.spigotmc:spigot-api:1.14.4-R0.1-SNAPSHOT'
+
     implementation files('libs/ConsulatAPI.jar')
-    compile 'com.mojang:brigadier:1.0.17'
+    compileOnly group: 'com.destroystokyo.paper', name: 'paper-api', version: '1.14.4-R0.1-SNAPSHOT'
+    compileOnly group: 'com.mojang', name: 'brigadier', version:'1.0.17'
+    compileOnly group: 'org.jetbrains', name: 'annotations', version:'16.0.2'
+    compileOnly group: 'org.redisson', name: 'redisson', version: '3.13.2'
+    compileOnly group: 'it.unimi.dsi', name: 'fastutil', version: '8.2.1'
 
 }
 
