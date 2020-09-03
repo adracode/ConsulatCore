@@ -14,12 +14,14 @@ public class MessageRunnable implements Runnable {
     public MessageRunnable(){
         messageList.add("N'oublie pas de t'inscrire sur le site, pour y accéder tu peux faire /site.");
         messageList.add("N'oublie pas de rejoindre le discord via le /discord.");
-        //messageList.add("L'end et le nether sont reset approximativement toutes les 2 semaines.");
         messageList.add("Le /help est ton ami si tu as une question");
         messageList.add("Cheater et insulter ne sert à rien !");
         messageList.add("Tu peux acheter et vendre des items à l'admin shop au spawn !");
         messageList.add("Tu peux vendre et acheter des items à d'autres joueurs, /shop help !");
-        messageList.add("Un nouveau grade a fait son apparition, il est disponible pour " + ConsulatCore.formatMoney(15_000) + "au shop admin ! (Prix actuellement réduit)");
+        messageList.add("Le grade Touriste est achetable avec l'argent IG ! Il peut te donne l'accès au serveur plein, par exemple.")
+        messageList.add("La /safari te permet d'aller chasser les différents mobs hostiles qui existent ici... idéal pour revendre leurs loots ! ")
+        messageList.add("L'end sera activé quelques jours après l'ouverture, tiens toi au courant sur le Discord !")
+        messageList.add("L'end et le nether seront reset au moins une fois par mois, inutile de trop construire là-bas.")
     }
     
     @Override
