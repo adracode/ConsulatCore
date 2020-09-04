@@ -68,6 +68,7 @@ public class ClaimCommand extends ConsulatCommand {
             if(zone == null){
                 zone = new Zone(sender.getUUID(), sender.getName(), sender.getUUID());
                 ZoneManager.getInstance().addZone(zone);
+                player.setZone(zone);
             }
             ClaimManager.getInstance().playerClaim(chunk.getX(), chunk.getZ(), zone);
             player.removeMoney(Claim.BUY_CLAIM);
