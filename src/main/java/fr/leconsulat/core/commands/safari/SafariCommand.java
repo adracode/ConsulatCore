@@ -5,6 +5,7 @@ import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import fr.leconsulat.core.ConsulatCore;
 import fr.leconsulat.core.Text;
+import fr.leconsulat.core.players.SurvivalPlayer;
 import fr.leconsulat.core.server.SafariServer;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,6 +21,10 @@ public class SafariCommand extends ConsulatCommand {
     
     @Override
     public void onCommand(@NotNull ConsulatPlayer player, @NotNull String[] args){
+        if(((SurvivalPlayer)player).isInModeration()){
+            player.sendMessage("§cTu ne peux pas aller sur le safari en mode staff.");
+            return;
+        }
         SafariServer safari = ConsulatCore.getInstance().getSafari();
         switch(safari.queuePlayer(player)){
             case IN_QUEUE:
