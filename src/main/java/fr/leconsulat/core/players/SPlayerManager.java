@@ -192,6 +192,11 @@ public class SPlayerManager implements Listener {
         } else if(ConsulatAPI.getConsulatAPI().isDevelopment()){
             Bukkit.broadcastMessage("§7(§a+§7) " + player.getDisplayName());
         }
+        CommandManager commandManager = CommandManager.getInstance();
+        ConsulatCommand fly = (ConsulatCommand)commandManager.getCommand("fly");
+        if(player.hasFly() && !player.hasPermission(fly.getPermission())){
+            player.addPermission(fly.getPermission());
+        }
         player.initChannels();
         CommandManager.getInstance().sendCommands(event.getPlayer());
         player.setInitialized(true);

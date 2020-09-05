@@ -83,7 +83,14 @@ public class ChunkManager implements Listener {
                 }
                 for(File regionFile : FileUtils.getFiles(worldDir)){
                     NBTInputStream is = new NBTInputStream(regionFile);
-                    CompoundTag region = is.read();
+                    CompoundTag region;
+                    try {
+                        region = is.read();
+                    } catch(IOException e){
+                        e.printStackTrace();
+                        System.out.println("regionFile = " + regionFile);
+                        continue;
+                    }
                     is.close();
                     List<CompoundTag> chunks = region.getList("Chunks", NBTType.COMPOUND);
                     for(CompoundTag chunkTag : chunks){
