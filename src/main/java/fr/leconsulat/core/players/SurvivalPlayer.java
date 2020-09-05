@@ -758,6 +758,9 @@ public class SurvivalPlayer extends ConsulatPlayer {
     }
     
     private void saveOnLeave(){
+        if(!isInitialized()){
+            return;
+        }
         SaveManager saveManager = SaveManager.getInstance();
         saveManager.removeData("player-money", this, true);
         saveManager.removeData("player-fly", this, true);

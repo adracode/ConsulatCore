@@ -5,6 +5,9 @@ import fr.leconsulat.api.database.SaveManager;
 import fr.leconsulat.api.database.tasks.SaveTask;
 import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.gui.gui.IGui;
+import fr.leconsulat.api.nbt.CompoundTag;
+import fr.leconsulat.api.nbt.NBTInputStream;
+import fr.leconsulat.api.nbt.NBTOutputStream;
 import fr.leconsulat.api.utils.FileUtils;
 import fr.leconsulat.core.ConsulatCore;
 import fr.leconsulat.core.guis.city.CityGui;
@@ -17,6 +20,9 @@ import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -191,8 +197,21 @@ public class ZoneManager {
         });
     }
     
-    public void saveZones(){
+    public synchronized void saveZones(){
         for(Zone zone : zones.values()){
+            try {
+                File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "cities/" + zone.getUniqueId() + ".dat");
+                if(!file.exists()){
+                    if(!file.createNewFile()){
+                        throw new IOException("Couldn't create file.");
+                    }
+                }
+                NBTOutputStream os = new NBTOutputStream(file, zone.saveNBT());
+                os.write("Zone");
+                os.close();
+            } catch(IOException e){
+                e.printStackTrace();
+            }
             zone.saveNBT();
         }
     }
@@ -232,8 +251,19 @@ public class ZoneManager {
                     result.getString("name"),
                     UUID.fromString(result.getString("owner"))
             );
-            zone.loadNBT();
-            addZone(zone);
+            try {
+                File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "zones/" + zone.getUniqueId() + ".dat");
+                if(!file.exists()){
+                    continue;
+                }
+                NBTInputStream is = new NBTInputStream(new FileInputStream(file));
+                CompoundTag city = is.read();
+                is.close();
+                zone.loadNBT(city);
+                addZone(zone);
+            } catch(IOException e){
+                e.printStackTrace();
+            }
         }
     }
     
@@ -247,8 +277,20 @@ public class ZoneManager {
                     UUID.fromString(result.getString("owner")),
                     result.getDouble("money")
             );
-            city.loadNBT();
-            addCity(city);
+            try {
+                File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "cities/" + city.getUniqueId() + ".dat");
+                if(!file.exists()){
+                    ConsulatAPI.getConsulatAPI().log(Level.WARNING, "City " + city.getName() + ", owner " + city.getOwner() + ", money " + city.getMoney() + " doesn't have file, deleting...");
+                    deleteCity(city);
+                }
+                NBTInputStream is = new NBTInputStream(new FileInputStream(file));
+                CompoundTag cityTag = is.read();
+                is.close();
+                city.loadNBT(cityTag);
+                addCity(city);
+            } catch(IOException e){
+                e.printStackTrace();
+            }
         }
     }
     

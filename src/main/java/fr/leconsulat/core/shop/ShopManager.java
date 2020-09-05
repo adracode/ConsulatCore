@@ -136,7 +136,7 @@ public class ShopManager implements Listener {
         ConsulatAPI.getConsulatAPI().log(Level.INFO, size + " admin shops loaded in " + (System.currentTimeMillis() - start) + " ms");
     }
     
-    public void saveAdminShops(){
+    public synchronized void saveAdminShops(){
         ListTag<CompoundTag> adminShops = new ListTag<>(NBTType.COMPOUND);
         for(Shop shop : shops.values()){
             if(!(shop instanceof AdminShop)){

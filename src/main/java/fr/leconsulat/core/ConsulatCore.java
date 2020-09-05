@@ -3,6 +3,7 @@ package fr.leconsulat.core;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.channel.Channel;
 import fr.leconsulat.api.redis.RedisManager;
+import fr.leconsulat.api.saver.Saver;
 import fr.leconsulat.core.channel.StaffChannel;
 import fr.leconsulat.core.chunks.ChunkManager;
 import fr.leconsulat.core.commands.cities.CityCommand;
@@ -86,9 +87,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     @Override
     public void onDisable(){
         RedisManager.getInstance().getRedis().getTopic(ConsulatAPI.getConsulatAPI().isDevelopment() ? "PlayerTestsurvie" : "PlayerSurvie").publish(-1);
-        ZoneManager.getInstance().saveZones();
-        ChunkManager.getInstance().saveChunks();
-        ShopManager.getInstance().saveAdminShops();
+        save();
     }
     
     @Override
@@ -153,11 +152,8 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, new MonitoringRunnable(this), 0L, 10 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MessageRunnable(), 0L, 15 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MeceneRunnable(), 0L, 20 * 60 * 60);
-        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
-            ZoneManager.getInstance().saveZones();
-            ChunkManager.getInstance().saveChunks();
-            ShopManager.getInstance().saveAdminShops();
-        }, 60 * 60 * 20, 60 * 60 * 20);
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, this::save, 15 * 60 * 20, 15 * 60 * 20);
+        Saver.getInstance().addSave(this::save);
         registerEvents();
         for(World world : Bukkit.getWorlds()){
             world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
@@ -180,6 +176,12 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         registerCommands();
         ConsulatAPI.getConsulatAPI().log(Level.INFO, "ConsulatCore loaded in " + (System.currentTimeMillis() - startLoading) + " ms.");
         RedisManager.getInstance().getRedis().getTopic(ConsulatAPI.getConsulatAPI().isDevelopment() ? "PlayerTestsurvie" : "PlayerSurvie").publish(0);
+    }
+    
+    private void save(){
+        ZoneManager.getInstance().saveZones();
+        ChunkManager.getInstance().saveChunks();
+        ShopManager.getInstance().saveAdminShops();
     }
     
     public boolean isCustomRankForbidden(String rank){

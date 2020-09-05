@@ -123,6 +123,11 @@ public class SPlayerManager implements Listener {
             if(ADebugCommand.UUID_PERMISSION.contains(player.getUUID())){
                 player.addPermission(CommandManager.getInstance().getCommand("cdebug").getPermission());
             }
+            CommandManager commandManager = CommandManager.getInstance();
+            ConsulatCommand home = (ConsulatCommand)commandManager.getCommand("home");
+            if(player.hasPower(Rank.MODPLUS)){
+                player.addPermission(home.getPermission() + ".look");
+            }
             return permissions;
         });
     }
