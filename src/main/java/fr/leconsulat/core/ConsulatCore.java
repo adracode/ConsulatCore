@@ -55,6 +55,7 @@ import java.util.logging.Level;
 
 public class ConsulatCore extends JavaPlugin implements Listener {
     
+    
     private static ConsulatCore instance;
     private static Random random;
     
