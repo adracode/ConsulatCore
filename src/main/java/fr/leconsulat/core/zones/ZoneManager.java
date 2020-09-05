@@ -13,6 +13,7 @@ import fr.leconsulat.core.ConsulatCore;
 import fr.leconsulat.core.guis.city.CityGui;
 import fr.leconsulat.core.guis.city.CityInfo;
 import fr.leconsulat.core.guis.city.DisbandGui;
+import fr.leconsulat.core.players.SPlayerManager;
 import fr.leconsulat.core.zones.cities.City;
 import fr.leconsulat.core.zones.claims.ClaimManager;
 import org.bukkit.Bukkit;
@@ -281,6 +282,8 @@ public class ZoneManager {
                 File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "cities/" + city.getUniqueId() + ".dat");
                 if(!file.exists()){
                     ConsulatAPI.getConsulatAPI().log(Level.WARNING, "City " + city.getName() + ", owner " + city.getOwner() + ", money " + city.getMoney() + " doesn't have file, deleting...");
+                    //Refund player
+                    SPlayerManager.getInstance().addMoney(city.getOwner(), City.CREATE_TAX);
                     deleteCity(city);
                 }
                 NBTInputStream is = new NBTInputStream(new FileInputStream(file));
