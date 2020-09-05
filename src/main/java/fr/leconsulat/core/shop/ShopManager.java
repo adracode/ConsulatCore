@@ -276,7 +276,7 @@ public class ShopManager implements Listener {
                     }
                     sold = item;
                 } else {
-                    if(ItemUtils.areItemEquals(item, sold)){
+                    if(!ItemUtils.areItemEquals(item, sold)){
                         player.sendMessage(Text.ITEMS_MUST_BE_EQUALS);
                         event.getBlock().breakNaturally();
                         return;
