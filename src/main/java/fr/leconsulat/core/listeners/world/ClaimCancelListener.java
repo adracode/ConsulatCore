@@ -1267,6 +1267,17 @@ public class ClaimCancelListener implements Listener {
         if(!(vehicle instanceof Minecart) && !(vehicle instanceof Boat)){
             return;
         }
+        Claim willBeIn = claimManager.getClaim(event.getTo().getChunk());
+        if(willBeIn == null){
+            return;
+        }
+        for(Entity passenger : vehicle.getPassengers()){
+            if(passenger.getType() == EntityType.PLAYER){
+                if(willBeIn.canInteractOther((SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(passenger.getUniqueId()))){
+                    return;
+                }
+            }
+        }
         if(!Claim.canInteract(vehicle.getOrigin() == null ? event.getFrom().getChunk() : vehicle.getOrigin().getChunk(),
                 event.getTo().getChunk())){
             vehicle.eject();

@@ -1,5 +1,6 @@
 package fr.leconsulat.core.commands.players;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.core.ConsulatCore;
@@ -20,9 +21,10 @@ public class PersoCommand extends ConsulatCommand {
         setDescription("Gérer son grade personnalisé").
                 setUsage("/perso - Gérer son grade").
                 suggest((listener) -> {
-                    ConsulatPlayer player = getConsulatPlayer(listener);
-                    return player != null && player.hasCustomRank();
-                });
+                            ConsulatPlayer player = getConsulatPlayer(listener);
+                            return player != null && player.hasCustomRank();
+                        },
+                        LiteralArgumentBuilder.literal("reset"));
     }
     
     @Override
