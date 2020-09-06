@@ -128,7 +128,7 @@ public class MuteGui extends DataRelatGui<ConsulatOffline> {
                 onlinePlayer.sendMessage(Text.SANCTION_MUTED(offlineTarget.getName(), muteReason.getSanctionName(), days + "J" + hours + "H" + minutes + "M", muter.getName(), recidiveNumber));
             }
         }
-        Bukkit.broadcastMessage(Text.ANNOUNCE_PREFIX + " §6" + offlineTarget.getName() + " §ea été mute.");
+        Bukkit.broadcastMessage(Text.ANNOUNCE_PREFIX + "§6" + offlineTarget.getName() + " §ea été mute.");
         muter.getPlayer().closeInventory();
     }
     
