@@ -179,8 +179,8 @@ public class SPlayerManager implements Listener {
     
     @EventHandler(priority = EventPriority.LOW)
     public void onSurvivalPlayerLoaded(SurvivalPlayerLoadedEvent event){
-        ConsulatAPI.getConsulatAPI().log(Level.INFO, event.getPlayer());
         SurvivalPlayer player = event.getPlayer();
+        ConsulatAPI.getConsulatAPI().log(Level.INFO, "Loaded " + player.getName() + " (argent: " + player.getMoney() + ")");
         saveOnJoin(player);
         if(!player.hasPower(Rank.MODO)){
             for(ConsulatPlayer vanished : CPlayerManager.getInstance().getConsulatPlayers()){
