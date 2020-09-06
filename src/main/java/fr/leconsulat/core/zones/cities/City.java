@@ -4,10 +4,12 @@ import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.graph.Graph;
 import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.gui.gui.IGui;
-import fr.leconsulat.api.nbt.*;
+import fr.leconsulat.api.nbt.CompoundTag;
+import fr.leconsulat.api.nbt.ListTag;
+import fr.leconsulat.api.nbt.NBTType;
+import fr.leconsulat.api.nbt.StringTag;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
-import fr.leconsulat.api.utils.FileUtils;
 import fr.leconsulat.core.ConsulatCore;
 import fr.leconsulat.core.Text;
 import fr.leconsulat.core.guis.city.CityGui;
@@ -32,9 +34,6 @@ import org.bukkit.Location;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
@@ -127,106 +126,84 @@ public class City extends Zone {
     }
     
     @Override
-    public void loadNBT(){
-        try {
-            File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "cities/" + this.getUniqueId() + ".dat");
-            if(!file.exists()){
-                return;
+    public void loadNBT(CompoundTag city){
+        super.loadNBT(city);
+        List<StringTag> ranks = city.getList("Ranks", NBTType.STRING);
+        for(int i = 0; i < ranks.size(); i++){
+            this.ranks.get(i).setRankName(ranks.get(i).getValue());
+        }
+        List<StringTag> publicPermissions = city.getList("PublicPermissions", NBTType.STRING);
+        for(StringTag publicPermission : publicPermissions){
+            this.publicPermissions.add(publicPermission.getValue());
+        }
+        List<CompoundTag> members = city.getList("Members", NBTType.COMPOUND);
+        for(CompoundTag member : members){
+            int rankIndex = member.getInt("Rank");
+            Set<CityPermission> perms = new HashSet<>();
+            UUID uuid = member.getUUID("UUID");
+            CityPlayer cityPlayer = new CityPlayer(uuid, perms, this.ranks.get(rankIndex));
+            List<StringTag> permissions = member.getList("Permissions", NBTType.STRING);
+            for(StringTag permission : permissions){
+                perms.add(CityPermission.byPermission(permission.getValue()));
             }
-            NBTInputStream is = new NBTInputStream(new FileInputStream(file));
-            CompoundTag city = is.read();
-            is.close();
-            List<StringTag> ranks = city.getList("Ranks", NBTType.STRING);
-            for(int i = 0; i < ranks.size(); i++){
-                this.ranks.get(i).setRankName(ranks.get(i).getValue());
-            }
-            List<StringTag> publicPermissions = city.getList("PublicPermissions", NBTType.STRING);
-            for(StringTag publicPermission : publicPermissions){
-                this.publicPermissions.add(publicPermission.getValue());
-            }
-            List<CompoundTag> members = city.getList("Members", NBTType.COMPOUND);
-            for(CompoundTag member : members){
-                int rankIndex = member.getInt("Rank");
-                Set<CityPermission> perms = new HashSet<>();
-                UUID uuid = member.getUUID("UUID");
-                CityPlayer cityPlayer = new CityPlayer(uuid, perms, this.ranks.get(rankIndex));
-                List<StringTag> permissions = member.getList("Permissions", NBTType.STRING);
-                for(StringTag permission : permissions){
-                    perms.add(CityPermission.byPermission(permission.getValue()));
-                }
-                this.members.put(uuid, cityPlayer);
-            }
-            if(city.has("Home")){
-                CompoundTag home = city.getCompound("Home");
-                this.home = new Location(
-                        ConsulatCore.getInstance().getOverworld(),
-                        home.getDouble("x"),
-                        home.getDouble("y"),
-                        home.getDouble("z"),
-                        home.getFloat("yaw"),
-                        home.getFloat("pitch")
-                );
-            }
-            if(city.has("Description")){
-                this.description = city.getString("Description");
-            }
-        } catch(IOException e){
-            e.printStackTrace();
+            this.members.put(uuid, cityPlayer);
+        }
+        if(city.has("Home")){
+            CompoundTag home = city.getCompound("Home");
+            this.home = new Location(
+                    ConsulatCore.getInstance().getOverworld(),
+                    home.getDouble("x"),
+                    home.getDouble("y"),
+                    home.getDouble("z"),
+                    home.getFloat("yaw"),
+                    home.getFloat("pitch")
+            );
+        }
+        if(city.has("Description")){
+            this.description = city.getString("Description");
         }
     }
     
     @Override
-    public void saveNBT(){
-        try {
-            File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "cities/" + getUniqueId() + ".dat");
-            CompoundTag city = new CompoundTag();
-            if(!file.exists()){
-                if(!file.createNewFile()){
-                    throw new IOException("Couldn't create file.");
-                }
+    public CompoundTag saveNBT(){
+        CompoundTag city = super.saveNBT();
+        ListTag<CompoundTag> members = new ListTag<>(NBTType.COMPOUND);
+        for(Map.Entry<UUID, CityPlayer> memberEntry : this.members.entrySet()){
+            CityPlayer member = memberEntry.getValue();
+            CompoundTag memberData = new CompoundTag();
+            ListTag<StringTag> permissions = new ListTag<>(NBTType.STRING);
+            for(CityPermission permission : member.getPermissions()){
+                permissions.addTag(new StringTag(permission.getPermission()));
             }
-            ListTag<CompoundTag> members = new ListTag<>(NBTType.COMPOUND);
-            for(Map.Entry<UUID, CityPlayer> memberEntry : this.members.entrySet()){
-                CityPlayer member = memberEntry.getValue();
-                CompoundTag memberData = new CompoundTag();
-                ListTag<StringTag> permissions = new ListTag<>(NBTType.STRING);
-                for(CityPermission permission : member.getPermissions()){
-                    permissions.addTag(new StringTag(permission.getPermission()));
-                }
-                memberData.putUUID("UUID", memberEntry.getKey());
-                memberData.putInt("Rank", getRank(member.getRank().getRankName()));
-                memberData.put("Permissions", permissions);
-                members.addTag(memberData);
-            }
-            city.put("Members", members);
-            ListTag<StringTag> ranks = new ListTag<>(NBTType.STRING);
-            for(CityRank rank : this.ranks){
-                ranks.addTag(new StringTag(rank.getRankName()));
-            }
-            city.put("Ranks", ranks);
-            ListTag<StringTag> publicPermissions = new ListTag<>(NBTType.STRING);
-            for(String publicPermission : this.publicPermissions){
-                publicPermissions.addTag(new StringTag(publicPermission));
-            }
-            city.put("PublicPermissions", publicPermissions);
-            if(home != null){
-                CompoundTag home = new CompoundTag();
-                home.putDouble("x", this.home.getX());
-                home.putDouble("y", this.home.getY());
-                home.putDouble("z", this.home.getZ());
-                home.putFloat("yaw", this.home.getYaw());
-                home.putFloat("pitch", this.home.getPitch());
-                city.put("Home", home);
-            }
-            if(description != null){
-                city.putString("Description", description);
-            }
-            NBTOutputStream os = new NBTOutputStream(file, city);
-            os.write("City");
-            os.close();
-        } catch(IOException e){
-            e.printStackTrace();
+            memberData.putUUID("UUID", memberEntry.getKey());
+            memberData.putInt("Rank", getRank(member.getRank().getRankName()));
+            memberData.put("Permissions", permissions);
+            members.addTag(memberData);
         }
+        city.put("Members", members);
+        ListTag<StringTag> ranks = new ListTag<>(NBTType.STRING);
+        for(CityRank rank : this.ranks){
+            ranks.addTag(new StringTag(rank.getRankName()));
+        }
+        city.put("Ranks", ranks);
+        ListTag<StringTag> publicPermissions = new ListTag<>(NBTType.STRING);
+        for(String publicPermission : this.publicPermissions){
+            publicPermissions.addTag(new StringTag(publicPermission));
+        }
+        city.put("PublicPermissions", publicPermissions);
+        if(home != null){
+            CompoundTag home = new CompoundTag();
+            home.putDouble("x", this.home.getX());
+            home.putDouble("y", this.home.getY());
+            home.putDouble("z", this.home.getZ());
+            home.putFloat("yaw", this.home.getYaw());
+            home.putFloat("pitch", this.home.getPitch());
+            city.put("Home", home);
+        }
+        if(description != null){
+            city.putString("Description", description);
+        }
+        return city;
     }
     
     @Override
@@ -337,6 +314,19 @@ public class City extends Zone {
     }
     
     public void removePlayers(){
+        if(members.isEmpty()){
+            Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
+                try {
+                    PreparedStatement statement = ConsulatAPI.getDatabase().prepareStatement("UPDATE players SET city = NULL WHERE city = ?");
+                    statement.setString(1, getUniqueId().toString());
+                    statement.executeUpdate();
+                    statement.close();
+                } catch(SQLException e){
+                    e.printStackTrace();
+                }
+            });
+            return;
+        }
         List<UUID> offlines = new ArrayList<>(members.size());
         for(Iterator<UUID> iterator = members.keySet().iterator(); iterator.hasNext(); ){
             UUID uuid = iterator.next();

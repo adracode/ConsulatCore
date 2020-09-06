@@ -52,7 +52,7 @@ public class HomeCommand extends ConsulatCommand {
             return;
         }
         String homeName = args[0];
-        if(survivalPlayer.hasPower(Rank.MODPLUS) && homeName.endsWith(":")){
+        if(survivalPlayer.hasPermission(getPermission() + ".look") && homeName.endsWith(":")){
             homeName = homeName.substring(0, homeName.length() - 1);
             String player = homeName;
             Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {

@@ -73,6 +73,7 @@ public class ChunkManager implements Listener {
         ConsulatAPI.getConsulatAPI().log(Level.INFO, "Loading chunks...");
         long start = System.currentTimeMillis();
         int size = 0;
+        boolean hasCrashed = ConsulatAPI.getConsulatAPI().hasCrashed();
         try {
             for(File worldDir : FileUtils.getFiles(new File(ConsulatAPI.getConsulatAPI().getDataFolder(), "chunks"))){
                 UUID worldUUID = UUID.fromString(worldDir.getName());
@@ -98,6 +99,9 @@ public class ChunkManager implements Listener {
                         chunk.loadNBT(chunkTag);
                         addChunk(world, chunk);
                         chunk.syncLimits();
+                        if(hasCrashed){
+                            chunk.setNeedLimitSync(true);
+                        }
                         ++size;
                     }
                 }
@@ -114,7 +118,7 @@ public class ChunkManager implements Listener {
         ConsulatAPI.getConsulatAPI().log(Level.INFO, size + " Chunks loaded in " + (System.currentTimeMillis() - start) + " ms");
     }
     
-    public void saveChunks(){
+    public synchronized void saveChunks(){
         try {
             File chunkDir = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "chunks");
             if(!chunkDir.exists()){

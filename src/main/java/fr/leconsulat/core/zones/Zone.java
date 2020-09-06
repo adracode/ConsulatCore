@@ -1,6 +1,7 @@
 package fr.leconsulat.core.zones;
 
 import fr.leconsulat.api.database.Saveable;
+import fr.leconsulat.api.nbt.CompoundTag;
 import fr.leconsulat.core.Text;
 import fr.leconsulat.core.zones.claims.Claim;
 import fr.leconsulat.core.zones.claims.ClaimPermission;
@@ -101,35 +102,11 @@ public class Zone implements Saveable {
         return owner.equals(uuid);
     }
     
-    public void loadNBT(){
-        /*try {
-            File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "zones/" + uuid + ".dat");
-            if(!file.exists()){
-                return;
-            }
-            NBTInputStream is = new NBTInputStream(new FileInputStream(file));
-            Map<String, Tag> zoneMap = ((CompoundTag)is.readTag()).getValue();
-            is.close();
-        } catch(IOException e){
-            e.printStackTrace();
-        }*/
+    public void loadNBT(CompoundTag tag){
     }
     
-    public void saveNBT(){
-        /*try {
-            File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "zones/" + uuid + ".dat");
-            Map<String, Tag> zone = new HashMap<>();
-            if(!file.exists()){
-                if(!file.createNewFile()){
-                    throw new IOException("Couldn't create file.");
-                }
-            }
-            NBTOutputStream os = new NBTOutputStream(new FileOutputStream(file));
-            os.writeTag(new CompoundTag("City", zone));
-            os.close();
-        } catch(IOException e){
-            e.printStackTrace();
-        }*/
+    public CompoundTag saveNBT(){
+        return new CompoundTag();
     }
     
     public @NotNull UUID getUniqueId(){

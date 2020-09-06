@@ -4,7 +4,10 @@ import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.events.PlayerClickBlockEvent;
 import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.gui.gui.IGui;
+import fr.leconsulat.api.nbt.CompoundTag;
+import fr.leconsulat.api.nbt.NBTInputStream;
 import fr.leconsulat.api.player.CPlayerManager;
+import fr.leconsulat.api.utils.FileUtils;
 import fr.leconsulat.core.ConsulatCore;
 import fr.leconsulat.core.Text;
 import fr.leconsulat.core.chunks.CChunk;
@@ -36,6 +39,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -228,7 +233,17 @@ public class ClaimManager implements Listener {
                 Zone claimOwner = zoneManager.getZone(uuid);
                 if(claimOwner == null){
                     zoneManager.addZone(claimOwner = new Zone(uuid, Bukkit.getOfflinePlayer(uuid).getName(), uuid));
-                    claimOwner.loadNBT();
+                    try {
+                        File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "zones/" + claimOwner.getUniqueId() + ".dat");
+                        if(file.exists()){
+                            NBTInputStream is = new NBTInputStream(new FileInputStream(file));
+                            CompoundTag zoneTag = is.read();
+                            is.close();
+                            claimOwner.loadNBT(zoneTag);
+                        }
+                    } catch(IOException e){
+                        e.printStackTrace();
+                    }
                 }
                 int x = resultClaims.getInt("claim_x"), z = resultClaims.getInt("claim_z");
                 String description = resultClaims.getString("description");
