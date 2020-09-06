@@ -284,6 +284,7 @@ public class ZoneManager {
                     ConsulatAPI.getConsulatAPI().log(Level.WARNING, "City " + city.getName() + ", owner " + city.getOwner() + ", money " + city.getMoney() + " doesn't have file, deleting...");
                     //Refund player
                     SPlayerManager.getInstance().addMoney(city.getOwner(), City.CREATE_TAX);
+                    SPlayerManager.getInstance().addMoney(city.getOwner(), city.getMoney());
                     deleteCity(city);
                 }
                 NBTInputStream is = new NBTInputStream(new FileInputStream(file));

@@ -147,7 +147,7 @@ public class SPlayerManager implements Listener {
     public void onPlayerLoaded(ConsulatPlayerLoadedEvent event){
         SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
         if(!player.getPlayer().hasPlayedBefore()){
-            player.getPlayer().performCommand("help");
+            player.getPlayer().performCommand("consulat");
         }
         ConsulatCore core = ConsulatCore.getInstance();
         CommandManager manager = CommandManager.getInstance();
