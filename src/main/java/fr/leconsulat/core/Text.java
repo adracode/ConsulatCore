@@ -315,7 +315,7 @@ final public class Text {
     public static String YOU_REPORTED(String toReport, String reason){return PREFIX + "§aTu as report " + toReport + " pour " + reason + ".";}
 
     public static String STAFF_LIST(Iterable<ConsulatPlayer> staff){
-        StringBuilder builder = new StringBuilder(PREFIX + "§6§uListe du staff en ligne: ");
+        StringBuilder builder = new StringBuilder(PREFIX + "§6§uListe du staff en ligne: \n");
         for(ConsulatPlayer player : staff){
             Rank rank = player.getRank();
             builder.append(rank.getRankColor()).append("[").append(rank.getRankName()).append("] ").append(player.getName()).append('\n');
