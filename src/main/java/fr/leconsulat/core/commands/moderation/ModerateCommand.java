@@ -88,11 +88,12 @@ public class ModerateCommand extends ConsulatCommand {
             assert freezeMeta != null;
             invseeMeta.setDisplayName("§bFreeze");
             freeze.setItemMeta(invseeMeta);
-            
+
+            bukkitPlayer.getInventory().setItem(2, freeze);
             bukkitPlayer.getInventory().setItem(3, randomTeleport);
             bukkitPlayer.getInventory().setItem(4, vanish);
             bukkitPlayer.getInventory().setItem(5, invsee);
-            bukkitPlayer.getInventory().setItem(6, freeze);
+
             if(player.isFlying()){
                 player.disableFly();
             } else {

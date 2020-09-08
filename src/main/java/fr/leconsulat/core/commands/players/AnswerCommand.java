@@ -8,6 +8,7 @@ import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import fr.leconsulat.core.ConsulatCore;
 import fr.leconsulat.core.Text;
+import fr.leconsulat.core.moderation.MutedPlayer;
 import fr.leconsulat.core.players.SurvivalPlayer;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -33,6 +34,15 @@ public class AnswerCommand extends ConsulatCommand {
             sender.sendMessage(Text.NO_ANSWER);
             return;
         }
+
+        if(survivalSender.isMuted()){
+            MutedPlayer muteInfo = survivalSender.getMute();
+            if(muteInfo != null){
+                sender.sendMessage(Text.YOU_MUTE(muteInfo));
+                return;
+            }
+        }
+
         String rawMessage = StringUtils.join(args, ' ');
         target.sendMessage(Text.MP_FROM(sender.getName(), rawMessage));
         target.setLastPrivate(sender.getUUID());
