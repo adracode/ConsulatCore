@@ -1,5 +1,6 @@
 package fr.leconsulat.core.commands.cities;
 
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -43,6 +44,7 @@ public class CityCommand extends ConsulatCommand {
     private List<TextComponent> previous = new ArrayList<>();
     private List<TextComponent> next = new ArrayList<>();
     private SubCommand[] subCommand;
+    private final String PERM_PROPERTIES = getPermission() + ".properties";
     
     public CityCommand(){
         super(ConsulatCore.getInstance(), "ville");
@@ -113,7 +115,15 @@ public class CityCommand extends ConsulatCommand {
                                 then(RequiredArgumentBuilder.argument("description", StringArgumentType.greedyString())),
                         LiteralArgumentBuilder.literal("lead").
                                 then(Arguments.playerList("joueur")),
-                        LiteralArgumentBuilder.literal("help"));
+                        LiteralArgumentBuilder.literal("help"),
+                        LiteralArgumentBuilder.literal("properties").requires(listener -> {
+                            ConsulatPlayer player = getConsulatPlayer(listener);
+                            return player != null && player.hasPermission(PERM_PROPERTIES);
+                        }).
+                                then(RequiredArgumentBuilder.argument("ville", StringArgumentType.word()).
+                                        then(LiteralArgumentBuilder.literal("no-damage").
+                                                then(RequiredArgumentBuilder.argument("valeur", BoolArgumentType.bool()))))
+                );
         this.subCommand = new TreeSet<>(Arrays.asList(
                 new SubCommand("create <nom>", "Créer une nouvelle ville"),
                 new SubCommand("rename <nom>", "Changer le nom de ville (" + ConsulatCore.formatMoney(City.RENAME_TAX) + ")"),
@@ -874,6 +884,29 @@ public class CityCommand extends ConsulatCommand {
                 sender.sendMessage(close);
             }
             break;
+            case "properties":
+                if(player.hasPermission(PERM_PROPERTIES)){
+                    if(args.length < 3){
+                        player.sendMessage("§cPas assez d'arguments");
+                        break;
+                    }
+                    City city = ZoneManager.getInstance().getCity(args[1]);
+                    if(city == null){
+                        player.sendMessage(Text.CITY_DOESNT_EXISTS);
+                        break;
+                    }
+                    switch(args[2]){
+                        case "no-damage":
+                            if(args.length < 4){
+                                player.sendMessage("§aPropriété no-damage: " + city.isNoDamage());
+                                break;
+                            }
+                            city.setNoDamage(Boolean.parseBoolean(args[3]));
+                            player.sendMessage("§aPropriété no-damage: " + city.isNoDamage());
+                            break;
+                    }
+                    break;
+                }
             default:
                 player.getPlayer().performCommand("ville help");
         }
