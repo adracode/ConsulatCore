@@ -198,9 +198,6 @@ public class SPlayerManager implements Listener {
                     player.getPlayer().hidePlayer(ConsulatCore.getInstance(), vanished.getPlayer());
                 }
             }
-            Bukkit.broadcastMessage("§7(§a+§7) " + player.getDisplayName());
-        } else if(ConsulatAPI.getConsulatAPI().isDevelopment()){
-            Bukkit.broadcastMessage("§7(§a+§7) " + player.getDisplayName());
         }
         CommandManager commandManager = CommandManager.getInstance();
         ConsulatCommand fly = (ConsulatCommand)commandManager.getCommand("fly");
@@ -210,6 +207,11 @@ public class SPlayerManager implements Listener {
         player.initChannels();
         CommandManager.getInstance().sendCommands(event.getPlayer());
         player.setInitialized(true);
+        if(!player.hasPower(Rank.MODO)){
+            Bukkit.broadcastMessage("§7(§a+§7) " + player.getDisplayName());
+        } else if(ConsulatAPI.getConsulatAPI().isDevelopment()){
+            Bukkit.broadcastMessage("§7(§a+§7) " + player.getDisplayName());
+        }
     }
     
     @EventHandler
