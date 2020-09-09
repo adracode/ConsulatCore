@@ -7,7 +7,6 @@ import fr.leconsulat.api.nbt.ListTag;
 import fr.leconsulat.api.nbt.NBTType;
 import fr.leconsulat.api.nbt.StringTag;
 import fr.leconsulat.api.player.Permission;
-import fr.leconsulat.api.ranks.Rank;
 import fr.leconsulat.core.ConsulatCore;
 import fr.leconsulat.core.chunks.CChunk;
 import fr.leconsulat.core.guis.city.CityGui;
@@ -34,6 +33,7 @@ public class Claim extends CChunk {
     public static final double BUY_CITY_CLAIM = BUY_CLAIM;
     public static final double REFUND = BUY_CLAIM * 0.7;
     public static final double SURCLAIM = BUY_CITY_CLAIM - REFUND;
+    public static final String INTERACT = ConsulatCore.getInstance().getPermission("interact");
     private final Long2ObjectMap<UUID> protectedContainers = new Long2ObjectOpenHashMap<>();
     private String description;
     private Zone owner;
@@ -179,11 +179,10 @@ public class Claim extends CChunk {
         if(player == null || !player.isInitialized()){
             return false;
         }
-        if(player.hasPermission(ConsulatCore.getInstance().getPermission("interact"))){
+        if(player.hasPermission(INTERACT)){
             return true;
         }
-        return player.hasPower(Rank.MODPLUS) ||
-                owner.hasPublicPermission(permission) ||
+        return owner.hasPublicPermission(permission) ||
                 canInteract(player.getUUID(), permission);
     }
     

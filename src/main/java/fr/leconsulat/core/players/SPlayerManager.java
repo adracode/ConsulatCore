@@ -16,6 +16,7 @@ import fr.leconsulat.api.redis.RedisManager;
 import fr.leconsulat.core.ConsulatCore;
 import fr.leconsulat.core.Text;
 import fr.leconsulat.core.events.SurvivalPlayerLoadedEvent;
+import fr.leconsulat.core.listeners.world.ClaimCancelListener;
 import fr.leconsulat.core.moderation.BanReason;
 import fr.leconsulat.core.moderation.MuteReason;
 import fr.leconsulat.core.moderation.SanctionType;
@@ -23,6 +24,7 @@ import fr.leconsulat.core.shop.ShopManager;
 import fr.leconsulat.core.shop.player.PlayerShop;
 import fr.leconsulat.core.zones.ZoneManager;
 import fr.leconsulat.core.zones.cities.City;
+import fr.leconsulat.core.zones.claims.Claim;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -119,14 +121,30 @@ public class SPlayerManager implements Listener {
             }
         });
         CPlayerManager.getInstance().setRankPermission(player -> {
+            SurvivalPlayer survivalPlayer = (SurvivalPlayer)player;
             Set<String> permissions = new HashSet<>();
             if(ADebugCommand.UUID_PERMISSION.contains(player.getUUID())){
-                player.addPermission(CommandManager.getInstance().getCommand("cdebug").getPermission());
+                permissions.add(CommandManager.getInstance().getCommand("cdebug").getPermission());
             }
             CommandManager commandManager = CommandManager.getInstance();
             ConsulatCommand home = (ConsulatCommand)commandManager.getCommand("home");
             if(player.hasPower(Rank.MODPLUS)){
-                player.addPermission(home.getPermission() + ".look");
+                permissions.add(home.getPermission() + ".look");
+                permissions.add(Claim.INTERACT);
+                permissions.add(ClaimCancelListener.OPEN_PRIVATE_CHEST);
+            }
+            CommandManager manager = CommandManager.getInstance();
+            ConsulatCommand command = (ConsulatCommand)manager.getCommand("perso");
+            if(player.hasCustomRank()){
+                permissions.add(command.getPermission());
+            }
+            command = (ConsulatCommand)manager.getCommand("fly");
+            if(survivalPlayer.hasFly()){
+                permissions.add(command.getPermission());
+            }
+            command = (ConsulatCommand)manager.getCommand("top");
+            if(survivalPlayer.hasPerkTop()){
+                permissions.add(command.getPermission());
             }
             return permissions;
         });
@@ -150,19 +168,6 @@ public class SPlayerManager implements Listener {
             player.getPlayer().performCommand("consulat");
         }
         ConsulatCore core = ConsulatCore.getInstance();
-        CommandManager manager = CommandManager.getInstance();
-        ConsulatCommand command = (ConsulatCommand)manager.getCommand("perso");
-        if(player.hasCustomRank() && !player.hasPermission(command.getPermission())){
-            player.addPermission(command.getPermission());
-        }
-        command = (ConsulatCommand)manager.getCommand("fly");
-        if(player.hasFly() && !player.hasPermission(command.getPermission())){
-            player.addPermission(command.getPermission());
-        }
-        command = (ConsulatCommand)manager.getCommand("top");
-        if(player.hasPerkTop() && !player.hasPermission(command.getPermission())){
-            player.addPermission(command.getPermission());
-        }
         if(ADebugCommand.UUID_PERMISSION.contains(player.getUUID())){
             player.addPermission(CommandManager.getInstance().getCommand("cdebug").getPermission());
         }

@@ -7,6 +7,7 @@ import fr.leconsulat.core.ConsulatCore;
 import fr.leconsulat.core.Text;
 import fr.leconsulat.core.players.SurvivalPlayer;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -28,6 +29,9 @@ public class InteractListener implements Listener {
     @SuppressWarnings("unchecked")
     @EventHandler(priority = EventPriority.HIGH)
     public void onInteract(PlayerInteractEvent event){
+        if(event.getPlayer().getGameMode() == GameMode.SPECTATOR){
+            return;
+        }
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
         if(event.getClickedBlock() != null){
             if(event.getClickedBlock().getType() == Material.SPAWNER){
