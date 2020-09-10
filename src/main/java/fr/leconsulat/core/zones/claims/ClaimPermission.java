@@ -12,8 +12,7 @@ public enum ClaimPermission implements Permission {
     INTERACT_REDSTONE(ConsulatCore.getInstance().getPermission("claim.interact-redstone")),
     DAMAGE(ConsulatCore.getInstance().getPermission("claim.damage")),
     OTHER(ConsulatCore.getInstance().getPermission("claim.interact-other")),
-    FLY(ConsulatCore.getInstance().getPermission("claim.fly")),
-    COLLIDE(ConsulatCore.getInstance().getPermission("claim.collide"));
+    FLY(ConsulatCore.getInstance().getPermission("claim.fly"));
     
     private String permission;
     

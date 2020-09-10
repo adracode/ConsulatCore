@@ -121,12 +121,16 @@ public class SPlayerManager implements Listener {
         CPlayerManager.getInstance().setRankPermission(player -> {
             Set<String> permissions = new HashSet<>();
             if(ADebugCommand.UUID_PERMISSION.contains(player.getUUID())){
-                player.addPermission(CommandManager.getInstance().getCommand("cdebug").getPermission());
+                permissions.add(CommandManager.getInstance().getCommand("cdebug").getPermission());
             }
             CommandManager commandManager = CommandManager.getInstance();
-            ConsulatCommand home = (ConsulatCommand)commandManager.getCommand("home");
             if(player.hasPower(Rank.MODPLUS)){
-                player.addPermission(home.getPermission() + ".look");
+                ConsulatCommand home = (ConsulatCommand)commandManager.getCommand("home");
+                permissions.add(home.getPermission() + ".look");
+            }
+            if(player.hasPower(Rank.ADMIN)){
+                ConsulatCommand city = (ConsulatCommand)commandManager.getCommand("city");
+                permissions.add(city.getPermission() + ".properties");
             }
             return permissions;
         });

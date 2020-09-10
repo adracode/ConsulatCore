@@ -40,8 +40,8 @@ public class ClaimCommand extends ConsulatCommand {
                         LiteralArgumentBuilder.literal("list"),
                         LiteralArgumentBuilder.literal("options"),
                         LiteralArgumentBuilder.literal("info").
-                                requires((t) -> {
-                                    ConsulatPlayer player = getConsulatPlayer(t);
+                                requires(listener -> {
+                                    ConsulatPlayer player = getConsulatPlayer(listener);
                                     return player != null && player.hasPower(Rank.RESPONSABLE);
                                 }).
                                 then(Arguments.playerList("joueur")));

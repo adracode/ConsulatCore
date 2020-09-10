@@ -14,7 +14,7 @@ public class BaltopCommand extends ConsulatCommand {
         super(ConsulatCore.getInstance(), "baltop");
         setDescription("Affiche le classement d'argent").
                 setUsage("/baltop - Affiche le classement").
-                setRank(Rank.ADMIN).
+                setRank(Rank.JOUEUR).
                 suggest();
     }
     
