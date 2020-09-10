@@ -14,10 +14,14 @@ import fr.leconsulat.core.players.Fly;
 import fr.leconsulat.core.players.SurvivalPlayer;
 import fr.leconsulat.core.shop.ShopManager;
 import fr.leconsulat.core.shop.player.PlayerShop;
+import fr.leconsulat.core.utils.CoordinatesUtils;
 import fr.leconsulat.core.zones.ZoneManager;
 import fr.leconsulat.core.zones.cities.City;
+import fr.leconsulat.core.zones.claims.Claim;
+import fr.leconsulat.core.zones.claims.ClaimManager;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
@@ -34,6 +38,7 @@ public class CDebugCommand extends ConsulatCommand {
                             return player != null && ADebugCommand.UUID_PERMISSION.contains(player.getUUID());
                         },
                         LiteralArgumentBuilder.literal("chunk"),
+                        LiteralArgumentBuilder.literal("private"),
                         LiteralArgumentBuilder.literal("city").
                                 then(LiteralArgumentBuilder.literal("lead").
                                         then(RequiredArgumentBuilder.argument("city", StringArgumentType.word()))).
@@ -56,6 +61,21 @@ public class CDebugCommand extends ConsulatCommand {
             switch(args[0]){
                 case "chunk":
                     sender.sendMessage(ChunkManager.getInstance().getChunk(sender.getPlayer().getChunk()).toString());
+                    break;
+                case "private":
+                    Block block = sender.getPlayer().getTargetBlock(5);
+                    if(block == null || !ClaimManager.PROTECTABLE.contains(block.getType())){
+                        return;
+                    }
+                    Claim blockClaim = ClaimManager.getInstance().getClaim(block);
+                    if(blockClaim == null){
+                        return;
+                    }
+                    UUID owner = blockClaim.getProtectedContainer(CoordinatesUtils.convertCoordinates(block.getLocation()));
+                    if(owner == null){
+                        return;
+                    }
+                    sender.sendMessage("§aPropriétaire: " + Bukkit.getOfflinePlayer(owner).getName());
                     break;
                 case "city":
                     switch(args[1]){

@@ -7,6 +7,7 @@ import fr.leconsulat.api.events.entities.PlayerInteractWithEntityEvent;
 import fr.leconsulat.api.events.items.PlayerPlaceItemEvent;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.utils.Rollback;
+import fr.leconsulat.core.ConsulatCore;
 import fr.leconsulat.core.Text;
 import fr.leconsulat.core.chunks.CChunk;
 import fr.leconsulat.core.chunks.ChunkManager;
@@ -55,6 +56,8 @@ import java.util.UUID;
 public class ClaimCancelListener implements Listener {
     
     private static BlockFace[] faces = new BlockFace[]{BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST};
+    
+    public static final String OPEN_PRIVATE_CHEST = ConsulatCore.getInstance().getPermission("open-private-chest");
     
     private ChunkManager chunkManager = ChunkManager.getInstance();
     private ClaimManager claimManager = ClaimManager.getInstance();
@@ -1368,7 +1371,7 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    @EventHandler()
+    @EventHandler
     public void onOpenContainer(PlayerInteractContainerBlockEvent event){
         event.setCancelled(false);
         Claim blockClaim = claimManager.getClaim(event.getBlock().getChunk());
@@ -1377,9 +1380,10 @@ public class ClaimCancelListener implements Listener {
         }
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
         if(!blockClaim.canInteract(player, ClaimPermission.OPEN_CONTAINER)){
-            if(!player.isInModeration() || player.getPlayer().getGameMode() != GameMode.SPECTATOR){
-                event.setCancelled(true);
+            if(player.isInModeration() && player.getPlayer().getGameMode() == GameMode.SPECTATOR){
+                return;
             }
+            event.setCancelled(true);
         } else if(ClaimManager.PROTECTABLE.contains(event.getBlock().getType())){
             if(!(blockClaim.getOwner() instanceof City) || player.getUUID().equals(blockClaim.getOwnerUUID())){
                 return;
@@ -1387,6 +1391,9 @@ public class ClaimCancelListener implements Listener {
             UUID opener = event.getPlayer().getUniqueId();
             UUID owner = blockClaim.getProtectedContainer(CoordinatesUtils.convertCoordinates(event.getBlock().getLocation()));
             if(owner == null){
+                return;
+            }
+            if((player.isInModeration() && (player.getPlayer().getGameMode() == GameMode.SPECTATOR)) || player.hasPermission(OPEN_PRIVATE_CHEST)){
                 return;
             }
             if(!owner.equals(opener)){

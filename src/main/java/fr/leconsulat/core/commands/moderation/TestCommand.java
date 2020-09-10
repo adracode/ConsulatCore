@@ -12,6 +12,7 @@ import fr.leconsulat.core.Text;
 import fr.leconsulat.core.players.SurvivalPlayer;
 import fr.leconsulat.core.zones.ZoneManager;
 import fr.leconsulat.core.zones.cities.City;
+import fr.leconsulat.core.zones.claims.Claim;
 
 public class TestCommand extends ConsulatCommand {
     
@@ -72,11 +73,11 @@ public class TestCommand extends ConsulatCommand {
                     }
                     break;
                 case "claim":
-                    if(sender.hasPermission(ConsulatCore.getInstance().getPermission("interact"))){
-                        sender.removePermission(ConsulatCore.getInstance().getPermission("interact"));
+                    if(sender.hasPermission(Claim.INTERACT)){
+                        sender.removePermission(Claim.INTERACT);
                         sender.sendMessage("§cTu ne peux plus interagir avec tous les claims.");
                     } else {
-                        sender.addPermission(ConsulatCore.getInstance().getPermission("interact"));
+                        sender.addPermission(Claim.INTERACT);
                         sender.sendMessage("§aTu peux interagir avec tous les claims.");
                     }
                     break;

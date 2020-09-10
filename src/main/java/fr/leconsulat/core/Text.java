@@ -349,7 +349,7 @@ final public class Text {
     public static String LIST_HOME(Collection<String> homes){return PREFIX + "§eVoici la liste de tes homes: " + toString(homes, home -> home ) + ".";}
 
     public static TextComponent LIST_HOME_PLAYER(Map<String, Location> homes, String player){
-        TextComponent message = new TextComponent("§6Liste des homes de: §c" + player + "\n§7---------------------------------");
+        TextComponent message = new TextComponent("§6Liste des homes de: §c" + player + "\n§7---------------------------------\n");
         for(Map.Entry<String, Location> home : homes.entrySet()){
             TextComponent textComponent = new TextComponent("§a" + home.getKey() + " §7| §cX§7:§6" + home.getValue().getBlockX() + " §cY§7:§6" + home.getValue().getBlockY() + " §cZ§7:§6" + home.getValue().getBlockZ() + "\n");
             textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§7Clique pour t'y téléporter.").create()));
