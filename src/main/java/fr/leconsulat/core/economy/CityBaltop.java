@@ -3,6 +3,7 @@ package fr.leconsulat.core.economy;
 import fr.leconsulat.core.zones.ZoneManager;
 import fr.leconsulat.core.zones.cities.City;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class CityBaltop extends Baltop<City> {
@@ -13,6 +14,8 @@ public class CityBaltop extends Baltop<City> {
  
     @Override
     public Collection<City> getMoneyOwners(){
-        return ZoneManager.getInstance().getCities();
+        ArrayList<City> cities = new ArrayList<>(ZoneManager.getInstance().getCities());
+        cities.removeIf(City::isNoDamage);
+        return cities;
     }
 }

@@ -49,6 +49,7 @@ public class City extends Zone {
     public static final double CREATE_TAX = 7_500;
     
     private double bank;
+    private long properties = 0;
     private @Nullable Location home;
     private @Nullable String description = null;
     private @NotNull Map<UUID, CityPlayer> members = new HashMap<>();
@@ -104,6 +105,18 @@ public class City extends Zone {
             ((CityInfo)iCityInfo).removePlayer(uuid);
         }
         return true;
+    }
+    
+    public boolean isNoDamage(){
+        return (properties & 1) == 1;
+    }
+    
+    public void setNoDamage(boolean value){
+        if(value){
+            properties |= 1;
+        } else {
+            properties &= Long.MAX_VALUE - 1;
+        }
     }
     
     @Override
@@ -162,6 +175,9 @@ public class City extends Zone {
         if(city.has("Description")){
             this.description = city.getString("Description");
         }
+        if(city.has("Properties")){
+            this.properties = city.getLong("Properties");
+        }
     }
     
     @Override
@@ -202,6 +218,9 @@ public class City extends Zone {
         }
         if(description != null){
             city.putString("Description", description);
+        }
+        if(properties != 0){
+            city.putLong("Properties", properties);
         }
         return city;
     }

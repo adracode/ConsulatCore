@@ -127,24 +127,22 @@ public class SPlayerManager implements Listener {
                 permissions.add(CommandManager.getInstance().getCommand("cdebug").getPermission());
             }
             CommandManager commandManager = CommandManager.getInstance();
-            ConsulatCommand home = (ConsulatCommand)commandManager.getCommand("home");
             if(player.hasPower(Rank.MODPLUS)){
-                permissions.add(home.getPermission() + ".look");
+                permissions.add(commandManager.getCommand("home").getPermission() + ".look");
                 permissions.add(Claim.INTERACT);
                 permissions.add(ClaimCancelListener.OPEN_PRIVATE_CHEST);
             }
-            CommandManager manager = CommandManager.getInstance();
-            ConsulatCommand command = (ConsulatCommand)manager.getCommand("perso");
+            if(player.hasPower(Rank.ADMIN)){
+                permissions.add(commandManager.getCommand("city").getPermission() + ".properties");
+            }
             if(player.hasCustomRank()){
-                permissions.add(command.getPermission());
+                permissions.add(commandManager.getCommand("perso").getPermission());
             }
-            command = (ConsulatCommand)manager.getCommand("fly");
             if(survivalPlayer.hasFly()){
-                permissions.add(command.getPermission());
+                permissions.add(commandManager.getCommand("fly").getPermission());
             }
-            command = (ConsulatCommand)manager.getCommand("top");
             if(survivalPlayer.hasPerkTop()){
-                permissions.add(command.getPermission());
+                permissions.add(commandManager.getCommand("top").getPermission());
             }
             return permissions;
         });

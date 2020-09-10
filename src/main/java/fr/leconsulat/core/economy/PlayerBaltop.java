@@ -22,7 +22,7 @@ public class PlayerBaltop extends Baltop<SurvivalOffline> {
     public Collection<SurvivalOffline> getMoneyOwners(){
         try {
             PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement(
-                    "SELECT id, player_name, money FROM players WHERE player_rank != 'Admin' AND player_rank != 'Superviseur' ORDER BY money DESC limit ?;");
+                    "SELECT id, player_name, money FROM players WHERE player_rank != 'Admin' AND player_rank != 'Superviseur' AND player_rank != 'Développeur' ORDER BY money DESC limit ?;");
             preparedStatement.setInt(1, max);
             preparedStatement.executeQuery();
             ResultSet result = preparedStatement.executeQuery();

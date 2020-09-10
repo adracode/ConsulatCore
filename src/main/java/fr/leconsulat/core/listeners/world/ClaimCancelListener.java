@@ -709,7 +709,18 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    //EntityDamageEvent
+    @EventHandler
+    public void onDamage(EntityDamageEvent event){
+        if(event.getEntityType() != EntityType.PLAYER){
+            return;
+        }
+        Claim claim = claimManager.getClaim(event.getEntity().getChunk());
+        if(claim != null && claim.getOwner() instanceof City){
+            if(((City)claim.getOwner()).isNoDamage()){
+                event.setCancelled(true);
+            }
+        }
+    }
     //EntityDeathEvent
     //EntityDropItemEvent
     
