@@ -22,6 +22,7 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,6 +56,21 @@ public class EnchantmentManager implements Listener {
         }
     }
     
+    public boolean isSimilar(@Nullable ItemStack stack1, @Nullable ItemStack stack2){
+        if(stack1 == null && stack2 == null){
+            return true;
+        }
+        if(stack1 == null || stack2 == null){
+            return false;
+        }
+        boolean b = stack1.getType() == stack2.getType() && stack1.hasItemMeta() == stack2.hasItemMeta();
+        if(!b){
+            return false;
+        }
+        return stack1.getEnchantments().equals(stack2.getEnchantments()) &&
+                stack1.getItemMeta().getPersistentDataContainer().equals(stack2.getItemMeta().getPersistentDataContainer());
+    }
+    
     @EventHandler
     public void onArmorChange(PlayerArmorChangeEvent event){
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
@@ -64,7 +80,7 @@ public class EnchantmentManager implements Listener {
         if(old != null && old.getType() == Material.AIR){
             old = null;
         }
-        if(oldArmor != null && old == null || oldArmor == null && old != null || oldArmor != null && !oldArmor.getHandle().equals(old)){
+        if(oldArmor != null && old == null || oldArmor == null && old != null || oldArmor != null && !isSimilar(oldArmor.getHandle(), old)){
             ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Armors doesn't correspond (" + old + "§f / " + oldArmor + ") (can occur at connection)");
             return;
         }
