@@ -60,7 +60,7 @@ public class CEnchantment {
         FISHER_LUCK(PotionEffectType.LUCK, "Chance du pêcheur", false, 1),
         MOON_FALL(PotionEffectType.SLOW_FALLING, "Chute lunaire", false, 1),
         CHEETAH_STRENGTH(PotionEffectType.SPEED, "Force du guépard", false, 2),
-        MOON_JUMP(PotionEffectType.JUMP, "Sauts lunaire", false, 3);
+        MOON_JUMP(PotionEffectType.JUMP, "Sauts lunaire", false, 3)
         EAT(PotionEffectType.SATURATION, "Mangeur", false, 2);
         
         private final PotionEffectType effect;
