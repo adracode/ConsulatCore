@@ -64,6 +64,7 @@ final public class Text {
     public static final String UNCLAIM_CITY = PREFIX + "§aTu as unclaim ce chunk de la ville.";
     public static final String CANT_SET_HOME_CITY = PREFIX + "§cTu ne peux pas définir le spawn de la ville.";
     public static final String YOU_SET_HOME_CITY = PREFIX + "§aTu as défini le home de la ville.";
+    public static final String YOU_DELETE_HOME_CITY = PREFIX + "§aTu as supprimé le home de la ville.";
     public static final String HOME_CITY_NOT_SET = PREFIX + "§cLe home de la ville n'est pas défini.";
     public static final String TELEPORTATION = PREFIX + "§aTéléportation en cours...";
     public static final String INVALID_NUMBER = PREFIX + "§cCe nombre n'est pas valide.";
@@ -125,6 +126,7 @@ final public class Text {
     public static final String FLY_OFF = PREFIX + "Ton fly est en pause !";
     public static final String FLY_INFINITE_OFF = PREFIX + "Tu as enlevé ton fly infini.";
     public static final String NO_HOME = PREFIX + "§cTu ne possèdes aucun home.";
+    public static final String NO_HOME_CITY = PREFIX + "§cLa ville ne possède pas de home.";
     public static final String ALREADY_IGNORED = PREFIX + "§cTu as déjà ignoré ce joueur.";
     public static final String NOT_IGNORED = PREFIX + "§cCe joueur n'est pas ignoré.";
     public static final String NOBODY_IGNORED = PREFIX + "§aTu n'as ignoré personne.";
