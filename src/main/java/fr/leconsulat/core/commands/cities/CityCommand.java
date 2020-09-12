@@ -81,6 +81,7 @@ public class CityCommand extends ConsulatCommand {
                                 }))),
                         LiteralArgumentBuilder.literal("claim"),
                         LiteralArgumentBuilder.literal("unclaim"),
+                        LiteralArgumentBuilder.literal("delhome"),
                         LiteralArgumentBuilder.literal("sethome"),
                         LiteralArgumentBuilder.literal("home"),
                         LiteralArgumentBuilder.literal("money"),
@@ -135,7 +136,8 @@ public class CityCommand extends ConsulatCommand {
                 new SubCommand("accept <ville>", "Rejoindre une ville"),
                 new SubCommand("claim", "Claim un chunk pour la ville"),
                 new SubCommand("unclaim", "Unclaim un chunk de ville"),
-                new SubCommand("sethome", "Définir un home de ville"),
+                new SubCommand("delhome", "Supprimer le home de ville"),
+                new SubCommand("sethome", "Définir le home de ville"),
                 new SubCommand("home", "Se TP au home de ville"),
                 new SubCommand("money", "Affiche l'argent de la banque"),
                 new SubCommand("bank add <montant>", "Ajouter de l'argent"),
@@ -449,6 +451,24 @@ public class CityCommand extends ConsulatCommand {
                 }
                 ClaimManager.getInstance().unClaim(claim);
                 player.sendMessage(Text.UNCLAIM_CITY);
+            }
+            break;
+            case "delhome":{
+                if(!player.belongsToCity()){
+                    player.sendMessage(Text.YOU_NOT_IN_CITY);
+                    return;
+                }
+                City city = player.getCity();
+                if(!city.canSetSpawn(player.getUUID())){
+                    player.sendMessage(Text.CANT_SET_HOME_CITY);
+                    return;
+                }
+                if(city.hasHome()){
+                    ZoneManager.getInstance().setHome(city, null);
+                    player.sendMessage(Text.YOU_DELETE_HOME_CITY);
+                } else {
+                    player.sendMessage(Text.NO_HOME);
+                }
             }
             break;
             case "sethome":{
