@@ -671,9 +671,13 @@ public class SurvivalPlayer extends ConsulatPlayer {
         return hasFly() ? fly : null;
     }
     
-    public void setFly(Fly fly){
+    public boolean setFly(Fly fly){
+        if(this.fly.compareTo(fly) >= 0){
+            return false;
+        }
         this.fly = new Fly(fly);
         addCommandPermission(CommandManager.getInstance().getCommand("fly").getPermission());
+        return true;
     }
     
     public HashMap<BanReason, Integer> getBanHistory(){
