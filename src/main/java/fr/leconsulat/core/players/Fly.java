@@ -1,8 +1,10 @@
 package fr.leconsulat.core.players;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Objects;
 
-public class Fly {
+public class Fly implements Comparable<Fly> {
     
     public static final Fly FLY_5 = new Fly(5 * 60, System.currentTimeMillis(), 5 * 60);
     public static final Fly FLY_25 = new Fly(25 * 60, System.currentTimeMillis(), 25 * 60);
@@ -33,6 +35,20 @@ public class Fly {
     
     public boolean hasInfiniteFly(){
         return flyTime == -1;
+    }
+    
+    @Override
+    public int compareTo(@NotNull Fly o){
+        if(this.flyTime == -1 && o.flyTime == -1){
+            return 0;
+        }
+        if(flyTime == -1){
+            return 1;
+        }
+        if(o.flyTime == -1){
+            return -1;
+        }
+        return Integer.compare(this.flyTime, o.flyTime);
     }
     
     public int getFlyTime(){
@@ -77,5 +93,10 @@ public class Fly {
                 flyTime == fly.flyTime &&
                 reset == fly.reset &&
                 timeLeft == fly.timeLeft;
+    }
+    
+    @Override
+    public String toString(){
+        return "Fly " + flyTime;
     }
 }

@@ -1,5 +1,6 @@
 package fr.leconsulat.core.commands.moderation;
 
+import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.commands.ConsoleUsable;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.commands.commands.ADebugCommand;
@@ -13,6 +14,8 @@ import fr.leconsulat.core.players.SurvivalPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.logging.Level;
 
 public class WebShopCommand extends ConsulatCommand implements ConsoleUsable {
     
@@ -79,16 +82,25 @@ public class WebShopCommand extends ConsulatCommand implements ConsoleUsable {
                 target.sendMessage("§7Suite à ton achat, tu as accès au /top !");
                 break;
             case "fly5":
-                target.setFly(Fly.FLY_5);
-                target.sendMessage(Text.FLY + "Suite à ton achat tu as maintenant accès au /fly qui dure 5minutes toute les heures !");
+                if(target.setFly(Fly.FLY_5)){
+                    target.sendMessage(Text.FLY + "Suite à ton achat tu as maintenant accès au /fly qui dure 5minutes toute les heures !");
+                } else {
+                    ConsulatAPI.getConsulatAPI().log(Level.INFO, "Trying to set " + Fly.FLY_5 + " but player has " + target.getFly());
+                }
                 break;
             case "fly25":
-                target.setFly(Fly.FLY_25);
-                target.sendMessage(Text.FLY + "Suite à ton achat tu as maintenant accès au /fly qui dure 25 minutes toute les heures !");
+                if(target.setFly(Fly.FLY_25)){
+                    target.sendMessage(Text.FLY + "Suite à ton achat tu as maintenant accès au /fly qui dure 25 minutes toute les heures !");
+                } else {
+                    ConsulatAPI.getConsulatAPI().log(Level.INFO, "Trying to set " + Fly.FLY_25 + " but player has " + target.getFly());
+                }
                 break;
             case "infinite":
-                target.setFly(Fly.FLY_INFINITE);
-                target.sendMessage(Text.FLY + "Suite à ton achat tu as maintenant accès au /fly infini !");
+                if(target.setFly(Fly.FLY_INFINITE)){
+                    target.sendMessage(Text.FLY + "Suite à ton achat tu as maintenant accès au /fly infini !");
+                } else {
+                    ConsulatAPI.getConsulatAPI().log(Level.INFO, "Trying to set " + Fly.FLY_INFINITE + " but player has " + target.getFly());
+                }
                 break;
             case "perso":
                 target.setHasCustomRank(true);
