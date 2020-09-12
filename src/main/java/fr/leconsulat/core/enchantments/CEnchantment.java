@@ -61,7 +61,7 @@ public class CEnchantment {
         MOON_FALL(PotionEffectType.SLOW_FALLING, "Chute lunaire", false, 1),
         CHEETAH_STRENGTH(PotionEffectType.SPEED, "Force du guépard", false, 3),
         MOON_JUMP(PotionEffectType.JUMP, "Sauts lunaire", false, 3),
-        EAT(PotionEffectType.SATURATION, "Mangeur", false, 2);
+        EAT(PotionEffectType.SATURATION, "Rassasié", false, 2);
         
         private final PotionEffectType effect;
         private final String display;
@@ -97,6 +97,7 @@ public class CEnchantment {
                         case MINER_HAND:
                         case FISHER_LUCK:
                         case FIRE_ENDURANCE:
+                        case EAT:
                             return true;
                     }
                     break;
@@ -108,6 +109,7 @@ public class CEnchantment {
                         case FISHER_LUCK:
                         case STEALTH:
                         case MINER_HAND:
+                        case EAT:
                             return true;
                     }
                     break;
@@ -143,6 +145,4 @@ public class CEnchantment {
             return maxLevel;
         }
     }
-    
-    
 }

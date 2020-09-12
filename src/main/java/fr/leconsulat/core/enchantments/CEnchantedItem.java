@@ -233,6 +233,16 @@ public class CEnchantedItem {
         return EquipmentSlot.OFF_HAND;
     }
     
+    public static CEnchantedItem getItem(ItemStack item){
+        if(item == null){
+            return null;
+        }
+        if(!ARMORS.contains(item.getType()) && item.getType() != Material.ENCHANTED_BOOK){
+            return null;
+        }
+        return isEnchanted(item) ? new CEnchantedItem(item) : null;
+    }
+    
     public static boolean isEnchanted(@Nullable ItemStack item){
         return item != null && item.hasItemMeta() && item.getItemMeta().getPersistentDataContainer().has(KEY_ENCHANT, PersistentDataType.TAG_CONTAINER);
     }
