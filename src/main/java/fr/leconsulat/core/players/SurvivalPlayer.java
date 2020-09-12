@@ -1,6 +1,5 @@
 package fr.leconsulat.core.players;
 
-import com.destroystokyo.paper.event.player.PlayerArmorChangeEvent;
 import fr.leconsulat.api.channel.Channel;
 import fr.leconsulat.api.channel.Speakable;
 import fr.leconsulat.api.commands.CommandManager;
@@ -376,7 +375,6 @@ public class SurvivalPlayer extends ConsulatPlayer {
             amount -= min;
             inventory.addItem(newItem);
         }
-        
     }
     
     public void decrementTimeLeft(){
@@ -385,22 +383,6 @@ public class SurvivalPlayer extends ConsulatPlayer {
     
     public boolean belongsToCity(){
         return city != null;
-    }
-    
-    public void setArmor(PlayerArmorChangeEvent.SlotType slotType, @Nullable ItemStack item){
-        setArmor(slotType.ordinal(), item);
-    }
-    
-    public void setArmor(int i, @Nullable ItemStack item){
-        this.enchantedArmor[i] = CEnchantedItem.isEnchanted(item) ? new CEnchantedItem(item) : null;
-    }
-    
-    public @Nullable CEnchantedItem getArmor(PlayerArmorChangeEvent.SlotType slotType){
-        return getArmor(slotType.ordinal());
-    }
-    
-    public CEnchantedItem getArmor(int i){
-        return enchantedArmor[i];
     }
     
     public void initChannels(){

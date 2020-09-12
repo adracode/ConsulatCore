@@ -2,7 +2,6 @@ package fr.leconsulat.core.enchantments;
 
 import com.destroystokyo.paper.event.player.PlayerArmorChangeEvent;
 import com.destroystokyo.paper.event.server.ServerTickEndEvent;
-import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.core.ConsulatCore;
 import fr.leconsulat.core.players.SurvivalPlayer;
@@ -27,7 +26,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
 
 public class EnchantmentManager implements Listener {
     
@@ -73,32 +71,22 @@ public class EnchantmentManager implements Listener {
     
     @EventHandler
     public void onArmorChange(PlayerArmorChangeEvent event){
+        if(!CEnchantedItem.isEnchanted(event.getOldItem()) && !CEnchantedItem.isEnchanted(event.getNewItem())){
+            return;
+        }
         SurvivalPlayer player = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(event.getPlayer().getUniqueId());
         PlayerArmorChangeEvent.SlotType slot = event.getSlotType();
-        CEnchantedItem oldArmor = player.getArmor(slot);
-        ItemStack old = CEnchantedItem.isEnchanted(event.getOldItem()) ? event.getOldItem() : null;
-        if(old != null && old.getType() == Material.AIR){
-            old = null;
-        }
-        if(oldArmor != null && old == null || oldArmor == null && old != null || oldArmor != null && !isSimilar(oldArmor.getHandle(), old)){
-            ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Armors doesn't correspond (" + old + "§f / " + oldArmor + ") (can occur at connection)");
-            return;
-        }
-        ItemStack equipped = event.getNewItem();
-        if(equipped == null && oldArmor == null){
-            ConsulatAPI.getConsulatAPI().log(Level.INFO, "Armor are not enchanted");
-            return;
-        }
-        player.setArmor(slot, event.getNewItem());
-        CEnchantedItem newArmor = player.getArmor(slot);
+        CEnchantedItem oldArmor = CEnchantedItem.isEnchanted(event.getOldItem()) ? new CEnchantedItem(event.getOldItem()) : null;
         Player bukkitPlayer = player.getPlayer();
         if(oldArmor != null){
             CEnchantment[] armorEnchants = oldArmor.getEnchants();
+            ItemStack[] armor = bukkitPlayer.getInventory().getArmorContents();
+            //Si une autre partie de l'armure comporte cet enchantement, on ne l'enlève pas
             for(CEnchantment enchant : armorEnchants){
                 boolean removeEnchant = true;
                 for(int i = 0; i < 4; ++i){
                     if(i != slot.ordinal()){
-                        CEnchantedItem armorPart = player.getArmor(i);
+                        CEnchantedItem armorPart = CEnchantedItem.getItem(armor[i]);
                         if(armorPart != null && armorPart.isEnchantedWith(enchant.getEnchantment(), enchant.getLevel())){
                             removeEnchant = false;
                             break;
@@ -114,6 +102,7 @@ public class EnchantmentManager implements Listener {
                 }
             }
         }
+        CEnchantedItem newArmor = CEnchantedItem.isEnchanted(event.getNewItem()) ? new CEnchantedItem(event.getNewItem()) : null;
         if(newArmor != null){
             applyCEnchantment(player, newArmor.getEnchants());
         }
@@ -132,8 +121,9 @@ public class EnchantmentManager implements Listener {
         if(player == null){
             return;
         }
+        ItemStack[] armor = player.getPlayer().getInventory().getArmorContents();
         for(int i = 0; i < 4; ++i){
-            CEnchantedItem armorPart = player.getArmor(i);
+            CEnchantedItem armorPart = CEnchantedItem.getItem(armor[i]);
             if(armorPart == null){
                 continue;
             }
