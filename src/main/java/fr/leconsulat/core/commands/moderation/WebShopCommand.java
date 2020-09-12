@@ -89,17 +89,17 @@ public class WebShopCommand extends ConsulatCommand implements ConsoleUsable {
                 }
                 break;
             case "fly25":
-                if(target.setFly(Fly.FLY_5)){
+                if(target.setFly(Fly.FLY_25)){
                     target.sendMessage(Text.FLY + "Suite à ton achat tu as maintenant accès au /fly qui dure 25 minutes toute les heures !");
                 } else {
-                    ConsulatAPI.getConsulatAPI().log(Level.INFO, "Trying to set " + Fly.FLY_5 + " but player has " + target.getFly());
+                    ConsulatAPI.getConsulatAPI().log(Level.INFO, "Trying to set " + Fly.FLY_25 + " but player has " + target.getFly());
                 }
                 break;
             case "infinite":
                 if(target.setFly(Fly.FLY_INFINITE)){
                     target.sendMessage(Text.FLY + "Suite à ton achat tu as maintenant accès au /fly infini !");
                 } else {
-                    ConsulatAPI.getConsulatAPI().log(Level.INFO, "Trying to set " + Fly.FLY_5 + " but player has " + target.getFly());
+                    ConsulatAPI.getConsulatAPI().log(Level.INFO, "Trying to set " + Fly.FLY_INFINITE + " but player has " + target.getFly());
                 }
                 break;
             case "perso":
