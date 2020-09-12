@@ -42,7 +42,9 @@ public class CEnchantedItem {
             Material.DIAMOND_HELMET,
             Material.DIAMOND_CHESTPLATE,
             Material.DIAMOND_LEGGINGS,
-            Material.DIAMOND_BOOTS
+            Material.DIAMOND_BOOTS,
+            Material.ELYTRA,
+            Material.TURTLE_HELMET
     );
     
     private static final String[] ROMAN = new String[]{"0", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"};
@@ -204,12 +206,14 @@ public class CEnchantedItem {
             case IRON_HELMET:
             case GOLDEN_HELMET:
             case DIAMOND_HELMET:
+            case TURTLE_HELMET:
                 return EquipmentSlot.HEAD;
             case LEATHER_CHESTPLATE:
             case CHAINMAIL_CHESTPLATE:
             case IRON_CHESTPLATE:
             case GOLDEN_CHESTPLATE:
             case DIAMOND_CHESTPLATE:
+            case ELYTRA:
                 return EquipmentSlot.CHEST;
             case LEATHER_LEGGINGS:
             case CHAINMAIL_LEGGINGS:

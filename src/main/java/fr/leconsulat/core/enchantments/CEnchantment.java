@@ -54,12 +54,12 @@ public class CEnchantment {
         DOLPHIN_FIN(PotionEffectType.DOLPHINS_GRACE, "Nageoire du dauphin", false, 1),
         INFRARED_VISION(PotionEffectType.NIGHT_VISION, "Vision infrarouge", false, 1),
         FIRE_ENDURANCE(PotionEffectType.FIRE_RESISTANCE, "Endurance au feu", false, 1),
-        INCREASED_HEALTH(PotionEffectType.HEALTH_BOOST, "Augmentation de vie", false, 1),
+        INCREASED_HEALTH(PotionEffectType.HEALTH_BOOST, "Augmentation de vie", false, 2),
         STEALTH(PotionEffectType.INVISIBILITY, "Furtivité", false, 1),
         MINER_HAND(PotionEffectType.FAST_DIGGING, "Main du mineur", false, 2),
-        FISHER_LUCK(PotionEffectType.LUCK, "Chance du pêcheur", false, 1),
+        FISHER_LUCK(PotionEffectType.LUCK, "Chance du pêcheur", false, 3),
         MOON_FALL(PotionEffectType.SLOW_FALLING, "Chute lunaire", false, 1),
-        CHEETAH_STRENGTH(PotionEffectType.SPEED, "Force du guépard", false, 2),
+        CHEETAH_STRENGTH(PotionEffectType.SPEED, "Force du guépard", false, 3),
         MOON_JUMP(PotionEffectType.JUMP, "Sauts lunaire", false, 3),
         EAT(PotionEffectType.SATURATION, "Mangeur", false, 2);
         
