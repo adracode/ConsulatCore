@@ -275,7 +275,7 @@ final public class Text {
         StringBuilder builder = new StringBuilder();
         int i = 0;
         for(Claim claim : claims){
-            builder.append("§6Claim §e").append(++i).append("§6: §eX:§c ").append(claim.getX() * 16).append(" §eY:§c ").append(claim.getZ() * 16).append('\n');
+            builder.append("§6Claim §e").append(++i).append("§6: §eX:§c ").append(claim.getX() * 16).append(" §eZ:§c ").append(claim.getZ() * 16).append('\n');
         }
         return PREFIX + builder.substring(0, builder.length() - 1);
     }
