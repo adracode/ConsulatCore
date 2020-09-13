@@ -185,6 +185,37 @@ public class PlayerShop implements Shop, Comparable<PlayerShop> {
     @Override
     public int compareTo(@NotNull PlayerShop o){
         int compareType = getItemType().compareTo(o.getItemType());
+        if(compareType == 0 && getItemType() == Material.ENCHANTED_BOOK){
+            CEnchantedItem current = CEnchantedItem.getItem(getItem());
+            CEnchantedItem other = CEnchantedItem.getItem(o.getItem());
+            if(current != null && other != null){
+                CEnchantment currentEnchant = current.getEnchants()[0];
+                CEnchantment otherEnchant = other.getEnchants()[0];
+                int compareEnchant = currentEnchant.getEnchantment().compareTo(otherEnchant.getEnchantment());
+                if(compareEnchant != 0){
+                    return compareEnchant;
+                }
+                int compareLevel = Integer.compare(currentEnchant.getLevel(), otherEnchant.getLevel());
+                if(compareLevel != 0){
+                    return compareLevel;
+                }
+            } else if(current != null){
+                return -1;
+            } else if(other != null){
+                return 1;
+            } else {
+                Map.Entry<Enchantment, Integer> enchantment = ((EnchantmentStorageMeta)getItem().getItemMeta()).getStoredEnchants().entrySet().iterator().next();
+                Map.Entry<Enchantment, Integer> otherEnchantment = ((EnchantmentStorageMeta)o.getItem().getItemMeta()).getStoredEnchants().entrySet().iterator().next();
+                int compareEnchant = enchantment.getKey().getKey().getKey().compareTo(otherEnchantment.getKey().getKey().getKey());
+                if(compareEnchant != 0){
+                    return compareEnchant;
+                }
+                int compareLevel = enchantment.getValue().compareTo(otherEnchantment.getValue());
+                if(compareLevel != 0){
+                    return compareLevel;
+                }
+            }
+        }
         return compareType == 0 ? Double.compare(price, o.price) : compareType;
     }
     
@@ -318,7 +349,8 @@ public class PlayerShop implements Shop, Comparable<PlayerShop> {
     @Override
     public String toString(){
         return "Shop{" +
-                "coords=" + getLocation() +
+                "x=" + getX() +
+                ", z=" + getZ() +
                 ", owner=" + owner +
                 ", ownerName='" + ownerName + '\'' +
                 ", forSale=" + forSale +

@@ -10,6 +10,8 @@ import fr.leconsulat.api.ranks.Rank;
 import fr.leconsulat.api.utils.FileUtils;
 import fr.leconsulat.core.ConsulatCore;
 import fr.leconsulat.core.Text;
+import fr.leconsulat.core.enchantments.CEnchantedItem;
+import fr.leconsulat.core.enchantments.CEnchantment;
 import fr.leconsulat.core.guis.shop.ShopGui;
 import fr.leconsulat.core.players.SPlayerManager;
 import fr.leconsulat.core.players.SurvivalPlayer;
@@ -56,6 +58,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -269,10 +272,21 @@ public class ShopManager implements Listener {
         for(ItemStack item : chest.getBlockInventory().getContents()){
             if(item != null){
                 if(sold == null){
-                    if(item.getType() == Material.ENCHANTED_BOOK && ((EnchantmentStorageMeta)item.getItemMeta()).getStoredEnchants().size() != 1){
-                        player.sendMessage(Text.ONLY_ONE_ENCHANT_SHOP);
-                        event.getBlock().breakNaturally();
-                        return;
+                    if(item.getType() == Material.ENCHANTED_BOOK){
+                        Map<Enchantment, Integer> enchants = ((EnchantmentStorageMeta)item.getItemMeta()).getStoredEnchants();
+                        boolean hasMoreThanOne = enchants.size() > 1;
+                        if(hasMoreThanOne){
+                            player.sendMessage(Text.ONLY_ONE_ENCHANT_SHOP);
+                            event.getBlock().breakNaturally();
+                            return;
+                        }
+                        CEnchantedItem cEnchantedItem = CEnchantedItem.getItem(item);
+                        if(cEnchantedItem != null && (cEnchantedItem.getEnchants().length > 1 ||
+                                enchants.size() > 0 && !item.hasItemFlag(ItemFlag.HIDE_ENCHANTS))){
+                            player.sendMessage(Text.ONLY_ONE_ENCHANT_SHOP);
+                            event.getBlock().breakNaturally();
+                            return;
+                        }
                     }
                     sold = item;
                 } else {
@@ -298,9 +312,18 @@ public class ShopManager implements Listener {
         event.setLine(0, "§8[§aConsulShop§8]");
         event.setLine(1, String.valueOf(price));
         if(sold.getType() == Material.ENCHANTED_BOOK){
-            Map.Entry<Enchantment, Integer> enchantment = ((EnchantmentStorageMeta)sold.getItemMeta()).getStoredEnchants().entrySet().iterator().next();
-            String name = enchantment.getKey().getKey().getKey();
-            event.setLine(2, name.substring(0, Math.min(10, name.length())) + " " + enchantment.getValue());
+            String showed;
+            CEnchantedItem cEnchantedItem = CEnchantedItem.getItem(sold);
+            if(cEnchantedItem != null){
+                CEnchantment enchantment = cEnchantedItem.getEnchants()[0];
+                String name = enchantment.getEnchantment().getDisplay();
+                showed = name.substring(0, Math.min(10, name.length())) + " " + enchantment.getLevel();
+            } else {
+                Map.Entry<Enchantment, Integer> enchantment = ((EnchantmentStorageMeta)sold.getItemMeta()).getStoredEnchants().entrySet().iterator().next();
+                String name = enchantment.getKey().getKey().getKey();
+                showed = name.substring(0, Math.min(10, name.length())) + " " + enchantment.getValue();
+            }
+            event.setLine(2, showed);
         } else {
             event.setLine(2, sold.getType().toString());
         }
