@@ -55,7 +55,7 @@ public class PayCommand extends ConsulatCommand {
             target.getPlayer().sendMessage(Text.YOU_RECEIVED_MONEY_FROM(moneyToGive, player.getName()));
             sender.sendMessage(Text.YOU_SEND_MONEY_TO(moneyToGive, target.getName()));
         } else {
-            SPlayerManager.getInstance().fetchOffline(args[1], survivalOffline -> {
+            SPlayerManager.getInstance().fetchOffline(args[0], survivalOffline -> {
                 //Le joueur existe forcément, donc erreur BDD
                 if(survivalOffline == null){
                     sender.sendMessage(Text.ERROR);
