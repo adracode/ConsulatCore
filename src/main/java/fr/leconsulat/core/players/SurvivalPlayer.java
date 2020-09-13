@@ -654,7 +654,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
     }
     
     public boolean setFly(Fly fly){
-        if(this.fly.compareTo(fly) >= 0){
+        if(this.fly != null && this.fly.compareTo(fly) >= 0){
             return false;
         }
         this.fly = new Fly(fly);
