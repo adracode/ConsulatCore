@@ -735,7 +735,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
             case FINANCEUR:
                 return 3;
             default:
-                return 4;
+                return 6;
         }
     }
     
