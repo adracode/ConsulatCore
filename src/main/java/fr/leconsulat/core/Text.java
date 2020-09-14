@@ -1,9 +1,9 @@
 package fr.leconsulat.core;
 
 import fr.leconsulat.api.commands.ConsulatCommand;
+import fr.leconsulat.api.moderation.MutedPlayer;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
-import fr.leconsulat.core.moderation.MutedPlayer;
 import fr.leconsulat.core.players.SurvivalOffline;
 import fr.leconsulat.core.zones.cities.City;
 import fr.leconsulat.core.zones.claims.Claim;
@@ -105,10 +105,6 @@ final public class Text {
     public static final String NOW_IN_STAFF_MODE = MODERATION_PREFIX + "§aTu es désormais en mode modérateur.";
     public static final String NO_MORE_IN_SPY = PREFIX + "Tu ne vois plus les messages.";
     public static final String NOW_IN_SPY = PREFIX + "Tu vois désormais les messages.";
-    public static final String MAYBE_UNBAN_PLAYER = Text.MODERATION_PREFIX + "Si le joueur était banni, il a été dé-banni.";
-    public static final String MAYBE_UNMUTE_PLAYER = PREFIX + "Si le joueur était mute, il a été dé-mute." ;
-    public static final String UNMUTE_PLAYER = PREFIX + "§aJoueur démute." ;
-    public static final String PLAYER_NOT_MUTE = PREFIX + "§cCe joueur n'est pas mute.";
     public static final String NEED_WAIT = PREFIX + "§cTu dois attendre pour refaire cette commande.";
     public static final String CANT_MP = PREFIX + "§cTu ne peux pas MP ce joueur.";
     public static final String NOT_YET_TELEPORTED = PREFIX + "§cTu n'as pas encore été téléporté.";
@@ -182,8 +178,6 @@ final public class Text {
     public static final String INVALID_RANK = PREFIX + "§cLe grade entré n'est pas valide.";
     public static final String CITY_HOME_CHANGED = PREFIX + "§cLe home de la ville a été changé.";
     public static final String CITY_DISBANDED = PREFIX + "§aTu as détruit ta ville :(";
-    public static final String NO_ANTECEDENT = PREFIX + "§cCe joueur n'a pas d'antécédents.";
-    public static final String ALREADY_MUTED = PREFIX + "§cCe joueur est déjà mute.";
     public static final String NO_ITEM_TO_SELL = PREFIX + "§cTu n'as pas d'item à vendre.";
     public static final String SHOP_NOT_FOUND = PREFIX + "§cCe shop n'a pas été trouvé.";
     public static final String BUY_HOME = PREFIX + "Tu as acheté un home supplémentaire.";
@@ -395,27 +389,6 @@ final public class Text {
     public static String SHOP_OWNED_BY(String player){return PREFIX + "§cCe shop appartient à §4" + player + "§c.";}
 
     public static String TELEPORTATION(double money){return "§eTéléportation réussie pour §c" + ConsulatCore.formatMoney(money) + ".";}
-    public static TextComponent SANCTION_BANNED(String targetName, String sanctionName, String duration, String modName, int recidive){
-        TextComponent textComponent = new TextComponent(Text.MODERATION_PREFIX + "§c" + targetName + "§4 a été banni.");
-        textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new ComponentBuilder("§7Motif: §8" + sanctionName +
-                        "§7\nPendant: §8" + duration +
-                        "§7\nPar: §8" + modName +
-                        "§7\nRécidive: §8" + recidive
-                ).create()));
-        return textComponent;
-    }
-    public static TextComponent SANCTION_MUTED(String targetName, String sanctionName, String duration, String modName, int recidive){
-        TextComponent textComponent = new TextComponent(Text.MODERATION_PREFIX + "§e" + targetName + "§6 a été mute.");
-        textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                new ComponentBuilder("§7Motif: §8" + sanctionName +
-                        "§7\nPendant: §8" + duration +
-                        "§7\nPar: §8" + modName +
-                        "§7\nRécidive: §8" + recidive
-                ).create()));
-        return textComponent;
-    }
-    public static String PLAYER_BANNED(String player){return ANNOUNCE_PREFIX + "§c" + player + "§4 a été banni.";}
     public static String SHOP_NOTIFICATION(double money){return PREFIX + "§aTu as reçu " + ConsulatCore.formatMoney(money) + " grâce à un de tes shops.";}
     public static String CLAIM_DESCRIPTION(String description){return PREFIX + "§7" + description;}
     private static <E> String toString(Collection<E> collection, Function<E, String> toString){

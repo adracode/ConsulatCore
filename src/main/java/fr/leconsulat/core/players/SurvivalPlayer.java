@@ -1,7 +1,7 @@
 package fr.leconsulat.core.players;
 
 import fr.leconsulat.api.channel.Channel;
-import fr.leconsulat.api.channel.Speakable;
+import fr.leconsulat.api.channel.ChannelManager;
 import fr.leconsulat.api.commands.CommandManager;
 import fr.leconsulat.api.database.SaveManager;
 import fr.leconsulat.api.nbt.CompoundTag;
@@ -15,9 +15,6 @@ import fr.leconsulat.core.duel.Arena;
 import fr.leconsulat.core.enchantments.CEnchantedItem;
 import fr.leconsulat.core.enchantments.EnchantmentManager;
 import fr.leconsulat.core.fly.FlyManager;
-import fr.leconsulat.core.moderation.BanReason;
-import fr.leconsulat.core.moderation.MuteReason;
-import fr.leconsulat.core.moderation.MutedPlayer;
 import fr.leconsulat.core.shop.player.PlayerShop;
 import fr.leconsulat.core.utils.CustomEnum;
 import fr.leconsulat.core.utils.ItemUtils;
@@ -27,7 +24,6 @@ import fr.leconsulat.core.zones.claims.Claim;
 import fr.leconsulat.core.zones.claims.ClaimManager;
 import fr.leconsulat.core.zones.claims.ClaimPermission;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -59,20 +55,15 @@ public class SurvivalPlayer extends ConsulatPlayer {
     private boolean inModeration = false;
     private ItemStack[] stockedInventory = null;
     private boolean spying;
-    private boolean isMuted;
-    private long muteExpireMillis;
-    private String muteReason;
     private UUID lastPrivate;
     private CustomEnum persoState = CustomEnum.START;
     private int limitShop;
-    private Fly fly = null;
+    private @Nullable Fly fly = null;
     private Set<PlayerShop> shops = new HashSet<>();
     private Zone zone;
     private City city;
     private CEnchantedItem[] enchantedArmor;
     private Set<UUID> ignoredPlayers = new HashSet<>(1);
-    private HashMap<BanReason, Integer> banHistory = new HashMap<>();
-    private HashMap<MuteReason, Integer> muteHistory = new HashMap<>();
     
     public SurvivalPlayer(UUID uuid, String name){
         super(uuid, name);
@@ -159,9 +150,6 @@ public class SurvivalPlayer extends ConsulatPlayer {
                 ", inModeration=" + inModeration +
                 ", stockedInventory=" + Arrays.toString(stockedInventory) +
                 ", spying=" + spying +
-                ", isMuted=" + isMuted +
-                ", muteExpireMillis=" + muteExpireMillis +
-                ", muteReason='" + muteReason + '\'' +
                 ", lastPrivate=" + lastPrivate +
                 ", persoState=" + persoState +
                 ", limitShop=" + limitShop +
@@ -169,8 +157,6 @@ public class SurvivalPlayer extends ConsulatPlayer {
                 ", shops=" + shops +
                 ", zone=" + zone +
                 ", city=" + city +
-                ", banHistory=" + banHistory +
-                ", muteHistory=" + muteHistory +
                 '}';
     }
     
@@ -390,7 +376,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
             city.getChannel().addPlayer(this);
         }
         if(hasPermission(CommandManager.getInstance().getCommand("staffchat").getPermission())){
-            ConsulatCore.getInstance().getStaffChannel().addPlayer(this);
+            ChannelManager.getInstance().getChannel("staff").addPlayer(this);
         }
     }
     
@@ -399,77 +385,12 @@ public class SurvivalPlayer extends ConsulatPlayer {
             city.getChannel().removePlayer(this);
         }
         if(isSpying()){
-            ConsulatCore.getInstance().getSpy().removePlayer(this);
+            ChannelManager.getInstance().getChannel("spy").removePlayer(this);
         }
-        Channel staffChannel = ConsulatCore.getInstance().getStaffChannel();
+        Channel staffChannel = ChannelManager.getInstance().getChannel("staff");
         if(staffChannel.isMember(this)){
             staffChannel.removePlayer(this);
         }
-    }
-    
-    public String chat(String message){
-        boolean cancel = false;
-        if(getCurrentChannel() == null){
-            if(!ConsulatCore.getInstance().isChatActivated() && !hasPower(Rank.RESPONSABLE)){
-                sendMessage("§cChat coupé.");
-                cancel = true;
-            }
-        }
-        if(getPersoState() == CustomEnum.PREFIX){
-            if(message.equalsIgnoreCase("cancel")){
-                Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
-                    try {
-                        resetCustomRank();
-                    } catch(SQLException e){
-                        e.printStackTrace();
-                    }
-                });
-                setPersoState(CustomEnum.START);
-                sendMessage("§aChangement de grade annulé.");
-                return null;
-            }
-            if(message.length() > 10){
-                sendMessage("§cTon grade doit faire 10 caractères maximum ! Tape §ocancel §r§csi tu veux annuler.");
-                return null;
-            }
-            if(ConsulatCore.getInstance().isCustomRankForbidden(message)){
-                sendMessage("§cTu ne peux pas appeler ton grade comme cela ! Tape §ocancel §r§csi tu veux annuler.");
-                return null;
-            }
-            if(!message.matches("^[a-zA-Z]+$")){
-                sendMessage("§cTu dois utiliser uniquement des lettres dans ton grade.");
-                return null;
-            }
-            setPrefix(message);
-            setPersoState(CustomEnum.NAME_COLOR);
-            sendMessage("§6Voici ton grade: " + getCustomPrefix());
-            sendMessage("§7Maintenant, choisis la couleur de ton pseudo:");
-            sendMessage(ConsulatCore.getInstance().getTextPerso());
-            return null;
-        }
-        if(isMuted() && System.currentTimeMillis() < getMuteExpireMillis()){
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(getMuteExpireMillis());
-            String resultDate = ConsulatCore.getInstance().DATE_FORMAT.format(calendar.getTime());
-            String reason = getMuteReason();
-            sendMessage("§cTu es actuellement mute.\n§4Raison: §c" + reason + "\n§4Jusqu'au: §c" + resultDate);
-            return null;
-        }
-        if(cancel){
-            return null;
-        }
-        Channel channel = getCurrentChannel();
-        if(channel == null){
-            if(hasPower(Rank.MODO)){
-                return ChatColor.translateAlternateColorCodes('&', message);
-            }
-        } else {
-            if(channel instanceof Speakable){
-                channel.sendMessage(((Speakable)channel).speak(this, message));
-            }
-            return null;
-        }
-        return message;
     }
     
     public boolean ignorePlayer(UUID uuid){
@@ -486,22 +407,6 @@ public class SurvivalPlayer extends ConsulatPlayer {
     
     public @Nullable Claim getClaim(){
         return ClaimManager.getInstance().getClaim(this.getPlayer().getChunk());
-    }
-    
-    public long getMuteExpireMillis(){
-        return muteExpireMillis;
-    }
-    
-    public void setMuteExpireMillis(long muteExpireMillis){
-        this.muteExpireMillis = muteExpireMillis;
-    }
-    
-    public String getMuteReason(){
-        return muteReason;
-    }
-    
-    public void setMuteReason(String reason){
-        this.muteReason = reason;
     }
     
     public Set<String> getNameHomes(){
@@ -560,29 +465,10 @@ public class SurvivalPlayer extends ConsulatPlayer {
     public void setSpying(boolean spying){
         this.spying = spying;
         if(spying){
-            ConsulatCore.getInstance().getSpy().addPlayer(this);
+            ChannelManager.getInstance().getChannel("spy").addPlayer(this);
         } else {
-            ConsulatCore.getInstance().getSpy().removePlayer(this);
+            ChannelManager.getInstance().getChannel("spy").removePlayer(this);
         }
-    }
-    
-    public boolean isMuted(){
-        return isMuted;
-    }
-    
-    public void setMuted(boolean muted){
-        isMuted = muted;
-    }
-    
-    public MutedPlayer getMute(){
-        if(System.currentTimeMillis() < muteExpireMillis){
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis(muteExpireMillis);
-            String resultDate = ConsulatCore.getInstance().DATE_FORMAT.format(calendar.getTime());
-            String reason = muteReason;
-            return new MutedPlayer(reason, resultDate);
-        }
-        return null;
     }
     
     public UUID getLastPrivate(){
@@ -591,14 +477,6 @@ public class SurvivalPlayer extends ConsulatPlayer {
     
     public void setLastPrivate(UUID lastPrivate){
         this.lastPrivate = lastPrivate;
-    }
-    
-    public CustomEnum getPersoState(){
-        return persoState;
-    }
-    
-    public void setPersoState(CustomEnum persoState){
-        this.persoState = persoState;
     }
     
     public boolean isFighting(){
@@ -654,20 +532,12 @@ public class SurvivalPlayer extends ConsulatPlayer {
     }
     
     public boolean setFly(Fly fly){
-        if(this.fly.compareTo(fly) >= 0){
+        if(this.fly != null && this.fly.compareTo(fly) >= 0){
             return false;
         }
         this.fly = new Fly(fly);
         addCommandPermission(CommandManager.getInstance().getCommand("fly").getPermission());
         return true;
-    }
-    
-    public HashMap<BanReason, Integer> getBanHistory(){
-        return banHistory;
-    }
-    
-    public HashMap<MuteReason, Integer> getMuteHistory(){
-        return muteHistory;
     }
     
     public Zone getZone(){

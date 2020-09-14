@@ -1,11 +1,12 @@
 package fr.leconsulat.core.zones.cities;
 
 import fr.leconsulat.api.channel.Channel;
+import fr.leconsulat.api.channel.ChannelManager;
 import fr.leconsulat.api.channel.Speakable;
 import fr.leconsulat.api.player.ConsulatPlayer;
-import fr.leconsulat.core.ConsulatCore;
 import fr.leconsulat.core.Text;
 import fr.leconsulat.core.players.SurvivalPlayer;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,18 +22,18 @@ public class CityChannel extends Channel implements Speakable {
     }
     
     @Override
-    public synchronized void sendMessage(String message, UUID... exclude){
+    public synchronized void sendMessage(@NotNull String message, @NotNull UUID... exclude){
         super.sendMessage(message, exclude);
-        Channel spy = ConsulatCore.getInstance().getSpy();
+        Channel spy = ChannelManager.getInstance().getChannel("spy");
         for(ConsulatPlayer member : members){
             if(spy.isMember(member)){
                 this.exclude.add(member.getUUID());
             }
         }
         if(this.exclude.isEmpty()){
-            ConsulatCore.getInstance().getSpy().sendMessage(message);
+            spy.sendMessage(message);
         } else {
-            ConsulatCore.getInstance().getSpy().sendMessage(message, this.exclude.toArray(converter));
+            spy.sendMessage(message, this.exclude.toArray(converter));
         }
         this.exclude.clear();
     }

@@ -17,9 +17,6 @@ import fr.leconsulat.core.ConsulatCore;
 import fr.leconsulat.core.Text;
 import fr.leconsulat.core.events.SurvivalPlayerLoadedEvent;
 import fr.leconsulat.core.listeners.world.ClaimCancelListener;
-import fr.leconsulat.core.moderation.BanReason;
-import fr.leconsulat.core.moderation.MuteReason;
-import fr.leconsulat.core.moderation.SanctionType;
 import fr.leconsulat.core.shop.ShopManager;
 import fr.leconsulat.core.shop.player.PlayerShop;
 import fr.leconsulat.core.zones.ZoneManager;
@@ -165,15 +162,12 @@ public class SPlayerManager implements Listener {
         if(!player.getPlayer().hasPlayedBefore()){
             player.getPlayer().performCommand("consulat");
         }
-        ConsulatCore core = ConsulatCore.getInstance();
         if(ADebugCommand.UUID_PERMISSION.contains(player.getUUID())){
             player.addPermission(CommandManager.getInstance().getCommand("cdebug").getPermission());
         }
         Bukkit.getScheduler().runTaskAsynchronously(ConsulatCore.getInstance(), () -> {
             try {
                 fetchPlayer(player);
-                setAntecedents(player);
-                core.getModerationDatabase().setMute(player.getPlayer());
                 Bukkit.getScheduler().scheduleSyncDelayedTask(ConsulatCore.getInstance(), () ->
                         Bukkit.getServer().getPluginManager().callEvent(new SurvivalPlayerLoadedEvent(player)));
                 saveConnection(player);
@@ -527,38 +521,6 @@ public class SPlayerManager implements Listener {
         resultSet.close();
         preparedStatement.close();
         return fly.getFlyTime() == 0 ? null : fly;
-    }
-    
-    private void setAntecedents(SurvivalPlayer player) throws SQLException{
-        PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement("SELECT sanction, reason FROM antecedents WHERE playeruuid = ? AND cancelled = 0");
-        preparedStatement.setString(1, player.getUUID().toString());
-        ResultSet resultSet = preparedStatement.executeQuery();
-        
-        while(resultSet.next()){
-            SanctionType sanctionType = SanctionType.valueOf(resultSet.getString("sanction"));
-            String reason = resultSet.getString("reason");
-            if(sanctionType == SanctionType.MUTE){
-                MuteReason muteReason = Arrays.stream(MuteReason.values()).filter(mute -> mute.getSanctionName().equals(reason)).findFirst().orElse(null);
-                if(muteReason != null){
-                    if(player.getMuteHistory().containsKey(muteReason)){
-                        int number = player.getMuteHistory().get(muteReason);
-                        player.getMuteHistory().put(muteReason, ++number);
-                    } else {
-                        player.getMuteHistory().put(muteReason, 1);
-                    }
-                }
-            } else {
-                BanReason banReason = Arrays.stream(BanReason.values()).filter(ban -> ban.getSanctionName().equals(reason)).findFirst().orElse(null);
-                if(banReason != null){
-                    if(player.getBanHistory().containsKey(banReason)){
-                        int number = player.getBanHistory().get(banReason);
-                        player.getBanHistory().put(banReason, ++number);
-                    } else {
-                        player.getBanHistory().put(banReason, 1);
-                    }
-                }
-            }
-        }
     }
     
     private void saveOnJoin(SurvivalPlayer player){
