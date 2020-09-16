@@ -11,6 +11,7 @@ import fr.leconsulat.core.ConsulatCore;
 import org.bukkit.plugin.Plugin;
 import org.redisson.api.RTopic;
 
+import java.util.Base64;
 import java.util.UUID;
 
 public class SafariServer extends Server {
@@ -21,11 +22,12 @@ public class SafariServer extends Server {
     public SafariServer(){
         super(ConsulatAPI.getConsulatAPI().isDevelopment() ? "testsafari" : "safari", true);
         RedisManager.getInstance().register(ConsulatAPI.getConsulatAPI().isDevelopment() ? "LoadPlayerDataTestsurvie" : "LoadPlayerDataSurvie",
-                byte[].class, (channel, data) -> CPlayerManager.getInstance().loadPlayerData(data));
+                String.class, (channel, data) -> CPlayerManager.getInstance().loadPlayerData(Base64.getDecoder().decode(data)));
         RedisManager.getInstance().register(ConsulatAPI.getConsulatAPI().isDevelopment() ? "SavePlayerDataTestsurvie" : "SavePlayerDataSurvie",
-                byte[].class, (channel, data) -> CPlayerManager.getInstance().savePlayerData(data));
+                String.class, (channel, data) -> CPlayerManager.getInstance().savePlayerData(Base64.getDecoder().decode(data)));
         RedisManager.getInstance().register("AskPlayerData" + (ConsulatAPI.getConsulatAPI().isDevelopment() ? "Testsurvie" : "Survie"),
-                String.class, (channel, uuid) -> loadOnSafari.publishAsync(new OfflinePlayerOutputStream(UUID.fromString(uuid)).writeLevel().writeInventory().send()));
+                String.class, (channel, uuid) -> loadOnSafari.publishAsync(Base64.getEncoder().encodeToString(
+                        new OfflinePlayerOutputStream(UUID.fromString(uuid)).writeLevel().writeInventory().send())));
     }
     
     @Override
@@ -37,7 +39,7 @@ public class SafariServer extends Server {
     public void onPlayerConnect(ConsulatPlayer player){
         player.setDisconnectHandled(true);
         player.setInventoryBlocked(true);
-        loadOnSafari.publishAsync(new PlayerOutputStream(player.getPlayer()).writeLevel().writeInventory().send());
+        loadOnSafari.publishAsync(Base64.getEncoder().encodeToString(new PlayerOutputStream(player.getPlayer()).writeLevel().writeInventory().send()));
     }
     
     @Override

@@ -1,6 +1,5 @@
 package fr.leconsulat.core.players;
 
-import fr.leconsulat.api.channel.Channel;
 import fr.leconsulat.api.channel.ChannelManager;
 import fr.leconsulat.api.commands.CommandManager;
 import fr.leconsulat.api.database.SaveManager;
@@ -375,9 +374,6 @@ public class SurvivalPlayer extends ConsulatPlayer {
         if(belongsToCity()){
             city.getChannel().addPlayer(this);
         }
-        if(hasPermission(CommandManager.getInstance().getCommand("staffchat").getPermission())){
-            ChannelManager.getInstance().getChannel("staff").addPlayer(this);
-        }
     }
     
     public void removeFromChannels(){
@@ -386,10 +382,6 @@ public class SurvivalPlayer extends ConsulatPlayer {
         }
         if(isSpying()){
             ChannelManager.getInstance().getChannel("spy").removePlayer(this);
-        }
-        Channel staffChannel = ChannelManager.getInstance().getChannel("staff");
-        if(staffChannel.isMember(this)){
-            staffChannel.removePlayer(this);
         }
     }
     

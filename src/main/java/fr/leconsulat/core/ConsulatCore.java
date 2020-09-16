@@ -71,7 +71,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     
     @Override
     public void onDisable(){
-        RedisManager.getInstance().getRedis().getTopic(ConsulatAPI.getConsulatAPI().isDevelopment() ? "PlayerTestsurvie" : "PlayerSurvie").publish(-1);
+        RedisManager.getInstance().getRedis().getTopic(ConsulatAPI.getConsulatAPI().isDevelopment() ? "PlayerTestsurvie" : "PlayerSurvie").publishAsync(-1);
         save();
     }
     
@@ -130,6 +130,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         hub.setSlot(Integer.MAX_VALUE);
         playerBaltop = new PlayerBaltop();
         cityBaltop = new CityBaltop();
+        ConsulatAPI.getConsulatAPI().setSyncChat(true);
         new SpyChannel();
         Bukkit.getScheduler().runTaskTimer(this, new AFKRunnable(), 0L, 5 * 60 * 20);
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, new MonitoringRunnable(this), 0L, 10 * 60 * 20);
@@ -143,7 +144,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         }
         registerCommands();
         ConsulatAPI.getConsulatAPI().log(Level.INFO, "ConsulatCore loaded in " + (System.currentTimeMillis() - startLoading) + " ms.");
-        RedisManager.getInstance().getRedis().getTopic(ConsulatAPI.getConsulatAPI().isDevelopment() ? "PlayerTestsurvie" : "PlayerSurvie").publish(0);
+        RedisManager.getInstance().getRedis().getTopic(ConsulatAPI.getConsulatAPI().isDevelopment() ? "PlayerTestsurvie" : "PlayerSurvie").publishAsync(0);
     }
     
     private void save(){
@@ -245,7 +246,6 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     
     private void registerEvents(){
         Bukkit.getPluginManager().registerEvents(this, this);
-        Bukkit.getPluginManager().registerEvents(new ChatListeners(), this);
         Bukkit.getPluginManager().registerEvents(new InventoryListeners(), this);
         Bukkit.getPluginManager().registerEvents(new InteractListener(), this);
         Bukkit.getPluginManager().registerEvents(new DamageListener(), this);
