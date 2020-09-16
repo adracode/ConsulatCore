@@ -309,6 +309,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         new UnclaimCommand().register();
         new AntecedentsCommand().register();
         new CityCommand().register();
+        new TouristeCommand().register();
         if(ConsulatAPI.getConsulatAPI().isDevelopment()) {
             new TestCommand().register();
         }
