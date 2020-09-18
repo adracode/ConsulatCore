@@ -22,6 +22,7 @@ import fr.leconsulat.core.zones.claims.ClaimManager;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
@@ -48,8 +49,10 @@ public class CDebugCommand extends ConsulatCommand {
                                         then(Arguments.playerList("player"))).
                                 then(LiteralArgumentBuilder.literal("kick").
                                         then(Arguments.playerList("player"))),
-                        LiteralArgumentBuilder.literal("fly").then(LiteralArgumentBuilder.literal("reset")),
-                        LiteralArgumentBuilder.literal("shop"));
+                        LiteralArgumentBuilder.literal("fly").
+                                then(LiteralArgumentBuilder.literal("reset")),
+                        LiteralArgumentBuilder.literal("shop").
+                                then(LiteralArgumentBuilder.literal("setplayer")));
     }
     
     @Override
@@ -131,10 +134,20 @@ public class CDebugCommand extends ConsulatCommand {
                     if(shop == null){
                         return;
                     }
-                    sender.sendMessage("Shop x = " + shop.getX() + " y = " + shop.getY() + " z = " + shop.getZ());
-                    sender.sendMessage("Restant: " + shop.getAmount());
-                    sender.sendMessage("Item: " + shop.getItem());
-                    sender.sendMessage("ItemFrame: " + shop.getItemFrame().getLocation() + ", Facing: " + shop.getItemFrame().getFacing());
+                    if(args.length > 2){
+                        switch(args[1]){
+                            case "setplayer":
+                                Sign sign = shop.getSign();
+                                sign.setLine(3, args[2]);
+                                sign.update();
+                                break;
+                        }
+                    } else {
+                        sender.sendMessage("Shop x = " + shop.getX() + " y = " + shop.getY() + " z = " + shop.getZ());
+                        sender.sendMessage("Restant: " + shop.getAmount());
+                        sender.sendMessage("Item: " + shop.getItem());
+                        sender.sendMessage("ItemFrame: " + shop.getItemFrame().getLocation() + ", Facing: " + shop.getItemFrame().getFacing());
+                    }
                     break;
                 case "fly":
                     if(args.length < 2){
