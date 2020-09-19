@@ -168,12 +168,6 @@ public class Zone implements Saveable {
     
     @Override
     public String toString(){
-        return getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(this)) +
-                '{' +
-                "uuid=" + uuid +
-                ", owner=" + owner +
-                ", claims=" + claims +
-                ", name='" + name + '\'' +
-                '}';
+        return getDisplayName();
     }
 }
