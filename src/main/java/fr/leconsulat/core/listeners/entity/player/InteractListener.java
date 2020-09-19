@@ -43,6 +43,7 @@ public class InteractListener implements Listener {
         }
         ItemStack item = event.getItem();
         ItemMeta itemMeta = item.getItemMeta();
+        ConsulatCore core = ConsulatCore.getInstance();
         if(player.isInModeration()){
             if(itemMeta.getDisplayName().contains("Se téléporter aléatoirement")){
                 List<Player> online = (List<Player>)Bukkit.getOnlinePlayers();
@@ -59,9 +60,7 @@ public class InteractListener implements Listener {
                 player.getPlayer().teleportAsync(resultPlayer.getLocation());
                 player.sendMessage(Text.YOU_TELEPORTED_TO(resultPlayer.getName()));
                 event.setCancelled(true);
-            }
-            ConsulatCore core = ConsulatCore.getInstance();
-            if(itemMeta.getDisplayName().contains("Changer son statut d'invisibilité")){
+            } else if(itemMeta.getDisplayName().contains("Changer son statut d'invisibilité")){
                 if(player.isVanished()){
                     Bukkit.getOnlinePlayers().forEach(onlinePlayer -> onlinePlayer.showPlayer(core, player.getPlayer()));
                     player.setVanished(false);
@@ -83,6 +82,8 @@ public class InteractListener implements Listener {
                     player.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 1, false, false));
                     player.sendMessage(Text.NOW_INVISIBLE);
                 }
+            } else if(itemMeta.getDisplayName().equals("§eJoueurs < 16")){
+                MovementChecker.getInstance().getGui().open(player);
             }
         }
     }

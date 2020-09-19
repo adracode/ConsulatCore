@@ -67,32 +67,34 @@ public class ModerateCommand extends ConsulatCommand {
             // Tp aléatoire, vanish/devanish, see inv du joueur sur lequel on clique
             ItemStack randomTeleport = new ItemStack(Material.ENDER_EYE);
             ItemMeta randomMeta = randomTeleport.getItemMeta();
-            assert randomMeta != null;
             randomMeta.setDisplayName("§6Se téléporter aléatoirement");
             randomTeleport.setItemMeta(randomMeta);
             
             ItemStack vanish = new ItemStack(Material.BLAZE_POWDER);
             ItemMeta vanishMeta = vanish.getItemMeta();
-            assert vanishMeta != null;
             vanishMeta.setDisplayName("§cChanger son statut d'invisibilité");
             vanish.setItemMeta(vanishMeta);
             
             ItemStack invsee = new ItemStack(Material.PAPER);
             ItemMeta invseeMeta = invsee.getItemMeta();
-            assert invseeMeta != null;
             invseeMeta.setDisplayName("§aVoir l'inventaire");
             invsee.setItemMeta(invseeMeta);
             
             ItemStack freeze = new ItemStack(Material.PACKED_ICE);
             ItemMeta freezeMeta = freeze.getItemMeta();
-            assert freezeMeta != null;
-            invseeMeta.setDisplayName("§bFreeze");
-            freeze.setItemMeta(invseeMeta);
+            freezeMeta.setDisplayName("§bFreeze");
+            freeze.setItemMeta(freezeMeta);
+            
+            ItemStack seeBelow16 = new ItemStack(Material.DIAMOND_ORE);
+            ItemMeta seeBelow16Meta = seeBelow16.getItemMeta();
+            seeBelow16Meta.setDisplayName("§eJoueurs < 16");
+            seeBelow16.setItemMeta(seeBelow16Meta);
 
             bukkitPlayer.getInventory().setItem(2, freeze);
             bukkitPlayer.getInventory().setItem(3, randomTeleport);
             bukkitPlayer.getInventory().setItem(4, vanish);
             bukkitPlayer.getInventory().setItem(5, invsee);
+            bukkitPlayer.getInventory().setItem(6, seeBelow16);
 
             if(player.isFlying()){
                 player.disableFly();
