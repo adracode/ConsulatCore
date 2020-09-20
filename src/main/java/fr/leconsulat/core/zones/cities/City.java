@@ -141,9 +141,19 @@ public class City extends Zone {
     @Override
     public void loadNBT(CompoundTag city){
         super.loadNBT(city);
-        List<StringTag> ranks = city.getList("Ranks", NBTType.STRING);
-        for(int i = 0; i < ranks.size(); i++){
-            this.ranks.get(i).setRankName(ranks.get(i).getValue());
+        try {
+            for(CompoundTag rankTag : city.<CompoundTag>getList("Ranks", NBTType.COMPOUND)){
+                CityRank rank = ranks.get(rankTag.getInt("Id"));
+                rank.setRankName(rankTag.getString("Name"));
+                for(StringTag permission : rankTag.<StringTag>getList("DefaultPermissions", NBTType.STRING)){
+                    rank.addPermission(CityPermission.byPermission(permission.getValue()));
+                }
+            }
+        } catch(IllegalArgumentException e){
+            List<StringTag> oldRanks = city.getList("Ranks", NBTType.STRING);
+            for(int i = 0; i < oldRanks.size(); i++){
+                this.ranks.get(i).setRankName(oldRanks.get(i).getValue());
+            }
         }
         List<StringTag> publicPermissions = city.getList("PublicPermissions", NBTType.STRING);
         for(StringTag publicPermission : publicPermissions){
@@ -197,9 +207,18 @@ public class City extends Zone {
             members.addTag(memberData);
         }
         city.put("Members", members);
-        ListTag<StringTag> ranks = new ListTag<>(NBTType.STRING);
-        for(CityRank rank : this.ranks){
-            ranks.addTag(new StringTag(rank.getRankName()));
+        ListTag<CompoundTag> ranks = new ListTag<>(NBTType.COMPOUND);
+        for(int i = 0; i < this.ranks.size(); i++){
+            CityRank rank = this.ranks.get(i);
+            CompoundTag rankTag = new CompoundTag();
+            rankTag.putInt("Id", i);
+            rankTag.putString("Name", rank.getRankName());
+            ListTag<StringTag> defaults = new ListTag<>();
+            for(CityPermission permission : rank.getDefaultPermissions()){
+                defaults.addTag(new StringTag(permission.getPermission()));
+            }
+            rankTag.put("DefaultPermissions", defaults);
+            ranks.addTag(rankTag);
         }
         city.put("Ranks", ranks);
         ListTag<StringTag> publicPermissions = new ListTag<>(NBTType.STRING);
