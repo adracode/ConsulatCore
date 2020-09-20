@@ -236,6 +236,10 @@ public class Claim extends CChunk {
         return protectedContainers.get(coords);
     }
     
+    public void removeProtectedContainers(UUID uuid){
+        protectedContainers.long2ObjectEntrySet().removeIf(uuidEntry -> uuidEntry.getValue().equals(uuid));
+    }
+    
     public boolean hasAccess(UUID uuid){
         return isOwner(uuid) || permissions.containsKey(uuid);
     }
