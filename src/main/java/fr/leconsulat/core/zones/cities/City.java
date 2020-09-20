@@ -104,6 +104,9 @@ public class City extends Zone {
         if(iCityInfo != null){
             ((CityInfo)iCityInfo).removePlayer(uuid);
         }
+        for(Claim claim : getClaims()){
+            claim.removeProtectedContainers(uuid);
+        }
         return true;
     }
     
