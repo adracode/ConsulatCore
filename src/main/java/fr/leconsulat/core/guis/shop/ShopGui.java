@@ -124,6 +124,19 @@ public class ShopGui extends DataPagedGui<ShopItemType> {
         }
     }
     
+    public void updateShop(PlayerShop shop){
+        for(GuiItem item : this){
+            if(item != null && shop.equals(item.getAttachedObject())){
+                item.setDescription(GuiItem.getDescription(shop.getItem(), "", "§eVendu par: §c" + shop.getOwnerName(),
+                        "§ePrix unitaire: §c" + ConsulatCore.formatMoney(shop.getPrice()),
+                        "§eCoordonnées: X: §c" + shop.getX() + "§e Y: §c" + shop.getY() + "§e Z: §c" + shop.getZ(),
+                        "§eTéléportation pour: §c" + ConsulatCore.formatMoney(10) + "."));
+                update(item.getSlot());
+                return;
+            }
+        }
+    }
+    
     public static class Container extends GuiContainer<ShopItemType> {
         
         private static Container instance;

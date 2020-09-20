@@ -9,6 +9,8 @@ import fr.leconsulat.api.database.tasks.SaveTask;
 import fr.leconsulat.api.events.ConsulatPlayerLeaveEvent;
 import fr.leconsulat.api.events.ConsulatPlayerLoadedEvent;
 import fr.leconsulat.api.events.PlayerChangeRankEvent;
+import fr.leconsulat.api.gui.GuiContainer;
+import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
@@ -16,18 +18,21 @@ import fr.leconsulat.api.redis.RedisManager;
 import fr.leconsulat.core.ConsulatCore;
 import fr.leconsulat.core.Text;
 import fr.leconsulat.core.events.SurvivalPlayerLoadedEvent;
+import fr.leconsulat.core.guis.shop.ShopGui;
 import fr.leconsulat.core.listeners.world.ClaimCancelListener;
 import fr.leconsulat.core.moderation.BanReason;
 import fr.leconsulat.core.moderation.MuteReason;
 import fr.leconsulat.core.moderation.SanctionType;
 import fr.leconsulat.core.shop.ShopManager;
 import fr.leconsulat.core.shop.player.PlayerShop;
+import fr.leconsulat.core.shop.player.ShopItemType;
 import fr.leconsulat.core.zones.ZoneManager;
 import fr.leconsulat.core.zones.cities.City;
 import fr.leconsulat.core.zones.claims.Claim;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -250,6 +255,27 @@ public class SPlayerManager implements Listener {
         Map<String, Location> homes = getHomes(player.getName(), true);
         Fly fly = getFly(player.getUUID());
         List<PlayerShop> shops = ShopManager.getInstance().getPlayerShops(player.getUUID());
+        Bukkit.getScheduler().runTask(ConsulatCore.getInstance(), () -> {
+            for(PlayerShop shop : shops){
+                Sign shopSign = shop.getSign();
+                if(!shopSign.getLine(3).equals(player.getName())){
+                    shopSign.setLine(3, player.getName());
+                    shopSign.update();
+                    GuiContainer<Object> container = GuiManager.getInstance().getContainer("shop");
+                    ShopGui shopGui = ((ShopGui)container.getGui(false, ShopItemType.ALL));
+                    if(shopGui != null){
+                        shopGui.updateShop(shop);
+                    }
+                    for(ShopItemType type : shop.getTypes()){
+                        shopGui = ((ShopGui)container.getGui(false, type));
+                        if(shopGui != null){
+                            shopGui.updateShop(shop);
+                        }
+                    }
+                }
+                
+            }
+        });
         PreparedStatement preparedStatement = ConsulatAPI.getDatabase().prepareStatement(
                 "SELECT * FROM players WHERE player_uuid = ?;");
         preparedStatement.setString(1, player.getUUID().toString());
