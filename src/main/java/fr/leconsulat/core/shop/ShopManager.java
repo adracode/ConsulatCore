@@ -127,11 +127,16 @@ public class ShopManager implements Listener {
             is.close();
             List<CompoundTag> shops = shopsTag.getList("AdminShops", NBTType.COMPOUND);
             for(CompoundTag shopTag : shops){
-                AdminShop shop = (AdminShop)createShop.get(shopTag.getString("Type")).construct(shopTag.getLong("Coords"));
-                shop.loadNBT(shopTag);
-                shop.createGui();
-                this.shops.put(shop.getCoords(), shop);
-                ++size;
+                AdminShop shop = null;
+                try {
+                    shop = (AdminShop)createShop.get(shopTag.getString("Type")).construct(shopTag.getLong("Coords"));
+                    shop.loadNBT(shopTag);
+                    shop.createGui();
+                    this.shops.put(shop.getCoords(), shop);
+                    ++size;
+                } catch(IllegalArgumentException e){
+                    ConsulatAPI.getConsulatAPI().log(Level.SEVERE, "Couldn't load Admin shop " + (shop == null ? shopsTag.getLong("Coords") : shop.getX() + ", " + shop.getY() + ", " + shop.getZ()));
+                }
             }
         } catch(IOException e){
             e.printStackTrace();
