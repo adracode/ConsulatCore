@@ -117,6 +117,11 @@ public class Zone implements Saveable {
         return owner;
     }
     
+    @Override
+    public String getDisplayName(){
+        return "Zone " + getName();
+    }
+    
     public void setOwner(@NotNull UUID owner){
         this.owner = owner;
     }
@@ -163,12 +168,6 @@ public class Zone implements Saveable {
     
     @Override
     public String toString(){
-        return getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(this)) +
-                '{' +
-                "uuid=" + uuid +
-                ", owner=" + owner +
-                ", claims=" + claims +
-                ", name='" + name + '\'' +
-                '}';
+        return getDisplayName();
     }
 }

@@ -1,10 +1,9 @@
 package fr.leconsulat.core;
 
 import fr.leconsulat.api.ConsulatAPI;
-import fr.leconsulat.api.channel.Channel;
 import fr.leconsulat.api.redis.RedisManager;
 import fr.leconsulat.api.saver.Saver;
-import fr.leconsulat.core.channel.StaffChannel;
+import fr.leconsulat.core.channel.SpyChannel;
 import fr.leconsulat.core.chunks.ChunkManager;
 import fr.leconsulat.core.commands.cities.CityCommand;
 import fr.leconsulat.core.commands.claims.AccessCommand;
@@ -25,8 +24,6 @@ import fr.leconsulat.core.listeners.entity.MobListeners;
 import fr.leconsulat.core.listeners.entity.player.*;
 import fr.leconsulat.core.listeners.world.ClaimCancelListener;
 import fr.leconsulat.core.listeners.world.SignListener;
-import fr.leconsulat.core.moderation.ModerationDatabase;
-import fr.leconsulat.core.moderation.channels.SpyChannel;
 import fr.leconsulat.core.players.SPlayerManager;
 import fr.leconsulat.core.runnable.AFKRunnable;
 import fr.leconsulat.core.runnable.MeceneRunnable;
@@ -37,11 +34,10 @@ import fr.leconsulat.core.server.SafariServer;
 import fr.leconsulat.core.shop.ShopManager;
 import fr.leconsulat.core.zones.ZoneManager;
 import fr.leconsulat.core.zones.claims.ClaimManager;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.GameRule;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.Listener;
@@ -51,7 +47,7 @@ import java.sql.Connection;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Random;
 import java.util.logging.Level;
 
 public class ConsulatCore extends JavaPlugin implements Listener {
@@ -74,21 +70,9 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     private World overworld;
     private Location spawn;
     
-    private ModerationDatabase moderationDatabase;
-    
-    private Channel spy;
-    private StaffChannel staffChannel;
-    private boolean chat = true;
-    
-    private TextComponent[] textPerso;
-    
-    private Set<String> forbiddenPerso = new HashSet<>(Arrays.asList(
-            "modo", "moderateur", "modérateur", "admin", "animateur", "partenaire", "youtubeur", "streamer", "ami",
-            "fonda", "dev", "builder", "fondateur"));
-    
     @Override
     public void onDisable(){
-        RedisManager.getInstance().getRedis().getTopic(ConsulatAPI.getConsulatAPI().isDevelopment() ? "PlayerTestsurvie" : "PlayerSurvie").publish(-1);
+        RedisManager.getInstance().getRedis().getTopic(ConsulatAPI.getConsulatAPI().isDevelopment() ? "PlayerTestsurvie" : "PlayerSurvie").publishAsync(-1);
         save();
     }
     
@@ -126,8 +110,6 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         moneyFormat = new DecimalFormat("###,###,###,###.## ¢", custom);
         new DuelManager();
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
-        spy = new SpyChannel();
-        staffChannel = new StaffChannel();
         new ZoneManager();
         try {
             ChunkManager chunkManager = ChunkManager.getInstance();
@@ -142,7 +124,6 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         new SPlayerManager();
         new PlayerBaltop();
         new FlyManager();
-        moderationDatabase = new ModerationDatabase(this);
         EnchantmentManager.getInstance();
         safari = new SafariServer();
         safari.setSlot(50);
@@ -150,6 +131,8 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         hub.setSlot(Integer.MAX_VALUE);
         playerBaltop = new PlayerBaltop();
         cityBaltop = new CityBaltop();
+        ConsulatAPI.getConsulatAPI().setSyncChat(true);
+        new SpyChannel();
         Bukkit.getScheduler().runTaskTimer(this, new AFKRunnable(), 0L, 5 * 60 * 20);
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, new MonitoringRunnable(this), 0L, 10 * 60 * 20);
         Bukkit.getScheduler().runTaskTimer(this, new MessageRunnable(), 0L, 15 * 60 * 20);
@@ -160,34 +143,15 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         for(World world : Bukkit.getWorlds()){
             world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
         }
-        List<TextComponent> textPerso = new ArrayList<>();
-        for(ChatColor color : ChatColor.values()){
-            if(color == ChatColor.RED) continue;
-            if(color == ChatColor.MAGIC) break;
-            TextComponent textComponent;
-            if(color != ChatColor.WHITE){
-                textComponent = new TextComponent(color + color.name() + "§r§7 - ");
-            } else {
-                textComponent = new TextComponent(color + color.name());
-            }
-            textComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("§7§oChoisir cette couleur").create()));
-            textComponent.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/perso " + color.getChar()));
-            textPerso.add(textComponent);
-        }
-        this.textPerso = textPerso.toArray(new TextComponent[0]);
         registerCommands();
         ConsulatAPI.getConsulatAPI().log(Level.INFO, "ConsulatCore loaded in " + (System.currentTimeMillis() - startLoading) + " ms.");
-        RedisManager.getInstance().getRedis().getTopic(ConsulatAPI.getConsulatAPI().isDevelopment() ? "PlayerTestsurvie" : "PlayerSurvie").publish(0);
+        RedisManager.getInstance().getRedis().getTopic(ConsulatAPI.getConsulatAPI().isDevelopment() ? "PlayerTestsurvie" : "PlayerSurvie").publishAsync(0);
     }
     
     private void save(){
         ZoneManager.getInstance().saveZones();
         ChunkManager.getInstance().saveChunks();
         ShopManager.getInstance().saveAdminShops();
-    }
-    
-    public boolean isCustomRankForbidden(String rank){
-        return forbiddenPerso.contains(rank.toLowerCase());
     }
     
     public String getPermission(String permission){
@@ -204,18 +168,6 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     
     public Connection getDatabaseConnection(){
         return ConsulatAPI.getDatabase();
-    }
-    
-    public ModerationDatabase getModerationDatabase(){
-        return moderationDatabase;
-    }
-    
-    public boolean isChatActivated(){
-        return chat;
-    }
-    
-    public TextComponent[] getTextPerso(){
-        return textPerso;
     }
     
     public Location getSpawn(){
@@ -245,19 +197,6 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         return overworld;
     }
     
-    public Channel getSpy(){
-        return spy;
-    }
-    
-    public StaffChannel getStaffChannel(){
-        return staffChannel;
-    }
-    
-    
-    public void setChat(boolean chat){
-        this.chat = chat;
-    }
-    
     @SuppressWarnings("ConstantConditions")
     private void registerCommands(){
         new AccessCommand().register();
@@ -283,32 +222,23 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         new IgnoreCommand().register();
         new InfosCommand().register();
         new InvseeCommand().register();
-        new KickCommand().register();
         new ModerateCommand().register();
         new MoneyCommand().register();
         new MpCommand().register();
         new PayCommand().register();
-        new PersoCommand().register();
         new ReportCommand().register();
         new SafariCommand().register();
-        new SanctionCommand().register();
-        new SeenCommand().register();
         new SetHomeCommand().register();
         new WebShopCommand().register();
         new ShopCommand().register();
         new SiteCommand().register();
         new SocialSpyCommand().register();
         new SpawnCommand().register();
-        new StaffChatCommand().register();
         new StaffListCommand().register();
-        new ToggleChatCommand().register();
         new TopCommand().register();
         new TpaCommand().register();
         new TpmodCommand().register();
-        new UnbanCommand().register();
-        new UnmuteCommand().register();
         new UnclaimCommand().register();
-        new AntecedentsCommand().register();
         new CityCommand().register();
         new TouristeCommand().register();
         if(ConsulatAPI.getConsulatAPI().isDevelopment()) {
@@ -318,7 +248,6 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     
     private void registerEvents(){
         Bukkit.getPluginManager().registerEvents(this, this);
-        Bukkit.getPluginManager().registerEvents(new ChatListeners(), this);
         Bukkit.getPluginManager().registerEvents(new InventoryListeners(), this);
         Bukkit.getPluginManager().registerEvents(new InteractListener(), this);
         Bukkit.getPluginManager().registerEvents(new DamageListener(), this);

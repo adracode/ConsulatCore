@@ -1,4 +1,4 @@
-package fr.leconsulat.core.moderation.channels;
+package fr.leconsulat.core.channel;
 
 import fr.leconsulat.api.channel.Channel;
 

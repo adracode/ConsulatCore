@@ -1,5 +1,6 @@
 package fr.leconsulat.core.commands.moderation;
 
+import fr.leconsulat.api.channel.ChannelManager;
 import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
@@ -19,6 +20,6 @@ public class StaffListCommand extends ConsulatCommand {
     
     @Override
     public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
-        sender.sendMessage(Text.STAFF_LIST(ConsulatCore.getInstance().getStaffChannel()));
+        sender.sendMessage(Text.STAFF_LIST(ChannelManager.getInstance().getChannel("staff")));
     }
 }

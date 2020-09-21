@@ -295,20 +295,6 @@ public class City extends Zone {
         return Text.PREFIX + "§cTu sors de la ville §l" + getName() + ".";
     }
     
-    @Override
-    public String toString(){
-        return super.toString() +
-                " City{" +
-                "bank=" + bank +
-                ", home=" + home +
-                ", description='" + description + '\'' +
-                ", members=" + members +
-                ", channel=" + channel +
-                ", publicPermissions=" + publicPermissions +
-                ", ranks=" + ranks +
-                '}';
-    }
-    
     public boolean addPlayer(@NotNull UUID uuid, CityPermission... permissions){
         if(ConsulatAPI.getConsulatAPI().isDebug()){
             ConsulatAPI.getConsulatAPI().log(Level.INFO, "Add player " + uuid + " to city " + getName());
