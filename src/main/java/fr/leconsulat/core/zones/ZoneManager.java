@@ -286,14 +286,13 @@ public class ZoneManager {
                 SPlayerManager.getInstance().addMoney(city.getOwner(), city.getMoney());
                 deleteCity(city);
             }
-            try {
-                NBTInputStream is = new NBTInputStream(new FileInputStream(file));
+            try(NBTInputStream is = new NBTInputStream(new FileInputStream(file))) {
                 CompoundTag cityTag = is.read();
                 is.close();
                 city.loadNBT(cityTag);
             } catch(Exception e){
+                ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Exception handled.");
                 e.printStackTrace();
-                continue;
             }
             addCity(city);
         }
