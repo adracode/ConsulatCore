@@ -278,23 +278,23 @@ public class ZoneManager {
                     UUID.fromString(result.getString("owner")),
                     result.getDouble("money")
             );
-            try {
-                File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "cities/" + city.getUniqueId() + ".dat");
-                if(!file.exists()){
-                    ConsulatAPI.getConsulatAPI().log(Level.WARNING, "City " + city.getName() + ", owner " + city.getOwner() + ", money " + city.getMoney() + " doesn't have file, deleting...");
-                    //Refund player
-                    SPlayerManager.getInstance().addMoney(city.getOwner(), City.CREATE_TAX);
-                    SPlayerManager.getInstance().addMoney(city.getOwner(), city.getMoney());
-                    deleteCity(city);
-                }
-                NBTInputStream is = new NBTInputStream(new FileInputStream(file));
+            File file = FileUtils.loadFile(ConsulatAPI.getConsulatAPI().getDataFolder(), "cities/" + city.getUniqueId() + ".dat");
+            if(!file.exists()){
+                ConsulatAPI.getConsulatAPI().log(Level.WARNING, "City " + city.getName() + ", owner " + city.getOwner() + ", money " + city.getMoney() + " doesn't have file, deleting...");
+                //Refund player
+                SPlayerManager.getInstance().addMoney(city.getOwner(), City.CREATE_TAX);
+                SPlayerManager.getInstance().addMoney(city.getOwner(), city.getMoney());
+                deleteCity(city);
+            }
+            try(NBTInputStream is = new NBTInputStream(new FileInputStream(file))) {
                 CompoundTag cityTag = is.read();
                 is.close();
                 city.loadNBT(cityTag);
-                addCity(city);
-            } catch(IOException e){
+            } catch(Exception e){
+                ConsulatAPI.getConsulatAPI().log(Level.WARNING, "Exception handled.");
                 e.printStackTrace();
             }
+            addCity(city);
         }
     }
     
