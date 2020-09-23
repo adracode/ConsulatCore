@@ -570,8 +570,15 @@ public class ShopManager implements Listener {
         if(shop == null){
             return;
         }
-        if(!shop.isItemAccepted(event.getCurrentItem() == null || event.getCurrentItem().getType() == Material.AIR ?
-                event.getCursor() : event.getCurrentItem())){
+        ItemStack item = event.getCurrentItem() == null || event.getCurrentItem().getType() == Material.AIR ? event.getCursor() : event.getCurrentItem();
+        if(!shop.isItemAccepted(item)){
+            if(item != null && item.getType() == Material.ENCHANTED_BOOK && shop.getItem().getType() == Material.ENCHANTED_BOOK){
+                EnchantmentStorageMeta meta = (EnchantmentStorageMeta)item.getItemMeta();
+                EnchantmentStorageMeta forSaleMeta = (EnchantmentStorageMeta)shop.getItem().getItemMeta();
+                if(meta.getStoredEnchants().equals(forSaleMeta.getStoredEnchants())){
+                    event.getWhoClicked().sendMessage(Text.NOT_SAME_COST);
+                }
+            }
             event.setCancelled(true);
         }
     }
