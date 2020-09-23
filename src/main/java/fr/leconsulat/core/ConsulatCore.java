@@ -252,7 +252,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(new InteractListener(), this);
         Bukkit.getPluginManager().registerEvents(new DamageListener(), this);
         Bukkit.getPluginManager().registerEvents(new MobListeners(), this);
-        Bukkit.getPluginManager().registerEvents(new MoveListeners(), this);
+        Bukkit.getPluginManager().registerEvents(new MovementChecker(), this);
         Bukkit.getPluginManager().registerEvents(new ExperienceListener(), this);
         Bukkit.getPluginManager().registerEvents(new FoodListener(), this);
         Bukkit.getPluginManager().registerEvents(new SignListener(), this);
