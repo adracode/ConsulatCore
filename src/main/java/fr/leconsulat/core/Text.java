@@ -183,7 +183,8 @@ final public class Text {
     public static final String BUY_HOME = PREFIX + "Tu as acheté un home supplémentaire.";
     public static final String BUY_SLOT_SHOP = PREFIX + "Tu as acheté un slot de shop supplémentaire.";
     public static final String NOW_TOURISTE = PREFIX + "Tu es désormais touriste !";
-    public static final String NO_ANSWER= PREFIX + "§cTu n'as pas envoyé / reçu de MP.";
+    public static final String NO_ANSWER = PREFIX + "§cTu n'as pas envoyé / reçu de MP.";
+    public static final String NOT_SAME_COST = PREFIX + "§cLes livres n'ont pas le même coût dans l'enclume.";
 
     public static String PREFIX_CITY(City city){
         return "§8[§d" + city.getName() + "§8] ";
