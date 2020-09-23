@@ -411,6 +411,12 @@ public class ClaimCancelListener implements Listener {
     
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onPlace(BlockPlaceEvent event){
+        double borderSize = event.getBlock().getWorld().getWorldBorder().getSize() / 2;
+        Location blockLocation = event.getBlock().getLocation();
+        if(Math.abs(blockLocation.getX()) > borderSize || Math.abs(blockLocation.getZ()) > borderSize){
+            event.setCancelled(true);
+            return;
+        }
         if(ClaimManager.isKey(event.getItemInHand())){
             event.setCancelled(true);
             return;
