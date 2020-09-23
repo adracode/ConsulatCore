@@ -104,7 +104,7 @@ public class XRayHelperGui extends PagedGui {
             if(item.getType() == Material.SHULKER_BOX){
                 for(ItemStack shulkerItem : ((ShulkerBox)((BlockStateMeta)item.getItemMeta()).getBlockState()).getSnapshotInventory()){
                     if(shulkerItem != null){
-                        diamonds += getDiamondValue(shulkerItem.getType()) * item.getAmount();
+                        diamonds += getDiamondValue(shulkerItem.getType()) * shulkerItem.getAmount();
                     }
                 }
             }
