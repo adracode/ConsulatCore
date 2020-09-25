@@ -14,6 +14,7 @@ import fr.leconsulat.core.duel.Arena;
 import fr.leconsulat.core.enchantments.CEnchantedItem;
 import fr.leconsulat.core.enchantments.EnchantmentManager;
 import fr.leconsulat.core.fly.FlyManager;
+import fr.leconsulat.core.guis.pvp.PVPGui;
 import fr.leconsulat.core.shop.player.PlayerShop;
 import fr.leconsulat.core.utils.CustomEnum;
 import fr.leconsulat.core.utils.ItemUtils;
@@ -61,19 +62,15 @@ public class SurvivalPlayer extends ConsulatPlayer {
     private Set<PlayerShop> shops = new HashSet<>();
     private Zone zone;
     private City city;
-    private CEnchantedItem[] enchantedArmor;
     private Set<UUID> ignoredPlayers = new HashSet<>(1);
+    private boolean pvp;
     
     public SurvivalPlayer(UUID uuid, String name){
         super(uuid, name);
-        ItemStack[] currentArmor = getPlayer().getInventory().getArmorContents();
-        this.enchantedArmor = new CEnchantedItem[4];
-        for(int i = 0; i < currentArmor.length; i++){
-            ItemStack armor = currentArmor[i];
-            if(CEnchantedItem.isEnchanted(armor)){
-                CEnchantedItem enchantedItem = new CEnchantedItem(armor);
-                this.enchantedArmor[3 - i] = enchantedItem;
-                EnchantmentManager.getInstance().applyCEnchantment(this, enchantedItem.getEnchants());
+        for(ItemStack armor : getPlayer().getInventory().getArmorContents()){
+            CEnchantedItem enchantedArmor = CEnchantedItem.getItem(armor);
+            if(enchantedArmor != null){
+                EnchantmentManager.getInstance().applyCEnchantment(this, enchantedArmor.getEnchants());
             }
         }
     }
@@ -81,6 +78,10 @@ public class SurvivalPlayer extends ConsulatPlayer {
     @Override
     public boolean isInitialized(){
         return initialized;
+    }
+    
+    public boolean isPvp(){
+        return pvp;
     }
     
     public void setInitialized(boolean initialized){
@@ -116,6 +117,9 @@ public class SurvivalPlayer extends ConsulatPlayer {
                 ignoredPlayers.add(UUID.fromString(uuid.getValue()));
             }
         }
+        if(playerTag.has("Pvp")){
+            this.pvp = playerTag.getByte("Pvp") != 0;
+        }
     }
     
     @Override
@@ -128,7 +132,13 @@ public class SurvivalPlayer extends ConsulatPlayer {
             }
             playerTag.put("Ignored", ignored);
         }
+        playerTag.putByte("Pvp", (byte)(pvp ? 1 : 0));
         return playerTag;
+    }
+    
+    public void setPvp(boolean pvp){
+        this.pvp = pvp;
+        PVPGui.getPvpGui().switchPvp(this);
     }
     
     @Override
