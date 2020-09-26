@@ -3,10 +3,14 @@ package fr.leconsulat.core.players;
 import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.events.ConsulatPlayerLeaveEvent;
 import fr.leconsulat.api.gui.GuiItem;
+import fr.leconsulat.api.gui.gui.IGui;
+import fr.leconsulat.api.gui.gui.module.api.MainPage;
+import fr.leconsulat.api.gui.gui.module.api.Pageable;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.core.Text;
 import fr.leconsulat.core.events.SurvivalPlayerLoadedEvent;
 import fr.leconsulat.core.guis.pvp.PVPGui;
+import fr.leconsulat.core.guis.shop.ShopGui;
 import fr.leconsulat.core.zones.cities.City;
 import fr.leconsulat.core.zones.claims.Claim;
 import fr.leconsulat.core.zones.claims.ClaimManager;
@@ -60,7 +64,7 @@ public class PVPManager implements Listener {
     
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onCombat(EntityDamageByEntityEvent event){
-        if(event.getEntityType() != EntityType.PLAYER && event.getDamager().getType() != EntityType.PLAYER){
+        if(event.getEntityType() != EntityType.PLAYER || event.getDamager().getType() != EntityType.PLAYER){
             return;
         }
         event.setCancelled(true);
@@ -100,6 +104,13 @@ public class PVPManager implements Listener {
         player.sendMessage(Text.NOW_IN_COMBAT);
         if(player.isFlying()){
             player.disableFly();
+        }
+        IGui currentlyOpen = player.getCurrentlyOpen();
+        if(currentlyOpen instanceof Pageable){
+            MainPage mainPage = ((Pageable)currentlyOpen).getMainPage();
+            if(mainPage.getGui() instanceof PVPGui || mainPage.getGui() instanceof ShopGui){
+                player.getPlayer().closeInventory();
+            }
         }
     }
     
