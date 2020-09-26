@@ -4,6 +4,8 @@ import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import fr.leconsulat.core.ConsulatCore;
+import fr.leconsulat.core.Text;
+import fr.leconsulat.core.players.SurvivalPlayer;
 import org.jetbrains.annotations.NotNull;
 
 public class SpawnCommand extends ConsulatCommand {
@@ -22,6 +24,11 @@ public class SpawnCommand extends ConsulatCommand {
             ConsulatCore.getInstance().setSpawn(sender.getPlayer().getLocation());
             sender.sendMessage("§aLocation définie.");
         } else {
+            SurvivalPlayer player = (SurvivalPlayer)sender;
+            if(player.isInCombat()){
+                player.sendMessage(Text.IN_COMBAT);
+                return;
+            }
             sender.getPlayer().teleportAsync(ConsulatCore.getInstance().getSpawn());
         }
     }

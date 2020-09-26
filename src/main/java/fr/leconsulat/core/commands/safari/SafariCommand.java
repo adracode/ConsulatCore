@@ -20,18 +20,23 @@ public class SafariCommand extends ConsulatCommand {
     }
     
     @Override
-    public void onCommand(@NotNull ConsulatPlayer player, @NotNull String[] args){
-        if(((SurvivalPlayer)player).isInModeration()){
+    public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
+        SurvivalPlayer player = (SurvivalPlayer)sender;
+        if(player.isInModeration()){
             player.sendMessage("§cTu ne peux pas aller sur le safari en mode staff.");
             return;
         }
+        if(player.isInCombat()){
+            player.sendMessage(Text.IN_COMBAT);
+            return;
+        }
         SafariServer safari = ConsulatCore.getInstance().getSafari();
-        switch(safari.queuePlayer(player)){
+        switch(safari.queuePlayer(sender)){
             case IN_QUEUE:
-                player.sendMessage(Text.NOW_IN_QUEUE(player.getPositionInQueue(), safari.getPlayersInQueue()));
+                sender.sendMessage(Text.NOW_IN_QUEUE(sender.getPositionInQueue(), safari.getPlayersInQueue()));
                 break;
             case ALREADY_IN_QUEUE:
-                player.sendMessage(Text.IN_QUEUE(player.getPositionInQueue(), safari.getPlayersInQueue()));
+                sender.sendMessage(Text.IN_QUEUE(sender.getPositionInQueue(), safari.getPlayersInQueue()));
                 break;
         }
     }

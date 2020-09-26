@@ -24,6 +24,7 @@ import fr.leconsulat.core.listeners.entity.MobListeners;
 import fr.leconsulat.core.listeners.entity.player.*;
 import fr.leconsulat.core.listeners.world.ClaimCancelListener;
 import fr.leconsulat.core.listeners.world.SignListener;
+import fr.leconsulat.core.players.PVPManager;
 import fr.leconsulat.core.players.SPlayerManager;
 import fr.leconsulat.core.runnable.AFKRunnable;
 import fr.leconsulat.core.runnable.MeceneRunnable;
@@ -124,6 +125,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         new SPlayerManager();
         new PlayerBaltop();
         new FlyManager();
+        new PVPManager();
         EnchantmentManager.getInstance();
         safari = new SafariServer();
         safari.setSlot(50);

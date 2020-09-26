@@ -96,11 +96,13 @@ public class ClaimCommand extends ConsulatCommand {
                         sender.sendMessage(Text.PLAYER_NOT_IN_CLAIM);
                         return;
                     }
-                } else {
-                    if(chunkTarget == null || !chunkTarget.isOwner(sender.getUUID())){
-                        sender.sendMessage(Text.PLAYER_NOT_IN_YOUR_CLAIM);
-                        return;
-                    }
+                } else if(chunkTarget == null || !chunkTarget.isOwner(sender.getUUID())){
+                    sender.sendMessage(Text.PLAYER_NOT_IN_YOUR_CLAIM);
+                    return;
+                }
+                if(target.isInCombat()){
+                    player.sendMessage(Text.PLAYER_IN_COMBAT);
+                    return;
                 }
                 if(target.hasPower(Rank.RESPONSABLE) || target.isInModeration()){
                     sender.sendMessage(Text.CANT_KICK_PLAYER);

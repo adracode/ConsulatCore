@@ -10,6 +10,7 @@ import fr.leconsulat.api.gui.gui.module.api.MainPage;
 import fr.leconsulat.api.gui.gui.module.api.Pageable;
 import fr.leconsulat.api.gui.gui.template.PagedGui;
 import fr.leconsulat.api.player.ConsulatPlayer;
+import fr.leconsulat.core.Text;
 import fr.leconsulat.core.players.SurvivalPlayer;
 import org.bukkit.Material;
 
@@ -26,13 +27,15 @@ public class PVPGui extends PagedGui {
     private static final GuiItem OFF = IGui.getItem("§cDésactivé", PLAYER_STATUS, Material.RED_CONCRETE,
             "§7Tu ne peux pas §ccombattre§7 !",
             "",
-            "§7§oClique pour activer");
-    
-    private static PVPGui GUI = new PVPGui();
+            "§7§oClique pour activer",
+            "",
+            "§cTu perds ton stuff si",
+            "§ctu meurs ou tu déco",
+            "§cen combat !");
     
     public PVPGui(){
         super("PvP", 6,
-                IGui.getItem("§ePvP", 4, Material.PAPER,
+                IGui.getItem("§ePvP", 4, Material.DIAMOND_SWORD,
                         "§7Le PvP est actif partout, ",
                         "§7sauf au spawn ! ",
                         "",
@@ -44,10 +47,13 @@ public class PVPGui extends PagedGui {
                         "§cc'est de ta faute. ",
                         "",
                         "§7Tu ne dois pas deco ",
-                        "§7en combat (1 min)"),
+                        "§7en combat (1 min)",
+                        "",
+                        "§cTu ne peux pas te",
+                        "§ctéléporter (/spawn, /tpa...)",
+                        "§cen combat !").setGlowing(true),
                 IGui.getItem("§eStatus", PLAYER_STATUS, Material.GRAY_CONCRETE, "§7Récupération du status...")
         );
-        GUI = this;
         setDeco(Material.BLACK_STAINED_GLASS_PANE, 0, 1, 2, 3, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 50, 51, 52, 53);
         setDynamicItems(10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, 43);
         setTemplateItems(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53);
@@ -66,6 +72,11 @@ public class PVPGui extends PagedGui {
     @Override
     public void onPageOpen(GuiOpenEvent event, Pageable pageGui){
         SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
+        if(player.isInCombat()){
+            player.sendMessage(Text.IN_COMBAT);
+            event.setCancelled(true);
+            return;
+        }
         pageGui.getGui().setFakeItem(PLAYER_STATUS, player.isPvp() ? ON : OFF, player);
     }
     
@@ -122,9 +133,5 @@ public class PVPGui extends PagedGui {
                 break;
             }
         }
-    }
-    
-    public static PVPGui getPvpGui(){
-        return GUI;
     }
 }

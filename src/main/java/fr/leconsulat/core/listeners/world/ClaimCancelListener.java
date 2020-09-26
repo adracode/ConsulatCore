@@ -715,7 +715,7 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onDamage(EntityDamageEvent event){
         if(event.getEntityType() != EntityType.PLAYER){
             return;

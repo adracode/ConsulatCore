@@ -6,6 +6,7 @@ import fr.leconsulat.api.gui.GuiItem;
 import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.api.gui.event.GuiClickEvent;
 import fr.leconsulat.api.gui.event.GuiCreateEvent;
+import fr.leconsulat.api.gui.event.GuiOpenEvent;
 import fr.leconsulat.api.gui.gui.IGui;
 import fr.leconsulat.api.gui.gui.module.api.Datable;
 import fr.leconsulat.api.gui.gui.module.api.Pageable;
@@ -46,6 +47,15 @@ public class ShopGui extends DataPagedGui<ShopItemType> {
             pageGui.getGui().setName("§4Shops §8(§3" + (pageGui.getPage() + 1) + "§8)");
         } else {
             pageGui.getGui().setName("§4Shops §8(§3" + getData().toString() + "§8) (§3" + (pageGui.getPage() + 1) + "§8)");
+        }
+    }
+    
+    @Override
+    public void onPageOpen(GuiOpenEvent event, Pageable pageGui){
+        SurvivalPlayer player = (SurvivalPlayer)event.getPlayer();
+        if(player.isInCombat()){
+            player.sendMessage(Text.IN_COMBAT);
+            event.setCancelled(true);
         }
     }
     

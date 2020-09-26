@@ -6,6 +6,7 @@ import fr.leconsulat.core.Text;
 import fr.leconsulat.core.players.SurvivalPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -25,6 +26,12 @@ public class DamageListener implements Listener {
         }
         if(player.isInModeration()){
             event.setCancelled(true);
+            return;
+        }
+        if(player.isCancelNextFallDamage() && event.getCause() == EntityDamageEvent.DamageCause.FALL){
+            event.setCancelled(true);
+            player.setCancelNextFallDamage(false);
+            return;
         }
         EntityDamageEvent.DamageCause damageCause = event.getCause();
         if(damageCause == EntityDamageEvent.DamageCause.SUFFOCATION || damageCause == EntityDamageEvent.DamageCause.VOID){
@@ -37,7 +44,7 @@ public class DamageListener implements Listener {
         }
     }
     
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL)
     public void onDamage(EntityDamageByEntityEvent event){
         if(!(event.getEntity() instanceof Player)){
             return;

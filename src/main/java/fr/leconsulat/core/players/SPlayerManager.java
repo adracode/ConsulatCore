@@ -18,7 +18,6 @@ import fr.leconsulat.api.redis.RedisManager;
 import fr.leconsulat.core.ConsulatCore;
 import fr.leconsulat.core.Text;
 import fr.leconsulat.core.events.SurvivalPlayerLoadedEvent;
-import fr.leconsulat.core.guis.pvp.PVPGui;
 import fr.leconsulat.core.guis.shop.ShopGui;
 import fr.leconsulat.core.listeners.world.ClaimCancelListener;
 import fr.leconsulat.core.shop.ShopManager;
@@ -203,9 +202,6 @@ public class SPlayerManager implements Listener {
             player.addPermission(fly.getPermission());
         }
         player.initChannels();
-        if(player.isPvp()){
-            PVPGui.getPvpGui().addPlayer(player);
-        }
         CommandManager.getInstance().sendCommands(event.getPlayer());
         player.setInitialized(true);
         if(!player.hasPower(Rank.MODO)){
@@ -229,9 +225,6 @@ public class SPlayerManager implements Listener {
                     onlinePlayer.sendMessage(Text.PLAYER_LEFT_FREEZE(player.getName()));
                 }
             }
-        }
-        if(player.isPvp()){
-            PVPGui.getPvpGui().removePlayer(player);
         }
         if(!player.hasPower(Rank.MODO)){
             Bukkit.broadcastMessage("§7(§c-§7) " + player.getDisplayName());

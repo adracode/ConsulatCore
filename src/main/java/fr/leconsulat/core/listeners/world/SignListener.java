@@ -4,6 +4,7 @@ import fr.leconsulat.api.events.blocks.PlayerInteractSignEvent;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.ranks.Rank;
 import fr.leconsulat.core.ConsulatCore;
+import fr.leconsulat.core.Text;
 import fr.leconsulat.core.players.SurvivalPlayer;
 import org.bukkit.Location;
 import org.bukkit.block.Sign;
@@ -25,6 +26,11 @@ public class SignListener implements Listener {
                 int y = Integer.parseInt(lines[2]);
                 int z = Integer.parseInt(lines[3]);
                 Location result = new Location(ConsulatCore.getInstance().getOverworld(), x, y, z);
+                SurvivalPlayer survivalPlayer = (SurvivalPlayer)CPlayerManager.getInstance().getConsulatPlayer(player.getUniqueId());
+                if(survivalPlayer.isInCombat()){
+                    survivalPlayer.sendMessage(Text.IN_COMBAT);
+                    return;
+                }
                 player.teleportAsync(result);
                 player.sendMessage("§aTu as été téléporté à la zone.");
             } catch(NumberFormatException e){

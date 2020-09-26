@@ -496,6 +496,10 @@ public class CityCommand extends ConsulatCommand {
             break;
             case "h":
             case "home":{
+                if(player.isInCombat()){
+                    player.sendMessage(Text.IN_COMBAT);
+                    return;
+                }
                 if(!player.belongsToCity()){
                     player.sendMessage(Text.YOU_NOT_IN_CITY);
                     return;

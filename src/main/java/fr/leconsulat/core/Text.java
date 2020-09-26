@@ -29,7 +29,13 @@ final public class Text {
     public static final String ANNOUNCE_PREFIX = ChatColor.GRAY + "§l[" + ChatColor.GOLD + "Modération" + ChatColor.GRAY + "§l]§r ";
     public static final String BROADCAST_PREFIX = ChatColor.RED + "§l[ANNONCE] ";
     public static final String FLY = "§7[§6Fly§7] §e";
+    public static final String NOW_IN_COMBAT = PREFIX + "§7Tu es en §ccombat §7! Si tu §cmeurs§7 ou tu §cdéco§7, tu §cperds§7 ton §cstuff§7 !";
+    public static final String DEAD_IN_COMBAT = PREFIX + "§7Tu es §cmort §7en §ccombat §7! Ton status §cPvP §7a été §adésactivé§7 !";
+    public static final String IN_COMBAT = PREFIX + "§7Tu es en §ccombat §7!";
+    public static final String PLAYER_IN_COMBAT = PREFIX + "§7Ce joueur est en §ccombat §7!";
+    
     //@formatter:off
+    public static String IN_COMBAT(int second){return "§7[§cCombat§7] §e" + second;}
     public static final String CANT_CREATE_CITY = PREFIX + "§cTu appartiens déjà à une ville, tu ne peux pas en créer une.";
     public static final String NO_CITY_NAME = PREFIX + "§cMerci de spécifier le nom de la ville.";
     public static final String INVALID_CITY_NAME = PREFIX + "§cLe nom de ville n'est pas valide.";

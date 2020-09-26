@@ -21,6 +21,10 @@ public class BackCommand extends ConsulatCommand {
     @Override
     public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
+        if(player.isInCombat()){
+            player.sendMessage(Text.IN_COMBAT);
+            return;
+        }
         if(player.getOldLocation() == null){
             player.sendMessage(Text.NOT_YET_TELEPORTED);
             return;

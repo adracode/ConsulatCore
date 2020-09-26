@@ -4,7 +4,7 @@ import fr.leconsulat.api.commands.ConsulatCommand;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import fr.leconsulat.core.ConsulatCore;
-import fr.leconsulat.core.guis.pvp.PVPGui;
+import fr.leconsulat.core.players.PVPManager;
 import org.jetbrains.annotations.NotNull;
 
 public class PVPCommand extends ConsulatCommand {
@@ -19,6 +19,6 @@ public class PVPCommand extends ConsulatCommand {
     
     @Override
     public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
-        PVPGui.getPvpGui().open(sender);
+        PVPManager.getInstance().getPvpGui().open(sender);
     }
 }
