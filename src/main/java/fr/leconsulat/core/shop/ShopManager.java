@@ -1,6 +1,8 @@
 package fr.leconsulat.core.shop;
 
 import fr.leconsulat.api.ConsulatAPI;
+import fr.leconsulat.api.enchantments.CEnchantedItem;
+import fr.leconsulat.api.enchantments.CEnchantment;
 import fr.leconsulat.api.events.blocks.PlayerInteractContainerBlockEvent;
 import fr.leconsulat.api.events.blocks.PlayerInteractSignEvent;
 import fr.leconsulat.api.events.entities.PlayerTurnItemFrameEvent;
@@ -10,8 +12,6 @@ import fr.leconsulat.api.ranks.Rank;
 import fr.leconsulat.api.utils.FileUtils;
 import fr.leconsulat.core.ConsulatCore;
 import fr.leconsulat.core.Text;
-import fr.leconsulat.core.enchantments.CEnchantedItem;
-import fr.leconsulat.core.enchantments.CEnchantment;
 import fr.leconsulat.core.guis.shop.ShopGui;
 import fr.leconsulat.core.players.SPlayerManager;
 import fr.leconsulat.core.players.SurvivalPlayer;

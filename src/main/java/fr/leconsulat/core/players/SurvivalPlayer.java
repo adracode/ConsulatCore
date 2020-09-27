@@ -11,8 +11,6 @@ import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.api.ranks.Rank;
 import fr.leconsulat.core.ConsulatCore;
 import fr.leconsulat.core.duel.Arena;
-import fr.leconsulat.core.enchantments.CEnchantedItem;
-import fr.leconsulat.core.enchantments.EnchantmentManager;
 import fr.leconsulat.core.fly.FlyManager;
 import fr.leconsulat.core.shop.player.PlayerShop;
 import fr.leconsulat.core.utils.CustomEnum;
@@ -61,21 +59,10 @@ public class SurvivalPlayer extends ConsulatPlayer {
     private Set<PlayerShop> shops = new HashSet<>();
     private Zone zone;
     private City city;
-    private CEnchantedItem[] enchantedArmor;
     private Set<UUID> ignoredPlayers = new HashSet<>(1);
     
     public SurvivalPlayer(UUID uuid, String name){
         super(uuid, name);
-        ItemStack[] currentArmor = getPlayer().getInventory().getArmorContents();
-        this.enchantedArmor = new CEnchantedItem[4];
-        for(int i = 0; i < currentArmor.length; i++){
-            ItemStack armor = currentArmor[i];
-            if(CEnchantedItem.isEnchanted(armor)){
-                CEnchantedItem enchantedItem = new CEnchantedItem(armor);
-                this.enchantedArmor[3 - i] = enchantedItem;
-                EnchantmentManager.getInstance().applyCEnchantment(this, enchantedItem.getEnchants());
-            }
-        }
     }
     
     @Override
