@@ -27,7 +27,7 @@ public class SafariServer extends Server {
                 String.class, (channel, data) -> CPlayerManager.getInstance().savePlayerData(Base64.getDecoder().decode(data)));
         RedisManager.getInstance().register("AskPlayerData" + (ConsulatAPI.getConsulatAPI().isDevelopment() ? "Testsurvie" : "Survie"),
                 String.class, (channel, uuid) -> loadOnSafari.publishAsync(Base64.getEncoder().encodeToString(
-                        new OfflinePlayerOutputStream(UUID.fromString(uuid)).writeLevel().writeInventory().send())));
+                        new OfflinePlayerOutputStream(UUID.fromString(uuid)).writeLevel().writeInventory().writeActiveEffects().send())));
     }
     
     @Override
@@ -39,7 +39,7 @@ public class SafariServer extends Server {
     public void onPlayerConnect(ConsulatPlayer player){
         player.setDisconnectHandled(true);
         player.setInventoryBlocked(true);
-        loadOnSafari.publishAsync(Base64.getEncoder().encodeToString(new PlayerOutputStream(player.getPlayer()).writeLevel().writeInventory().send()));
+        loadOnSafari.publishAsync(Base64.getEncoder().encodeToString(new PlayerOutputStream(player.getPlayer()).writeLevel().writeInventory().writeActiveEffects().send()));
     }
     
     @Override
