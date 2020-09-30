@@ -77,13 +77,15 @@ public class PVPManager implements Listener {
     }
     
     private String getDeathMessage(String damaged, String damager){
-        switch(random.nextInt(3)){
+        switch(random.nextInt(4)){
             case 0:
                 return damaged + " est mort... " + damager + " est le coupable !";
             case 1:
-                return "Il semble que " + damaged + " soit mort a cause de " + damager;
+                return "Il semble que " + damaged + " soit mort à cause de " + damager;
             case 2:
                 return "Aie ! " + damager + " a explosé " + damaged;
+            case 3:
+                return "RIP " + damaged + ", " + damager + " est meilleur !";
         }
         return "";
     }

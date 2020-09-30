@@ -30,7 +30,7 @@ final public class Text {
     public static final String BROADCAST_PREFIX = ChatColor.RED + "§l[ANNONCE] ";
     public static final String FLY = "§7[§6Fly§7] §e";
     public static final String NOW_IN_COMBAT = PREFIX + "§7Tu es en §ccombat §7! Si tu §cmeurs§7 ou tu §cdéco§7, tu §cperds§7 ton §cstuff§7 !";
-    public static final String DEAD_IN_COMBAT = PREFIX + "§7Tu es §cmort §7en §ccombat §7! Ton status §cPvP §7a été §adésactivé§7 !";
+    public static final String DEAD_IN_COMBAT = PREFIX + "§7Tu es §cmort §7en §ccombat §7! Ton statut §cPvP §7a été §adésactivé§7 !";
     public static final String IN_COMBAT = PREFIX + "§7Tu es en §ccombat §7!";
     public static final String PLAYER_IN_COMBAT = PREFIX + "§7Ce joueur est en §ccombat §7!";
     
