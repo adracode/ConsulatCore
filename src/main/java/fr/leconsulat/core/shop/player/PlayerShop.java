@@ -1,10 +1,10 @@
 package fr.leconsulat.core.shop.player;
 
+import fr.leconsulat.api.enchantments.CEnchantedItem;
+import fr.leconsulat.api.enchantments.CEnchantment;
 import fr.leconsulat.api.gui.GuiContainer;
 import fr.leconsulat.api.gui.GuiManager;
 import fr.leconsulat.core.ConsulatCore;
-import fr.leconsulat.core.enchantments.CEnchantedItem;
-import fr.leconsulat.core.enchantments.CEnchantment;
 import fr.leconsulat.core.guis.shop.ShopGui;
 import fr.leconsulat.core.shop.Shop;
 import fr.leconsulat.core.shop.ShopManager;
