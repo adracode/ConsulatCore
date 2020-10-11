@@ -41,6 +41,10 @@ public class FlyCommand extends ConsulatCommand {
             sender.sendMessage(Text.CANT_USE_COMMAND_STAFF_MODE);
             return;
         }
+        if(player.isInCombat()){
+            player.sendMessage(Text.IN_COMBAT);
+            return;
+        }
         switch(args[0].toLowerCase()){
             case "start":
                 if(player.isFlying()){

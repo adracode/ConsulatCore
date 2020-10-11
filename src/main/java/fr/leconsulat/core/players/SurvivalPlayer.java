@@ -39,6 +39,8 @@ import java.util.*;
 
 public class SurvivalPlayer extends ConsulatPlayer {
     
+    public static final int COMBAT_COOLDOWN = 60_000;
+    
     private boolean initialized;
     
     private long lastTeleport;
@@ -61,19 +63,18 @@ public class SurvivalPlayer extends ConsulatPlayer {
     private Set<PlayerShop> shops = new HashSet<>();
     private Zone zone;
     private City city;
-    private CEnchantedItem[] enchantedArmor;
     private Set<UUID> ignoredPlayers = new HashSet<>(1);
+    private boolean pvp;
+    private long lastHit = 0;
+    private UUID lastDamager = null;
+    private boolean cancelNextFallDamage = false;
     
     public SurvivalPlayer(UUID uuid, String name){
         super(uuid, name);
-        ItemStack[] currentArmor = getPlayer().getInventory().getArmorContents();
-        this.enchantedArmor = new CEnchantedItem[4];
-        for(int i = 0; i < currentArmor.length; i++){
-            ItemStack armor = currentArmor[i];
-            if(CEnchantedItem.isEnchanted(armor)){
-                CEnchantedItem enchantedItem = new CEnchantedItem(armor);
-                this.enchantedArmor[3 - i] = enchantedItem;
-                EnchantmentManager.getInstance().applyCEnchantment(this, enchantedItem.getEnchants());
+        for(ItemStack armor : getPlayer().getInventory().getArmorContents()){
+            CEnchantedItem enchantedArmor = CEnchantedItem.getItem(armor);
+            if(enchantedArmor != null){
+                EnchantmentManager.getInstance().applyCEnchantment(this, enchantedArmor.getEnchants());
             }
         }
     }
@@ -83,13 +84,36 @@ public class SurvivalPlayer extends ConsulatPlayer {
         return initialized;
     }
     
+    public boolean isPvp(){
+        return pvp;
+    }
+    
+    public boolean isInCombat(){
+        return isPvp() && System.currentTimeMillis() - lastHit < COMBAT_COOLDOWN;
+    }
+    
+    public int getCombatCooldown(){
+        return (int)(COMBAT_COOLDOWN - (System.currentTimeMillis() - lastHit));
+    }
+    
+    public long getLastHit(){
+        return isPvp() ? lastHit : 0;
+    }
+    
+    public UUID getLastDamager(){
+        return lastDamager;
+    }
+    
+    public boolean isCancelNextFallDamage(){
+        return cancelNextFallDamage;
+    }
+    
     public void setInitialized(boolean initialized){
         this.initialized = initialized;
     }
     
     @Override
     public void onQuit(){
-        super.onQuit();
         if(isInModeration()){
             Player bukkitPlayer = getPlayer();
             for(PotionEffect effect : bukkitPlayer.getActivePotionEffects()){
@@ -105,6 +129,7 @@ public class SurvivalPlayer extends ConsulatPlayer {
         }
         removeFromChannels();
         saveOnLeave();
+        super.onQuit();
     }
     
     @Override
@@ -115,6 +140,12 @@ public class SurvivalPlayer extends ConsulatPlayer {
             for(StringTag uuid : ignored){
                 ignoredPlayers.add(UUID.fromString(uuid.getValue()));
             }
+        }
+        if(playerTag.has("Pvp")){
+            this.pvp = playerTag.getByte("Pvp") != 0;
+        }
+        if(playerTag.has("CancelNextFallDamage")){
+            cancelNextFallDamage = true;
         }
     }
     
@@ -128,7 +159,31 @@ public class SurvivalPlayer extends ConsulatPlayer {
             }
             playerTag.put("Ignored", ignored);
         }
+        playerTag.putByte("Pvp", (byte)(pvp ? 1 : 0));
+        if(cancelNextFallDamage){
+            playerTag.putByte("CancelNextFallDamage", (byte)1);
+        }
         return playerTag;
+    }
+    
+    public void setPvp(boolean pvp){
+        this.pvp = pvp;
+        if(!pvp){
+            lastHit = 0;
+        }
+        PVPManager.getInstance().getPvpGui().switchPvp(this);
+    }
+    
+    public void setLastHit(){
+        this.lastHit = isPvp() ? System.currentTimeMillis() : 0;
+    }
+    
+    public void setLastDamager(UUID lastDamager){
+        this.lastDamager = lastDamager;
+    }
+    
+    public void setCancelNextFallDamage(boolean cancelNextFallDamage){
+        this.cancelNextFallDamage = cancelNextFallDamage;
     }
     
     @Override
@@ -292,12 +347,15 @@ public class SurvivalPlayer extends ConsulatPlayer {
             return;
         }
         this.fly.setFlying(false);
+        Location location = getPlayer().getLocation();
+        if(location.getY() - 4 >= location.getWorld().getHighestBlockYAt(location.getBlockX(), location.getBlockZ())){
+            cancelNextFallDamage = true;
+        }
         FlyManager.getInstance().removeFlyingPlayer(this);
         if(!isInModeration()){
             Player player = getPlayer();
             player.setAllowFlight(false);
             player.setFlying(false);
-            player.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 10 * 20, 100));
         }
     }
     
