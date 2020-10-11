@@ -182,8 +182,9 @@ public class Claim extends CChunk {
         if(player.hasPermission(INTERACT)){
             return true;
         }
-        return owner.hasPublicPermission(permission) ||
-                canInteract(player.getUUID(), permission);
+        return !player.isInCombat() &&
+                (owner.hasPublicPermission(permission) ||
+                canInteract(player.getUUID(), permission));
     }
     
     public boolean canInteract(UUID uuid, Permission permission){

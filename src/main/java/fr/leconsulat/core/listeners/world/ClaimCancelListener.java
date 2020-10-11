@@ -47,7 +47,6 @@ import org.bukkit.projectiles.BlockProjectileSource;
 import org.bukkit.projectiles.ProjectileSource;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.UUID;
 
 //TODO: On peut mettre du charbon dans un wagon
@@ -101,7 +100,6 @@ public class ClaimCancelListener implements Listener {
         }
         chunkManager.getChunk(event.getBlock()).decrementLimit(event.getBlock().getType());
     }
-    
     
     @EventHandler
     public void onCanBuild(BlockCanBuildEvent event){
@@ -715,7 +713,7 @@ public class ClaimCancelListener implements Listener {
         }
     }
     
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onDamage(EntityDamageEvent event){
         if(event.getEntityType() != EntityType.PLAYER){
             return;
@@ -1050,17 +1048,8 @@ public class ClaimCancelListener implements Listener {
     //PlayerAdvancementDoneEvent
     //PlayerAnimationEvent
     
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOW)
     public void onEmptyBucket(PlayerBucketEmptyEvent event){
-        if(event.getBucket() == Material.LAVA_BUCKET){
-            List<Player> nearbyPlayers = (List<Player>)event.getBlockClicked().getLocation().getNearbyPlayers(3, 2);
-            if(nearbyPlayers.size() > 1 ||
-                    (nearbyPlayers.size() == 1 && !nearbyPlayers.get(0).getUniqueId().equals(event.getPlayer().getUniqueId()))){
-                event.setCancelled(true);
-                event.getPlayer().sendActionBar(Text.ANOTHER_PLAYER_NEAR);
-                return;
-            }
-        }
         onEmptyBucket((PlayerBucketEvent)event);
     }
     

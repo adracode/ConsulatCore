@@ -69,6 +69,10 @@ public class HomeCommand extends ConsulatCommand {
             });
             return;
         }
+        if(survivalPlayer.isInCombat()){
+            survivalPlayer.sendMessage(Text.IN_COMBAT);
+            return;
+        }
         Location home = survivalPlayer.getHome(homeName);
         if(home != null){
             sender.getPlayer().teleportAsync(home);

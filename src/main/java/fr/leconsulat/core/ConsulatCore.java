@@ -22,6 +22,7 @@ import fr.leconsulat.core.listeners.entity.MobListeners;
 import fr.leconsulat.core.listeners.entity.player.*;
 import fr.leconsulat.core.listeners.world.ClaimCancelListener;
 import fr.leconsulat.core.listeners.world.SignListener;
+import fr.leconsulat.core.players.PVPManager;
 import fr.leconsulat.core.players.SPlayerManager;
 import fr.leconsulat.core.runnable.AFKRunnable;
 import fr.leconsulat.core.runnable.MeceneRunnable;
@@ -50,8 +51,6 @@ import java.util.logging.Level;
 
 public class ConsulatCore extends JavaPlugin implements Listener {
     
-    
-    
     private static ConsulatCore instance;
     private static Random random;
     
@@ -67,6 +66,8 @@ public class ConsulatCore extends JavaPlugin implements Listener {
     
     private World overworld;
     private Location spawn;
+    
+    private boolean pvp = true;
     
     @Override
     public void onDisable(){
@@ -122,6 +123,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         new SPlayerManager();
         new PlayerBaltop();
         new FlyManager();
+        new PVPManager();
         safari = new SafariServer();
         safari.setSlot(50);
         hub = new HubServer();
@@ -143,6 +145,14 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         registerCommands();
         ConsulatAPI.getConsulatAPI().log(Level.INFO, "ConsulatCore loaded in " + (System.currentTimeMillis() - startLoading) + " ms.");
         RedisManager.getInstance().getRedis().getTopic(ConsulatAPI.getConsulatAPI().isDevelopment() ? "PlayerTestsurvie" : "PlayerSurvie").publishAsync(0);
+    }
+    
+    public boolean isPvp(){
+        return pvp;
+    }
+    
+    public void setPvp(boolean pvp){
+        this.pvp = pvp;
     }
     
     private void save(){
@@ -222,6 +232,7 @@ public class ConsulatCore extends JavaPlugin implements Listener {
         new MoneyCommand().register();
         new MpCommand().register();
         new PayCommand().register();
+        new PVPCommand().register();
         new ReportCommand().register();
         new SafariCommand().register();
         new SetHomeCommand().register();

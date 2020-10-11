@@ -34,10 +34,13 @@ public class TpaCommand extends ConsulatCommand {
                                     }
                                     for(Map.Entry<UUID, UUID> request : request.entrySet()){
                                         if(request.getValue().equals(player.getUUID())){
-                                            playersToAcceptTp.add(CPlayerManager.getInstance().getConsulatPlayer(request.getKey()));
+                                            ConsulatPlayer playerToTP = CPlayerManager.getInstance().getConsulatPlayer(request.getKey());
+                                            if(playerToTP != null){
+                                                playersToAcceptTp.add(playerToTP);
+                                            }
                                         }
                                     }
-                                    Arguments.suggest(playersToAcceptTp, ConsulatPlayer::getName, (p) -> true, builder);
+                                    Arguments.suggest(playersToAcceptTp, ConsulatPlayer::getName, p -> true, builder);
                                     return builder.buildFuture();
                                 }))),
                         Arguments.playerList("joueur"));
@@ -75,14 +78,16 @@ public class TpaCommand extends ConsulatCommand {
                     sender.sendMessage(Text.DIDNT_TPA);
                     return;
                 }
+                if(target.isInCombat()){
+                    sender.sendMessage(Text.PLAYER_IN_COMBAT);
+                    return;
+                }
+                request.remove(target.getUUID());
+                target.getPlayer().teleportAsync(sender.getPlayer().getLocation());
                 if(!target.hasPower(Rank.MECENE)){
-                    request.remove(target.getUUID());
                     target.removeMoney(10D);
-                    target.getPlayer().teleportAsync(sender.getPlayer().getLocation());
                     target.sendMessage(Text.HAVE_BEEN_TPA(10, sender.getName()));
                 } else {
-                    target.getPlayer().teleportAsync(sender.getPlayer().getLocation());
-                    request.remove(target.getUUID());
                     target.sendMessage(Text.HAVE_BEEN_TPA(sender.getName()));
                 }
             } else {

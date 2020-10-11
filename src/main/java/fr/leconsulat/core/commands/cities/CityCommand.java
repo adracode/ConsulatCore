@@ -391,11 +391,6 @@ public class CityCommand extends ConsulatCommand {
                     sender.sendMessage(Text.YOU_CANT_CLAIM_DIMENSION);
                     return;
                 }
-                if(!city.hasMoney(Claim.BUY_CITY_CLAIM)){
-                    player.sendMessage(Text.NOT_ENOUGH_MONEY_CITY(Claim.BUY_CITY_CLAIM));
-                    return;
-                }
-                Chunk chunk = player.getPlayer().getChunk();
                 Claim claim = player.getClaim();
                 if(claim != null){
                     if(claim.getOwner() instanceof City){
@@ -407,6 +402,13 @@ public class CityCommand extends ConsulatCommand {
                         return;
                     }
                 }
+                //Si le claim n'est pas null, il appartient forcément à un membre de la ville
+                double price = claim == null ? Claim.BUY_CITY_CLAIM : Claim.SURCLAIM;
+                if(!city.hasMoney(price)){
+                    player.sendMessage(Text.NOT_ENOUGH_MONEY_CITY(price));
+                    return;
+                }
+                Chunk chunk = player.getPlayer().getChunk();
                 if(city.hasClaims()){
                     boolean canClaim = false;
                     for(Claim surroundingClaim : Claim.getSurroundingClaims(chunk.getX(), chunk.getZ())){
@@ -420,7 +422,6 @@ public class CityCommand extends ConsulatCommand {
                         return;
                     }
                 }
-                double price = claim == null ? Claim.BUY_CITY_CLAIM : Claim.SURCLAIM;
                 city.removeMoney(price);
                 ClaimManager.getInstance().cityClaim(chunk.getX(), chunk.getZ(), city);
                 player.sendMessage(Text.YOU_CLAIMED_CHUNK_FOR_CITY(price));
@@ -496,6 +497,10 @@ public class CityCommand extends ConsulatCommand {
             break;
             case "h":
             case "home":{
+                if(player.isInCombat()){
+                    player.sendMessage(Text.IN_COMBAT);
+                    return;
+                }
                 if(!player.belongsToCity()){
                     player.sendMessage(Text.YOU_NOT_IN_CITY);
                     return;

@@ -28,6 +28,10 @@ public class TopCommand extends ConsulatCommand {
             sender.sendMessage(Text.DONT_HAVE_PERK);
             return;
         }
+        if(player.isInCombat()){
+            player.sendMessage(Text.IN_COMBAT);
+            return;
+        }
         Location playerLocation = sender.getPlayer().getLocation();
         Block higherBlock = sender.getPlayer().getWorld().getHighestBlockAt(playerLocation);
         sender.getPlayer().teleportAsync(new Location(playerLocation.getWorld(), playerLocation.getX(), higherBlock.getY(), playerLocation.getZ(), playerLocation.getYaw(), playerLocation.getPitch()));

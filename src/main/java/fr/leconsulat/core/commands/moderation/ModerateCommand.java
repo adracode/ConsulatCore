@@ -32,6 +32,10 @@ public class ModerateCommand extends ConsulatCommand {
     public void onCommand(@NotNull ConsulatPlayer sender, @NotNull String[] args){
         SurvivalPlayer player = (SurvivalPlayer)sender;
         Player bukkitPlayer = sender.getPlayer();
+        if(player.isInCombat()){
+            player.sendMessage(Text.IN_COMBAT);
+            return;
+        }
         player.setInModeration(!player.isInModeration());
         if(!player.isInModeration()){
             sender.sendMessage(Text.NO_MORE_IN_STAFF_MODE);
