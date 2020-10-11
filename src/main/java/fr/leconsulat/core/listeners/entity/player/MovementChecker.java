@@ -1,7 +1,9 @@
 package fr.leconsulat.core.listeners.entity.player;
 
+import fr.leconsulat.api.ConsulatAPI;
 import fr.leconsulat.api.events.ConsulatPlayerLeaveEvent;
 import fr.leconsulat.api.events.ConsulatPlayerLoadedEvent;
+import fr.leconsulat.api.gui.GuiItem;
 import fr.leconsulat.api.player.CPlayerManager;
 import fr.leconsulat.api.player.ConsulatPlayer;
 import fr.leconsulat.core.ConsulatCore;
@@ -22,6 +24,9 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.Iterator;
+import java.util.logging.Level;
+
 public class MovementChecker implements Listener {
     
     private static MovementChecker instance;
@@ -33,6 +38,15 @@ public class MovementChecker implements Listener {
             throw new IllegalStateException();
         }
         instance = this;
+        Bukkit.getScheduler().runTaskTimer(ConsulatCore.getInstance(), () -> {
+            for(Iterator<GuiItem> iterator = gui.iterator(); iterator.hasNext(); ){
+                ConsulatPlayer player = (ConsulatPlayer)iterator.next().getAttachedObject();
+                if(player != null && player.getPlayer().getLocation().getY() > 16){
+                    iterator.remove();
+                    ConsulatAPI.getConsulatAPI().log(Level.INFO, player.getName() + " was in < 16 gui, but was at location " + player.getPlayer().getLocation());
+                }
+            }
+        }, 60 * 20, 60 * 20);
     }
     
     private void removeBelow16(ConsulatPlayer player){
